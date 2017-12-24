@@ -4,8 +4,15 @@
   #that is stored in options
 { 
   kopt <- pmatch(arg.val, options)
-  if (is.na(kopt))
-    stop("Value for argument, ",arg.val,", is not an allowed option")
+  if (any(is.na(kopt)))
+    stop("Value for argument, ",paste(arg.val, collapse = ","), ", is not an allowed option")
+  if (length(kopt) > 1)
+  {
+    warning(paste("Only one value allowed for argument where", 
+                  paste(arg.val, collapse = ","), "have been supplied", 
+                  sep = " "))
+    kopt <- kopt[1]
+  }
   return(kopt)
 }
 
