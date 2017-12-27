@@ -1,16 +1,10 @@
 \name{news}
 \title{News for Package asremlPlus}
-<<<<<<< HEAD
 \section{asremlPlus Version 4.0-20 (2017-12-28)}{
   \itemize{
     \item{Modifications to checking of options for function arguments.}
     \item{Add tip for installing asremlPlus from github.}
     \item{Modifications to internals.}
-=======
-\section{asremlPlus Version 4.0-20 (2017-12-27)}{
-  \itemize{
-    \item{Modifications to checking of options for function arguments.}
->>>>>>> 5e4a51d95dcc0db9c7b71fd604ecd15ce7e1c34a
   }
 }
 \section{asremlPlus Version 4.0-19 (2017-12-18)}{
