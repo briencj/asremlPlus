@@ -1,5 +1,10 @@
 \name{news}
 \title{News for Package asremlPlus}
+\section{asremlPlus Version 4.0-20 (2017-12-27)}{
+  \itemize{
+    \item{Modifications to checking of options for function arguments.}
+  }
+}
 \section{asremlPlus Version 4.0-19 (2017-12-18)}{
   \itemize{
     \item{Fix bug in redoErrorIntervals.alldiffs to make sure \code{status} or \code{est.status} is the last column in the \code{predictions} component of the \code{alldiffs} object.}
