@@ -725,7 +725,7 @@
       }
     }
     #Remove chosen term
-    test.summary <- addtoTestSummary(terms = term, DF = 1, denDF = NA, p = NA, 
+    test.summary <- addtoTestSummary(test.summary, terms = term, DF = 1, denDF = NA, p = NA, 
                                      action = "Boundary")
     mod.ran <- as.formula(paste("~ . - ", term, sep=""))
     asreml.obj <- newfit.asreml(asreml.obj, random. = mod.ran, trace = trace, 
