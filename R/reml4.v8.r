@@ -725,9 +725,8 @@
       }
     }
     #Remove chosen term
-    test.summary <- rbind(test.summary, 
-                          data.frame(terms = term, DF = 1, denDF = NA, p = NA, 
-                                     action = "Boundary", stringsAsFactors = FALSE))
+    test.summary <- addtoTestSummary(terms = term, DF = 1, denDF = NA, p = NA, 
+                                     action = "Boundary")
     mod.ran <- as.formula(paste("~ . - ", term, sep=""))
     asreml.obj <- newfit.asreml(asreml.obj, random. = mod.ran, trace = trace, 
                                 update = update, set.terms = set.terms, 
@@ -877,10 +876,8 @@
   #Update the models
   if (action == "No changes")
   {
-    test.summary <- rbind(test.summary, 
-                          data.frame(terms = label, DF=NA, denDF = NA, 
-                                     p = NA, action = action, 
-                                     stringsAsFactors = FALSE))
+    test.summary <- addtoTestSummary(test.summary, terms = label, DF=NA, denDF = NA, 
+                                     p = NA, action = action)
   } else
   {
     if (asr4)
@@ -922,10 +919,8 @@
         wald.tab <- wald.tab$Wald
       if (!asreml.obj$converge)
         action <- paste(action, " - old uncoverged", sep="")
-      test.summary <- rbind(test.summary, 
-                            data.frame(terms = label, DF=NA, denDF = NA, 
-                                       p = NA, action = action, 
-                                       stringsAsFactors = FALSE))
+      test.summary <- addtoTestSummary(test.summary, terms = label, DF=NA, denDF = NA, 
+                                       p = NA, action = action)
       #Check for boundary terms
       temp.asrt <- rmboundary.asrtests(asrtests(asreml.obj, wald.tab, test.summary), 
                                        checkboundaryonly = checkboundaryonly, 
@@ -987,10 +982,8 @@
         p <- NA
         action <- "Unchanged - new unconverged"
       }
-      test.summary <- rbind(test.summary, 
-                            data.frame(terms = label, DF=NA, denDF = NA, 
-                                       p = NA, action = action, 
-                                       stringsAsFactors = FALSE))
+      test.summary <- addtoTestSummary(test.summary, terms = label, DF=NA, denDF = NA, 
+                                       p = NA, action = action)
     }
   }
   results <- asrtests(asreml.obj = asreml.obj, 
@@ -1059,10 +1052,8 @@
     #Term is not in either model
     if (termno == 0)
       #Term is not in either model
-      test.summary <- rbind(test.summary, 
-                            data.frame(terms = term, DF = NA, denDF = NA, 
-                                       p = NA, action = "Absent", 
-                                       stringsAsFactors = FALSE))
+      test.summary <- addtoTestSummary(test.summary, terms = term, DF = NA, denDF = NA, 
+                                       p = NA, action = "Absent")
     else
     #Have a fixed term
     { 
@@ -1115,27 +1106,19 @@
       #Add record for test to test.summary and, if drop.fix.ns is TRUE, remove term
       if (is.na(p))
       {
-        test.summary <- rbind(test.summary, 
-                              data.frame(terms = rownames(wald.tab)[termno], 
-                                         DF = ndf, denDF = NA, p = p, 
-                                         action = NA, stringsAsFactors = FALSE))
+        test.summary <- addtoTestSummary(test.summary, terms = rownames(wald.tab)[termno], 
+                                         DF = ndf, denDF = NA, p = p, action = NA)
         
       } else
       {
         if (p <= alpha)
         {
           if (drop.fix.ns)
-            test.summary <- rbind(test.summary, 
-                                  data.frame(terms = rownames(wald.tab)[termno], 
-                                             DF = ndf, denDF = den.df, 
-                                             p = p, action = "Retained",
-                                             stringsAsFactors = FALSE))
+            test.summary <- addtoTestSummary(test.summary, terms = rownames(wald.tab)[termno], 
+                                             DF = ndf, denDF = den.df, p = p, action = "Retained")
           else
-            test.summary <- rbind(test.summary, 
-                                  data.frame(terms = rownames(wald.tab)[termno], 
-                                             DF = ndf, denDF = den.df, 
-                                             p = p, action = "Significant",
-                                             stringsAsFactors = FALSE))
+            test.summary <- addtoTestSummary(test.summary, terms = rownames(wald.tab)[termno], 
+                                             DF = ndf, denDF = den.df, p = p, action = "Significant")
         } else
         {
           if (drop.fix.ns)
@@ -1163,11 +1146,9 @@
                 wald.tab <- wald.tab$Wald
               if (!asreml.obj$converge)
                 action <- paste(action, " - unconverged", sep="")
-              test.summary <- rbind(test.summary, 
-                                    data.frame(terms = term, 
+              test.summary <- addtoTestSummary(test.summary, terms = term, 
                                                DF = ndf, denDF = den.df, 
-                                               p = p, action = action,
-                                               stringsAsFactors = FALSE))
+                                               p = p, action = action)
               
               #Check for boundary terms
               temp.asrt <- rmboundary.asrtests(asrtests(asreml.obj, wald.tab, 
@@ -1219,19 +1200,15 @@
                 p <- NA
                 action = "Unchanged - unconverged"
               }
-              test.summary <- rbind(test.summary, 
-                                    data.frame(terms = term, 
+              test.summary <- addtoTestSummary(test.summary, terms = term, 
                                                DF = ndf, denDF = den.df, 
-                                               p = p, action = action,
-                                               stringsAsFactors = FALSE))
+                                               p = p, action = action)
             }
           } else
           {
-            test.summary <- rbind(test.summary, 
-                                  data.frame(terms = rownames(wald.tab)[termno], 
+            test.summary <- addtoTestSummary(test.summary, terms = rownames(wald.tab)[termno], 
                                              DF = ndf, denDF = den.df, 
-                                             p = p, action = "Nonsignificant",
-                                             stringsAsFactors = FALSE))
+                                             p = p, action = "Nonsignificant")
           }
         }
       }
@@ -1394,10 +1371,8 @@
     }
       
     #Update summary
-    test.summary <- rbind(test.summary, 
-                          data.frame(terms = term, DF=test$DF, denDF = NA, 
-                                     p = p, action = action, 
-                                     stringsAsFactors = FALSE))
+    test.summary <- addtoTestSummary(test.summary, terms = term, DF=test$DF, denDF = NA, 
+                                     p = p, action = action)
 
     #Check for boundary terms
     temp.asrt <- rmboundary.asrtests(asrtests(asreml.obj, wald.tab, test.summary), 
@@ -1573,10 +1548,8 @@
       }
     }
   }
-  test.summary <- rbind(test.summary, 
-                        data.frame(terms = label, DF=test$DF, denDF = NA, 
-                                   p = p, action = action, 
-                                   stringsAsFactors = FALSE))
+  test.summary <- addtoTestSummary(test.summary, terms = label, DF=test$DF, denDF = NA, 
+                                   p = p, action = action)
   
   #Update results
   if (change)
@@ -1756,10 +1729,8 @@
       }
     }
   }
-  test.summary <- rbind(test.summary, 
-                        data.frame(terms = label, DF=test$DF, denDF = NA, 
-                                   p = p, action = action, 
-                                   stringsAsFactors = FALSE))
+  test.summary <- addtoTestSummary(test.summary, terms = label, DF=test$DF, denDF = NA, 
+                                   p = p, action = action)
   
   #Update results
   if (change)

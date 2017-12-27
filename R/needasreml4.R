@@ -22,6 +22,7 @@ ASReml-R is available from VSNi. Please visit http://www.vsni.co.uk/ for more in
             "To avoid start-up message that ASReml-R is needed, load asreml before asremlPlus.",
             "Use suppressPackageStartupMessages() to eliminate all package startup messages.", 
             "To see all the intermittent, randomly-presented, startup tips enter ?asremlPlusTips.",
+            "To install the latest version: enter devtools::install_github('briencj/asremlPlus')",
             "For versions between CRAN releases (and more) go to http://chris.brien.name/rpackages.")
   tip <- sample(tips, 1)
   packageStartupMessage(paste(strwrap(tip), collapse = "\n"))

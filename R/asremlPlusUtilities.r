@@ -217,6 +217,15 @@
   return(Z)
 }
 
+addtoTestSummary <- function(test.summary, terms, DF = 1, denDF = NA, p = NA, 
+                             action = "Boundary")
+{
+  test.summary <- rbind(test.summary, 
+                        data.frame(terms = terms, DF = DF, denDF = denDF, p = p, 
+                                   action = action, stringsAsFactors = FALSE))
+  return(test.summary)
+}
+
 "ginv" <- function(x, tol = .Machine$double.eps ^ 0.5)
 { 
   # computes Moore-Penrose inverse of a matrix

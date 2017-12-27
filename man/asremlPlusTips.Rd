@@ -16,6 +16,8 @@ Use suppressPackageStartupMessages() to eliminate all package startup messages.
 
 To see all the intermittent, randomly-presented, startup tips enter ?asremlPlusTips.
 
+To install the latest version: enter devtools::install_github('briencj/asremlPlus')
+
 For versions between CRAN releases (and more) go to \url{http://chris.brien.name/rpackages}.
 }
 \author{Chris Brien}
