@@ -1,0 +1,6 @@
+^.*\.Rproj$
+^\.Rproj\.user$
+^.tests$
+^.archive$
+^CRANlogs$
+^README.md$
