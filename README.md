@@ -4,7 +4,7 @@ asremlPlus is an R package that augments the use of `ASReml-R` and `ASReml4-R` i
 This version is compatible with both `ASReml-R` versions 3 and 4. `ASReml-R` version 4 is currently undergoing beta-testing and 
 has some changes in syntax that necessitate changes in asremlPlus. 
 
-Versions of `asremlPlus` 4.x-xx are a major revamp of the package and also include substantial syntax changes. 
+Versions 4.x-xx of `asremlPlus` are a major revamp of the package and include substantial syntax changes. 
 
 ## More information
 
@@ -14,8 +14,8 @@ An overview can be obtained using `?asremlPlus`. In particular, an example of it
 
 ## Installing the package
 
-1. If you do not already have it, `install(devtools)` (<https://CRAN.R-project.org/package=devtools>)
-2. Execute the following in R: `devtools::install_github("briencj\asremlPlus")`
+1. If you do not already have it, install [devtools](https://CRAN.R-project.org/package=devtools).
+2. Execute the following in R: `devtools::install_github("briencj\asremlPlus")`.
 
 The package is also be available from CRAN 
 (<https://CRAN.R-project.org/package=asremlPlus>). However, the version here may be somewhat newer than that on CRAN. 
