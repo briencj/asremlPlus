@@ -10,7 +10,7 @@ Versions of asremlPlus 4.x-xx are a major revamp of the package and also include
 
 For more information install the package and run the R command news(package = “asremlPlus”) or consult the [manual](./inst/doc/asremlPlus-manual.pdf). 
 
-An overview can be obtained using `?asremlPlus`. 
+An overview can be obtained using `?asremlPlus`. In particular, an example of its use is given towards the bottom of the help information.
 
 ## Installing the package
 
