@@ -14,11 +14,25 @@ An overview can be obtained using `?asremlPlus`. In particular, an example of it
 
 ## Installing the package
 
-1. If you do not already have it, install [devtools](https://CRAN.R-project.org/package=devtools).
-2. Execute the following in R: `devtools::install_github("briencj\asremlPlus")`.
+`asremlPlus` is an R package available on GitHub, so it can be installed from the RStudio console or an R command line session using the `devtools` command `install_github`. First, make sure `devtools` is installed, which, if you do not have it, can be done as follows:
 
-The package is also be available from CRAN 
-(<https://CRAN.R-project.org/package=asremlPlus>). However, the version here may be somewhat newer than that on CRAN. 
+`install.packages("devtools")`
+
+Next, install `asremlPlus` from GitHub by entering:
+
+`devtools::install_github("briencj\asremlPlus")`.
+
+Version 2.0-12 of the package is available from CRAN so that you could first install it and its dependencies using:
+
+`install.packages("asremlPlus")`
+
+
+If you have not previously installed `asremlPlus` then you will need to install it dependencies:
+
+`install.packages(c("dae", "ggplot2", "reshape", "plyr", "stringr", "RColorBrewer", `
+`                   "foreach", "parallel", "doParallel"))`
+
+<!--However, the version here may be somewhat newer than that on CRAN.-->
 
 ## What is does
 
