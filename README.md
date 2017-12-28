@@ -1,7 +1,7 @@
 # asremlPlus
 asremlPlus is an R package that augments the use of 'ASReml-R' and 'ASReml4-R' in fitting mixed models
 
-This version is compatible with both ASReml-R versions 3 and 4. ASReml-R version 4 is currently undergoing $\beta$-testing and 
+This version is compatible with both ASReml-R versions 3 and 4. ASReml-R version 4 is currently undergoing beta-testing and 
 has some changes in syntax that necessitate changes in asremlPlus. 
 
 Versions of asremlPlus 4.x-xx are a major revamp of the package and also include substantial syntax changes. 
