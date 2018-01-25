@@ -1,6 +1,6 @@
 Package: asremlPlus
-Version: 4.0-20
-Date: 2017-12-28
+Version: 4.0-21
+Date: 2018-01-25
 Title: Augments the Use of 'ASReml-R' and 'ASReml4-R' in Fitting Mixed Models
 Author: Chris Brien <Chris.Brien@unisa.edu.au>.
 Maintainer: Chris Brien <Chris.Brien@unisa.edu.au>
@@ -20,7 +20,8 @@ Description: Assists in automating the testing of terms in mixed models when 'as
   models that conform to the hierarchy or marginality principle and for displaying predictions 
   for significant terms in tables and graphs. The packages 'asreml' and 'asreml4' provide a 
   computationally efficient algorithm for fitting mixed models using Residual Maximum 
-  Likelihood. They can be purchased from 'VSNi' <http://www.vsni.co.uk/> as 'asreml-R', 
-  who will supply a zip file for local installation/updating. 
-License: GPL (>=2)
+  Likelihood. They are proprietary packages that can be purchased from 
+  'VSNi' <http://www.vsni.co.uk/> as 'asreml-R', who will supply a zip file for local 
+  installation/updating. 
+License: BSD_3_clause + file LICENSE
 URL: http://chris.brien.name

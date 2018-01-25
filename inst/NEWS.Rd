@@ -1,5 +1,10 @@
 \name{news}
 \title{News for Package asremlPlus}
+\section{asremlPlus Version 4.0-21 (2018-01-25)}{
+  \itemize{
+    \item{Change license to BSD-3-clause.}
+  }
+}
 \section{asremlPlus Version 4.0-20 (2017-12-28)}{
   \itemize{
     \item{Modifications to checking of options for function arguments.}
