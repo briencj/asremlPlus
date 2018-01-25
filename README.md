@@ -80,4 +80,4 @@ They provide a computationally efficient algorithm for fitting mixed models usin
 
 ## License
 
-The `asremlPlus` package is distributed under the [MIT licence](<https://opensource.org/licenses/MIT>) -- for details see [LICENSE.md](commits/master).
+The `asremlPlus` package is distributed under the [MIT licence](<https://opensource.org/licenses/MIT>) -- for details see [LICENSE.md](https://github.com/briencj/asremlPlus/blob/master/LICENSE.md).
