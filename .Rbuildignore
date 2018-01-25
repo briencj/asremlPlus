@@ -3,4 +3,6 @@
 ^.tests$
 ^.archive$
 ^CRANlogs$
-^README.md$
+^README.*$
+^LICENSE.md$
+^LICENSE.html$
