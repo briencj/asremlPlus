@@ -1,6 +1,6 @@
 Package: asremlPlus
-Version: 4.0-21
-Date: 2018-01-25
+Version: 4.0-22
+Date: 2018-02-01
 Title: Augments the Use of 'ASReml-R' and 'ASReml4-R' in Fitting Mixed Models
 Author: Chris Brien <Chris.Brien@unisa.edu.au>.
 Maintainer: Chris Brien <Chris.Brien@unisa.edu.au>

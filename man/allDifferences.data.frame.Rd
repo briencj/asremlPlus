@@ -9,15 +9,17 @@
   object, (ii) the p-values of each pairwise difference, and (iii) the minimum, mean and 
   maximum LSD values. Predictions that are aliased (or nonestimable) are removed 
   from the \code{predictions} component of the \code{alldiffs} object and 
-  standarard errors of differences involving them are removed from the \code{sed} component. 
-  Also, unless the \code{sortFactor} or \code{sortOrder} arguments are invoked, the rows of 
-  \code{predictions} component are ordered so that they are in standard order 
+  standard errors of differences involving them are removed from the \code{sed} component. 
+  
+  Also, the rows of \code{predictions} component are ordered so that they are in standard order 
   for the variables in the \code{classify}. That is, the values of the last variable change 
   with every row, those of the second-last variable only change after all the values of the last 
   variable have been traversed; in general, the values of a variable are the same for all the 
   combinations of the values to the variables to its right in the \code{classify}. In addition, 
   if necessary, the order of the columns of the variables in the \code{predictions} component are 
-  changed to match their order in the \code{classify}.
+  changed to match their order in the \code{classify}. The \code{sortFactor} or \code{sortOrder} 
+  arguments can be used to order of the values for the \code{classify} variables, which is 
+   achieved using \code{\link{sort.alldiffs}}. 
 
   Each p-value is computed as the probability of a t-statistic as large as or larger than 
   the absolute value of the observed difference divided by its standard error. The 
@@ -25,9 +27,6 @@
   the t-distribution is the degrees of freedom stored in the \code{tdf} attribute of the 
   \code{alldiffs} object. This t-distibrution is also used in calculating the 
   LSD statistics stored in the \code{alldiffs} object.
-
-  The order of plotting the levels of one of the factors indexing the predictions can be 
-  modified and is achieved using \code{\link{sort.alldiffs}}.
 }
 \usage{
 \method{allDifferences}{data.frame}(predictions, classify, 

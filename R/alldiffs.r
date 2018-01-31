@@ -699,6 +699,11 @@ redoErrorIntervals.alldiffs <- function(alldiffs.obj, error.intervals = "Confide
   }
   response <- as.character(attr(alldiffs.obj, which = "response"))
   
+  #Sort if sortFactor set
+  if (!is.null(sortFactor))
+    alldiffs.obj <- sort(alldiffs.obj, decreasing = decreasing, sortFactor = sortFactor, 
+                         sortWithinVals = sortWithinVals, sortOrder = sortOrder)
+  
   #Ensure that predictions and other components are in standard order for the classify
   class <- unlist(strsplit(classify, ":", fixed = TRUE))
   if (!all(class == names(alldiffs.obj$predictions)[1:length(class)]))
@@ -710,6 +715,7 @@ redoErrorIntervals.alldiffs <- function(alldiffs.obj, error.intervals = "Confide
   }
   ord <- do.call(order, alldiffs.obj$predictions)
   alldiffs.obj$predictions <- alldiffs.obj$predictions[ord,]
+  predictions <- alldiffs.obj$predictions
   pred.labs <- makePredictionLabels(alldiffs.obj$predictions, classify, response,
                                     x.num = x.num, x.fac = x.fac, 
                                     level.length = level.length)
@@ -763,10 +769,11 @@ redoErrorIntervals.alldiffs <- function(alldiffs.obj, error.intervals = "Confide
   { 
     #calculate p-values, if not present
     if (is.null(alldiffs.obj$p.differences) & pairwise)
-    { p.diff <- abs(pred.diff)/alldiffs.obj$sed
-    p.diff <- 2*pt(p.diff, df = denom.df, lower.tail = FALSE)
-    alldiffs.obj$differences <- pred.diff
-    alldiffs.obj$p.differences <- p.diff
+    { 
+      p.diff <- abs(pred.diff)/alldiffs.obj$sed
+      p.diff <- 2*pt(p.diff, df = denom.df, lower.tail = FALSE)
+      alldiffs.obj$differences <- pred.diff
+      alldiffs.obj$p.differences <- p.diff
     }
     
     #calculate LSDs, if not present
@@ -806,11 +813,6 @@ redoErrorIntervals.alldiffs <- function(alldiffs.obj, error.intervals = "Confide
       attr(alldiffs.obj, which = "meanLSD") <- meanLSD
     }
   }
-  
-  #Sort if sortFactor set
-  if (!is.null(sortFactor))
-    alldiffs.obj <- sort(alldiffs.obj, decreasing = decreasing, sortFactor = sortFactor, 
-                         sortWithinVals = sortWithinVals, sortOrder = sortOrder)
   
   return(alldiffs.obj)
 }

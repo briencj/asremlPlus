@@ -12,7 +12,12 @@
              than one variable in the \code{classify} term, the sorting is controlled using 
              one or more of \code{sortFactor}, \code{sortWithinVals} and \code{sortOrder}. 
              If there is only one variable in the \code{classify} then all components are sorted 
-             according to the order of the complete set of predictions.}
+             according to the order of the complete set of predictions.
+
+             Note that reordering the \code{classify} variables in the \code{alldiffs} 
+             object and changing the order of the rows and columns of the components so 
+             that they are in standard order for the new variable order can be achieved using 
+             \code{\link{allDifferences.data.frame}}.}
 \usage{\method{sort}{alldiffs}(x, decreasing = FALSE, classify = NULL, 
      sortFactor = NULL, sortWithinVals = NULL, sortOrder = NULL, ...)}
 \arguments{

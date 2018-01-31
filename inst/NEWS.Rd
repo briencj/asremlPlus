@@ -1,8 +1,13 @@
 \name{news}
 \title{News for Package asremlPlus}
+\section{asremlPlus Version 4.0-22 (2018-02-01)}{
+  \itemize{
+    \item{Fix bug in reordering components of an alldiffs object.}
+  }
+}
 \section{asremlPlus Version 4.0-21 (2018-01-25)}{
   \itemize{
-    \item{Change license to BSD-3-clause.}
+    \item{Change license to MIT.}
   }
 }
 \section{asremlPlus Version 4.0-20 (2017-12-28)}{
