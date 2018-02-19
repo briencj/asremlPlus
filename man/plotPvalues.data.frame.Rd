@@ -6,7 +6,7 @@
              two factors whose levels specify, for each p-value, which factor levels are 
              being compared.}
 \usage{\method{plotPvalues}{data.frame}(object, p = "p", x, y, 
-            gridspacing = 0, show.sig = FALSE, 
+            gridspacing = 0, show.sig = FALSE, triangles = "both", 
             title = NULL, axis.labels = NULL, 
             colours = RColorBrewer::brewer.pal(3, "Set2"), 
             ggplotFuncs = NULL, ...)}
@@ -32,6 +32,9 @@
              `**' that \eqn{ 0.001 < p \leq 0.01}{0.001 < p <= 0.01}, 
              `*' that \eqn{ 0.01 < p \leq 0.05}{0.01 < p <= 0.05}
              `.' that \eqn{ 0.05 < p \leq 0.10}{0.05 < p <= 0.10}.}
+ \item{triangles}{A \code{character} indicating whether the plot should include the 
+             \code{lower}, \code{upper} or \code{both} traingle(s). Here it is only used 
+              to adjust gridlines for the omission of the diagonal.}
  \item{title}{A \code{character} string giving the main title for the plot.}
  \item{axis.labels}{A \code{character} string giving the label to use for both the x- and y-axis.}
  \item{colours}{A vector of of colours to be passed to the \code{ggplot} function 

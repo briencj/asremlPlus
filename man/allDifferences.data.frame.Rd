@@ -186,12 +186,28 @@
          \code{\link{plotPredictions.data.frame}}, 
          \code{\link{predictPlus.asreml}}, \code{\link{predictPresent.asreml}}}
 \examples{\dontrun{
-  Var.pred <- predict(current.asr, classify="Variety", sed=TRUE)$predictions
+  data(Oats.dat)
+  m1.asr <- asreml(Yield ~ Nitrogen*Variety, 
+                   random=~Blocks/Wplots,
+                   data=Oats.dat)
+  current.asrt <- asrtests(m1.asr)
+  Var.pred <- asreml:::predict.asreml(m1.asr, classify="Nitrogen:Variety", 
+                                      sed=TRUE)$predictions
   wald.tab <-  current.asrt$wald.tab
   den.df <- wald.tab[match("Variety", rownames(wald.tab)), "denDF"]
+
+  ## Order the Varieties in decreasing order for the values of the predictions 
+  ## in the first N level 
   Var.diffs <- allDifferences(predictions = Var.pred$pvals, classify = "Variety", 
                               sed = Var.pred$sed, tdf = den.df,
                               sortFactor = "Variety", decreasing = TRUE)
   print.alldiffs(Var.diffs, which="differences")
+  
+  ## Change the order of the factors in the alldiffs object and reorder components
+  Var.reord.diffs <- allDifferences(predictions = Var.pred$pvals,
+                              classify = "Variety:Nitrogen", 
+                              sed = Var.pred$sed, tdf = den.df)
+  print.alldiffs(Var.diffs, which="predictions")
+
 }}
 \keyword{asreml}

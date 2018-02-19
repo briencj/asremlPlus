@@ -1,5 +1,10 @@
 \name{news}
 \title{News for Package asremlPlus}
+\section{asremlPlus Version 4.0-23 (2018-02-19)}{
+  \itemize{
+    \item{Fix bug in gridline in plotPvalues when\code{triangles} is set to \code{upper} or \code{lower}.}
+  }
+}
 \section{asremlPlus Version 4.0-22 (2018-02-01)}{
   \itemize{
     \item{Fix bug in reordering components of an alldiffs object.}

@@ -2,6 +2,7 @@
 #+
 "plotPvalues.data.frame" <- function(object, p = "p",  x, y, 
                                      gridspacing = 0, show.sig = FALSE, 
+                                     triangles = "both", 
                                      title = NULL, axis.labels = NULL, 
                                      colours = RColorBrewer::brewer.pal(3, "Set2"), 
                                      ggplotFuncs = NULL, ...)
@@ -9,14 +10,10 @@
 { 
   if (!all(c(p,x,y) %in% names(object)))
     stop("One or more of the columns p, x and y are not in object")
+  options <- c("both", "upper", "lower")
+  tri.opt <- options[check.arg.values(triangles, options)]
   
   object <- na.omit(object)
-  # if (upper.tri)
-  # {
-  #   object <- object[object[x] >= object[y],]
-  # } 
-  # else
-  #   object <- object[object[x] != object[y],]
   object[x] <- factor(object[[x]])
   object[y] <- factor(object[[y]])
   labs <- sort(levels(object[[x]]))
@@ -50,14 +47,20 @@
   {
     if (length(gridspacing) > 1)
     {
-      plt <- plt + geom_hline(yintercept = cumsum(gridspacing)+0.5) +
-        geom_vline(xintercept = cumsum(gridspacing)+0.5)
+      grids <- cumsum(gridspacing)+0.5
     } else
     {
       nlabs <- length(labs)
-      plt <- plt + geom_hline(yintercept = seq(gridspacing + 0.5, nlabs, gridspacing)) +
-        geom_vline(xintercept = seq(gridspacing + 0.5, nlabs, gridspacing))
-      
+      grids <- seq(gridspacing + 0.5, nlabs, gridspacing)
+    }
+    if (tri.opt == "lower")
+      plt <- plt + geom_hline(yintercept = grids) + geom_vline(xintercept = grids - 1)
+    else
+    {
+      if (tri.opt == "upper")
+        plt <- plt + geom_hline(yintercept = grids - 1) + geom_vline(xintercept = grids)
+      else
+        plt <- plt + geom_hline(yintercept = grids) + geom_vline(xintercept = grids)
     }
   }
   
@@ -125,13 +128,15 @@
     }
     #Do single plot
     if (is.null(title))
-      plotPvalues.data.frame(object = p, x = "X1", y = "X2", upper.tri = upper.tri, 
+      plotPvalues.data.frame(object = p, x = "X1", y = "X2", 
                              gridspacing = gridspacing, show.sig = show.sig, 
+                             triangles = triangles, 
                              axis.labels = pairname, colours = colours, 
                              ggplotFuncs = ggplotFuncs)
     else
-      plotPvalues.data.frame(object = p, x = "X1", y = "X2", upper.tri = upper.tri, 
+      plotPvalues.data.frame(object = p, x = "X1", y = "X2",  
                              gridspacing = gridspacing, show.sig = show.sig, 
+                             triangles = triangles, 
                              title = title, axis.labels = pairname, 
                              colours = colours, ggplotFuncs = ggplotFuncs)
     
@@ -188,7 +193,7 @@
       if (is.null(title))
         plotPvalues.data.frame(object = psect, x = "X1", y = "X2", 
                                gridspacing = gridspacing, show.sig = show.sig, 
-                               upper.tri = upper.tri, 
+                               triangles = triangles, 
                                title = paste("Plot of p-values for ",
                                              secname," = ",j, sep = ""),
                                axis.labels = pairname, colours = colours, 
@@ -196,7 +201,7 @@
       else
         plotPvalues.data.frame(object = psect, x = "X1", y = "X2", 
                                gridspacing = gridspacing, show.sig = show.sig, 
-                               upper.tri = upper.tri, 
+                               triangles = triangles, 
                                title = paste(title," - ", secname," = ", j, sep=""),
                                axis.labels = pairname, colours = colours, 
                                ggplotFuncs = ggplotFuncs)
