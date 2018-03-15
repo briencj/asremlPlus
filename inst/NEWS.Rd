@@ -1,5 +1,10 @@
 \name{news}
 \title{News for Package asremlPlus}
+\section{asremlPlus Version 4.0-25 (2018-03-15)}{
+  \itemize{
+    \item{Minor bug fix in print.alldiffs.}
+  }
+}
 \section{asremlPlus Version 4.0-24 (2018-03-15)}{
   \itemize{
     \item{Add argument \code{vcov} to allDifferences.data.frame and as.alldiffs and modify print.alldiffs, recalcLSD.alldiffs, sort.alldiffs and subset.alldiffs to process the \code{vcov} component of an \code{alldiffs} object.}

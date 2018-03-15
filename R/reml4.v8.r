@@ -2286,7 +2286,11 @@
   if (!is.null(titles) & !is.na(match(response, names(titles))))
     response.title <- titles[[response]]
   else
+  {
     response.title <- response
+    if (!is.null(linear.transformation))
+      response.title <- paste(response.title, "transform(s)", sep = " ")
+  }
 
   #Form alldiffs object for predictions
   if (!get.vcov)

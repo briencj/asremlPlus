@@ -82,9 +82,9 @@
   if (!is.null(term))
     title <- paste(title, " from ", term, sep="")
   #Print predictions and/or LSDs
-  if (opt %in% c("all", "predictions", "LSD"))
+  if ("all" %in% opt || "predictions" %in% opt || "LSD" %in% opt)
   { 
-    if (opt %in% c("all", "predictions"))
+    if ("all" %in% opt || "predictions" %in% opt)
     { 
       if (!is.null(title))
       {
@@ -979,7 +979,10 @@ redoErrorIntervals.alldiffs <- function(alldiffs.obj, error.intervals = "Confide
     if (is.null(response))
       response <- attr(alldiffs.obj, which = "response")
     if (is.null(response.title))
+    {
       response.title <- attr(alldiffs.obj, which = "response.title")
+      response.title <- paste(response.title, "transform(s)", sep = " ")
+    }
     if (is.null(term))
       term <- attr(alldiffs.obj, which = "term")
     if (is.null(classify))
