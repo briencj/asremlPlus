@@ -2048,10 +2048,12 @@
 }
 
 "predictPlus.asreml" <- function(asreml.obj, classify, term = NULL, 
+                                 linear.transformation = NULL, 
                                  titles = NULL, x.num = NULL, x.fac = NULL,  
                                  x.pred.values = NULL, x.plot.values = NULL, 
                                  error.intervals = "Confidence", avsed.tolerance = 0.25, 
-                                 meanLSD.type = "overall", LSDby = NULL, pairwise = TRUE, 
+                                 meanLSD.type = "overall", LSDby = NULL, 
+                                 pairwise = TRUE, Vmatrix = FALSE, 
                                  tables = "all", level.length = NA, 
                                  transform.power = 1, offset = 0, scale = 1, 
                                  inestimable.rm = TRUE, 
@@ -2090,7 +2092,7 @@
   int.options <- c("none", "Confidence", "StandardError", "halfLeastSignificant")
   int.opt <- int.options[check.arg.values(error.intervals, int.options)]
   #Get table option and  check if must form pairwise differences
-  tab.options <- c("none", "predictions", "backtransforms", 
+  tab.options <- c("none", "predictions", "vcov", "backtransforms", 
                    "differences", "p.differences", "sed", "LSD", "all")
   table.opt <- tab.options[unlist(lapply(tables, check.arg.values, options=tab.options))]
   if ("all" %in% table.opt || "differences" %in% table.opt || 
@@ -2099,16 +2101,23 @@
   #Make sure no functions in classify
   vars <- fac.getinTerm(classify, rmfunction=TRUE)
   classify <- fac.formTerm(vars)
-  
+  #Check if need vcov matrix
+  if (!is.null(linear.transformation) || Vmatrix)
+    get.vcov <- TRUE
+  else
+    get.vcov <- FALSE
+
   #Get the predicted values when x.num is not involved in classify
   if (is.null(x.num) || !(x.num %in% vars))
   { 
     if (asr4)
-      pred <- predict(asreml.obj, classify=classify, sed=pairwise, 
+      pred <- predict(asreml.obj, classify=classify, 
+                      sed=pairwise, vcov = get.vcov, 
                       trace = trace, ...)
     else
-      pred <- predict(asreml.obj, classify=classify, sed=pairwise, 
-                                      trace = trace, ...)$predictions
+      pred <- predict(asreml.obj, classify=classify, 
+                      sed=pairwise, vcov = get.vcov,  
+                      trace = trace, ...)$predictions
     if (!is.null(x.fac) && x.fac %in% vars)
     { 
       k <- match(x.fac, names(pred$pvals))
@@ -2149,11 +2158,13 @@
     #if levels in ... ignore x.pred.values
     if ("levels" %in% names(tempcall)) 
       if (asr4)
-        pred <- predict(asreml.obj, classify=classify, sed = pairwise, 
+        pred <- predict(asreml.obj, classify=classify, 
+                        sed = pairwise, vcov = get.vcov, 
                         trace = trace, ...)
       else
-        pred <- predict(asreml.obj, classify=classify, sed = pairwise, 
-                                        trace = trace, ...)$predictions
+        pred <- predict(asreml.obj, classify=classify, 
+                        sed = pairwise,  vcov = get.vcov, 
+                        trace = trace, ...)$predictions
       
       else
     {
@@ -2171,11 +2182,13 @@
       x.list <- list(x.pred.values)
       names(x.list) <- x.num
       if (asr4)
-        pred <- predict(asreml.obj, classify=classify, levels=x.list, sed = pairwise, 
+        pred <- predict(asreml.obj, classify=classify, levels=x.list, 
+                        sed = pairwise, vcov = get.vcov, 
                         trace = trace, ...)
       else
         pred <- predict(asreml.obj, classify=classify, levels=x.list, 
-                                        sed = pairwise, trace = trace, ...)$predictions
+                        sed = pairwise, vcov = get.vcov, 
+                        trace = trace, ...)$predictions
     }
     k <- match(x.num, names(pred$pvals))
     #Set x values for plotting and table labels in x.num
@@ -2212,9 +2225,11 @@
   #Get denominator degrees of freedom
   if (is.null(term))
     term <- classify
-  #  if (int.opt != "none" & int.opt != "StandardError")
-  { if (is.null(wald.tab))
-    stop("wald.tab needs to be set so that denDF values are available")
+  denom.df <- NA
+  if (!(int.opt %in% c("none", "StandardError")))
+  { 
+    if (is.null(wald.tab))
+      stop("wald.tab needs to be set so that denDF values are available")
     i <- findterm(term, rownames(wald.tab))
     if (i == 0)
     { 
@@ -2261,7 +2276,9 @@
       }
     }
   }
-  #Set up alldiffs object
+  
+  
+  #Initialize for setting up alldiffs object
   if (asr4)
     response <- as.character(asreml.obj$formulae$fixed[[2]])
   else
@@ -2271,7 +2288,12 @@
   else
     response.title <- response
 
-  diffs <- allDifferences(predictions = pred$pvals, 
+  #Form alldiffs object for predictions
+  if (!get.vcov)
+    lintrans.vcov <- NULL
+  else
+    lintrans.vcov <- pred$vcov
+  diffs <- allDifferences(predictions = pred$pvals, vcov = lintrans.vcov, 
                           sed = pred$sed, meanLSD.type = meanLSD.type, LSDby = LSDby, 
                           response = response, response.title =  response.title, 
                           term = term, classify = classify, 
@@ -2282,59 +2304,36 @@
                           inestimable.rm = inestimable.rm, 
                           alpha = alpha)
   
-  #Add lower and upper uncertainty limits
-  diffs <- redoErrorIntervals.alldiffs(diffs, error.intervals = error.intervals,
-                                       alpha = alpha, avsed.tolerance = avsed.tolerance,
-                                       meanLSD.type = meanLSD.type, LSDby = LSDby)
+  if (is.null(linear.transformation))
+  {
+    #Add lower and upper uncertainty limits
+    diffs <- redoErrorIntervals.alldiffs(diffs, error.intervals = error.intervals,
+                                         alpha = alpha, avsed.tolerance = avsed.tolerance,
+                                         meanLSD.type = meanLSD.type, LSDby = LSDby)
+    
 
-  #Add backtransforms if there has been a transformation
-  backtransforms <- NULL
-  if (transform.power != 1 || offset != 0 || scale != 1)
-  { 
-    backtransforms <- diffs$predictions
-    kp <- match("predicted.value", names(backtransforms))
-    #Check if LSD used for predictions and so need to compute CIs
-    if ((strsplit(names(backtransforms)[kp+2], ".", 
-                  fixed=TRUE))[[1]][2] == "halfLeastSignificant")
-    { 
-      names(backtransforms)[kp+2] <- "lower.Confidence.limit" 
-      names(backtransforms)[kp+3] <- "upper.Confidence.limit" 
-      backtransforms <- within(backtransforms, 
-                               { lower.Confidence.limit <- diffs$predictions[["predicted.value"]] - 
-                                 qt(1-alpha/2, denom.df) * diffs$predictions[["standard.error"]]
-                               upper.Confidence.limit <- diffs$predictions[["predicted.value"]] + 
-                                 qt(1-alpha/2, denom.df) * diffs$predictions[["standard.error"]]
-                               })
-    }
-    names(backtransforms)[match("predicted.value", names(backtransforms))] <- 
-      "backtransformed.predictions"
-    #Backtransform predictions and intervals for power transformation
-    if (transform.power == 0)
-    { 
-      backtransforms$backtransformed.predictions <- 
-        exp(backtransforms$backtransformed.predictions)
-      backtransforms[[kp+2]] <- exp(backtransforms[[kp+2]])
-      backtransforms[[kp+3]] <- exp(backtransforms[[kp+3]])
-    } else
-      if (transform.power != 1)
-      { 
-        backtransforms$backtransformed.predictions <- 
-          backtransforms$backtransformed.predictions^(1/transform.power)
-        backtransforms[[kp+2]] <- backtransforms[[kp+2]]^(1/transform.power)
-        backtransforms[[kp+3]] <- backtransforms[[kp+3]]^(1/transform.power)
-      } 
-    #    backtransforms <- backtransforms[, c(1:(kp-1), (kp+5), (kp+2):(kp+4))]
-    #Backtransform for offset and scale
-    if (offset !=0 || scale != 1)
-    { 
-      backtransforms$backtransformed.predictions <- 
-        backtransforms$backtransformed.predictions/scale - offset
-      backtransforms[[kp+2]] <- backtransforms[[kp+2]]/scale - offset
-      backtransforms[[kp+3]] <- backtransforms[[kp+3]]/scale - offset
-    }
-    diffs$backtransforms <- backtransforms
+    #Add backtransforms if there has been a transformation
+    diffs <- addBacktransforms.alldiffs(alldiffs.obj = diffs, 
+                                        transform.power = transform.power, 
+                                        offset = offset, scale = scale)
+  } else
+  {
+    #Linear transformation required
+    diffs <- linTransform.alldiffs(alldiffs.obj = diffs, classify = classify,  term = term, 
+                                   linear.transformation = linear.transformation, 
+                                   Vmatrix = Vmatrix, 
+                                   error.intervals = error.intervals, 
+                                   avsed.tolerance = avsed.tolerance, 
+                                   meanLSD.type = meanLSD.type, LSDby = LSDby, 
+                                   response = response, response.title = response.title, 
+                                   x.num = x.num, x.fac = x.fac, 
+                                   tables = "none", level.length = level.length, 
+                                   pairwise = pairwise, alpha = alpha,
+                                   transform.power = transform.power, 
+                                   offset = offset, scale = scale, 
+                                   inestimable.rm = inestimable.rm)
   }
-  
+
   #Sort alldiffs components, if required
   if (!is.null(sortFactor))
     diffs <- sort(diffs, decreasing = decreasing, sortFactor = sortFactor, 
@@ -2850,7 +2849,7 @@ sliceLSDs <- function(alldiffs.obj, by, t.value, alpha = 0.05)
                                     LSDby = NULL, avsed.tolerance = 0.25, titles = NULL, 
                                     colour.scheme = "colour", save.plots = FALSE, 
                                     transform.power = 1, offset = 0, scale = 1, 
-                                    pairwise = TRUE, 
+                                    pairwise = TRUE, Vmatrix = FALSE, 
                                     tables = "all", level.length = NA, 
                                     alpha = 0.05, inestimable.rm = TRUE,
                                     sortFactor = NULL, sortWithinVals = NULL, 
@@ -2938,7 +2937,8 @@ sliceLSDs <- function(alldiffs.obj, by, t.value, alpha = 0.05)
                                   error.intervals = error.intervals, 
                                   avsed.tolerance = avsed.tolerance, 
                                   meanLSD.type = meanLSD.type, LSDby = LSDby, 
-                                  pairwise = pairwise, tables = tables, 
+                                  pairwise = pairwise, Vmatrix = Vmatrix, 
+                                  tables = tables, 
                                   level.length = level.length, 
                                   transform.power = transform.power, 
                                   offset = offset, scale = scale, 
@@ -2962,7 +2962,8 @@ sliceLSDs <- function(alldiffs.obj, by, t.value, alpha = 0.05)
                                   error.intervals = error.intervals, 
                                   avsed.tolerance = avsed.tolerance, 
                                   meanLSD.type = meanLSD.type, LSDby = LSDby, 
-                                  pairwise = pairwise, tables = tables, 
+                                  pairwise = pairwise, Vmatrix = Vmatrix, 
+                                  tables = tables, 
                                   level.length = level.length, 
                                   transform.power = transform.power, 
                                   offset = offset, scale = scale, 

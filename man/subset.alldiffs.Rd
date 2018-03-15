@@ -10,8 +10,8 @@
  \item{\dots}{further arguments passed to \code{\link{recalcLSD.alldiffs}}.}
 }
 \value{An \code{alldiffs} object with the following components of the supplied 
-       \code{alldiffs} object subseted, if present in the original object: 
-       \code{predictions}, \code{backtransforms}, \code{differences}, 
+       \code{alldiffs} object subsetted, if present in the original object: 
+       \code{predictions}, \code{vcov}, \code{backtransforms}, \code{differences}, 
        \code{p.differences} and \code{sed}. In addition, if \code{sed} is present, the 
        \code{LSD} component will be recalculated.}
 

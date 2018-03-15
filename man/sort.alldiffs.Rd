@@ -68,7 +68,7 @@
  \item{\dots}{further arguments passed to or from other methods. Not used at present.}
 }
 \value{The \code{alldiffs} object supplied with the following components, 
-       if present, sorted: \code{predictions}, \code{backtransforms}, \code{differences}, 
+       if present, sorted: \code{predictions}, \code{vcov}, \code{backtransforms}, \code{differences}, 
        \code{p.differences} and \code{sed}. Also, the \code{sortFactor} and \code{sortOrder} 
        attributes are set.}
 \details{The basic technique is to change the order of the levels of the \code{sortFactor} 

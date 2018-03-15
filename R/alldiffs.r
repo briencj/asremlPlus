@@ -1,7 +1,8 @@
 #alldiffs functions
 
 #Form an alldiffs object from supplied component objects
-"as.alldiffs" <- function(predictions, differences = NULL, p.differences = NULL, 
+"as.alldiffs" <- function(predictions, vcov = NULL, 
+                          differences = NULL, p.differences = NULL, 
                           sed = NULL, LSD = NULL, backtransforms = NULL, 
                           response = NULL, response.title = NULL, 
                           term = NULL, classify = NULL, 
@@ -17,6 +18,8 @@
     names(predictions)[match("status", names(predictions))] <- "est.status"
   if (!is.null(sed))
     sed <- as.matrix(sed)
+  if (!is.null(vcov))
+    vcov <- as.matrix(vcov)
   #Check have appropriate columns
   if (!("predicted.value" %in% colnames(predictions)) || 
       !("standard.error" %in% colnames(predictions)) || !("est.status" %in% colnames(predictions))) 
@@ -24,14 +27,21 @@
   npred <- nrow(predictions)
   if ((!is.null(differences) && !("matrix" %in% class(differences))) ||
       (!is.null(p.differences) && !("matrix" %in% class(p.differences))) || 
-      (!is.null(sed) && !("matrix" %in% class(sed))))
-    warning("At least one of differences, p.differences and sed is not of type matrix")
+      (!is.null(sed) && !("matrix" %in% class(sed))) || 
+      (!is.null(vcov) && !("matrix" %in% class(vcov))))
+    warning("At least one of differences, p.differences, sed and vcov is not of type matrix")
   if (!is.null(differences) && !is.null(p.differences) && !is.null(sed))
   { 
     dimens <- c(nrow(differences), nrow(p.differences), nrow(sed), 
                 ncol(differences), ncol(p.differences), ncol(sed))
     if (any(npred != dimens))
       stop("At least one of differences, p.differences or sed is not conformable with predictions")
+  }
+  if (!is.null(vcov))
+  {
+    #check that vcov conforms to predictions
+    if (any(npred != c(nrow(vcov), ncol(vcov))))
+      stop("vcov is not conformable with predictions")
   }
   if (!is.null(backtransforms))
   { 
@@ -46,9 +56,9 @@
   meanLSD <- NULL
   if (!is.null(LSD))
     attr(predictions, which = "meanLSD") <- LSD$meanLSD
-  p <- list(predictions = predictions, differences = differences, 
-            p.differences = p.differences, sed = sed, LSD = LSD, 
-            backtransforms = backtransforms)
+  p <- list(predictions = predictions, vcov = vcov, 
+            differences = differences, p.differences = p.differences, sed = sed, 
+            LSD = LSD, backtransforms = backtransforms)
   attr(p, which = "response") <- response
   attr(p, which = "response.title") <- response.title
   attr(p, which = "term") <- term
@@ -62,7 +72,7 @@
 
 "print.alldiffs" <- function(x, which = "all", ...)
 { 
-  options <- c("predictions", "backtransforms", 
+  options <- c("predictions", "backtransforms", "vcov", 
                "differences", "p.differences", "sed", "LSD", "all")
   opt <- options[unlist(lapply(which, check.arg.values, options=options))]
   title <- attr(x, which = "response.title")
@@ -72,9 +82,9 @@
   if (!is.null(term))
     title <- paste(title, " from ", term, sep="")
   #Print predictions and/or LSDs
-  if ("all" %in% opt || "predictions" %in% opt || "LSD" %in% opt)
+  if (opt %in% c("all", "predictions", "LSD"))
   { 
-    if ("all" %in% opt || "predictions" %in% opt)
+    if (opt %in% c("all", "predictions"))
     { 
       if (!is.null(title))
       {
@@ -101,8 +111,23 @@
             "\n(sed range / mean sed = ",signif(sed.range, digits=3),")\n\n")
       }
     } else
-      print(x$LSD)
+    {
+      if (opt %in% c("all", "LSD"))
+      {
+        cat("\n\nLSD values \n\n")
+        print(x$LSD)      
+      }
+    }
   }
+  if ("all" %in% opt || "vcov" %in% opt)
+  { 
+    cat("\n\nVariance matrix of the predicted values \n\n")
+    if (!is.null(x$vcov))
+      print(zapsmall(x$vcov, 4))
+    else
+      print(x$vcov)
+  }
+  
   if ("all" %in% opt || "differences" %in% opt)
   { 
     cat("\n\nAll pairwise differences between predicted values \n\n")
@@ -223,6 +248,10 @@ subset.alldiffs <- function(x, subset, ...)
                                               x <- factor(x)
                                             return(x)
                                           }), stringsAsFactors = FALSE)
+    if (!is.null(x$vcov))
+    {
+      x$vcov <- x$vcov[cond, cond]
+    }
     if (!is.null(x$backtransforms))
     {
       x$backtransforms <- x$backtransforms[cond & !is.na(cond),]
@@ -395,6 +424,8 @@ sort.alldiffs <- function(x, decreasing = FALSE, classify = NULL,
                                              levels = newlevs)
   }
   x$predictions <- x$predictions[tmp$Ord,]
+  if (!is.null(x$vcov))
+    x$vcov <- x$vcov[tmp$Ord, tmp$Ord]
   if (!is.null(x$backtransforms))
     x$backtransforms <- x$backtransforms[tmp$Ord,]
   if (!is.null(x$differences))
@@ -417,6 +448,7 @@ recalcLSD.alldiffs <- function(alldiffs.obj, meanLSD.type = "overall", LSDby = N
   kattr <- attributes(alldiffs.obj)
   alldiffs.obj <- allDifferences(alldiffs.obj$predictions, 
                                  classify = attr(alldiffs.obj, which = "classify"), 
+                                 vcov = alldiffs.obj$vcov, 
                                  differences = alldiffs.obj$differences, 
                                  p.differences = alldiffs.obj$p.differences,
                                  sed = alldiffs.obj$sed, 
@@ -481,7 +513,7 @@ redoErrorIntervals.alldiffs <- function(alldiffs.obj, error.intervals = "Confide
     {
       t.value = qt(1-alpha/2, denom.df)
     }
-    if (int.opt == "halfLeastSignificant" )
+    if (int.opt == "halfLeastSignificant" && (nrow(alldiffs.obj$predictions) != 1))
     { 
       overall.meanLSD <- sqrt(mean(alldiffs.obj$sed*alldiffs.obj$sed, na.rm = TRUE))
       overall.sed.range <- abs((max(alldiffs.obj$sed*alldiffs.obj$sed, na.rm = TRUE) - 
@@ -615,7 +647,7 @@ redoErrorIntervals.alldiffs <- function(alldiffs.obj, error.intervals = "Confide
 }
 
 
-"allDifferences.data.frame" <- function(predictions, classify, 
+"allDifferences.data.frame" <- function(predictions, classify, vcov = NULL, 
                                         differences = NULL, p.differences = NULL, 
                                         sed = NULL, LSD = NULL, meanLSD.type = "overall", 
                                         LSDby = NULL, backtransforms = NULL, 
@@ -643,6 +675,7 @@ redoErrorIntervals.alldiffs <- function(alldiffs.obj, error.intervals = "Confide
     stop("levels.length has been deprecated - use level.length")
   
   alldiffs.obj <- as.alldiffs(predictions = predictions, 
+                              vcov = vcov,
                               differences = differences, 
                               p.differences = p.differences, 
                               sed = sed, LSD = LSD, 
@@ -678,6 +711,11 @@ redoErrorIntervals.alldiffs <- function(alldiffs.obj, error.intervals = "Confide
              }, predictions)
     rownames(predictions) <- NULL
     alldiffs.obj$predictions <- predictions
+    if (!is.null(alldiffs.obj$vcov))
+    { 
+      if (inestimable.rm)
+        alldiffs.obj$vcov <- alldiffs.obj$vcov[which.estim, which.estim]
+    }
     if (!is.null(alldiffs.obj$sed))
     { 
       if (inestimable.rm)
@@ -687,6 +725,7 @@ redoErrorIntervals.alldiffs <- function(alldiffs.obj, error.intervals = "Confide
     
     #Reset the other components to NULL
     alldiffs.obj <- as.alldiffs(predictions = alldiffs.obj$predictions, 
+                                vcov = alldiffs.obj$vcov, 
                                 differences = NULL, 
                                 p.differences = NULL, 
                                 sed = alldiffs.obj$sed, LSD = NULL, 
@@ -733,13 +772,27 @@ redoErrorIntervals.alldiffs <- function(alldiffs.obj, error.intervals = "Confide
     alldiffs.obj$p.differences <- alldiffs.obj$p.differences[ord,ord]
     colnames(alldiffs.obj$p.differences) <- rownames(alldiffs.obj$p.differences) <- pred.lev
   }
-  if (!is.null(alldiffs.obj$sed))
+  if (!is.null(alldiffs.obj$vcov))
+  {
+    alldiffs.obj$vcov <- alldiffs.obj$vcov[ord,ord]
+    colnames(alldiffs.obj$vcov) <- rownames(alldiffs.obj$vcov) <- pred.lev
+  }
+  if (!is.null(alldiffs.obj$sed) && length(pred.lev) > 1)
   {
     alldiffs.obj$sed <- alldiffs.obj$sed[ord,ord]
     colnames(alldiffs.obj$sed) <- rownames(alldiffs.obj$sed) <- pred.lev
   }
   
-  #Form all pairwise differences, if not present and to be stored
+  #Retain variance matrix, if vcov is not NULL
+  if (!is.null(alldiffs.obj$vcov))
+  { 
+    if (ncol(alldiffs.obj$vcov) != length(pred.lev) | nrow(alldiffs.obj$vcov) != length(pred.lev))
+      stop(paste("Dimensions of variance matrix not equal to \n",
+                 "the number of observed levels combinations of the factors"))
+    dimnames(alldiffs.obj$vcov) <- list(pred.lev, pred.lev)
+  } 
+  
+  #Form all pairwise differences, if not present and store
   if (is.null(alldiffs.obj$differences) & pairwise)
   { 
     pred.diff <- outer(predictions$predicted.value, predictions$predicted.value, "-")
@@ -777,7 +830,7 @@ redoErrorIntervals.alldiffs <- function(alldiffs.obj, error.intervals = "Confide
     }
     
     #calculate LSDs, if not present
-    if (is.null(alldiffs.obj$LSD) & pairwise)
+    if (is.null(alldiffs.obj$LSD) && pairwise && (nrow(alldiffs.obj$predictions) != 1))
     { 
       t.value = qt(1-alpha/2, denom.df)
       if (avLSD == "overall")
@@ -817,3 +870,224 @@ redoErrorIntervals.alldiffs <- function(alldiffs.obj, error.intervals = "Confide
   return(alldiffs.obj)
 }
 
+"addBacktransforms.alldiffs" <- function(alldiffs.obj, 
+                                        transform.power = 1, offset = 0, scale = 1)
+{  
+  #Add backtransforms if there has been a transformation
+  backtransforms <- NULL
+  if (transform.power != 1 || offset != 0 || scale != 1)
+  { 
+    denom.df <- attr(alldiffs.obj, which = "tdf")
+    if (is.null(denom.df))
+      warning(paste("The degrees of freedom of the t-distribtion are not available in alldiffs.obj\n",
+                    "- p-values and LSDs not calculated"))
+    backtransforms <- alldiffs.obj$predictions
+    kp <- match("predicted.value", names(backtransforms))
+    #Check if LSD used for predictions and so need to compute CIs
+    if ((strsplit(names(backtransforms)[kp+2], ".", 
+                  fixed=TRUE))[[1]][2] == "halfLeastSignificant")
+    { 
+      names(backtransforms)[kp+2] <- "lower.Confidence.limit" 
+      names(backtransforms)[kp+3] <- "upper.Confidence.limit" 
+      backtransforms <- within(backtransforms, 
+                               { 
+                                 lower.Confidence.limit <- alldiffs.obj$predictions[["predicted.value"]] - 
+                                   qt(1-alpha/2, denom.df) * alldiffs.obj$predictions[["standard.error"]]
+                                 upper.Confidence.limit <- alldiffs.obj$predictions[["predicted.value"]] + 
+                                   qt(1-alpha/2, denom.df) * alldiffs.obj$predictions[["standard.error"]]
+                               })
+    }
+    names(backtransforms)[match("predicted.value", names(backtransforms))] <- 
+      "backtransformed.predictions"
+    #Backtransform predictions and intervals for power transformation
+    if (transform.power == 0)
+    { 
+      backtransforms$backtransformed.predictions <- 
+                                 exp(backtransforms$backtransformed.predictions)
+      backtransforms[[kp+2]] <- exp(backtransforms[[kp+2]])
+      backtransforms[[kp+3]] <- exp(backtransforms[[kp+3]])
+    } else
+      if (transform.power != 1)
+      { 
+        backtransforms$backtransformed.predictions <- 
+          backtransforms$backtransformed.predictions^(1/transform.power)
+        backtransforms[[kp+2]] <- backtransforms[[kp+2]]^(1/transform.power)
+        backtransforms[[kp+3]] <- backtransforms[[kp+3]]^(1/transform.power)
+      } 
+    #Backtransform for offset and scale
+    if (offset !=0 || scale != 1)
+    { 
+      backtransforms$backtransformed.predictions <- 
+        (backtransforms$backtransformed.predictions - offset)/scale
+      backtransforms[[kp+2]] <- (backtransforms[[kp+2]] - offset)/scale
+      backtransforms[[kp+3]] <- (backtransforms[[kp+3]] - offset)/scale
+    }
+    #Set standard.error to missing if a power transformation has been used
+    if (transform.power != 1)
+    {
+      ks <- match("standard.error", names(backtransforms))
+      backtransforms[[ks]] <- NA
+    } else
+    {
+      if (scale != 1)
+      {
+        ks <- match("standard.error", names(backtransforms))
+        backtransforms[[ks]] <- backtransforms[[ks]] / scale
+      }
+    }
+    alldiffs.obj$backtransforms <- backtransforms
+  }
+  return(alldiffs.obj)
+}
+
+"linTransform.alldiffs" <- function(alldiffs.obj, classify = NULL, term = NULL, 
+                                    linear.transformation = NULL, Vmatrix = FALSE, 
+                                    error.intervals = "Confidence", avsed.tolerance = 0.25, 
+                                    meanLSD.type = "overall", LSDby = NULL, 
+                                    response = NULL, response.title = NULL, 
+                                    x.num = NULL, x.fac = NULL, 
+                                    tables = "all", level.length = NA, 
+                                    pairwise = TRUE, alpha = 0.05,
+                                    transform.power = 1, offset = 0, scale = 1, 
+                                    inestimable.rm = TRUE, 
+                                    ...)
+{
+  #Check if want a linear transformation
+  if (!is.null(linear.transformation))
+  {
+    #Check have vcov
+    if (is.null(alldiffs.obj$vcov))
+      stop("Need to have stored the variance matrix of the predictions in alldiffs.obj")
+    
+    #Get table option and  check if must form pairwise differences
+    tab.options <- c("none", "predictions", "vcov", "backtransforms", 
+                     "differences", "p.differences", "sed", "LSD", "all")
+    table.opt <- tab.options[unlist(lapply(tables, check.arg.values, options=tab.options))]
+    if ("all" %in% table.opt || "differences" %in% table.opt)
+      pairwise <- TRUE
+    if (inherits(linear.transformation, what = "matrix"))
+      lintrans.type <- "matrix"
+    else 
+    {
+      if (inherits(linear.transformation, what = "formula"))
+        lintrans.type <- "submodel"
+      else
+        stop("linear.transformation should be either a matrix or a model")
+    }
+    
+    #get attributes from alldiffs object
+    if (is.null(response))
+      response <- attr(alldiffs.obj, which = "response")
+    if (is.null(response.title))
+      response.title <- attr(alldiffs.obj, which = "response.title")
+    if (is.null(term))
+      term <- attr(alldiffs.obj, which = "term")
+    if (is.null(classify))
+      classify <- attr(alldiffs.obj, which = "classify")
+    denom.df <- attr(alldiffs.obj, which = "tdf")
+    if (is.null(denom.df))
+      warning(paste("The degrees of freedom of the t-distribtion are not available in alldiffs.obj\n",
+                    "- p-values and LSDs not calculated"))
+    
+    #Project predictions on submodel, if required
+    if (lintrans.type == "submodel")
+    {
+      #Form projector on predictions for submodel
+      suppressWarnings(Q <- pstructure(linear.transformation, grandMean = TRUE, 
+                                       orthogonalize = "eigen", aliasing.print = FALSE, 
+                                       data = alldiffs.obj$predictions)$Q)
+      Q.submod <- Q[[1]]
+      if (length(Q) > 1)
+        for (k in 2:length(Q))
+          Q.submod <- Q.submod + Q[[k]]
+      Q.submod <- projector(Q.submod)
+      
+      #Check that submodel is a subspace of the classify space
+      Q <- pstructure(as.formula(paste("~", classify, sep = " ")), 
+                      grandMean = TRUE, data = alldiffs.obj$predictions)$Q
+      if (any(abs(Q.submod %*% projector(Q[[1]] + Q[[2]]) - Q.submod) > 1e-08))
+        stop("Model space for", linear.transformation, 
+             " is not a subspace of the space for the classify ", classify)
+      
+      #Form predictions projected onto submodel
+      lintrans.vcov <- Q.submod %*% alldiffs.obj$vcov %*% Q.submod
+      lintrans <- alldiffs.obj$predictions
+      lintrans$predicted.value <- as.vector(Q.submod %*% lintrans$predicted.value)
+      lintrans$standard.error <- as.vector(sqrt(diag(lintrans.vcov)))
+      
+      # Calculate the variance matrix for differences between predictions
+      n <- nrow(lintrans.vcov)
+      lintrans.sed <- matrix(rep(diag(lintrans.vcov), each = n), nrow = n) + 
+                        matrix(rep(diag(lintrans.vcov), times = n), nrow = n) - 
+                        2 * lintrans.vcov
+      lintrans.sed <- sqrt(lintrans.sed)  
+      
+      #Form alldiffs object for linear transformation
+      if (!Vmatrix)
+        lintrans.vcov <- NULL
+      diffs <- allDifferences(predictions = lintrans, vcov = lintrans.vcov, 
+                              sed = lintrans.sed, meanLSD.type = meanLSD.type, LSDby = LSDby, 
+                              response = response, response.title =  response.title, 
+                              term = term, classify = classify, 
+                              tdf = denom.df, 
+                              x.num = x.num, x.fac = x.fac,
+                              level.length = level.length, 
+                              pairwise = pairwise, 
+                              inestimable.rm = inestimable.rm, 
+                              alpha = alpha)
+    } else  #Form estimated linear combinations from predictions using a matrix
+    {
+      #check that the number of predictions conform
+      if ((ncol(linear.transformation) != nrow(alldiffs.obj$predictions)))
+        stop("The number of columns in linear.transformation is not equal to ", 
+             "the number of estimable predictions")
+      if (!is.null(rownames(linear.transformation)))
+        lintrans <- data.frame(X = rownames(linear.transformation))
+      else
+        lintrans <- data.frame(X = 1:nrow(linear.transformation))
+      names(lintrans) <- "Combination"
+      lintrans$Combination <- factor(lintrans$Combination, levels = lintrans$Combination)
+      lintrans.vcov <- linear.transformation %*% alldiffs.obj$vcov %*% t(linear.transformation)
+      lintrans$predicted.value <- as.vector(linear.transformation %*% 
+                                              alldiffs.obj$predictions$predicted.value)
+      lintrans$standard.error <- as.vector(sqrt(diag(lintrans.vcov)))
+      lintrans$est.status <- "Estimable"
+      lintrans$est.status[is.na(lintrans$predicted.value)] <- "Aliased"
+      
+      # Calculate the variance matrix for differences between predictions
+      n <- nrow(lintrans.vcov)
+      lintrans.sed <- matrix(rep(diag(lintrans.vcov), each = n), nrow = n) + 
+        matrix(rep(diag(lintrans.vcov), times = n), nrow = n) - 2 * lintrans.vcov
+      lintrans.sed <- sqrt(lintrans.sed)  
+      
+      #Form alldiffs object for linear transformation
+      if (!Vmatrix)
+        lintrans.vcov <- NULL
+      diffs <- allDifferences(predictions = lintrans, vcov = lintrans.vcov, 
+                              sed = lintrans.sed, meanLSD.type = meanLSD.type, LSDby = LSDby, 
+                              response = response, response.title =  response.title, 
+                              term = classify, classify = "Combination", 
+                              tdf = denom.df, 
+                              x.num = x.num, x.fac = x.fac,
+                              level.length = level.length, 
+                              pairwise = pairwise, 
+                              inestimable.rm = inestimable.rm, 
+                              alpha = alpha)
+    }
+    
+    #Add lower and upper uncertainty limits
+    diffs <- redoErrorIntervals.alldiffs(diffs, error.intervals = error.intervals,
+                                         alpha = alpha, avsed.tolerance = avsed.tolerance,
+                                         meanLSD.type = meanLSD.type, LSDby = LSDby)
+    
+    #Add backtransforms if there has been a transformation
+    diffs <- addBacktransforms.alldiffs(alldiffs.obj = diffs, 
+                                        transform.power = transform.power, 
+                                        offset = offset, scale = scale)
+
+    #Outut tables according to table.opt
+    if (!("none" %in% table.opt))
+      print(diffs, which = table.opt)
+  }
+  return(diffs)
+}

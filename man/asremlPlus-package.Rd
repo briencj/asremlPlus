@@ -124,6 +124,9 @@
        \tab Using supplied predictions, forms all pairwise \cr
        \tab differences between a set of predictions, their \cr
        \tab standard errors and p-values for the differences. \cr
+\code{\link{linTransform.alldiffs}} 
+       \tab Calculates a linear transformation of the \cr
+       \tab predictions stored in an alldiffs object. \cr
 \code{\link{plotPredictions.data.frame}}
        \tab Plots the predictions for a term, possibly with \cr
        \tab error bars. \cr

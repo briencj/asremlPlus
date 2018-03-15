@@ -1,5 +1,13 @@
 \name{news}
 \title{News for Package asremlPlus}
+\section{asremlPlus Version 4.0-24 (2018-03-15)}{
+  \itemize{
+    \item{Add argument \code{vcov} to allDifferences.data.frame and as.alldiffs and modify print.alldiffs, recalcLSD.alldiffs, sort.alldiffs and subset.alldiffs to process the \code{vcov} component of an \code{alldiffs} object.}
+    \item{Add argument \code{linear.transformation} to predictPlus to enable a linear transformation of the predictiions as specified by a \code{matrix} or a model \code{formula}.}
+    \item{Add function linTransform.alldiffs that effects a linear transformation of the predictions stored in an \code{alldiffs} object.}
+    \item{Fixed bug in backtransforming predictions in predictPlus when offset is nonzero and scale is not one.}
+  }
+}
 \section{asremlPlus Version 4.0-23 (2018-02-19)}{
   \itemize{
     \item{Fix bug in gridline in plotPvalues when\code{triangles} is set to \code{upper} or \code{lower}.}

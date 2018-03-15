@@ -18,6 +18,7 @@ REMLRT <- function(h0.asreml.obj, h1.asreml.obj, ...) UseMethod("REMLRT")
 bootREMLRT <- function(h0.asreml.obj, h1.asreml.obj, ...) UseMethod("bootREMLRT")
 variofaces <- function(asreml.obj, ...) UseMethod("variofaces")
 
+linTransform <- function(alldiffs.obj, ...) UseMethod("linTransform")
 recalcLSD <- function(alldiffs.obj, ...) UseMethod("recalcLSD")
 redoErrorIntervals <- function(alldiffs.obj, ...) UseMethod("redoErrorIntervals")
 

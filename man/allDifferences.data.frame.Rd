@@ -29,7 +29,7 @@
   LSD statistics stored in the \code{alldiffs} object.
 }
 \usage{
-\method{allDifferences}{data.frame}(predictions, classify, 
+\method{allDifferences}{data.frame}(predictions, classify, vcov = NULL, 
                differences = NULL, p.differences = NULL, sed = NULL, 
                LSD = NULL, meanLSD.type = "overall", LSDby = NULL, 
                backtransforms = NULL, 
@@ -58,7 +58,9 @@
                     specified by forming an interaction type term from the 
                     classifying variables, that is, separating the variable names 
                     with the \code{:} operator.}
- \item{differences}{a \code{matrix} containing all pairwise differences between
+\item{vcov}{a \code{matrix} containing the variance matrix of the predictions; it is used in 
+                    computing the variance of linear transformations of the predictions.}
+\item{differences}{a \code{matrix} containing all pairwise differences between
                     the predictions; it should have the same number of rows and columns as there are
                     rows in \code{predictions}.}
  \item{p.differences}{a \code{matrix} containing p-values for all pairwise differences 
@@ -171,12 +173,24 @@
 }
 \value{An \code{alldiffs} object that is a list with components 
        \code{predictions} containing the predictions and 
-       their standard errors, \code{differences} containing all pairwise 
+       their standard errors, \code{vcov} containing the variance matrix of the 
+       \code{predictions}, \code{differences} containing all pairwise 
        differences between the predictions, \code{p.differences} containing 
        p-values for all pairwise differences between the predictions, 
        \code{sed} containing the standard errors of all pairwise differences 
        between the predictions, and an \code{LSD} containing the mean, minimum 
-       and maximum LSDs.}
+       and maximum LSDs. 
+
+       The name of the \code{response}, the \code{response.title}, 
+       the \code{term}, the \code{classify}, \code{tdf}, \code{sortFactor} 
+       and the \code{sortOrder} will be set as attributes to the object. 
+       Note that the \code{classify} in an \code{alldiffs} object is based on the 
+       variables indexing the predictions, which may differ from the 
+       \code{classify} used to obtain the original predictions (for example, 
+       when the \code{alldiffs} objects stores a linear transformation of predictions.
+
+       See \code{\link{predictPlus.asreml}} for mnore information.
+}
 
 
 \author{Chris Brien}

@@ -10,9 +10,10 @@
 \arguments{
  \item{x}{An object of S3-class \code{alldiffs}.}
  \item{which}{A \code{character vector} containing a combination of 
-              \code{predictions}, \code{backtransforms}, \code{differences}, 
-              \code{p.differences}, \code{sed}, \code{LSD} and \code{all}.
-              These nominate which components of the alldiffs 
+              \code{predictions}, \code{vcov}, \code{backtransforms}, 
+              \code{differences}, \code{p.differences}, \code{sed}, 
+              \code{LSD} and \code{all}.
+              These nominate which components of the \code{alldiffs} 
               object to print.}
  \item{\dots}{further arguments passed to or from other methods.}
 }

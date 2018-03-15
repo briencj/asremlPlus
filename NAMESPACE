@@ -21,6 +21,8 @@ export(addrm.terms.asreml,
        infoCriteria.asreml,
        info.crit.asreml,
        info.crit,
+       linTransform, 
+       linTransform.alldiffs,
        newfit,
        newfit.asreml,
        newrcov.asrtests,
@@ -100,6 +102,7 @@ S3method(changeTerms, asrtests)
 S3method(chooseModel, asrtests) 
 S3method(estimateV, asreml) 
 S3method(infoCriteria, asreml) 
+S3method(linTransform, alldiffs)
 S3method(newfit, asreml) 
 S3method(plotPredictions, data.frame)
 S3method(plotPvalues, alldiffs)

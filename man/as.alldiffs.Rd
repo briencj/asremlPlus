@@ -11,8 +11,9 @@
              \code{classify}, \code{tdf}, \code{sortFactor} and \code{sortOrder}.
              which will be set to the values supplied or \code{NULL} if none are supplied.}
 
-\usage{as.alldiffs(predictions, differences = NULL, p.differences = NULL, 
-            sed = NULL, LSD = NULL, backtransforms = NULL, 
+\usage{as.alldiffs(predictions, vcov = NULL, differences = NULL, 
+            p.differences = NULL, sed = NULL, LSD = NULL, 
+            backtransforms = NULL, 
             response = NULL, response.title = NULL, 
             term = NULL, classify = NULL, tdf = NULL, 
             sortFactor = NULL, sortOrder = NULL)}
@@ -44,7 +45,9 @@
                     the matrix should be of the same size as that for \code{differences}.}
  \item{sed}{a \code{matrix} containing the standard errors of all pairwise differences 
                     between the predictions; they are used in computing the p-values.}
- \item{LSD}{a \code{data.frame} containing the mean, minimum and maximum LSD for determining             
+ \item{vcov}{a \code{matrix} containing the variance matrix of the predictions; it is used in 
+                    computing the variance of linear transformations of the predictions.}
+\item{LSD}{a \code{data.frame} containing the mean, minimum and maximum LSD for determining             
                     the significance of pairwise differences, the mean LSD being calculated using 
                     the square root of the mean of the variances of pairwise differences.}
  \item{backtransforms}{a \code{data.frame} containing the backtransformed values of the predicted values 
@@ -89,11 +92,22 @@
 }
 \value{An object of S3-class \code{alldiffs} that consists of a \code{list} 
                 containing the following components as desribed in the arguments above: 
-                \code{predictions}, \code{differences}, \code{p.differences}, \code{sed}, 
+                \code{predictions}, \code{vcov}, \code{differences}, \code{p.differences}, \code{sed}, 
                 \code{LSD} and \code{backtransforms} and with attributes \code{names}, 
                 \code{class}, \code{response}, \code{response.title}, \code{term}, 
                 \code{classify}, \code{tdf}, \code{meanLSD}, \code{sortFactor} and \code{sortOrder}. 
-                The last two attributes are also set by \code{\link{sort.alldiffs}}.}
+                The last two attributes are also set by \code{\link{sort.alldiffs}}.
+
+                The name of the \code{response}, the \code{response.title}, 
+                the \code{term}, the \code{classify}, \code{tdf}, \code{sortFactor} 
+                and the \code{sortOrder} will be set as attributes to the object. 
+                Note that the \code{classify} in an \code{alldiffs} object is based on the 
+                variables indexing the predictions, which may differ from the 
+                \code{classify} used to obtain the original predictions (for example, 
+                when the \code{alldiffs} objects stores a linear transformation of predictions.
+
+                See \code{\link{predictPlus.asreml}} for mnore information.
+}
 
 
 \author{Chris Brien}

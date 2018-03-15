@@ -4,7 +4,10 @@
 \title{Forms the predictions and associated statistics for a term, 
        using an asreml object and a wald.tab and taking into account that a 
        numeric vector and a factor having parallel values may occur in 
-       the model. It stores the results in an object of 
+       the model. If a linear transformation is specified then the values of 
+       the linear transformation of predictions are returned, along with 
+       their standard errors and the pairwise differences and associated 
+       statistics. It stores the results in an object of 
        class alldifffs and may print the results. 
        It can be used when there are not parallel values.}
 \description{This function forms the predictions for \code{term} using 
@@ -44,12 +47,14 @@
 
              If a transformation has been applied (any one of 
              \code{transform.power} is not one, \code{scale} is  not one and 
-             \code{offset} is nonzero), the back-transforms of the predicted 
+             \code{offset} is nonzero), the backtransforms of the transformed 
              values and their lower and upper confidence intervals are added 
              to a \code{data.frame} that is consistent with an object of class 
              \code{asremlPredict}, such as is stored in the \code{pvals} 
              component of the \code{prediction} component of the value produced 
-             by \code{predict.asreml}. This \code{data.frame} is added to the 
+             by \code{predict.asreml}. If \code{transform.power} is other than 
+             one, the \code{standard.error} column of the \code{data.frame} 
+             is set to \code{NA}. This \code{data.frame} is added to the 
              \code{alldiffs} object as a \code{list} component called 
              \code{backtransforms}.
 
@@ -59,11 +64,13 @@
              and is achieved using \code{\link{sort.alldiffs}}.
 }
 \usage{
-\method{predictPlus}{asreml}(asreml.obj, classify, term = NULL, titles = NULL,  
+\method{predictPlus}{asreml}(asreml.obj, classify, term = NULL, 
+            linear.transformation = NULL, titles = NULL,  
             x.num = NULL, x.fac = NULL,  
             x.pred.values = NULL, x.plot.values = NULL, 
             error.intervals = "Confidence", avsed.tolerance = 0.25, 
-            meanLSD.type = "overall", LSDby = NULL, pairwise = TRUE, 
+            meanLSD.type = "overall", LSDby = NULL, 
+            pairwise = TRUE, Vmatrix = FALSE, 
             tables = "all" , level.length = NA, 
             transform.power = 1, offset = 0, scale = 1, 
             inestimable.rm = TRUE, 
@@ -84,6 +91,28 @@
                that was fitted using \code{asreml} and that corresponds 
                to \code{classify}. It only needs to be specified when 
                it is different to \code{classify}.}
+ \item{linear.transformation}{a \code{\link{formula}} or a \code{\link{matrix}}. 
+               If a \code{\link{formula}} is given then it is taken to be a submodel of 
+               the model term corresponding to the \code{classify}. The projection matrix 
+               that transforms the \code{predictions} so that they conform to the submodel 
+               is obtained; the submodel should involving the variables in the 
+               \code{classify}. For example, 
+               for \code{classify} set to \code{"A:B"}, the submodel \code{~ A + B} will 
+               result in the \code{predictions} for the combinations of 
+               \code{A} and \code{B} being made additive for the \code{\link{factor}s} 
+               \code{A} and \code{B}.
+               
+               If a \code{\link{matrix}} is provided then it will be 
+               used to apply the linear transformation to the \code{predictions}. 
+               It might be a contrast \code{\link{matrix}} or a \code{\link{matrix}} of 
+               weights for a factor used to obtain the weighted average over that factor. 
+               The number of rows in the \code{\link{matrix}} should equal the 
+               number of linear combinations of the \code{predictions} desired and 
+               the number of columns should equal the number of \code{predictions}.
+               
+               In either case, as well as the values of the linear combinations, 
+               their standard errors, pairwise differences and associated statistics 
+               are returned.}
  \item{titles}{A \code{\link{list}}, each component of which is named for a column in 
                the \code{data.frame} for \code{asreml.obj} and contains a 
                \code{character string} giving a title to use 
@@ -165,9 +194,13 @@
              \code{"differences"} or \code{"all"} or \code{error.intervals} is 
              equal to \code{"halfLeastSignificant"}, they will be stored 
              irrespective of the value of \code{pairwise}.}
+\item{Vmatrix}{A \code{\link{logical}} indicating whether the variance matrix of the 
+             \code{predictions} will be stored as a component of the \code{alldiffs} 
+             object that is returned. If \code{linear.transformation} is set, it will 
+             be stored irrespective of the value of \code{Vmatrix}.}
  \item{tables}{A \code{\link{character}} vector containing a combination of 
               \code{none}, 
-              \code{predictions}, \code{backtransforms}, \code{differences}, 
+              \code{predictions}, \code{vcov}, \code{backtransforms}, \code{differences}, 
               \code{p.differences}, \code{sed}, \code{LSD} and \code{all}.
               These nominate which components of the \code{alldiffs} 
               object to print.}
@@ -187,7 +220,7 @@
                before adding any offset and applying any power transformation.}
  \item{inestimable.rm}{A \code{logical} indicating whether rows for  predictions 
                that are not estimable are to be removed from the components of 
-               thealldiffs object.}
+               the \code{alldiffs} object.}
 \item{sortFactor}{A \code{character} containing the name of the 
               \code{factor} that indexes the set of predicted values that determines 
               the sorting of the \code{alldiffs} components by 
@@ -256,7 +289,8 @@
               functions are invoked; if FALSE then no output is displayed.}
  \item{\dots}{further arguments passed to \code{predict.asreml}.}
 }
-\value{An \code{alldiffs} object with predictions and their standard 
+\value{For \code{linear.transformations} set to \code{NULL}, an object of S3-class 
+       \code{alldiffs} with predictions and their standard 
        errors and, depending on the settings of the arguments, all pairwise 
        differences between predictions, their standard errors and p-values 
        and LSD statistics.  Also, unless the \code{sortFactor} or \code{sortOrder} 
@@ -269,8 +303,11 @@
        In addition, if necessary, the order of the columns of the variables in the 
        \code{predictions} component are changed to match their order in the \code{classify}.
 
-           If \code{power.transform} is not one, it will 
-           contain a \code{data.frame} with the backtransformed predictions. 
+           If \code{transform.power} or \code{scale} is not one or \code{offset} 
+           is not zero, it will contain a \code{data.frame} with the backtransformed 
+           linear transformation of the predictions. The backtransformation will, after 
+           backtransforming for any power transformation, subtract the \code{offset} 
+           and then divide by the \code{scale}.
            
            If \code{error.intervals} is not \code{"none"}, then the 
            \code{predictions} component and, if present, the 
@@ -282,12 +319,24 @@
               \code{StandardError} or \code{halfLeastSignificant}; 
            3) the third component will be \code{limits}.
 
-           The name of the \code{response}, the \code{term}, the \code{classify} 
-           and \code{tdf}, as well as the degrees of freedom 
-           of the standard error, will be set as attributes to the object.}
+           The name of the \code{response}, the \code{response.title}, 
+           the \code{term}, the \code{classify}, \code{tdf}, \code{sortFactor} 
+           and the \code{sortOrder} will be set as attributes to the object. 
+           Note that the \code{classify} in an \code{alldiffs} object is based on the 
+           variables indexing the predictions, which may differ from the 
+           \code{classify} used to obtain the original predictions (for example, 
+           when the \code{alldiffs} objects stores a linear transformation of predictions.
+           
+           For \code{linear.transformations} set to other than \code{NULL}, 
+           an \code{alldiffs} object with the \code{linear.transformation} 
+           applied to the \code{predictions} and their standard errors and, 
+           depending on the settings of the arguments, all pairwise 
+           differences between the linearly transformed predictions, their 
+           standard errors and p-values and LSD statistics. 
+           (See also \code{\link{linTransform.alldiffs}}.)}
 \author{Chris Brien}
-\seealso{\code{\link{as.alldiffs}}, \code{\link{print.alldiffs}}, \code{\link{sort.alldiffs}},  
-         \code{\link{subset.alldiffs}}, \cr 
+\seealso{\code{\link{as.alldiffs}}, \code{\link{print.alldiffs}}, \code{\link{linTransform.alldiffs}}, 
+         \code{\link{sort.alldiffs}},  \code{\link{subset.alldiffs}}, \cr 
          \code{\link{allDifferences.data.frame}}, 
          \code{\link{redoErrorIntervals.alldiffs}},  \code{\link{recalcLSD.alldiffs}},  \cr
          \code{\link{predictPresent.asreml}}, 

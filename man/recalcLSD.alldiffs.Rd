@@ -10,7 +10,8 @@
 \arguments{
  \item{alldiffs.obj}{An alldiffs object that is a list with components 
        \code{predictions} containing the predictions and 
-       their standard errors, \code{differences} containing all pairwise 
+       their standard errors, \code{vcov} containing the variance matrix of the 
+       \code{predictions}, \code{differences} containing all pairwise 
        differences between the predictions, \code{p.differences} containing 
        p-values for all pairwise differences between the predictions, 
        \code{sed} containing the standard errors of all pairwise differences 
@@ -35,7 +36,8 @@
 }
 \value{An alldiffs object that is a list with components 
        \code{predictions} containing the predictions and 
-       their standard errors, \code{differences} containing all pairwise 
+       their standard errors, \code{vcov} containing the variance matrix of the 
+       \code{predictions}, \code{differences} containing all pairwise 
        differences between the predictions, \code{p.differences} containing 
        p-values for all pairwise differences between the predictions, 
        \code{sed} containing the standard errors of all pairwise differences 

@@ -34,7 +34,8 @@
                LSDby = NULL, avsed.tolerance = 0.25, titles = NULL, 
                colour.scheme = "colour", save.plots = FALSE, 
                transform.power = 1, offset = 0, scale = 1, 
-               pairwise = TRUE, tables = "all", level.length = NA, 
+               pairwise = TRUE, Vmatrix = FALSE, 
+               tables = "all", level.length = NA, 
                alpha = 0.05, inestimable.rm = TRUE, 
                sortFactor = NULL, sortWithinVals = NULL, 
                sortOrder = NULL, decreasing = FALSE, 
@@ -182,27 +183,29 @@
  \item{offset}{A number that has been added to each value of the response after any scaling 
                and before applying any power transformation. Unless it is equal to 0, the 
                default, back-transforms of the predictions will be obtained and presented in 
-               tables or graphs as appropriate. The back-transform will, after backtransforming 
-               for any power transformation and scaling for any scale transformation, subtract 
-               the \code{offset}.}
+               tables or graphs as appropriate. The backtransformation will, after 
+               backtransforming for any power transformation, subtract the \code{offset}.}
  \item{scale}{A number by which each value of the response has been multiply before adding 
                any offset and applying any power transformation. Unless it is equal to 1, the
                default, back-transforms of the predictions will be obtained and presented in 
-               tables or graphs as appropriate. The back-transform will, after backtransforming 
-               for any power transformation, divide by the \code{scale}.}
+               tables or graphs as appropriate. The backtransformation will, after backtransforming 
+               for any power transformation and then subtracting the offset, divide by the \code{scale}.}
  \item{pairwise}{A logical indicating whether all pairise differences of the
                 \code{predictions} and their standard errors and p-values are to be 
                 computed and stored. If \code{tables} is equal to \code{"differences"} 
                 or \code{"all"} or \code{error.intervals} is equal to 
                 \code{"halfLeastSignificant"}, they will be stored irrespective of the 
                 value of \code{pairwise}.}
- \item{tables}{The elements of the \code{alldiffs} object to print. Possible
-             values are \code{"none"}, \code{"predictions"}, \code{"backtransforms"}, 
-             \code{"nodifferences"}, \code{"differences"} and \code{"all"}. 
-             The option \code{"nodifferences"} will result in \code{"predictions"} and 
-             \code{"backtransforms"} being printed. The option \code{"differences"} will 
-             also result in the printing of the \code{predictions} from the 
-             \code{alldiffs} object.}
+\item{Vmatrix}{A \code{\link{logical}} indicating whether the variance matrix of the 
+             \code{predictions} will be stored as a component of the \code{alldiffs} 
+             object that is returned. If \code{linear.transformation} is set, it will 
+             be stored irrespective of the value of \code{Vmatrix}.}
+ \item{tables}{A \code{character vector} containing a combination of 
+              \code{predictions}, \code{vcov}, \code{backtransforms}, 
+              \code{differences}, \code{p.differences}, \code{sed}, 
+              \code{LSD} and \code{all}.
+              These nominate which components of the \code{alldiffs} 
+              object to print.}
  \item{level.length}{The maximum number of characters from the the levels of 
             factors to use in the row and column labels of the tables produced by 
             \code{\link{allDifferences.data.frame}}.}
@@ -256,7 +259,7 @@
             \code{\link{predictPlus.asreml}} and to \code{ggplot} 
             via \code{\link{plotPredictions.data.frame}}.}
 }
-\value{a list containing an \code{alldiffs} object for each \code{term} for 
+\value{a \code{\link{list}} containing an \code{alldiffs} object for each \code{term} for 
              which tables are produced. The names of the components of this list are 
              the \code{terms} with full-stops (\code{.}) replacing colons (\code{:}).}
 
