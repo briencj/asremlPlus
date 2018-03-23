@@ -2415,7 +2415,9 @@
   non.x.terms <- setdiff(vars, c(x.fac, x.num))
   n.non.x <- length(non.x.terms)
   if ((length(vars) != n.non.x && n.non.x > 2) || (length(vars) == n.non.x && n.non.x > 3)) 
-      stop ("Sorry but plotting for prediction terms with more than 3 variables not implemented")
+      stop("Sorry but plotting for prediction terms with more than 3 variables ", 
+           "not implemented; \n", 
+           "One possibility is to use facCombine.alldiffs to combine some factors.")
   #Determine plotting order of non.x.vars
   if (!is.null(nonx.fac.order)) 
   { 
@@ -2843,6 +2845,7 @@ sliceLSDs <- function(alldiffs.obj, by, t.value, alpha = 0.05)
 }
 
 "predictPresent.asreml" <- function(asreml.obj, terms, 
+                                    linear.transformation = NULL, 
                                     wald.tab = NULL, dDF.na = "residual", 
                                     dDF.values = NULL, 
                                     x.num = NULL, x.fac = NULL, nonx.fac.order = NULL, 
@@ -2934,6 +2937,7 @@ sliceLSDs <- function(alldiffs.obj, by, t.value, alpha = 0.05)
     }
       diffs <- predictPlus.asreml(asreml.obj = asreml.obj, 
                                   classify = classify.term, term = term, 
+                                  linear.transformation = linear.transformation, 
                                   titles = titles, 
                                   x.num = x.num, x.fac = x.fac,  
                                   x.pred.values = x.pred.values, 
@@ -2960,6 +2964,7 @@ sliceLSDs <- function(alldiffs.obj, by, t.value, alpha = 0.05)
       #No need for x.pred.values or to modify term
       diffs <- predictPlus.asreml(asreml.obj = asreml.obj, 
                                   classify = classify.term, 
+                                  linear.transformation = linear.transformation, 
                                   titles = titles,   
                                   x.num = x.num, x.fac = x.fac,  
                                   x.plot.values = x.plot.values, 

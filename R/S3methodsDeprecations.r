@@ -25,6 +25,7 @@ redoErrorIntervals <- function(alldiffs.obj, ...) UseMethod("redoErrorIntervals"
 setvarianceterms <- function(call, ...) UseMethod("setvarianceterms")
 
 allDifferences <- function(predictions, ...) UseMethod("allDifferences")
+facCombine <- function(object, ...) UseMethod("facCombine")
 plotPvalues <- function(object, ...) UseMethod("plotPvalues")
 plotVariofaces <- function(data, ...) UseMethod("plotVariofaces")
 plotPredictions <- function(data, ...) UseMethod("plotPredictions")

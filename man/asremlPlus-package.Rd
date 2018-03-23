@@ -36,6 +36,9 @@
       \tab fitted asreml object, (ii) a pseudo-anova table for the \cr
       \tab fixed and (iii) a history of changes and hypthesis testing \cr
       \tab used in obtaining the model. \cr
+\code{\link{facCombine.alldiffs}}
+      \tab Combines several factors into one in the components of \cr
+      \tab an alldiffs object.  \cr
 \code{\link{print.alldiffs}}
       \tab Prints the values in an 'alldiffs' object in a nice format. \cr
 \code{\link{print.asrtests}}

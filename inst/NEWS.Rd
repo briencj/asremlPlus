@@ -1,5 +1,16 @@
 \name{news}
 \title{News for Package asremlPlus}
+\section{asremlPlus Version 4.0-27 (2018-03-23)}{
+  \itemize{
+    \item{Add new function facCombine.alldiffs.}
+    \item{Add \code{factors.per.grid} plotPvalues.alldiffs to allow automatic calculation of grid spacing.}
+  }
+}
+\section{asremlPlus Version 4.0-26 (2018-03-16)}{
+  \itemize{
+    \item{Add argument \code{linear.transformation} to predictPresent.}
+  }
+}
 \section{asremlPlus Version 4.0-25 (2018-03-15)}{
   \itemize{
     \item{Minor bug fix in print.alldiffs.}

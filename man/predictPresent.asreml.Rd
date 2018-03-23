@@ -25,6 +25,7 @@
 }
 \usage{
 \method{predictPresent}{asreml}(asreml.obj, terms, 
+               linear.transformation = NULL, 
                wald.tab = NULL, dDF.na = "residual", dDF.values = NULL, 
                x.num = NULL, x.fac = NULL, nonx.fac.order = NULL,  
                x.pred.values = NULL, x.plot.values = NULL, 
@@ -45,6 +46,29 @@
  \item{asreml.obj}{\code{asreml} object for a fitted model.}
  \item{terms}{a \code{character vector} giving the terms for which predictions 
                  are required.}
+ \item{linear.transformation}{a \code{\link{formula}} or a \code{\link{matrix}} specifying 
+               a linear transformation to be applied to the predictions. 
+               If a \code{\link{formula}} is given then it is taken to be a submodel of 
+               the model term corresponding to the \code{classify}. The projection matrix 
+               that transforms the \code{predictions} so that they conform to the submodel 
+               is obtained; the submodel should involving the variables in the 
+               \code{classify}. For example, 
+               for \code{classify} set to \code{"A:B"}, the submodel \code{~ A + B} will 
+               result in the \code{predictions} for the combinations of 
+               \code{A} and \code{B} being made additive for the \code{\link{factor}s} 
+               \code{A} and \code{B}.
+               
+               If a \code{\link{matrix}} is provided then it will be 
+               used to apply the linear transformation to the \code{predictions}. 
+               It might be a contrast \code{\link{matrix}} or a \code{\link{matrix}} of 
+               weights for a factor used to obtain the weighted average over that factor. 
+               The number of rows in the \code{\link{matrix}} should equal the 
+               number of linear combinations of the \code{predictions} desired and 
+               the number of columns should equal the number of \code{predictions}.
+               
+               In either case, as well as the values of the linear combinations, 
+               their standard errors, pairwise differences and associated statistics 
+               are returned in the \code{alldiffs} object.}
  \item{wald.tab}{a \code{data frame} containing the pseudo-anova table for the 
                  fixed terms produced by a call to \code{wald.asreml}. The main 
                  use of it here is in getting denominator degrees of freedom when
@@ -261,7 +285,9 @@
 }
 \value{a \code{\link{list}} containing an \code{alldiffs} object for each \code{term} for 
              which tables are produced. The names of the components of this list are 
-             the \code{terms} with full-stops (\code{.}) replacing colons (\code{:}).}
+             the \code{terms} with full-stops (\code{.}) replacing colons (\code{:}). 
+             Plots are also preduced depending on the setting of the \code{plot} 
+             argument.}
 
 \author{Chris Brien}
 \seealso{\code{\link{predictPlus.asreml}}, \code{\link{allDifferences.data.frame}}, 

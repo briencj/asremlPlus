@@ -17,7 +17,8 @@
 }
 \usage{plotPvalues(object, ...)
 \method{plotPvalues}{alldiffs}(object, sections = NULL, 
-            gridspacing = 0, show.sig = FALSE, triangles = "both", 
+            gridspacing = 0, factors.per.grid = 0, 
+            show.sig = FALSE, triangles = "both", 
             title = NULL, axis.labels = TRUE, sep=",", 
             colours = RColorBrewer::brewer.pal(3, "Set2"), 
             ggplotFuncs = NULL, sortFactor = NULL, 
@@ -34,13 +35,22 @@
                  to break the plot into sections. A separate plot will be produced for 
                  each observed combination of the levels of these factors.}
  \item{gridspacing}{A \code{numeric} specifying the number(s) of rows and columns 
-             that form groups in the grid of differences. This is most useful when  
+             that form groups in the grid of differences. An alternative is to specify 
+             the \code{factors.per.grid} argument to have the grid spacings automatically 
+             calculated. Grids are most useful when  
              two or more factors index the rows and columns. If a single, nonzero 
              number, \emph{k} say, is given then a grid line is placed after every 
              \emph{k}th  row and column. If a vector of values is given then the 
              number of grid lines is the length of the vector and the spacing between 
              each is specified by the elements of the vector.}
- \item{show.sig}{A \code{logical} that specifies whether asterisks indicating the level 
+  \item{factors.per.grid}{A \code{numeric} specifying the number of factors to include 
+             within each grid of differences. The \code{gridspacing} will then be 
+             computed based on the numbers of combinations observed within the 
+             levels of the remaining factors in a single plot. The \code{gridspacing} 
+             argument to this function will be ignored if \code{factors.per.grid} is 
+             greater than zero. Grids are most useful when two or more factors index the 
+             rows and columns of each plot.}
+\item{show.sig}{A \code{logical} that specifies whether asterisks indicating the level 
              of significance are to be added to the plot. If they are then 
              `***' indicates that \eqn{p \leq 0.001}{p <= 0.001}, 
              `**' that \eqn{ 0.001 < p \leq 0.01}{0.001 < p <= 0.01}, 

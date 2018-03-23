@@ -219,6 +219,59 @@ makePredictionLabels <- function(predictions, classify, response = NULL,
   return(list(predictions = predictions, pred.lev = pred.lev))
 }
 
+facCombine.alldiffs <- function(object, factors, order="standard", combine.levels=TRUE, 
+                                sep="_", level.length = NA,  ...)
+{
+  if (any(!(factors %in% names(object$predictions))))
+    stop("Some factors are not in the predictions component of object")
+  if (length(factors) <= 1)
+    stop("Need at least two factors to combine")
+  comb.fac <- fac.combine(object$predictions[factors], 
+                          order = order, combine.levels = combine.levels, sep = sep)
+  newfac <- paste(factors, collapse = sep)
+  fstfac <- match(factors[1], names(object$predictions))
+  object$predictions[fstfac] <- comb.fac
+  names(object$predictions)[fstfac] <- newfac
+  object$predictions <- object$predictions[-c(match(factors[-1], names(object$predictions)))]
+  
+  if (!is.null(object$backtransforms))
+  {
+    fstfac <- match(factors[1], names(object$backtransforms))
+    object$backtransforms[fstfac] <- comb.fac
+    names(object$backtransforms)[fstfac] <- newfac
+    object$backtransforms <- object$backtransforms[-c(match(factors[-1], 
+                                                            names(object$backtransforms)))]
+  }
+  
+  classify <- attr(object, which = "classify")
+  class.facs <- fac.getinTerm(classify, rmfunction = TRUE)
+  class.facs[fstfac] <- newfac
+  class.facs <- class.facs[-c(match(factors[-1], class.facs))]
+  classify <- fac.formTerm(class.facs)
+  attr(object, which = "classify") <- classify
+  response <- attr(object, which = "response")
+  pred.labs <- makePredictionLabels(object$predictions, classify, response)
+  pred.lev <- pred.labs$pred.lev
+  
+  
+  if (!is.null(object$vcov))
+  {
+    colnames(object$vcov) <- rownames(object$vcov) <- pred.lev
+  }
+  if (!is.null(object$differences))
+  {
+    colnames(object$differences) <- rownames(object$differences) <- pred.lev
+  }
+  if (!is.null(object$p.differences))
+  {
+    colnames(object$p.differences) <- rownames(object$p.differences) <- pred.lev
+  }
+  if (!is.null(object$sed))
+  {
+    colnames(object$sed) <- rownames(object$sed) <- pred.lev
+  }
+  return(object)
+}
 
 subset.alldiffs <- function(x, subset, ...)
 {

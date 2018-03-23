@@ -17,6 +17,8 @@ export(addrm.terms.asreml,
        choose.model.asrtests,
        estimateV,
        estimateV.asreml,
+       facCombine,
+       facCombine.alldiffs,
        infoCriteria,
        infoCriteria.asreml,
        info.crit.asreml,
@@ -101,6 +103,7 @@ S3method(bootREMLRT, asreml)
 S3method(changeTerms, asrtests) 
 S3method(chooseModel, asrtests) 
 S3method(estimateV, asreml) 
+S3method(facCombine, alldiffs)
 S3method(infoCriteria, asreml) 
 S3method(linTransform, alldiffs)
 S3method(newfit, asreml) 

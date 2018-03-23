@@ -73,7 +73,8 @@
 }
 
 "plotPvalues.alldiffs" <- function(object, sections = NULL, 
-                                   gridspacing = 0, show.sig = FALSE, 
+                                   gridspacing = 0, factors.per.grid = 0, 
+                                   show.sig = FALSE, 
                                    triangles = "both", 
                                    title = NULL, axis.labels = TRUE, sep=",", 
                                    colours = RColorBrewer::brewer.pal(3, "Set2"), 
@@ -117,6 +118,28 @@
   names(p)[match("value", names(p))] <- "p"
 #  names(p)[c(1,2)] <- paste(classify, c(".1",".2"), sep = "")
   
+  #prepare for plotting
+  n <- nrow(p)
+  facs <- fac.getinTerm(classify)
+  if (any(is.na(match(facs, names(object$predictions)))))
+    stop("Some factors in the classify for object are not in the predictions")
+  else
+    facs[match(facs, names(object$predictions))] <- facs
+  nfacs <- length(facs)
+  #Function to calculate gridspacing
+  autogridspace <- function(object, plotfacs, factors.per.grid = 0)
+  {
+    gridspace = 0
+    if (length(plotfacs) > 1) #only compute gridspace for more than one factor per section
+    {
+      gridfacs <- plotfacs[order(1:(length(plotfacs)-factors.per.grid), decreasing = TRUE)]
+      gridspace <- as.vector(table(object[[gridfacs]]))
+      gridspace <- gridspace[-length(gridspace)]
+    }
+    return(gridspace)
+  }
+  
+  #Do plots
   if (is.null(sections))
   { 
     pairname <- NULL
@@ -127,6 +150,9 @@
 
     }
     #Do single plot
+    if (factors.per.grid > 0)
+      gridspacing <- autogridspace(object = object$predictions, plotfacs = facs, 
+                                   factors.per.grid = factors.per.grid)
     if (is.null(title))
       plotPvalues.data.frame(object = p, x = "X1", y = "X2", 
                              gridspacing = gridspacing, show.sig = show.sig, 
@@ -140,13 +166,9 @@
                              title = title, axis.labels = pairname, 
                              colours = colours, ggplotFuncs = ggplotFuncs)
     
-  } else
+  } else #have sections
   { 
-    #prepare for plot
-    n <- nrow(p)
-    facs <- fac.getinTerm(classify)
-    facs[match(facs, names(object$predictions))] <- facs
-    nfacs <- length(facs)
+    #Prepare for sectioning
     sec.pos <- match(sections, facs)
     pairdiffs <- facs[-match(sections, facs)]
     pd.pos <- match(pairdiffs, facs)
@@ -187,9 +209,18 @@
       secname <- paste(sections, collapse = ', ')
       pairname <- paste(pairdiffs, collapse = ', ')
     }
+    if (factors.per.grid > 0)
+       object$predictions$sections <- fac.combine(object$predictions[sections], 
+                                                 combine.levels = TRUE)
     for (j in sect.lev)
     { 
       psect <- p[p$sections1==j & p$sections2==j, ]
+      if (factors.per.grid > 0)
+      {
+        objsect <- object$predictions[object$predictions$sections == j,]
+        gridspacing <- autogridspace(object = objsect, plotfacs = pairdiffs, 
+                                     factors.per.grid = factors.per.grid)
+      }
       if (is.null(title))
         plotPvalues.data.frame(object = psect, x = "X1", y = "X2", 
                                gridspacing = gridspacing, show.sig = show.sig, 
