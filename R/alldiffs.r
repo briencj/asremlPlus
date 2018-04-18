@@ -1006,7 +1006,9 @@ redoErrorIntervals.alldiffs <- function(alldiffs.obj, error.intervals = "Confide
                                     ...)
 {
   #Check if want a linear transformation
-  if (!is.null(linear.transformation))
+  if (is.null(linear.transformation))
+    warning("A linear transformation has not been specified")
+  else
   {
     #Check have vcov
     if (is.null(alldiffs.obj$vcov))

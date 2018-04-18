@@ -1,5 +1,11 @@
 \name{news}
 \title{News for Package asremlPlus}
+\section{asremlPlus Version 4.0-28 (2018-04-18)}{
+  \itemize{
+    \item{Add new function facCombine.alldiffs.}
+    \item{Fix minor bug in plotPvalues.alldiffs associated with \code{factors.per.grid} when there ais more than one factor indexing the different grids.}
+  }
+}
 \section{asremlPlus Version 4.0-27 (2018-03-23)}{
   \itemize{
     \item{Add new function facCombine.alldiffs.}

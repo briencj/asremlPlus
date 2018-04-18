@@ -133,7 +133,7 @@
     if (length(plotfacs) > 1) #only compute gridspace for more than one factor per section
     {
       gridfacs <- plotfacs[order(1:(length(plotfacs)-factors.per.grid), decreasing = TRUE)]
-      gridspace <- as.vector(table(object[[gridfacs]]))
+      gridspace <- as.vector(table(object[gridfacs]))
       gridspace <- gridspace[-length(gridspace)]
     }
     return(gridspace)

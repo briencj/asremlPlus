@@ -2074,6 +2074,8 @@
   tempcall <- list(...)
   if ("levels.length" %in% names(tempcall))
     stop("levels.length has been deprecated - use level.length")
+  if ("vcov" %in% names(tempcall))
+    stop("Use Vmatrix to request that the vcov matrix be saved")
 
   if (!is.null(wald.tab) & (!is.data.frame(wald.tab) || ncol(wald.tab) != 4))
     stop("wald.tab should be a 4-column data.frame -- perhaps extract Wald component from list")
@@ -2881,6 +2883,8 @@ sliceLSDs <- function(alldiffs.obj, by, t.value, alpha = 0.05)
   tempcall <- list(...)
   if ("levels.length" %in% names(tempcall))
     stop("levels.length has been deprecated - use level.length")
+  if ("vcov" %in% names(tempcall))
+    stop("Use Vmatrix to request that the vcov matrix be saved")
   
   if (!is.null(wald.tab) & (!is.data.frame(wald.tab) || ncol(wald.tab) != 4))
     stop("wald.tab should be a 4-column data.frame -- perhaps extract Wald component from list")
