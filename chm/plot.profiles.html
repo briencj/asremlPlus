@@ -1,0 +1,150 @@
+<html><head><title>Produces a trellis graph in which the values for an individual unit are plotted.</title>
+<meta http-equiv="Content-Type" content="text/html; charset=">
+<link rel="stylesheet" type="text/css" href="Rchm.css">
+</head>
+<body>
+
+<table width="100%"><tr><td>plot.profiles(sundry)</td><td align="right">R Documentation</td></tr></table><object type="application/x-oleobject" classid="clsid:1e2a7bd0-dab9-11d0-b93a-00c04fc99f9e">
+<param name="keyword" value="R:   plot.profiles">
+<param name="keyword" value=" Produces a trellis graph in which the values for an individual unit are plotted.">
+</object>
+
+
+<h2>Produces a trellis graph in which the values for an individual unit are plotted.</h2>
+
+
+<h3>Description</h3>
+
+<p>
+A response variable is plotted against an explanatory varaible, 
+such as time or distance, with plots for different combinations of the 
+levels of the conditioning factors placed in separate panels of the 
+trellis graph. Such plots, when produced from longitudinal data, are 
+called profile plots. Approximate confidence intervals (y +/- 2 *se) 
+are also plotted if the <code>se</code> argument is given.
+</p>
+
+
+<h3>Usage</h3>
+
+<pre>plot.profiles(formula, groups.factor, se=NULL, data=NULL, 
+                     type="b", black=F, title="Profile plot", xlab="", ylab="", 
+                     key=T, key.title, columns=2, ...)</pre>
+
+
+<h3>Arguments</h3>
+
+<table summary="R argblock">
+<tr valign="top"><td><code>formula</code></td>
+<td>
+A formula that specifies the response variable (Y), the 
+explanatory variable (X) and the conditioning factors 
+(A, B, C, ...) for the graph. It is of the form Y ~ X | A:B:C.</td></tr>
+<tr valign="top"><td><code>groups.factor</code></td>
+<td>
+The factor that indexes the different plots to be 
+grouped in to same panel. If <code>data</code> is specified it must contain 
+this factor.</td></tr>
+<tr valign="top"><td><code>se</code></td>
+<td>
+A numeric that contains the standard errors for the response. If 
+<code>data</code> is specified it must contain this numeric. When 
+<code>se</code> is given, it is used to produce approxinate confidence 
+intervals (y +/- 2 *se) for the response, that are also plotted.</td></tr>
+<tr valign="top"><td><code>data</code></td>
+<td>
+A data frame containing the variables, factors (incuding the 
+<code>groups.factor</code>) and the standard errors.</td></tr>
+<tr valign="top"><td><code>type</code></td>
+<td>
+Character string telling how to plot the x and y values: "l" for 
+lines, "b" for both points and lines.</td></tr>
+<tr valign="top"><td><code>black</code></td>
+<td>
+Logical specifying that, for plots of type "b", whether the 
+lines and symbols are to be coloured or black. Plots of type 
+"l" are always black.</td></tr>
+<tr valign="top"><td><code>title</code></td>
+<td>
+A title to be placed on the graph.</td></tr>
+<tr valign="top"><td><code>xlab</code></td>
+<td>
+A label for the X-axis of each panel.</td></tr>
+<tr valign="top"><td><code>ylab</code></td>
+<td>
+A label for the Y-axis of each panel.</td></tr>
+<tr valign="top"><td><code>key</code></td>
+<td>
+Logical indicating whether a key (legend) is to be included.</td></tr>
+<tr valign="top"><td><code>key.title</code></td>
+<td>
+The title to place on the key (legend) for the different 
+plots in the same panel.</td></tr>
+<tr valign="top"><td><code>columns</code></td>
+<td>
+The number of columns in the key or legend.</td></tr>
+<tr valign="top"><td><code>...</code></td>
+<td>
+Graphical parameters that are passed to <code>points</code> or 
+<code>lines</code>. By default, the trellis parameter list 
+<code>plot.symbol</code> controls character size (<code>cex</code>), 
+plotting symbol (<code>pch</code>), font, and color (<code>col</code>) for 
+points, and the <code>plot.line</code> parameters control line 
+width (<code>lwd</code>), line type (<code>lty</code>), and 
+color (<code>col</code>) for lines. If plotting both points and 
+lines (<code>type="b"</code>), the <code>plot.symbol</code> colors are 
+used. If plotting just lines (<code>type="l"</code>), the 
+<code>plot.line</code> line types are used.</td></tr>
+</table>
+
+<h3>Value</h3>
+
+<p>
+An object of class <code>trellis</code>, which is automatically plotted.</p>
+
+<h3>Warning</h3>
+
+<p>
+If the groups factor is in a data frame, the name of the 
+data frame must be specified as part of <code>groups.factor</code> argument.
+</p>
+
+
+<h3>Note</h3>
+
+<p>
+This function uses the <code>xyplot</code> function to produce the graph. 
+It is essentially an implementation of this function to produce 
+profile plots.
+</p>
+
+
+<h3>See Also</h3>
+
+<p>
+<code>xyplot</code>, <code>panel.xyplot</code>.
+</p>
+
+
+<h3>Examples</h3>
+
+<pre>
+plot.profiles(formula=Height ~ Day | Distance:Treatment, 
+  groups.factor=Plot, 
+  xlab="Day", ylab="Height (mm)", 
+  title="Profile plot for Height", key.title="Plot")
+
+plot.profiles(formula=R ~ Wavelength | Species, groups.factor=Rep, 
+  data=Spectra.vec, title="Spectra plots", key.title="Rep", columns=6)
+
+plot.profiles(predicted.value ~ Day | Area, groups.factor=Treatment, se=standard.error, 
+   data=pred, type="l", xlab="Day", ylab="Height (mm)", ylim=c(0,25), columns=3,
+   title="Plot of fitted splines (with approximate confidence intervals) for 0.5 km", 
+   key.title="Treatments")
+</pre>
+
+
+
+<hr><div align="center">[Package <em>sundry</em> version 0.3-0 <a href="00Index.html">Index]</a></div>
+
+</body></html>

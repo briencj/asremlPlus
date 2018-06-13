@@ -1,10 +1,16 @@
-# asremlPlus
+---
+title: "asremlPlus"
+output:
+  html_document:
+    keep_md: yes
+  pdf_document: default
+---
 
 [![Project Status: Active:  The project has reached a stable, usable state and is being actively developed.](http://www.repostatus.org/badges/latest/active.svg)](http://www.repostatus.org/#active)
 [![minimal R version](https://img.shields.io/badge/R%3E%3D-2.10.0-6666ff.svg)](https://cran.r-project.org/)
 [![CRAN_Status_Badge](http://www.r-pkg.org/badges/version/asremlPlus)](https://cran.r-project.org/package=asremlPlus)
-[![packageversion](https://img.shields.io/badge/Package%20version-4.0.28-orange.svg?style=flat-square)]()
-`[![Last-changedate](https://img.shields.io/badge/last%20change-2018--04--18-yellowgreen.svg)](/commits/master)
+[![packageversion](https://img.shields.io/badge/Package%20version-4.1.02-orange.svg?style=flat-square)]()
+`[![Last-changedate](https://img.shields.io/badge/last%20change-2018--06--13-yellowgreen.svg)](/commits/master)
 [![Licence](https://img.shields.io/github/license/mashape/apistatus.svg)](http://choosealicense.com/licenses/mit/)
 [![Downloads](https://cranlogs.r-pkg.org/badges/last-week/asremlPlus)](commits/master)
 
@@ -12,7 +18,7 @@
 
 asremlPlus is an R package that augments the use of `ASReml-R` and `ASReml4-R` in fitting mixed models.
 
-This version is compatible with both `ASReml-R` versions 3 and 4. `ASReml-R` version 4 is currently undergoing beta-testing and 
+This version is compatible with both `ASReml-R` versions 3 and 4.1, but not 4.0. `ASReml-R` version 4 is currently undergoing beta-testing and 
 has some changes in syntax that necessitate changes in asremlPlus. 
 
 Versions 4.x-xx of `asremlPlus` are a major revamp of the package and include substantial syntax changes. 
@@ -40,7 +46,7 @@ Version 2.0-12 of the package is available from CRAN so that you could first ins
 
 If you have not previously installed `asremlPlus` then you will need to install it dependencies:
 
-`install.packages(c("dae", "ggplot2", "reshape", "plyr", "stringr", "RColorBrewer", `
+`install.packages(c("dae", "ggplot2", "reshape", "plyr", "dplyr", "stringr", "RColorBrewer", `
 `                   "foreach", "parallel", "doParallel"))`
 
 ## What is does
@@ -75,7 +81,7 @@ They provide a computationally efficient algorithm for fitting mixed models usin
   Likelihood. They can be purchased from 'VSNi' <http://www.vsni.co.uk/> as `asreml-R`, 
   who will supply a zip file for local installation/updating.
   
-  It also imports [dae](<https://CRAN.R-project.org/package=dae>), [ggplot2](<https://CRAN.R-project.org/package=ggplot2>), `stats`, `methods`, `utils`, [reshape](<https://CRAN.R-project.org/package=reshape>), [plyr](<https://CRAN.R-project.org/package=plyr>), [stringr](<https://CRAN.R-project.org/package=stringr>), [RColorBrewer](<https://CRAN.R-project.org/package=RColorBrewer>), `grDevices`, 
+  It also imports [dae](<https://CRAN.R-project.org/package=dae>), [ggplot2](<https://CRAN.R-project.org/package=ggplot2>), `stats`, `methods`, `utils`, [reshape](<https://CRAN.R-project.org/package=reshape>), [plyr](<https://CRAN.R-project.org/package=plyr>), [dplyr](<https://CRAN.R-project.org/package=dplyr>), [stringr](<https://CRAN.R-project.org/package=stringr>), [RColorBrewer](<https://CRAN.R-project.org/package=RColorBrewer>), `grDevices`, 
 [foreach](<https://CRAN.R-project.org/package=foreach>), [parallel](<https://CRAN.R-project.org/package=parallel>), [doParallel](<https://CRAN.R-project.org/package=doParallel>).
 
 ## License

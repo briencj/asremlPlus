@@ -1,0 +1,102 @@
+<html><head><title>Performs REML likelihood ratio test.</title>
+<meta http-equiv="Content-Type" content="text/html; charset=">
+<link rel="stylesheet" type="text/css" href="Rchm.css">
+</head>
+<body>
+
+<table width="100%"><tr><td>reml.lrt(sundry)</td><td align="right">R Documentation</td></tr></table><object type="application/x-oleobject" classid="clsid:1e2a7bd0-dab9-11d0-b93a-00c04fc99f9e">
+<param name="keyword" value="R:   reml.lrt">
+<param name="keyword" value=" Performs REML likelihood ratio test.">
+</object>
+
+
+<h2>Performs REML likelihood ratio test.</h2>
+
+
+<h3>Description</h3>
+
+<p>
+Extracts the REML log likelhood and number of variance parameters 
+from two <code>asreml</code> objects. It assumes that the second <code>asreml</code> 
+object is the result of fitting a model that is a reduced version of the 
+model for the first object. In the case where the reduced model is obtained 
+by setting positively-constrained variance parameters in the full model to 
+zero, the <code>positive.zero</code> argument should be set to <code>TRUE</code> so that 
+the p-value is computed using a mixture of chi-square distributions as 
+described in Self and Liang (1987).
+</p>
+
+
+<h3>Usage</h3>
+
+<pre>reml.lrt(full.asreml, reduced.asreml, positive.zero=F)</pre>
+
+
+<h3>Arguments</h3>
+
+<table summary="R argblock">
+<tr valign="top"><td><code>full.asreml</code></td>
+<td>
+<code>asreml</code> object for the full model.</td></tr>
+<tr valign="top"><td><code>reduced.asreml</code></td>
+<td>
+<code>asreml</code> object for the reduced model.</td></tr>
+<tr valign="top"><td><code>positive.zero</code></td>
+<td>
+Indicates whether the hypothesized values for the 
+varaince components being tested are on the boundary 
+of the parameter space. For example, this is be true 
+for positively-constrained variance components that, 
+under the reduced model, are zero.</td></tr>
+</table>
+
+<h3>Value</h3>
+
+<p>
+A data frame containg the log of the likelihood ratio, its degrees of 
+freedom and its p-value.</p>
+
+<h3>Note</h3>
+
+<p>
+The degrees of freedom for the test are computed as the difference 
+in the number of variance parameters that are unfixed for the two 
+models.  <br>
+</p>
+<p>
+This procedure is only approriate when the null hypothesis is that all 
+parameters are on the boundary of the parameter space or that all 
+parameters are in the interior of the parameter space. Mixed cases 
+have been discussed by Self and Liang (1987), but are not implemented 
+here.
+</p>
+
+
+<h3>References</h3>
+
+<p>
+Self, S.G., and Liang, K-Y. (1987) Asymptotic Properties of 
+Maximum Likelihood Estimators and Likelihood Ratio Tests Under 
+Nonstandard Conditions. <EM>Journal of the American 
+Statistical Association</EM>, <B>82</B>, 605-10.
+</p>
+
+
+<h3>See Also</h3>
+
+<p>
+<code><a href="info.crit.html">info.crit</a></code>
+</p>
+
+
+<h3>Examples</h3>
+
+<pre>
+    reml.lrt(ICV.max, ICV.red, positive.zero=T)
+</pre>
+
+
+
+<hr><div align="center">[Package <em>sundry</em> version 0.1-0 <a href="00Index.html">Index]</a></div>
+
+</body></html>

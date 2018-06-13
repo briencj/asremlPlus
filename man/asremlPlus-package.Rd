@@ -176,6 +176,11 @@
 \cr
 (viii) Miscellaneous \cr\cr
 
+\code{\link{getASRemlVersionLoaded}}
+       \tab Finds the version of asreml that is loaded and \cr
+       \tab returns the initial characters in version. \cr
+\code{\link{loadASRemlVersion}}
+       \tab Ensures that a specific version of asreml is loaded.\cr
 \code{\link{num.recode}}
        \tab Recodes the unique values of a vector using the values  \cr
        \tab in a new vector. \cr

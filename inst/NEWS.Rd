@@ -1,5 +1,19 @@
 \name{news}
 \title{News for Package asremlPlus}
+\section{asremlPlus Version 4.1-02 (2018-06-13)}{
+  \itemize{
+    \item{Rebuild under latest version of R 3.5.0 with requirement for R >= 3.1.0.}
+    \item{Fix bug in bootREMLRT.}
+  }
+}
+\section{asremlPlus Version 4.1-01 (2018-06-03)}{
+  \itemize{
+    \item{Changes to make asremlPlus with the release version of asreml version 4.1.}
+    \item{Add new functions getASRemlVersionLoaded and loadASRemlVersion to facilitate handling of different versions of asreml.}
+    \item{Fixed bug in predictPlus that meant the denominator degrees of freedom could not be obtained from \code{wald.tab} when \code{error.intervals} was set to \code{"none"} or \code{"StandardError"}.}
+    \item{Fixed bug in \code{LSDby} option that meant the correct subsets were not being identified when the levels of one factor in the predictions are subset of another factor.}
+  }
+}
 \section{asremlPlus Version 4.0-28 (2018-04-18)}{
   \itemize{
     \item{Add new function facCombine.alldiffs.}

@@ -1,0 +1,66 @@
+<html><head><title>Applies the angular transformation to proportions.</title>
+<meta http-equiv="Content-Type" content="text/html; charset=">
+<link rel="stylesheet" type="text/css" href="Rchm.css">
+</head>
+<body>
+
+<table width="100%"><tr><td>angular(sundry)</td><td align="right">R Documentation</td></tr></table><object type="application/x-oleobject" classid="clsid:1e2a7bd0-dab9-11d0-b93a-00c04fc99f9e">
+<param name="keyword" value="R:   angular">
+<param name="keyword" value=" Applies the angular transformation to proportions.">
+</object>
+
+
+<h2>Applies the angular transformation to proportions.</h2>
+
+
+<h3>Description</h3>
+
+<p>
+Applies the angular transformation to numeric values.
+It is given by <i>arcsin( sqrt( proportions ) )</i>
+</p>
+
+
+<h3>Usage</h3>
+
+<pre>angular(proportions, n)</pre>
+
+
+<h3>Arguments</h3>
+
+<table summary="R argblock">
+<tr valign="top"><td><code>proportions</code></td>
+<td>
+The proportions.</td></tr>
+<tr valign="top"><td><code>n</code></td>
+<td>
+The divisor(s) for each proportion</td></tr>
+</table>
+
+<h3>Value</h3>
+
+<p>
+A numeric.</p>
+
+<h3>See Also</h3>
+
+<p>
+<code><a href="angular.mod.html">angular.mod</a></code>
+</p>
+
+
+<h3>Examples</h3>
+
+<pre>
+n &lt;-25
+y &lt;- rbinom(10, n, 0.5)
+y &lt;- c(y,0,n)
+p &lt;- y/n
+p.ang &lt;- angular(p, n)
+</pre>
+
+
+
+<hr><div align="center">[Package <em>sundry</em> version 0.4-0 <a href="00Index.html">Index]</a></div>
+
+</body></html>

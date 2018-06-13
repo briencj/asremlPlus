@@ -16,6 +16,66 @@
   return(kopt)
 }
 
+#Get the loaded version of asreml
+"getASRemlVersionLoaded" <- function(nchar = NULL, notloaded.fault = FALSE)
+{
+  if (isNamespaceLoaded("asreml"))
+  {
+    sInf <- sessionInfo(package = "asreml")
+    vers <- sInf$otherPkgs$asreml$Version
+    if (!is.null(nchar))
+      vers <- substring(vers, first = 1, last = nchar)
+  } else
+  {
+    if (notloaded.fault)
+      stop("No version of asreml loaded")
+    else
+      vers <- NULL
+  }
+  return(vers)
+}
+
+#Checks whether the loaded version is a subset of version, excluding incompatible versions 
+"isASRemlVersionLoaded" <- function(version = 4, notloaded.fault = FALSE)
+{
+  vers <- getASRemlVersionLoaded(nchar = NULL, notloaded.fault = notloaded.fault)
+  if (!is.null(vers))
+  {
+    if (substring(vers, first = 1, last = 3) == "4.0")
+      stop("This version of asremlPlus does not support asreml 4.0.x - asremlPlus 4.0.x does")
+    version <- as.character(version)
+    vers <- substring(vers, first = 1, last = nchar(version)) == version
+  }
+  return(vers)
+}
+
+#Checks if loaded version of asreml begins with version; if not unloads asreml and loads the version in lib.loc 
+"loadASRemlVersion" <- function(version = "4", ...)
+{
+  loadASReml <- FALSE
+  vers <- isASRemlVersionLoaded(version)
+  if (is.null(vers))
+    loadASReml <- TRUE
+  else
+  {
+    if (!vers)
+    {
+      unloadNamespace("asreml")
+      loadASReml <- TRUE
+    }
+  }
+  if (loadASReml)
+  {
+    gotASReml <- requireNamespace("asreml", ...)
+    if (gotASReml)
+      attachNamespace("asreml")
+  }
+  if (!isASRemlVersionLoaded(version))
+    stop("Unable to load asreml, version ", version)
+  vers <- getASRemlVersionLoaded()
+  invisible(vers)
+}
+
 "as.terms.object" <- function(terms = NULL, asreml.obj = NULL, ...)
 { 
   if (is.character(terms))

@@ -1,6 +1,6 @@
 DFdiff <- function(bound.h1, bound.h0, bound.exclusions = c("F","B","S","C"))
 {
-  asr4 <- ("asreml4" %in% loadedNamespaces())
+  asr4 <- isASRemlVersionLoaded(4, notloaded.fault = TRUE)
   
   NBound.h1 <- NBound.h0 <- NA
   DF <- length(bound.h1) - length(bound.h0)
@@ -77,7 +77,7 @@ REMLRT.asreml <- function(h0.asreml.obj, h1.asreml.obj,
         class(h0.asreml.obj) != "asreml")
     stop("Must supply two objects of class 'asreml'")
 
-  asr4 <- ("asreml4" %in% loadedNamespaces())
+  asr4 <- isASRemlVersionLoaded(4, notloaded.fault = TRUE)
   
   #Check that fixed and sparse models are the same
   if (asr4)
@@ -124,11 +124,11 @@ REMLRT.asreml <- function(h0.asreml.obj, h1.asreml.obj,
     par.opt <- "onlybound"
 
   #Get bound values
-  asr4 <- ("asreml4" %in% loadedNamespaces())
+  asr4 <- isASRemlVersionLoaded(4, notloaded.fault = TRUE)
   if (asr4)
   {
-    bound.h0 <- asreml4::vpc.char(h0.asreml.obj)
-    bound.h1 <- asreml4::vpc.char(h1.asreml.obj)
+    bound.h0 <- asreml::vpc.char(h0.asreml.obj) #asreml4::vpc.char(h0.asreml.obj)
+    bound.h1 <- asreml::vpc.char(h1.asreml.obj) #asreml4::vpc.char(h1.asreml.obj)
   }
   else
   {
@@ -199,10 +199,10 @@ infoCriteria.asreml <- function(asreml.obj, DF = NULL,
                                 bound.exclusions = c("F","B","S","C"), ...)
 {
   #Get bound values
-  asr4 <- ("asreml4" %in% loadedNamespaces())
+  asr4 <- isASRemlVersionLoaded(4, notloaded.fault = TRUE)
   if (asr4)
   {
-    bound <- asreml4::vpc.char(asreml.obj)
+    bound <- asreml::vpc.char(asreml.obj) #asreml4::vpc.char(asreml.obj)
   }
   else
   {

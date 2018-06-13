@@ -1,0 +1,10 @@
+Sys.setenv("R_TESTS" = "")
+library(testthat)
+#Need to execute the following for manual checking
+#Sys.setenv(NOT_CRAN = "true")
+#setwd("~/Analyses/R/asremlPlus/tests/")
+#test_check("asremlPlus", filter = "3Wheat")
+#test_check("asremlPlus", filter = "4Wheat")
+#test_check("asremlPlus", filter = "3")
+#test_check("asremlPlus", filter = "4")
+test_check("asremlPlus")

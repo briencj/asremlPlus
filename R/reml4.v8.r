@@ -18,13 +18,13 @@
   }
   else #form wald.tab
   { 
-    asr4 <- ("asreml4" %in% loadedNamespaces())
-    if (asr4)
-      wald.tab <- asreml4::wald.asreml(asreml.obj, denDF = denDF, trace = FALSE, ...)
-    else
+#    asr4 <- isASRemlVersionLoaded(4, notloaded.fault = TRUE)
+#    if (asr4)
+#      wald.tab <- asreml4::wald.asreml(asreml.obj, denDF = denDF, trace = FALSE, ...)
+#    else
       wald.tab <- asreml::wald.asreml(asreml.obj, denDF = denDF, trace = FALSE, ...)
     if (!is.data.frame(wald.tab))
-           wald.tab <- wald.tab$Wald
+      wald.tab <- wald.tab$Wald
   }
   test <- list(asreml.obj = asreml.obj, wald.tab=wald.tab, test.summary = test.summary)
   class(test) <- "asrtests"
@@ -35,7 +35,7 @@
 
 "print.asrtests" <- function(x, which = "all", ...)
  { 
-  asr4 <- ("asreml4" %in% loadedNamespaces())
+  asr4 <- isASRemlVersionLoaded(4, notloaded.fault = TRUE)
   options <- c("asremlsummary", "pseudoanova", "testsummary", "all")
    opt <- options[unlist(lapply(which, check.arg.values, options=options))]
    if ("asremlsummary" %in% opt | "all" %in% opt)
@@ -61,20 +61,21 @@
                                      denDF="numeric", dDF.na = "none", 
                                      dDF.values = NULL, trace = FALSE, ...)
 { 
-  asr4 <- ("asreml4" %in% loadedNamespaces())
+  asr4 <- isASRemlVersionLoaded(4, notloaded.fault = TRUE)
   if (is.null(asrtests.obj) | class(asrtests.obj) != "asrtests")
     stop("Must supply an asrtests object")
   asreml.obj <- asrtests.obj$asreml.obj
   #Call wald.asreml if recalc.wald is TRUE
   if (recalc.wald)
-  { 
-    if (asr4)
-      wald.tab <- asreml4::wald.asreml(asreml.obj, denDf=denDF, trace = trace, ...)
-    else
-      wald.tab <- asreml::wald.asreml(asreml.obj, denDf=denDF, trace = trace, ...)
-    if (!is.data.frame(wald.tab))
-      wald.tab <- wald.tab$Wald
-  }
+    wald.tab <- asreml::wald.asreml(asreml.obj, denDF = denDF, trace = FALSE, ...)
+  # { 
+  #   if (asr4)
+  #     wald.tab <- asreml4::wald.asreml(asreml.obj, denDf=denDF, trace = trace, ...)
+  #   else
+  #     wald.tab <- asreml::wald.asreml(asreml.obj, denDf=denDF, trace = trace, ...)
+  #   if (!is.data.frame(wald.tab))
+  #     wald.tab <- wald.tab$Wald
+  # }
   else #extract wald.tab from the asrtests object
     wald.tab <- asrtests.obj$wald.tab
   nofixed <- dim(wald.tab)[1]
@@ -260,7 +261,7 @@
     if ("constraints" %in% names(tempcall))
       stop("constraints has been deprecated in setvarianceterms.asreml - use bounds")
 
-  asr4 <- ("asreml4" %in% loadedNamespaces())
+  asr4 <- isASRemlVersionLoaded(4, notloaded.fault = TRUE)
   
   #test for compatibility of arguments
   nt <- length(terms)
@@ -358,7 +359,7 @@
     if ("constraints" %in% names(tempcall))
       stop("constraints has been deprecated in setvarianceterms.asreml - use bounds")
   
-  asr4 <- ("asreml4" %in% loadedNamespaces())
+  asr4 <- isASRemlVersionLoaded(4, notloaded.fault = TRUE)
   
   "my.update.formula" <- function(old, new, keep.order = TRUE, ...) 
     #function to update a formula
@@ -564,7 +565,7 @@
   
   #Evaluate the call
   if (asr4 & keep.order)
-    asreml4::asreml.options(keep.order = TRUE)
+    asreml::asreml.options(keep.order = TRUE) #asreml4::asreml.options(keep.order = TRUE)
   asreml.new.obj <- eval(call, sys.parent())
   asreml.new.obj$call <- call
   #If not converged, issue warning
@@ -591,7 +592,7 @@
     if ("constraints" %in% names(tempcall))
       stop("constraints has been deprecated in setvarianceterms.asreml - use bounds")
   
-  asr4 <- ("asreml4" %in% loadedNamespaces())
+  asr4 <- isASRemlVersionLoaded(4, notloaded.fault = TRUE)
   
   #check input arguments
   if (asr4)
@@ -612,7 +613,7 @@
     #Find boundary terms
     if (asr4)
     {
-      allvcomp <- data.frame(bound = asreml4::vpc.char(asreml.obj), 
+      allvcomp <- data.frame(bound = asreml::vpc.char(asreml.obj), #asreml4::vpc.char(asreml.obj), 
                              component = asreml.obj$vparameters, 
                              stringsAsFactors = FALSE)
       bound.terms <- allvcomp$bound == "B" | allvcomp$bound == "S"
@@ -782,7 +783,7 @@
     if ("constraints" %in% names(tempcall))
       stop("constraints has been deprecated in setvarianceterms.asreml - use bounds")
   
-  asr4 <- ("asreml4" %in% loadedNamespaces())
+  asr4 <- isASRemlVersionLoaded(4, notloaded.fault = TRUE)
   
   #check input arguments
   if (asr4)
@@ -854,7 +855,7 @@
   }
   
   #Check models to update by determining if they have any terms in the update formula
-  forms <- stringr::str_trim(c(fix.form, ran.form, res.form))
+  forms <- stringr::str_trim(as.character(c(fix.form, ran.form, res.form), side = "both"))
   lastch <- stringr::str_sub(forms, start = nchar(forms))
   lastch <- !(lastch == "." | lastch == "~")
   if (is.null(res.form))
@@ -911,10 +912,10 @@
     {
       asreml.obj <- asreml.new.obj
       #Update wald.tab
-      if (asr4)
-        wald.tab <- asreml4::wald.asreml(asreml.obj, denDF = denDF, trace = trace, ...)
-      else
-        wald.tab <- asreml::wald.asreml(asreml.obj, denDF = denDF, trace = trace, ...)
+#      if (asr4)
+#        wald.tab <- asreml4::wald.asreml(asreml.obj, denDF = denDF, trace = trace, ...)
+#      else
+      wald.tab <- asreml::wald.asreml(asreml.obj, denDF = denDF, trace = trace, ...)
       if (!is.data.frame(wald.tab))
         wald.tab <- wald.tab$Wald
       if (!asreml.obj$converge)
@@ -941,10 +942,10 @@
       asreml.obj <- temp.asrt$asreml.obj
       test.summary <- temp.asrt$test.summary
       #Update wald.tab
-      if (asr4)
-        wald.tab <- asreml4::wald.asreml(asreml.obj, denDF = denDF, trace = trace, ...)
-      else
-        wald.tab <- asreml::wald.asreml(asreml.obj, denDF = denDF, trace = trace, ...)
+      # if (asr4)
+      #   wald.tab <- asreml4::wald.asreml(asreml.obj, denDF = denDF, trace = trace, ...)
+      # else
+      wald.tab <- asreml::wald.asreml(asreml.obj, denDF = denDF, trace = trace, ...)
       if (!is.data.frame(wald.tab))
         wald.tab <- wald.tab$Wald
     } else #unconverged and not allowed
@@ -971,10 +972,10 @@
         asreml.obj <- temp.asrt$asreml.obj
         test.summary <- temp.asrt$test.summary
         #Update wald.tab
-        if (asr4)
-          wald.tab <- asreml4::wald.asreml(asreml.obj, denDF = denDF, trace = trace, ...)
-        else
-          wald.tab <- asreml::wald.asreml(asreml.obj, denDF = denDF, trace = trace, ...)
+        # if (asr4)
+        #   wald.tab <- asreml4::wald.asreml(asreml.obj, denDF = denDF, trace = trace, ...)
+        # else
+        wald.tab <- asreml::wald.asreml(asreml.obj, denDF = denDF, trace = trace, ...)
         if (!is.data.frame(wald.tab))
           wald.tab <- wald.tab$Wald
       } else
@@ -1011,7 +1012,7 @@
     if ("constraints" %in% names(tempcall))
       stop("constraints has been deprecated in setvarianceterms.asreml - use bounds")
   
-  asr4 <- ("asreml4" %in% loadedNamespaces())
+  asr4 <- isASRemlVersionLoaded(4, notloaded.fault = TRUE)
   
   #check input arguments
   if (class(asrtests.obj) != "asrtests")
@@ -1057,10 +1058,10 @@
     else
     #Have a fixed term
     { 
-      if (asr4)
-        wald.tab <- asreml4::wald.asreml(asreml.obj, denDF = denDF, trace = trace, ...)
-      else
-        wald.tab <- asreml::wald.asreml(asreml.obj, denDF = denDF, trace = trace, ...)
+      # if (asr4)
+      #   wald.tab <- asreml4::wald.asreml(asreml.obj, denDF = denDF, trace = trace, ...)
+      # else
+      wald.tab <- asreml::wald.asreml(asreml.obj, denDF = denDF, trace = trace, ...)
       if (!is.data.frame(wald.tab))
              wald.tab <- wald.tab$Wald
       options <- c("none", "residual", "maximum", "supplied")
@@ -1136,11 +1137,11 @@
               action <- "Dropped"
               asreml.obj <- asreml.new.obj
               #Update wald.tab
-              if (asr4)
-                wald.tab <- asreml4::wald.asreml(asreml.obj, denDF = denDF, 
-                                                 trace = trace, ...)
-              else
-                wald.tab <- asreml::wald.asreml(asreml.obj, denDF = denDF, 
+              # if (asr4)
+              #   wald.tab <- asreml4::wald.asreml(asreml.obj, denDF = denDF, 
+              #                                    trace = trace, ...)
+              # else
+              wald.tab <- asreml::wald.asreml(asreml.obj, denDF = denDF, 
                                                  trace = trace, ...)
               if (!is.data.frame(wald.tab))
                 wald.tab <- wald.tab$Wald
@@ -1331,10 +1332,10 @@
           action <- "Dropped - old unconverged"
           asreml.obj <- asreml.new.obj
           #Update wald.tab
-          if (asr4)
-            wald.tab <- asreml4::wald.asreml(asreml.obj, denDF = denDF, trace = trace, ...)
-          else
-            wald.tab <- asreml::wald.asreml(asreml.obj, denDF = denDF, trace = trace, ...)
+          # if (asr4)
+          #   wald.tab <- asreml4::wald.asreml(asreml.obj, denDF = denDF, trace = trace, ...)
+          # else
+          wald.tab <- asreml::wald.asreml(asreml.obj, denDF = denDF, trace = trace, ...)
           if (!is.data.frame(wald.tab))
             wald.tab <- wald.tab$Wald
         }
@@ -1358,10 +1359,10 @@
             action <- "Dropped"
             asreml.obj <- asreml.new.obj
             #Update wald.tab
-            if (asr4)
-              wald.tab <- asreml4::wald.asreml(asreml.obj, denDF = denDF, trace = trace, ...)
-            else
-              wald.tab <- asreml::wald.asreml(asreml.obj, denDF = denDF, trace = trace, ...)
+            # if (asr4)
+            #   wald.tab <- asreml4::wald.asreml(asreml.obj, denDF = denDF, trace = trace, ...)
+            # else
+            wald.tab <- asreml::wald.asreml(asreml.obj, denDF = denDF, trace = trace, ...)
             if (!is.data.frame(wald.tab))
               wald.tab <- wald.tab$Wald
         }
@@ -1422,7 +1423,7 @@
     if ("constraints" %in% names(tempcall))
       stop("constraints has been deprecated in setvarianceterms.asreml - use bounds")
   
-  asr4 <- ("asreml4" %in% loadedNamespaces())
+  asr4 <- isASRemlVersionLoaded(4, notloaded.fault = TRUE)
 
     #check input arguments
   if (class(asrtests.obj) != "asrtests")
@@ -1574,10 +1575,10 @@
     asreml.obj <- temp.asrt$asreml.obj
     test.summary <- temp.asrt$test.summary
     #Update wald.tab
-    if (asr4)
-      wald.tab <- asreml4::wald.asreml(asreml.obj, denDF = denDF, trace = trace, ...)
-    else
-      wald.tab <- asreml::wald.asreml(asreml.obj, denDF = denDF, trace = trace, ...)
+    # if (asr4)
+    #   wald.tab <- asreml4::wald.asreml(asreml.obj, denDF = denDF, trace = trace, ...)
+    # else
+     wald.tab <- asreml::wald.asreml(asreml.obj, denDF = denDF, trace = trace, ...)
     if (!is.data.frame(wald.tab))
       wald.tab <- wald.tab$Wald
   }
@@ -1605,7 +1606,7 @@
     if ("constraints" %in% names(tempcall))
       stop("constraints has been deprecated in testresidual.asreml - use bounds")
 
-  asr4 <- ("asreml4" %in% loadedNamespaces())
+  asr4 <- isASRemlVersionLoaded(4, notloaded.fault = TRUE)
   
   #check input arguments
   if (asr4)
@@ -1755,10 +1756,10 @@
     asreml.obj <- temp.asrt$asreml.obj
     test.summary <- temp.asrt$test.summary
     #Update wald.tab
-    if (asr4)
-      wald.tab <- asreml4::wald.asreml(asreml.obj, denDF = denDF, trace = trace, ...)
-    else
-      wald.tab <- asreml::wald.asreml(asreml.obj, denDF = denDF, trace = trace, ...)
+    # if (asr4)
+    #   wald.tab <- asreml4::wald.asreml(asreml.obj, denDF = denDF, trace = trace, ...)
+    # else
+    wald.tab <- asreml::wald.asreml(asreml.obj, denDF = denDF, trace = trace, ...)
     if (!is.data.frame(wald.tab))
       wald.tab <- wald.tab$Wald
   } 
@@ -1837,7 +1838,7 @@
     if ("constraints" %in% names(tempcall))
       stop("constraints has been deprecated in setvarianceterms.asreml - use bounds")
   
-  asr4 <- ("asreml4" %in% loadedNamespaces())
+  asr4 <- isASRemlVersionLoaded(4, notloaded.fault = TRUE)
 
   #check input arguments
   if (class(asrtests.obj) != "asrtests")
@@ -1958,7 +1959,7 @@
     if ("constraints" %in% names(tempcall))
       stop("constraints has been deprecated in setvarianceterms.asreml - use bounds")
   
-  asr4 <- ("asreml4" %in% loadedNamespaces())
+  asr4 <- isASRemlVersionLoaded(4, notloaded.fault = TRUE)
   
   #find out if any terms have either a devn.fac or a trend.num term 
   #  - (marginality implies cannot be both)
@@ -2030,10 +2031,10 @@
         asrtests.obj <- temp.asrt
         asreml.obj <- asrtests.obj$asreml.obj
         #Update wald.tab
-        if (asr4)
-          wald.tab <- asreml4::wald.asreml(asreml.obj, denDF = denDF, trace = trace, ...)
-        else
-          wald.tab <- asreml::wald.asreml(asreml.obj, denDF = denDF, trace = trace, ...)
+        # if (asr4)
+        #   wald.tab <- asreml4::wald.asreml(asreml.obj, denDF = denDF, trace = trace, ...)
+        # else
+        wald.tab <- asreml::wald.asreml(asreml.obj, denDF = denDF, trace = trace, ...)
         if (!is.data.frame(wald.tab))
           wald.tab <- wald.tab$Wald
         asrtests.obj$wald.tab <- wald.tab
@@ -2045,6 +2046,29 @@
   }
   asrtests.obj$wald.tab <- recalcWaldTab(asrtests.obj, denDF = denDF, trace = trace, ...)
   invisible(asrtests.obj)
+}
+
+"predictASR4" <- function(asreml.obj, classify, levels = list(), 
+                        sed = TRUE, vcov = FALSE, 
+                        trace = FALSE, ...)
+{
+  if (sed & vcov)
+  {
+    pred <- predict(asreml.obj, classify=classify, levels=levels, 
+                    sed = FALSE, vcov = TRUE, 
+                    trace = trace, ...)
+    vc <- as.matrix(pred$vcov)
+    n <- nrow(vc)
+    dvcov <- diag(vc)
+    pred$sed <- matrix(rep(dvcov, each = n), nrow = n) + 
+                     matrix(rep(dvcov, times = n), nrow = n) - 2 * vc
+    pred$sed <- sqrt(pred$sed)
+    diag(pred$sed) <- NA_real_
+  } else
+    pred <- predict(asreml.obj, classify=classify, levels=levels, 
+                    sed = sed, vcov = vcov, 
+                    trace = trace, ...)
+  return(pred)
 }
 
 "predictPlus.asreml" <- function(asreml.obj, classify, term = NULL, 
@@ -2063,7 +2087,7 @@
                                  dDF.na = "residual", dDF.values = NULL, trace = FALSE, ...)
   #a function to get asreml predictions when there a parallel vector and factor are involved
 { 
-  asr4 <- ("asreml4" %in% loadedNamespaces())
+  asr4 <- isASRemlVersionLoaded(4, notloaded.fault = TRUE)
   
   AvLSD.options <- c("overall", "factor.combinations", "per.prediction")
   avLSD <- AvLSD.options[check.arg.values(meanLSD.type, AvLSD.options)]
@@ -2113,9 +2137,9 @@
   if (is.null(x.num) || !(x.num %in% vars))
   { 
     if (asr4)
-      pred <- predict(asreml.obj, classify=classify, 
-                      sed=pairwise, vcov = get.vcov, 
-                      trace = trace, ...)
+      pred <- predictASR4(asreml.obj, classify=classify, 
+                          sed=pairwise, vcov = get.vcov, 
+                          trace = trace, ...)
     else
       pred <- predict(asreml.obj, classify=classify, 
                       sed=pairwise, vcov = get.vcov,  
@@ -2160,9 +2184,9 @@
     #if levels in ... ignore x.pred.values
     if ("levels" %in% names(tempcall)) 
       if (asr4)
-        pred <- predict(asreml.obj, classify=classify, 
-                        sed = pairwise, vcov = get.vcov, 
-                        trace = trace, ...)
+        pred <- predictASR4(asreml.obj, classify=classify, 
+                            sed = pairwise, vcov = get.vcov, 
+                            trace = trace, ...)
       else
         pred <- predict(asreml.obj, classify=classify, 
                         sed = pairwise,  vcov = get.vcov, 
@@ -2184,9 +2208,9 @@
       x.list <- list(x.pred.values)
       names(x.list) <- x.num
       if (asr4)
-        pred <- predict(asreml.obj, classify=classify, levels=x.list, 
-                        sed = pairwise, vcov = get.vcov, 
-                        trace = trace, ...)
+        pred <- predictASR4(asreml.obj, classify=classify, levels=x.list, 
+                            sed = pairwise, vcov = get.vcov, 
+                            trace = trace, ...)
       else
         pred <- predict(asreml.obj, classify=classify, levels=x.list, 
                         sed = pairwise, vcov = get.vcov, 
@@ -2228,12 +2252,13 @@
   if (is.null(term))
     term <- classify
   denom.df <- NA
-  if (!(int.opt %in% c("none", "StandardError")))
-  { 
-    if (is.null(wald.tab))
-      stop("wald.tab needs to be set so that denDF values are available")
+  #Use wald.tab, if possible
+  if (!is.null(wald.tab))
+  {
     i <- findterm(term, rownames(wald.tab))
-    if (i == 0)
+    if (i != 0 && "denDF" %in% colnames(wald.tab) && !is.na(wald.tab$denDF[i]))
+        denom.df <- wald.tab$denDF[i]
+    else  if (i == 0)
     { 
       {
         if (asr4)
@@ -2243,43 +2268,37 @@
           warning("For ",asreml.obj$fixed.formula[[2]],
                   ", ",term," is not a fixed term that has been fitted")
       }
-      denom.df <- asreml.obj$nedf
     }
+  }
+  if (is.na(denom.df))
+  { 
+    #Get options for dDF.na
+    options <- c("none", "residual", "maximum", "supplied")
+    opt <- options[check.arg.values(dDF.na, options)]
+    if (opt == "supplied" && is.null(dDF.values))
+      stop('Need to set dDF.values because have set dDF.na = \"supplied\"')
+    warning("Denominator degrees of freedom obtained using dDF.na method ", opt)
+    #Compute denom.df
+    denom.df <- NA
+    if (opt == "supplied")
+      denom.df <- dDF.values[i]
     else
     { 
-      #Get options for dDF.na
-      options <- c("none", "residual", "maximum", "supplied")
-      opt <- options[check.arg.values(dDF.na, options)]
-      if (opt == "supplied" & is.null(dDF.values))
-        stop('Need to set dDF.values because have set dDF.na = \"supplied\"')
-      #Compute denom.df
-      denom.df <- NA
-      if ("denDF" %in% colnames(wald.tab) & !is.na(wald.tab$denDF[i]))
-        denom.df <- wald.tab$denDF[i]
+      if (opt == "maximum") 
+      { 
+        if ("denDF" %in% colnames(wald.tab) & !all(is.na(wald.tab$denDF)))
+          denom.df <- max(wald.tab$denDF[-1], na.rm=TRUE) 
+        else
+          denom.df <- asreml.obj$nedf
+      }
       else
       { 
-        if (opt == "supplied")
-          denom.df <- dDF.values[i]
-        else
-        { 
-          if (opt == "maximum") 
-          { 
-            if ("denDF" %in% colnames(wald.tab) & !all(is.na(wald.tab$denDF)))
-              denom.df <- max(wald.tab$denDF[-1], na.rm=TRUE) 
-            else
-              denom.df <- asreml.obj$nedf
-          }
-          else
-          { 
-            if (opt == "residual")
-              denom.df <- asreml.obj$nedf
-          }
-        }
+        if (opt == "residual")
+          denom.df <- asreml.obj$nedf
       }
     }
   }
-  
-  
+
   #Initialize for setting up alldiffs object
   if (asr4)
     response <- as.character(asreml.obj$formulae$fixed[[2]])
@@ -2818,19 +2837,16 @@ sliceLSDs <- function(alldiffs.obj, by, t.value, alpha = 0.05)
       }
     }
     #Form levels combination for which a mean LSD is required
-    levs <- levels(fac.combine(fac.list, combine.levels = TRUE))
+    fac.comb <- fac.combine(fac.list, combine.levels = TRUE)
+    if (length(fac.comb) != nrow(sed))
+      stop("Factor(s) in by argument are not the same length as the order of the sed matrix")
+    levs <- levels(fac.comb)
     combs <- strsplit(levs, ",", fixed = TRUE)
     #Get the LSDs
-    LSDs <- lapply(combs, 
-                   function(comb, sed, t.value)
+    LSDs <- lapply(levs, 
+                   function(lev, sed, t.value)
                    {
-                     lapply(comb, function(lev){})
-                     krows <- rep(TRUE, nrow(sed))
-                     #loop over levels for the current combination 
-                     for (lev in comb)
-                     {
-                       krows <- krows & grepl(lev, rownames(sed), fixed = TRUE)
-                     }
+                     krows <- lev == fac.comb
                      ksed <- sed[krows, krows]
                      minLSD <- t.value * min(ksed, na.rm = TRUE)
                      maxLSD <- t.value * max(ksed, na.rm = TRUE)
@@ -2873,7 +2889,7 @@ sliceLSDs <- function(alldiffs.obj, by, t.value, alpha = 0.05)
 # - with dates, they should be in the form yyyymmdd
 #Probably need to supply x.plot.values if x.fac is to be plotted
 { 
-  asr4 <- ("asreml4" %in% loadedNamespaces())
+  asr4 <- isASRemlVersionLoaded(4, notloaded.fault = TRUE)
   
   AvLSD.options <- c("overall", "factor.combinations", "per.prediction")
   avLSD <- AvLSD.options[check.arg.values(meanLSD.type, AvLSD.options)]

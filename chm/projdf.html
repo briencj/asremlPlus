@@ -1,0 +1,72 @@
+<html><head><title>Computes the degrees of freedom or number of nonzero canonical efficiency factors of a projection matrix</title>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<link rel="stylesheet" type="text/css" href="Rchm.css">
+</head>
+<body>
+
+<table width="100%"><tr><td>projdf(sundry)</td><td align="right">R Documentation</td></tr></table><object type="application/x-oleobject" classid="clsid:1e2a7bd0-dab9-11d0-b93a-00c04fc99f9e">
+<param name="keyword" value="R:   projdf">
+<param name="keyword" value=" Computes the degrees of freedom or number of nonzero canonical efficiency factors of a projection matrix">
+</object>
+
+
+<h2>Computes the degrees of freedom or number of nonzero canonical efficiency factors of a projection matrix</h2>
+
+
+<h3>Description</h3>
+
+<p>
+Computes the numbe of nonzero canonical efficiency factors of a
+projection matrix.
+</p>
+
+
+<h3>Usage</h3>
+
+<pre>projdf(Q, tol = 1e-10)</pre>
+
+
+<h3>Arguments</h3>
+
+<table summary="R argblock">
+<tr valign="top"><td><code>Q</code></td>
+<td>
+A symmetric projection operator.</td></tr>
+<tr valign="top"><td><code>tol</code></td>
+<td>
+Values smaller than tol are considered to be zero.</td></tr>
+</table>
+
+<h3>Value</h3>
+
+<p>
+A scalar containing the number of nonzero canonical efficiency factors.</p>
+
+<h3>See Also</h3>
+
+<p>
+<code><a onclick="findlink('base', 'eigen.html')" style="text-decoration: underline; color: blue; cursor: hand">eigen</a></code>
+</p>
+
+
+<h3>Examples</h3>
+
+<pre>
+    projdf(Q.Treats)
+    df.RC &lt;- projdf(Q.RowsCols)
+</pre>
+
+<script Language="JScript">
+function findlink(pkg, fn) {
+var Y, link;
+Y = location.href.lastIndexOf("\\") + 1;
+link = location.href.substring(0, Y);
+link = link + "../../" + pkg + "/chtml/" + pkg + ".chm::/" + fn;
+location.href = link;
+}
+</script>
+
+
+<hr><div align="center">[Package <em>sundry</em> version 0.4-1 <a href="00Index.html">Index]</a></div>
+
+</body></html>

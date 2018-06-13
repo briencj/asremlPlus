@@ -3,7 +3,7 @@
                                fixed.spline.terms = NULL, 
                                bound.exclusions = c("F","B","S","C"), ...)
 {
-  asr4 <- ("asreml4" %in% loadedNamespaces())
+  asr4 <- isASRemlVersionLoaded(4, notloaded.fault = TRUE)
   if (!asr4)
     stop("This function requires asreml4 or later.")
   
@@ -87,12 +87,15 @@
     {
       #Work out if term bound
       bound <- FALSE
-      if (!is.null(bound.exclusions) & term %in% names(asreml4::vpc.char(asreml.obj)))
+#      if (!is.null(bound.exclusions) & term %in% names(asreml4::vpc.char(asreml.obj)))
+      if (!is.null(bound.exclusions) & term %in% names(asreml::vpc.char(asreml.obj)))
       {
-        bound <- (asreml4::vpc.char(asreml.obj)[[term]] %in% bound.exclusions)
+#        bound <- (asreml4::vpc.char(asreml.obj)[[term]] %in% bound.exclusions)
+        bound <- (asreml::vpc.char(asreml.obj)[[term]] %in% bound.exclusions)
         if (bound)
           warning(paste(term, "not included in V because its bound is",
-                        asreml4::vpc.char(asreml.obj)[[term]], sep = " "))
+                        asreml::vpc.char(asreml.obj)[[term]], sep = " "))
+#                        asreml4::vpc.char(asreml.obj)[[term]], sep = " "))
       }
       if (!bound)
       {
@@ -172,7 +175,7 @@
             #Check whether have the design matrix
             if (is.null(asreml.obj$design))
             {
-              asreml4::asreml.options(design = TRUE)
+              asreml::asreml.options(design = TRUE) #asreml4::asreml.options(design = TRUE)
               asreml.obj <- eval(call)
             }
             if (has.fa)

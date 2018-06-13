@@ -106,7 +106,7 @@
                 \code{classify} used to obtain the original predictions (for example, 
                 when the \code{alldiffs} objects stores a linear transformation of predictions.
 
-                See \code{\link{predictPlus.asreml}} for mnore information.
+                See \code{\link{predictPlus.asreml}} for more information.
 }
 
 

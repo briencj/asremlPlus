@@ -13,62 +13,67 @@
   options <- c("both", "upper", "lower")
   tri.opt <- options[check.arg.values(triangles, options)]
   
-  object <- na.omit(object)
-  object[x] <- factor(object[[x]])
-  object[y] <- factor(object[[y]])
-  labs <- sort(levels(object[[x]]))
-#  if (any(labs != sort(levels(object[[y]]))))
-#    stop("The row and column labels of differences are not the same")
-  plt <- ggplot(object, aes_string(x = x, y = y, fill=p)) +
-    geom_tile() +
-    scale_fill_gradientn(colours=colours, 
-                         values = c(0, 0.001, 0.01, 0.05, 0.10, 1), 
-                         limits=c(0,1)) +
-    labs(x=axis.labels, y=axis.labels, title=title) + 
-    theme_bw() +
-    theme(axis.text.x=element_text(angle=90, hjust=1, vjust=0.5, size=12),
-          axis.text.y=element_text(size=12),
-          plot.title=element_text(face="bold"),
-          panel.grid = element_blank(),
-          legend.position = "bottom", legend.key.width=unit(2,"cm"), 
-          aspect.ratio = 1) +
-    guides(fill=guide_colourbar(title = "p", nbin=50))
-  if (show.sig)
-  { 
-    object$sig <- ifelse(object[p] > 0.1, "",
-                         ifelse(object[p] > 0.05, ".",
-                                ifelse(object[p] > 0.01, "*",
-                                       ifelse(object[p] > 0.001, "**",
-                                              "***"))))
-    plt <- plt + geom_text(data=object, aes_string(label="sig"), size=3)
-  }
-  
-  if (gridspacing[1] > 0)
+  if (all(is.na(object[[p]])))
+    warning("All p-values are NA for this plot")
+  else
   {
-    if (length(gridspacing) > 1)
-    {
-      grids <- cumsum(gridspacing)+0.5
-    } else
-    {
-      nlabs <- length(labs)
-      grids <- seq(gridspacing + 0.5, nlabs, gridspacing)
+    object <- na.omit(object)
+    object[x] <- factor(object[[x]])
+    object[y] <- factor(object[[y]])
+    labs <- sort(levels(object[[x]]))
+    #  if (any(labs != sort(levels(object[[y]]))))
+    #    stop("The row and column labels of differences are not the same")
+    plt <- ggplot(object, aes_string(x = x, y = y, fill=p)) +
+      geom_tile() +
+      scale_fill_gradientn(colours=colours, 
+                           values = c(0, 0.001, 0.01, 0.05, 0.10, 1), 
+                           limits=c(0,1)) +
+      labs(x=axis.labels, y=axis.labels, title=title) + 
+      theme_bw() +
+      theme(axis.text.x=element_text(angle=90, hjust=1, vjust=0.5, size=12),
+            axis.text.y=element_text(size=12),
+            plot.title=element_text(face="bold"),
+            panel.grid = element_blank(),
+            legend.position = "bottom", legend.key.width=unit(2,"cm"), 
+            aspect.ratio = 1) +
+      guides(fill=guide_colourbar(title = "p", nbin=50))
+    if (show.sig)
+    { 
+      object$sig <- ifelse(object[p] > 0.1, "",
+                           ifelse(object[p] > 0.05, ".",
+                                  ifelse(object[p] > 0.01, "*",
+                                         ifelse(object[p] > 0.001, "**",
+                                                "***"))))
+      plt <- plt + geom_text(data=object, aes_string(label="sig"), size=3)
     }
-    if (tri.opt == "lower")
-      plt <- plt + geom_hline(yintercept = grids) + geom_vline(xintercept = grids - 1)
-    else
+    
+    if (gridspacing[1] > 0)
     {
-      if (tri.opt == "upper")
-        plt <- plt + geom_hline(yintercept = grids - 1) + geom_vline(xintercept = grids)
+      if (length(gridspacing) > 1)
+      {
+        grids <- cumsum(gridspacing)+0.5
+      } else
+      {
+        nlabs <- length(labs)
+        grids <- seq(gridspacing + 0.5, nlabs, gridspacing)
+      }
+      if (tri.opt == "lower")
+        plt <- plt + geom_hline(yintercept = grids) + geom_vline(xintercept = grids - 1)
       else
-        plt <- plt + geom_hline(yintercept = grids) + geom_vline(xintercept = grids)
+      {
+        if (tri.opt == "upper")
+          plt <- plt + geom_hline(yintercept = grids - 1) + geom_vline(xintercept = grids)
+        else
+          plt <- plt + geom_hline(yintercept = grids) + geom_vline(xintercept = grids)
+      }
     }
+    
+    if (!is.null(ggplotFuncs))
+      for (f in ggplotFuncs)
+        plt <- plt + f
+    
+    print(plt)
   }
-  
-  if (!is.null(ggplotFuncs))
-    for (f in ggplotFuncs)
-      plt <- plt + f
-  
-  print(plt)
   invisible()
 }
 
@@ -92,6 +97,8 @@
     stop("object must be of class alldiffs")
   if (is.null(object$p.differences))
     stop("The p.differences component of object cannot be NULL")
+  if (all(is.na(object$p.differences)))
+    stop("All p.differences are NA")
   options <- c("both", "upper", "lower")
   tri.opt <- options[check.arg.values(triangles, options)]
   

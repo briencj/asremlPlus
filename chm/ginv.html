@@ -1,0 +1,74 @@
+<html><head><title>Computes the generalized inverse of a rectangular matrix</title>
+<meta http-equiv="Content-Type" content="text/html; charset=">
+<link rel="stylesheet" type="text/css" href="Rchm.css">
+</head>
+<body>
+
+<table width="100%"><tr><td>ginv(sundry)</td><td align="right">R Documentation</td></tr></table><object type="application/x-oleobject" classid="clsid:1e2a7bd0-dab9-11d0-b93a-00c04fc99f9e">
+<param name="keyword" value="R:   ginv">
+<param name="keyword" value=" Computes the generalized inverse of a rectangular matrix">
+</object>
+
+
+<h2>Computes the generalized inverse of a rectangular matrix</h2>
+
+
+<h3>Description</h3>
+
+<p>
+Computes the generalized inverse of a rectangular matrix using its 
+Singular Value Decomposition.
+</p>
+
+
+<h3>Usage</h3>
+
+<pre>ginv(x, tol = .Machine$double.eps ^ 0.5)</pre>
+
+
+<h3>Arguments</h3>
+
+<table summary="R argblock">
+<tr valign="top"><td><code>x</code></td>
+<td>
+A real rectangular matrix.</td></tr>
+<tr valign="top"><td><code>tol</code></td>
+<td>
+Singular values of x less than tol times the largest singular value 
+are considered to be zero.</td></tr>
+</table>
+
+<h3>Value</h3>
+
+<p>
+A matrix containing the generalized inverse.</p>
+
+<h3>See Also</h3>
+
+<p>
+<code><a onclick="findlink('base', 'svd.html')" style="text-decoration: underline; color: blue; cursor: hand">svd</a></code>
+</p>
+
+
+<h3>Examples</h3>
+
+<pre>
+    X &lt;- matrix(c(1,1,1,1, 1,1,0,0, 0,0,1,1), nrow=4, ncol=3)
+    XtX &lt;- t(X) 
+    ginv(XtX)
+</pre>
+
+<script Language="JScript">
+function findlink(pkg, fn) {
+var Y, link;
+Y = location.href.lastIndexOf("\\") + 1;
+link = location.href.substring(0, Y);
+link = link + "../../" + pkg + "/chtml/" + pkg + ".chm::/" + fn;
+location.href = link;
+}
+</script>
+
+
+<hr><div align="center">[Package <em>sundry</em> version 0.2-0 <a href="00Index.html">Index]</a></div>
+
+</body></html>

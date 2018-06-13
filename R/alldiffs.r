@@ -8,7 +8,7 @@
                           term = NULL, classify = NULL, 
                           tdf = NULL, sortFactor = NULL, sortOrder = NULL)
 { 
-  asr4 <- ("asreml4" %in% loadedNamespaces())
+  asr4 <- isASRemlVersionLoaded(4, notloaded.fault = TRUE)
   
   #Check arguments
   #Change asreml4 names to asreml3 names
@@ -522,7 +522,7 @@ redoErrorIntervals.alldiffs <- function(alldiffs.obj, error.intervals = "Confide
                                         alpha = 0.05, avsed.tolerance = 0.25, 
                                         meanLSD.type = "overall", LSDby = NULL, ...)
 {
-  asr4 <- ("asreml4" %in% loadedNamespaces())
+  asr4 <- isASRemlVersionLoaded(4, notloaded.fault = TRUE)
   
   AvLSD.options <- c("overall", "factor.combinations", "per.prediction")
   avLSD <- AvLSD.options[check.arg.values(meanLSD.type, AvLSD.options)]
@@ -716,7 +716,7 @@ redoErrorIntervals.alldiffs <- function(alldiffs.obj, error.intervals = "Confide
 #takes a table of asreml predictions and forms associated statistics
 #  for all pairwise differences
 { 
-  asr4 <- ("asreml4" %in% loadedNamespaces())
+  asr4 <- isASRemlVersionLoaded(4, notloaded.fault = TRUE)
   
   AvLSD.options <- c("overall", "factor.combinations", "per.prediction")
   avLSD <- AvLSD.options[check.arg.values(meanLSD.type, AvLSD.options)]
@@ -928,7 +928,7 @@ redoErrorIntervals.alldiffs <- function(alldiffs.obj, error.intervals = "Confide
 {  
   #Add backtransforms if there has been a transformation
   backtransforms <- NULL
-  if (transform.power != 1 || offset != 0 || scale != 1)
+  if (nrow(alldiffs.obj$predictions) > 0 && (transform.power != 1 || offset != 0 || scale != 1))
   { 
     denom.df <- attr(alldiffs.obj, which = "tdf")
     if (is.null(denom.df))

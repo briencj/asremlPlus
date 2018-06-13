@@ -1,0 +1,123 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<HEAD></HEAD><HTML><BODY>
+<UL>
+<LI> <OBJECT type="text/sitemap">
+<param name="Name" value="Package sundry:  Contents">
+<param name="Local" value="00Index.html">
+</OBJECT>
+<LI> <OBJECT type="text/sitemap">
+<param name="Name" value="Package sundry:  R objects">
+</OBJECT>
+<UL>
+<LI> <OBJECT type="text/sitemap">
+<param name="Name" value="angular">
+<param name="Local" value="angular.html">
+</OBJECT>
+<LI> <OBJECT type="text/sitemap">
+<param name="Name" value="angular.mod">
+<param name="Local" value="angular.mod.html">
+</OBJECT>
+<LI> <OBJECT type="text/sitemap">
+<param name="Name" value="efficiencies">
+<param name="Local" value="efficiencies.html">
+</OBJECT>
+<LI> <OBJECT type="text/sitemap">
+<param name="Name" value="ginv">
+<param name="Local" value="ginv.html">
+</OBJECT>
+<LI> <OBJECT type="text/sitemap">
+<param name="Name" value="info.crit">
+<param name="Local" value="info.crit.html">
+</OBJECT>
+<LI> <OBJECT type="text/sitemap">
+<param name="Name" value="is.zero">
+<param name="Local" value="is.zero.html">
+</OBJECT>
+<LI> <OBJECT type="text/sitemap">
+<param name="Name" value="mean.harmonic">
+<param name="Local" value="mean.harmonic.html">
+</OBJECT>
+<LI> <OBJECT type="text/sitemap">
+<param name="Name" value="mean.op">
+<param name="Local" value="mean.op.html">
+</OBJECT>
+<LI> <OBJECT type="text/sitemap">
+<param name="Name" value="plot.profiles">
+<param name="Local" value="plot.profiles.html">
+</OBJECT>
+<LI> <OBJECT type="text/sitemap">
+<param name="Name" value="projdf">
+<param name="Local" value="projdf.html">
+</OBJECT>
+<LI> <OBJECT type="text/sitemap">
+<param name="Name" value="projectnonorth">
+<param name="Local" value="projectnonorth.html">
+</OBJECT>
+<LI> <OBJECT type="text/sitemap">
+<param name="Name" value="randrep">
+<param name="Local" value="randrep.html">
+</OBJECT>
+<LI> <OBJECT type="text/sitemap">
+<param name="Name" value="reml.lrt">
+<param name="Local" value="reml.lrt.html">
+</OBJECT>
+</UL>
+<LI> <OBJECT type="text/sitemap">
+<param name="Name" value="Package sundry:  Titles">
+</OBJECT>
+<UL>
+<LI> <OBJECT type="text/sitemap">
+<param name="Name" value="Applies the angular transformation to proportions.">
+<param name="Local" value="angular.html">
+</OBJECT>
+<LI> <OBJECT type="text/sitemap">
+<param name="Name" value="Applies the modified angular transformation to a vector of counts.">
+<param name="Local" value="angular.mod.html">
+</OBJECT>
+<LI> <OBJECT type="text/sitemap">
+<param name="Name" value="Calcuates the harmonic mean.">
+<param name="Local" value="mean.harmonic.html">
+</OBJECT>
+<LI> <OBJECT type="text/sitemap">
+<param name="Name" value="Computes AIC and BIC for a model.">
+<param name="Local" value="info.crit.html">
+</OBJECT>
+<LI> <OBJECT type="text/sitemap">
+<param name="Name" value="Computes the degrees of freedom or number of nonzero canonical efficiency factors of a projection matrix">
+<param name="Local" value="projdf.html">
+</OBJECT>
+<LI> <OBJECT type="text/sitemap">
+<param name="Name" value="Computes the generalized inverse of a rectangular matrix">
+<param name="Local" value="ginv.html">
+</OBJECT>
+<LI> <OBJECT type="text/sitemap">
+<param name="Name" value="computes the mean operator matrix corresponding to a (generalized) factor.">
+<param name="Local" value="mean.op.html">
+</OBJECT>
+<LI> <OBJECT type="text/sitemap">
+<param name="Name" value="Computes the nonzero canonical efficiency factors between two projection matrices">
+<param name="Local" value="efficiencies.html">
+</OBJECT>
+<LI> <OBJECT type="text/sitemap">
+<param name="Name" value="Computes the projection and Residual operators for two projection matrices        that may be nonorthogonal">
+<param name="Local" value="projectnonorth.html">
+</OBJECT>
+<LI> <OBJECT type="text/sitemap">
+<param name="Name" value="generates patterned uniform random numbers.">
+<param name="Local" value="randrep.html">
+</OBJECT>
+<LI> <OBJECT type="text/sitemap">
+<param name="Name" value="Performs REML likelihood ratio test.">
+<param name="Local" value="reml.lrt.html">
+</OBJECT>
+<LI> <OBJECT type="text/sitemap">
+<param name="Name" value="Produces a trellis graph in which the values for an individual unit are plotted.">
+<param name="Local" value="plot.profiles.html">
+</OBJECT>
+<LI> <OBJECT type="text/sitemap">
+<param name="Name" value="Tests whether all elements are zero.">
+<param name="Local" value="is.zero.html">
+</OBJECT>
+</UL>
+</UL>
+</BODY></HTML>

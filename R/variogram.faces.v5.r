@@ -1,6 +1,6 @@
 "get.residuals" <- function(asreml.obj, units="ignore")
 { 
-  asr4 <- ("asreml4" %in% loadedNamespaces())
+  asr4 <- isASRemlVersionLoaded(4, notloaded.fault = TRUE)
 
   options <- c("addtoresiduals", "ignore")
   unit.opt <- options[check.arg.values(units, options)]
@@ -73,7 +73,7 @@
 #tolerance is the value such that eigenvalues less than it are consdered to be zero
 #... parameters to supply to asreml calls within variofaces.asreml
 { 
-  asr4 <- ("asreml4" %in% loadedNamespaces())
+  asr4 <- isASRemlVersionLoaded(4, notloaded.fault = TRUE)
   
   options <- c("addtoresiduals", "ignore")
   unit.opt <- options[check.arg.values(units, options)] 
@@ -307,9 +307,9 @@
   
   if (asr4)
   {
-    env.var <- foreach (i = 1:nsim, .packages = c("asreml4","asremlPlus"))  %dopar%
+    env.var <- foreach (i = 1:nsim, .packages = c("asreml","asremlPlus"))  %dopar%
                         { 
-                          asreml4::asreml.options(fail = "soft")
+                          asreml::asreml.options(fail = "soft") #asreml4::asreml.options(fail = "soft")
                           while (!conv)
                           { 
                             env.dat <- within(env.dat, 
@@ -333,7 +333,7 @@
                             else
                               sect.dat <- res.dat[res.dat[[fac.sec]]==k, -1]
                             #      sect.dat <- as.matrix(sect.dat)
-                            sim.var <- asreml4::asr_varioGram(sect.dat)
+                            sim.var <- asreml::asr_varioGram(sect.dat) #asreml4::asr_varioGram(sect.dat)
                             names(sim.var)[1:2] <- grid.facs
                             env.var[[1]][[k]] <- sim.var[sim.var[[fac2]]==0,]$gamma
                             env.var[[2]][[k]] <- sim.var[sim.var[[fac1]]==0,]$gamma
@@ -344,6 +344,7 @@
   {
     env.var <- foreach (i = 1:nsim, .packages = c("asreml","asremlPlus"))  %dopar%
                         { 
+                          loadASRemlVersion(3, lib.loc = "D:\\Analyses\\R oldpkg")
                           while (!conv)
                           { 
                             env.dat <- within(env.dat, 
@@ -391,7 +392,7 @@
       sect.dat <- res.dat[res.dat[[fac.sec]]==k, -1]
     #    sect.dat <- as.matrix(sect.dat)
     if (asr4)
-      object.var <- asreml4::asr_varioGram(sect.dat)
+      object.var <- asreml::asr_varioGram(sect.dat) #asreml4::asr_varioGram(sect.dat)
     else
       object.var <- asreml::asreml.variogram(sect.dat)
     names(object.var)[1:2] <- grid.facs
@@ -482,7 +483,7 @@
   #tolerance is the value such that eigenvalues less than it are consdered to be zero
 #... parameters to supply to plot functions called within variofaces.asreml
 { 
-  asr4 <- ("asreml4" %in% loadedNamespaces())
+  asr4 <- isASRemlVersionLoaded(4, notloaded.fault = TRUE)
 
   options <- c("data", "fitted", "residuals", "all")
   opt <- options[unlist(lapply(which, check.arg.values, options=options))]
@@ -613,9 +614,9 @@
   if (asr4)
   {
     sim <- foreach (i = 1:nsim, .combine=rbind,
-                    .packages = c("asreml4","asremlPlus"))  %dopar%
+                    .packages = c("asreml","asremlPlus"))  %dopar%
                     { 
-                      asreml4::asreml.options(fail = "soft")
+                      asreml::asreml.options(fail = "soft") #asreml4::asreml.options(fail = "soft")
                       while (!conv)
                       { 
                         env.dat <- within(env.dat, 
@@ -640,6 +641,7 @@
     sim <- foreach (i = 1:nsim, .combine=rbind,
                     .packages = c("asreml","asremlPlus"))  %dopar%
                     { 
+                      loadASRemlVersion(3, lib.loc = "D:\\Analyses\\R oldpkg")
                       while (!conv)
                       { 
                         env.dat <- within(env.dat, 
@@ -709,7 +711,7 @@
   #     derived from simulated data. 
   #restype is a character string describing the type of residuals supplied.
 { 
-  asr4 <- ("asreml4" %in% loadedNamespaces())
+  asr4 <- isASRemlVersionLoaded(4, notloaded.fault = TRUE)
 
   if (!is.data.frame(data) | !is.data.frame(residuals))
     stop("Both data and residuals should be data frames")
@@ -792,7 +794,7 @@
       else
         sect.dat$res <- residuals[data[[fac.sec]] == k, (nvars+i-1)]
       if (asr4)
-        sim.var <- asreml4::asr_varioGram(sect.dat)
+        sim.var <- asreml::asr_varioGram(sect.dat) #asreml4::asr_varioGram(sect.dat)
       else
         sim.var <- asreml::asreml.variogram(sect.dat)
       
@@ -816,7 +818,7 @@
     else
       sect.dat <- data[data[[fac.sec]]==k, -1]
     if (asr4)
-      object.var <- asreml4::asr_varioGram(sect.dat)
+      object.var <- asreml::asr_varioGram(sect.dat) #asreml4::asr_varioGram(sect.dat)
     else
       object.var <- asreml::asreml.variogram(sect.dat)
     names(object.var)[1:2] <- grid.facs

@@ -1,0 +1,68 @@
+<html><head><title>Applies the modified angular transformation to a vector of counts.</title>
+<meta http-equiv="Content-Type" content="text/html; charset=">
+<link rel="stylesheet" type="text/css" href="Rchm.css">
+</head>
+<body>
+
+<table width="100%"><tr><td>angular.mod(sundry)</td><td align="right">R Documentation</td></tr></table><object type="application/x-oleobject" classid="clsid:1e2a7bd0-dab9-11d0-b93a-00c04fc99f9e">
+<param name="keyword" value="R:   angular.mod">
+<param name="keyword" value=" Applies the modified angular transformation to a vector of counts.">
+</object>
+
+
+<h2>Applies the modified angular transformation to a vector of counts.</h2>
+
+
+<h3>Description</h3>
+
+<p>
+Applies the angular transformation to a vector of counts. A 
+modified transformation is used that is appropriate when N &lt; 50 and the 
+proportion is not between 0.3 and 0.7. The transformation is given by 
+<i>sin^{-1}{frac{count + 0.375}{n + 0.75}}</i>
+{arcsin( sqrt( (count + 0.375) / (n + 0.75) ) )}.
+</p>
+
+
+<h3>Usage</h3>
+
+<pre>angular.mod(count, n)</pre>
+
+
+<h3>Arguments</h3>
+
+<table summary="R argblock">
+<tr valign="top"><td><code>count</code></td>
+<td>
+The numeric vector of counts.</td></tr>
+<tr valign="top"><td><code>n</code></td>
+<td>
+The number(s) of observations from which the count(s) were obtained.</td></tr>
+</table>
+
+<h3>Value</h3>
+
+<p>
+A numeric vector.</p>
+
+<h3>See Also</h3>
+
+<p>
+<code><a href="angular.html">angular</a></code>
+</p>
+
+
+<h3>Examples</h3>
+
+<pre>
+n &lt;-25
+y &lt;- rbinom(10, n, 0.5)
+y &lt;- c(y,0,n)
+p.ang.mod &lt;- angular.mod(y, n)
+</pre>
+
+
+
+<hr><div align="center">[Package <em>sundry</em> version 0.1-0 <a href="00Index.html">Index]</a></div>
+
+</body></html>

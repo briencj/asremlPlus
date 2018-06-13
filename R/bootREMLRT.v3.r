@@ -21,7 +21,7 @@ bootREMLRT.asreml <- function(h0.asreml.obj, h1.asreml.obj,
       class(h0.asreml.obj) != "asreml")
     stop("Must supply two objects of class 'asreml'")
   
-  asr4 <- ("asreml4" %in% loadedNamespaces())
+  asr4 <- isASRemlVersionLoaded(4, notloaded.fault = TRUE)
   
   #Check that fixed and sparse models are the same
   if (asr4)
@@ -78,7 +78,7 @@ bootREMLRT.asreml <- function(h0.asreml.obj, h1.asreml.obj,
         #Check whether have the design matrix
         if (is.null(h0.asreml.obj$design))
         {
-          asreml4::asreml.options(design = TRUE)
+          asreml::asreml.options(design = TRUE) #asreml4::asreml.options(design = TRUE)
           h0.asreml.obj <- eval(h0.asreml.obj$call)
         }
         for (term in fixed.spline.terms)
@@ -143,12 +143,11 @@ bootREMLRT.asreml <- function(h0.asreml.obj, h1.asreml.obj,
   h0.call <- h0.asreml.obj$call
   if (!("data" %in% names(h1.call) & "data" %in% names(h0.call)))
     stop("bootREMLRT.asreml assumes that data has been set in the two asreml objects")
-  if (as.character(h1.call$data) != as.character(h1.call$data))
-    stop("The data argument is not the same for the two asreml calls")
   sim.dat <- eval(h1.call$data)
   h0.dat <- eval(h0.call$data)
-  if (ncol(sim.dat) != ncol(h0.dat))
-    stop(("The number of columns in data is not the same in the two  asreml objects"))
+  if (ncol(sim.dat) != ncol(h0.dat) || 
+      nrow(suppressMessages(dplyr::anti_join(sim.dat,h0.dat)))!=0)
+    stop("The data argument is not the same for the two asreml calls")
   #check that the y var is in both asreml objects and has the same values
   h1.y <- languageEl(h1.call$fixed, which = 2)
   if (1 - (abs(var(sim.dat[[as.character(h1.y)]], na.rm = TRUE) / 
@@ -210,23 +209,27 @@ bootREMLRT.asreml <- function(h0.asreml.obj, h1.asreml.obj,
       }
   }
   
+  #Get bound values
+  asr4 <- isASRemlVersionLoaded(4, notloaded.fault = TRUE)
+  if (asr4)
+  {
+    bound.h0 <- asreml::vpc.char(h0.asreml.obj) #asreml4::vpc.char(h0.asreml.obj)
+    bound.h1 <- asreml::vpc.char(h1.asreml.obj) #asreml4::vpc.char(h1.asreml.obj)
+  }
+  else
+  {
+    bound.h0 <- names(h0.asreml.obj$gammas.con)
+    names(bound.h0) <- names(h0.asreml.obj$gammas)
+    bound.h1 <- names(h1.asreml.obj$gammas.con)
+    names(bound.h1) <- names(h1.asreml.obj$gammas)
+  }
   #Calculate observed p-value
-#  if (asr4)
-#  {
-    summ.h1 <- summary(h1.asreml.obj)
-    summ.h0 <- summary(h0.asreml.obj)
-#  }
-#  else
-#  {
-#    summ.h1 <- asreml::summary.asreml(h1.asreml.obj)
-#    summ.h0 <- asreml::summary.asreml(h0.asreml.obj)
-#  }
-  DF.diff <- DFdiff(summ.h1, summ.h0, bound.exclusions = bound.exclusions)	
+  DF.diff <- DFdiff(bound.h1, bound.h0, bound.exclusions = bound.exclusions)	
   DF <- DF.diff$DF
   NBound.h1 <- DF.diff$NBound.h1
   NBound.h0 <- DF.diff$NBound.h0
   
-  REMLRT <- 2*(summ.h1$loglik-summ.h0$loglik)
+  REMLRT <- 2*(h1.asreml.obj$loglik-h0.asreml.obj$loglik)
 
   #Set up for simulation
   conv <- FALSE
@@ -248,9 +251,9 @@ bootREMLRT.asreml <- function(h0.asreml.obj, h1.asreml.obj,
   if (asr4)
   {
     REMLRT.out <- foreach (i = 1:nboot, .combine = rbind, .inorder=FALSE,
-                           .packages = c("asreml4","asremlPlus"))  %dopar%
+                           .packages = c("asreml","asremlPlus"))  %dopar%
                            { 
-                             asreml4::asreml.options(fail = "soft")
+                             asreml::asreml.options(fail = "soft") #asreml4::asreml.options(fail = "soft")
                              while (!conv)
                              { 
                                nnonconv <- 0
@@ -272,9 +275,7 @@ bootREMLRT.asreml <- function(h0.asreml.obj, h1.asreml.obj,
                                } else
                                {
                                  #Perform the test
-                                 summ.h1 <- summary(h1.asr)
-                                 summ.h0 <- summary(h0.asr)
-                                 REMLRT.sim <- 2*(summ.h1$loglik-summ.h0$loglik)
+                                 REMLRT.sim <- 2*(h1.asr$loglik-h0.asr$loglik)
                                }
                              }
                              conv=FALSE
@@ -285,6 +286,7 @@ bootREMLRT.asreml <- function(h0.asreml.obj, h1.asreml.obj,
     REMLRT.out <- foreach (i = 1:nboot, .combine = rbind, .inorder=FALSE,
                            .packages = c("asreml","asremlPlus"))  %dopar%
                            { 
+                             loadASRemlVersion(3, lib.loc = "D:\\Analyses\\R oldpkg")
                              while (!conv)
                              { 
                                sim.dat <- within(sim.dat, 
@@ -305,9 +307,7 @@ bootREMLRT.asreml <- function(h0.asreml.obj, h1.asreml.obj,
                                } else
                                {
                                  #Perform the test
-                                 summ.h1 <- summary(h1.asr) #asreml::summary.asreml(h1.asr)
-                                 summ.h0 <- summary(h0.asr) #asreml::summary.asreml(h0.asr)
-                                 REMLRT.sim <- 2*(summ.h1$loglik-summ.h0$loglik)
+                                 REMLRT.sim <- 2*(h1.asr$loglik-h0.asr$loglik)
                                }
                              }
                              conv=FALSE

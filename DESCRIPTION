@@ -1,14 +1,14 @@
 Package: asremlPlus
-Version: 4.0-28
-Date: 2018-04-18
+Version: 4.1-02
+Date: 2018-06-13
 Title: Augments the Use of 'ASReml-R' and 'ASReml4-R' in Fitting Mixed Models
 Author: Chris Brien <Chris.Brien@unisa.edu.au>.
 Maintainer: Chris Brien <Chris.Brien@unisa.edu.au>
 Depends: 
-    R (>= 2.10.0)
-Imports: dae, ggplot2, stats, methods, utils, reshape, plyr, stringr, RColorBrewer, grDevices, 
-         foreach, parallel, doParallel
-Suggests: testthat
+    R (>= 3.1.0)
+Imports: dae, ggplot2, stats, methods, utils, reshape, plyr, dplyr, stringr, 
+         RColorBrewer, grDevices, foreach, parallel, doParallel
+Suggests: testthat, lattice
 Enhances: asreml
 SystemRequirements: asreml-R 2.x
 Description: Assists in automating the testing of terms in mixed models when 'asreml' is used 

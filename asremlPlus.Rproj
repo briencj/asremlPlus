@@ -1,0 +1,18 @@
+Version: 1.0
+
+RestoreWorkspace: Default
+SaveWorkspace: Default
+AlwaysSaveHistory: Default
+
+EnableCodeIndexing: Yes
+UseSpacesForTab: Yes
+NumSpacesForTab: 2
+Encoding: UTF-8
+
+RnwWeave: knitr
+LaTeX: pdfLaTeX
+
+BuildType: Package
+PackageInstallArgs: --build --compact-docs --with-keep.source --library="D:\\Analyses\\R Library"
+PackageBuildArgs: --compact-vignettes=qpdf
+PackageBuildBinaryArgs: --build --compact-docs --with-keep.source --library="D:\\Analyses\\R Library"

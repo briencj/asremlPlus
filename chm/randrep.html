@@ -1,0 +1,90 @@
+<html><head><title>generates patterned uniform random numbers.</title>
+<meta http-equiv="Content-Type" content="text/html; charset=">
+<link rel="stylesheet" type="text/css" href="Rchm.css">
+</head>
+<body>
+
+<table width="100%"><tr><td>randrep(sundry)</td><td align="right">R Documentation</td></tr></table><object type="application/x-oleobject" classid="clsid:1e2a7bd0-dab9-11d0-b93a-00c04fc99f9e">
+<param name="keyword" value="R:   randrep">
+<param name="keyword" value=" generates patterned uniform random numbers.">
+</object>
+
+
+<h2>generates patterned uniform random numbers.</h2>
+
+
+<h3>Description</h3>
+
+<p>
+generates patterned uniform random numbers..
+</p>
+
+
+<h3>Usage</h3>
+
+<pre>randrep(n, each=1, times=1, sets=1)</pre>
+
+
+<h3>Arguments</h3>
+
+<table summary="R argblock">
+<tr valign="top"><td><code>n</code></td>
+<td>
+The number of uniform random numbers to generate.</td></tr>
+<tr valign="top"><td><code>each</code></td>
+<td>
+If <code>each</code> is supplied, each element of random number is 
+repeated <code>each</code> times. This vector is repeated again if 
+<code>times</code> is also given.</td></tr>
+<tr valign="top"><td><code>times</code></td>
+<td>
+the number of times to replicate the n random numbers that have 
+been repeated <code>each</code> times to form a set of random numbers. 
+There are two ways to use <code>times</code>. If it is a single value, 
+the whole of the repeated random numbers is replicated that many 
+times. If it is a vector that is the same length as the number of
+repeated random numbers, the result is a vector with <code>times</code>[1] 
+replications of the first random number, <code>times</code>[2] of the 
+second, etc. Zero is allowed in both usages; if <code>times=0</code>, 
+then the length of the result is 0. It is an error if the length 
+of <code>times</code> is neither 1 nor equal to the number of repeated 
+random numbers.</td></tr>
+<tr valign="top"><td><code>sets</code></td>
+<td>
+The number of sets of random numbers to generate.</td></tr>
+</table>
+
+<h3>Value</h3>
+
+<p>
+A vector of random numbers whose length is <code>n * each * times * sets</code>.</p>
+
+<h3>See Also</h3>
+
+<p>
+<code><a onclick="findlink('base', 'order.html')" style="text-decoration: underline; color: blue; cursor: hand">order</a></code>, <code><a onclick="findlink('base', 'rep.html')" style="text-decoration: underline; color: blue; cursor: hand">rep</a></code>, <code><a onclick="findlink('stats', 'Uniform.html')" style="text-decoration: underline; color: blue; cursor: hand">runif</a></code>
+</p>
+
+
+<h3>Examples</h3>
+
+<pre>
+    randrep(5, each = 2, times = 3, sets = 3)
+
+    Random.Order &lt;- order(randrep(2, each=12), randrep(3, each=4, times=2), randrep(4, sets = 6))
+</pre>
+
+<script Language="JScript">
+function findlink(pkg, fn) {
+var Y, link;
+Y = location.href.lastIndexOf("\\") + 1;
+link = location.href.substring(0, Y);
+link = link + "../../" + pkg + "/chtml/" + pkg + ".chm::/" + fn;
+location.href = link;
+}
+</script>
+
+
+<hr><div align="center">[Package <em>sundry</em> version 0.1-0 <a href="00Index.html">Index]</a></div>
+
+</body></html>

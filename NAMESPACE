@@ -19,12 +19,14 @@ export(addrm.terms.asreml,
        estimateV.asreml,
        facCombine,
        facCombine.alldiffs,
+       getASRemlVersionLoaded,
        infoCriteria,
        infoCriteria.asreml,
        info.crit.asreml,
        info.crit,
        linTransform, 
        linTransform.alldiffs,
+       loadASRemlVersion,
        newfit,
        newfit.asreml,
        newrcov.asrtests,
@@ -92,9 +94,10 @@ importFrom("stats", "as.formula", "fitted", "fitted.values", "formula", "model.m
                     "update.formula")
 importFrom("RColorBrewer", "brewer.pal")
 importFrom("grDevices", "savePlot")
+importFrom("dplyr", "anti_join")
 importFrom("methods", "languageEl", "languageEl<-")
 importFrom("reshape", "melt")
-importFrom("utils", "data", "tail")
+importFrom("utils", "data", sessionInfo, "tail")
 importFrom("foreach", "foreach", "%do%", "%dopar%")
 importFrom("parallel", "makeCluster", "stopCluster", "detectCores", "nextRNGStream")
 importFrom("doParallel", "registerDoParallel")
