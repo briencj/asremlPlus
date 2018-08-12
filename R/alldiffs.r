@@ -244,6 +244,8 @@ facCombine.alldiffs <- function(object, factors, order="standard", combine.level
   }
   
   classify <- attr(object, which = "classify")
+  if (is.null(classify))
+    stop("The alldiffs object does not have the classify attrtibute set")
   class.facs <- fac.getinTerm(classify, rmfunction = TRUE)
   class.facs[fstfac] <- newfac
   class.facs <- class.facs[-c(match(factors[-1], class.facs))]
@@ -273,7 +275,7 @@ facCombine.alldiffs <- function(object, factors, order="standard", combine.level
   return(object)
 }
 
-subset.alldiffs <- function(x, subset, ...)
+subset.alldiffs <- function(x, subset, rmClassifyVars = NULL, ...)
 {
   #Deal with unsupported parameters
   tempcall <- list(...)
@@ -285,9 +287,9 @@ subset.alldiffs <- function(x, subset, ...)
       stop("drop is not supported in subset.alldiffs")
   }
   
-  if (missing(subset)) 
-    warning("subset is missing without a default")
-  else 
+  if (missing(subset) & is.null(rmClassifyVars)) 
+    warning("neither subset or rmClassifyVars have been set")
+  if (!missing(subset)) 
   {
     expr <- substitute(subset)
     cond <- eval(expr, x$predictions, parent.frame())
@@ -321,6 +323,47 @@ subset.alldiffs <- function(x, subset, ...)
     {
       x$sed <- x$sed[cond,cond]
       x <- recalcLSD(x, ...)
+    }
+  }
+  if (!is.null(rmClassifyVars))
+  {
+    classify <- attr(x, which = "classify")
+    if (is.null(classify))
+      stop("The alldiffs object does not have the classify attrtibute set")
+    rmfac <- fac.combine(as.list(x$predictions[rmClassifyVars]))
+    if (length(unique(rmfac)) > 1)
+      stop("The classify variables to be removed have more than one combination in the predictions; \nthe predictions cannot be unambiguosly identified.")
+    class.facs <- fac.getinTerm(classify, rmfunction = TRUE)
+    class.facs <- class.facs[!(class.facs %in% rmClassifyVars)]
+    classify <- fac.formTerm(class.facs)
+    x$predictions <- x$predictions[, -c(match(rmClassifyVars, names(x$predictions)))]
+    if (!is.null(x$backtransforms))
+    {
+      x$backtransforms <- x$backtransforms[, -c(match(rmClassifyVars, 
+                                                      names(x$backtransforms)))]
+    }
+    attr(x, which = "classify") <- classify
+    response <- attr(x, which = "response")
+    if (is.null(response))
+      stop("The alldiffs object does not have the response attrtibute set")
+    pred.labs <- makePredictionLabels(x$predictions, classify, response)
+    pred.lev <- pred.labs$pred.lev
+    
+    if (!is.null(x$vcov))
+    {
+      colnames(x$vcov) <- rownames(x$vcov) <- pred.lev
+    }
+    if (!is.null(x$differences))
+    {
+      colnames(x$differences) <- rownames(x$differences) <- pred.lev
+    }
+    if (!is.null(x$p.differences))
+    {
+      colnames(x$p.differences) <- rownames(x$p.differences) <- pred.lev
+    }
+    if (!is.null(x$sed))
+    {
+      colnames(x$sed) <- rownames(x$sed) <- pred.lev
     }
   }
   return(x)
@@ -797,6 +840,7 @@ redoErrorIntervals.alldiffs <- function(alldiffs.obj, error.intervals = "Confide
                          sortWithinVals = sortWithinVals, sortOrder = sortOrder)
   
   #Ensure that predictions and other components are in standard order for the classify
+  #Ensure that predictions and other components are in standard order for the classify
   class <- unlist(strsplit(classify, ":", fixed = TRUE))
   if (!all(class == names(alldiffs.obj$predictions)[1:length(class)]))
   {
@@ -990,6 +1034,29 @@ redoErrorIntervals.alldiffs <- function(alldiffs.obj, error.intervals = "Confide
     }
     alldiffs.obj$backtransforms <- backtransforms
   }
+  return(alldiffs.obj)
+}
+
+"reorderClassify.alldiffs" <- function(alldiffs.obj, newclassify, 
+                                       sortFactor = NULL, sortWithinVals = NULL, 
+                                       sortOrder = NULL, decreasing = FALSE, 
+                                       ...)
+{
+  alldiffs.obj <- allDifferences(alldiffs.obj$predictions, classify = newclassify, 
+                                 vcov = alldiffs.obj$vcov,
+                                 differences = alldiffs.obj$differences, 
+                                 p.differences = alldiffs.obj$p.differences, 
+                                 sed = alldiffs.obj$sed,
+                                 LSD = alldiffs.obj$LSD, 
+                                 backtransforms = alldiffs.obj$bakctransforms,
+                                 response = attr(alldiffs.obj, which = "response"), 
+                                 response.title = attr(alldiffs.obj, 
+                                                       which = "response.title"),
+                                 term = attr(alldiffs.obj, which = "term"), 
+                                 tdf = attr(alldiffs.obj, which = "tdf"),
+                                 sortFactor = sortFactor, sortOrder = sortOrder, 
+                                 sortWithinVals = sortWithinVals,
+                                 decreasing = decreasing, ...)
   return(alldiffs.obj)
 }
 

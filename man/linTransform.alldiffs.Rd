@@ -55,15 +55,7 @@
              inestimable.rm = TRUE, ...)
 }
 \arguments{
- \item{alldiffs.obj}{An \code{alldiffs} object that is a list with components 
-       \code{predictions} containing the predictions and 
-       their standard errors, \code{vcov} containing the variance matrix of the 
-       \code{predictions}, \code{differences} containing all pairwise 
-       differences between the predictions, \code{p.differences} containing 
-       p-values for all pairwise differences between the predictions, 
-       \code{sed} containing the standard errors of all pairwise differences 
-       between the predictions, and an \code{LSD} containing the mean, minimum 
-       and maximum LSDs.}
+\item{alldiffs.obj}{An object of S3-class \code{alldiffs} (see \code{\link{as.alldiffs}}).}
 \item{classify}{a \code{\link{character}} string giving the variables that 
                  define the margins of the multiway table to be predicted. 
                  Multiway tables are specified by forming an interaction type 

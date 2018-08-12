@@ -1,5 +1,11 @@
 \name{news}
 \title{News for Package asremlPlus}
+\section{asremlPlus Version 4.1-03 (2018-08-12)}{
+  \itemize{
+    \item{Add new function reorderClassify.alldiffs.}
+    \item{Add \code{rmClassifyVars} to subset.alldiffs.}
+  }
+}
 \section{asremlPlus Version 4.1-02 (2018-06-13)}{
   \itemize{
     \item{Rebuild under latest version of R 3.5.0 with requirement for R >= 3.1.0.}

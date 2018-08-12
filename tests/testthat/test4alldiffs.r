@@ -22,7 +22,7 @@ test_that("allDifferences_asreml4", {
   den.df <- wald.tab[match("Variety", rownames(wald.tab)), "denDF"]
   Var.diffs <- as.alldiffs(predictions = Var.pred$pvals, 
                            sed = Var.pred$sed, 
-                           tdf = den.df)
+                           classify = "Nitrogen:Variety", response = "Yield", tdf = den.df)
   testthat::expect_equal(length(attributes(Var.diffs)),3)
   testthat::expect_null(attr(Var.diffs, which = "sortOrder"))
   
@@ -35,18 +35,27 @@ test_that("allDifferences_asreml4", {
                           as.character(Var.sort.diffs$predictions$Variety[2]) == "Golden Rain")
   testthat::expect_equal(length(attr(Var.sort.diffs, which = "sortOrder")),3)
   
-  #Test for re-order factors
+  #Test for re-order factors with allDifferences
   Var.reord.diffs <- allDifferences(predictions = Var.pred$pvals,
                                     classify = "Variety:Nitrogen", 
                                     sed = Var.pred$sed, tdf = den.df)
   testthat::expect_true(as.character(Var.reord.diffs$predictions$Variety[1]) == "Victory" &
                           as.character(Var.reord.diffs$predictions$Variety[2]) == "Victory")
   
-  #Test for re-order factors
+  #Test for re-order factors with reorderClassify
+  Var.reord.diffs <- reorderClassify(Var.diffs, newclassify = "Variety:Nitrogen")
+  testthat::expect_true(as.character(Var.reord.diffs$predictions$Variety[1]) == "Victory" &
+                          as.character(Var.reord.diffs$predictions$Variety[2]) == "Victory")
+  
+  #Test for re-order factors and sort
   Var.both.diffs <- allDifferences(predictions = Var.pred$pvals,
                                    classify = "Variety:Nitrogen", 
                                    sed = Var.pred$sed, tdf = den.df, 
                                    sortFactor = "Variety", decreasing = TRUE)
+  testthat::expect_true(as.character(Var.both.diffs$predictions$Variety[1]) == "Marvellous" & 
+                          as.character(Var.both.diffs$predictions$Variety[2]) == "Marvellous")
+  Var.both.diffs <- reorderClassify(Var.diffs, newclassify = "Variety:Nitrogen", 
+                                     sortFactor = "Variety", decreasing = TRUE)
   testthat::expect_true(as.character(Var.both.diffs$predictions$Variety[1]) == "Marvellous" & 
                           as.character(Var.both.diffs$predictions$Variety[2]) == "Marvellous")
 })
@@ -79,6 +88,12 @@ test_that("sort.alldiffs4", {
   testthat::expect_equal(as.character(diffs$predictions$Genotype[1]),"Axe")
   testthat::expect_equal(length(attributes(diffs)),8)
   testthat::expect_null(attr(diffs, which = "sortOrder"))
+  
+  #Test reodering of the classify
+  diffs.reord <- reorderClassify(diffs, newclassify = "A:B:Genotype")
+  testthat::expect_equal(as.character(diffs.reord$predictions$Genotype[1]),"Axe")
+  testthat::expect_equal(as.character(diffs.reord$predictions$Genotype[2]),"Espada")
+  testthat::expect_true(abs(diffs.reord$predictions$predicted.value[2] - -0.2265723017) < 1e-06)
   
   testthat::expect_silent(plotPredictions(data = diffs$predictions, 
                                           classify = "Genotype:A:B", 
@@ -278,7 +293,14 @@ test_that("subset.alldiffs4", {
   testthat::expect_false(any(diffs.subs$predictions$Genotype %in% c("Excalibur","Espada")))
   testthat::expect_false(any(diffs.subs$predictions$B %in% c("D3","D4")))
   testthat::expect_equal(length(attributes(diffs.subs)),8)
-
+  
+  #Test subset with removal of vars
+  diffs.subs <- subset(diffs, subset = A == "N1" & B == "D2", rmClassifyVars = c("A","B"))
+  testthat::expect_is(diffs.subs, "alldiffs")
+  testthat::expect_equal(nrow(diffs.subs$predictions),10)
+  testthat::expect_equal(ncol(diffs.subs$predictions),6)
+  testthat::expect_false(any(c("A","B") %in% names(diffs.subs$predictions)))
+  
   data(WaterRunoff.dat)
   #Run analysis and produce alldiffs object
   asreml.options(keep.order = TRUE) #required for asreml4 only

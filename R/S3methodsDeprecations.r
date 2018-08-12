@@ -21,6 +21,7 @@ variofaces <- function(asreml.obj, ...) UseMethod("variofaces")
 linTransform <- function(alldiffs.obj, ...) UseMethod("linTransform")
 recalcLSD <- function(alldiffs.obj, ...) UseMethod("recalcLSD")
 redoErrorIntervals <- function(alldiffs.obj, ...) UseMethod("redoErrorIntervals")
+reorderClassify <- function(alldiffs.obj, ...) UseMethod("reorderClassify")
 
 setvarianceterms <- function(call, ...) UseMethod("setvarianceterms")
 

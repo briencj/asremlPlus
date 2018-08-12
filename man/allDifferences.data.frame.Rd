@@ -19,7 +19,7 @@
   if necessary, the order of the columns of the variables in the \code{predictions} component are 
   changed to match their order in the \code{classify}. The \code{sortFactor} or \code{sortOrder} 
   arguments can be used to order of the values for the \code{classify} variables, which is 
-   achieved using \code{\link{sort.alldiffs}}. 
+  achieved using \code{\link{sort.alldiffs}}. 
 
   Each p-value is computed as the probability of a t-statistic as large as or larger than 
   the absolute value of the observed difference divided by its standard error. The 
@@ -195,8 +195,9 @@
 
 \author{Chris Brien}
 \seealso{\code{\link{asremlPlus-package}}, \code{\link{as.alldiffs}}, \code{\link{sort.alldiffs}}, 
-         \code{\link{subset.alldiffs}}, \code{\link{print.alldiffs}},  \cr
-         \code{\link{redoErrorIntervals.alldiffs}},  \code{\link{recalcLSD.alldiffs}},  \cr
+         \code{\link{subset.alldiffs}},  \code{\link{print.alldiffs}},  \cr
+         \code{\link{reorderClassify.alldiffs}},  \code{\link{redoErrorIntervals.alldiffs}},  
+         \code{\link{recalcLSD.alldiffs}},  \cr
          \code{\link{plotPredictions.data.frame}}, 
          \code{\link{predictPlus.asreml}}, \code{\link{predictPresent.asreml}}}
 \examples{\dontrun{

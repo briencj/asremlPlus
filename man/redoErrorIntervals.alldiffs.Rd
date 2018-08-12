@@ -12,14 +12,7 @@
                    meanLSD.type = "overall", LSDby = NULL, ...)
 }
 \arguments{
- \item{alldiffs.obj}{An \code{alldiffs} object that is a list with components 
-       \code{predictions} containing the predictions and 
-       their standard errors, \code{differences} containing all pairwise 
-       differences between the predictions, \code{p.differences} containing 
-       p-values for all pairwise differences between the predictions, 
-       \code{sed} containing the standard errors of all pairwise differences 
-       between the predictions, and an \code{LSD} containing the mean, minimum 
-       and maximum LSDs.}
+ \item{alldiffs.obj}{An object of S3-class \code{alldiffs} (see \code{\link{as.alldiffs}}).}
  \item{error.intervals}{A \code{\link{character}} string indicating the type of error interval, if any, 
              to calculate in order to indicate uncertainty in the results. 
              Possible values are \code{"none"}, \code{"StandardError"}, \code{"Confidence"} 

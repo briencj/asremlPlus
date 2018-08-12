@@ -8,15 +8,7 @@
 \method{recalcLSD}{alldiffs}(alldiffs.obj, meanLSD.type = "overall", LSDby = NULL, 
           alpha = 0.05, ...)}
 \arguments{
- \item{alldiffs.obj}{An alldiffs object that is a list with components 
-       \code{predictions} containing the predictions and 
-       their standard errors, \code{vcov} containing the variance matrix of the 
-       \code{predictions}, \code{differences} containing all pairwise 
-       differences between the predictions, \code{p.differences} containing 
-       p-values for all pairwise differences between the predictions, 
-       \code{sed} containing the standard errors of all pairwise differences 
-       between the predictions, and an \code{LSD} containing the mean, minimum 
-       and maximum LSDs.}
+\item{alldiffs.obj}{An object of S3-class \code{alldiffs} (see \code{\link{as.alldiffs}}).}
 \item{meanLSD.type}{A \code{\link{character}} string determining whether the mean LSD stored is 
              (i) the \code{overall} mean, based on the square root of the mean of the variances of 
              all pairwise variances, (ii) the mean for each \code{factor.combination} of the 
@@ -34,7 +26,7 @@
 \item{alpha}{The significance level for an LSD to compare a pair of predictions.}
 \item{\dots}{further arguments passed to \code{\link{allDifferences.data.frame}}.}
 }
-\value{An alldiffs object that is a list with components 
+\value{An \code{alldiffs} object that is a list with components 
        \code{predictions} containing the predictions and 
        their standard errors, \code{vcov} containing the variance matrix of the 
        \code{predictions}, \code{differences} containing all pairwise 
@@ -48,9 +40,9 @@
 \author{Chris Brien}
 \seealso{\code{\link{asremlPlus-package}}, \code{\link{as.alldiffs}}, \code{\link{sort.alldiffs}}, 
          \code{\link{subset.alldiffs}}, \code{\link{print.alldiffs}},  \cr 
-         \code{\link{redoErrorIntervals.alldiffs}},  \code{\link{plotPredictions.data.frame}}, 
-         \code{\link{predictPlus.asreml}}, \cr
-         \code{\link{predictPresent.asreml}}}
+         \code{\link{reorderClassify.alldiffs}}, \code{\link{redoErrorIntervals.alldiffs}},  
+         \code{\link{plotPredictions.data.frame}}, \cr 
+         \code{\link{predictPlus.asreml}}, \code{\link{predictPresent.asreml}}}
 \examples{\dontrun{
 data(WaterRunoff.dat)
 asreml.options(keep.order = TRUE) #required for asreml4 only

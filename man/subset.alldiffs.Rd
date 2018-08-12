@@ -2,11 +2,19 @@
 \alias{subset.alldiffs}
 \title{Subsets the components in an alldiffs object according to the supplied condition.}
 \description{Subsets each of the components of an \code{alldiffs} object. The subset is determined by applying the condition to the \code{prediction} component to determine which of its rows are to be included in the subset. Then, if present, this subset is applied to the rows of \code{backtransforms} and to the rows and columns of \code{differences}, \code{p.differences} and \code{sed} components. In addition, if \code{sed} is present, \code{\link{recalcLSD.alldiffs}} is called to recalculate the values in the \code{LSD} component, with any arguments supplied via the \code{\dots} argument passed ot it.}
-\usage{\method{subset}{alldiffs}(x, subset, ...)}
+\usage{\method{subset}{alldiffs}(x, subset, rmClassifyVars = NULL, ...)}
 \arguments{
  \item{x}{An object of S3-class \code{alldiffs}.}
  \item{subset}{A \code{\link{logical}} that detemines rows of the \code{predictions}  
               component of \code{x} to be included in the subset.}
+ \item{rmClassifyVars}{A \code{\link{character}} that contains the names of the 
+              variables in the \code{classify} attribute of \code{x} that are to be 
+              removed from the predictions \code{data.frame} and the names of the 
+              dimensions of the other components of \code{x}. It is advisable that 
+              this is only done when the combinations of the \code{rmClassifyVars} 
+              have only a single unique value; otherwise, the predictions and the 
+              rows an columns of the other components of \code{x} will not be 
+              unambiguously identified.}
  \item{\dots}{further arguments passed to \code{\link{recalcLSD.alldiffs}}.}
 }
 \value{An \code{alldiffs} object with the following components of the supplied 

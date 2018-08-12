@@ -3,9 +3,9 @@
 \title{Forms an object of S3-class \code{alldiffs} that stores the predictions for a model 
        fitted using asreml, along with supplied statistics for all pairwise differences.}
 \description{Creates an object of S3-class \code{alldiffs} that consists of a \code{list} 
-             containing the following components: \code{predictions}, \code{differences}, 
+             containing the following components: \code{predictions}, \code{vcov}, \code{differences}, 
              \code{p.differences}, \code{sed}, \code{LSD} and \code{backtransforms}. 
-             Predictions must be supplied to the functions while the others will be set 
+             Predictions must be supplied to the function while the others will be set 
              only if they are supplied; those not supplied are set to \code{NULL}. 
              It also has attributes \code{response}, \code{response.title}, \code{term}, 
              \code{classify}, \code{tdf}, \code{sortFactor} and \code{sortOrder}.
@@ -49,7 +49,12 @@
                     computing the variance of linear transformations of the predictions.}
 \item{LSD}{a \code{data.frame} containing the mean, minimum and maximum LSD for determining             
                     the significance of pairwise differences, the mean LSD being calculated using 
-                    the square root of the mean of the variances of pairwise differences.}
+                    the square root of the mean of the variances of pairwise differences. 
+                    If \code{factor.combination} was specified for \code{meanLSD.type} when the 
+                    LSDs were being calculated, then \code{LSD} contains an LSD for each 
+                    \code{factor.combination} of the \code{\link{factor}s} specified by \code{LSDby}; 
+                    each LSD is the square root of the mean of the variances for all 
+                    pairwise differences for each factor combination.}
  \item{backtransforms}{a \code{data.frame} containing the backtransformed values of the predicted values 
                     that is consistent with an object of class \code{asremlPredict} such as 
                     is stored in the \code{pvals} component of the \code{prediction} component 
@@ -91,7 +96,7 @@
               \code{levs <- levels(f)[order(x)]}.}
 }
 \value{An object of S3-class \code{alldiffs} that consists of a \code{list} 
-                containing the following components as desribed in the arguments above: 
+                containing the following components as described in the arguments above: 
                 \code{predictions}, \code{vcov}, \code{differences}, \code{p.differences}, \code{sed}, 
                 \code{LSD} and \code{backtransforms} and with attributes \code{names}, 
                 \code{class}, \code{response}, \code{response.title}, \code{term}, 
@@ -113,9 +118,10 @@
 \author{Chris Brien}
 \seealso{\code{\link{asremlPlus-package}}, \code{\link{print.alldiffs}}, \code{\link{sort.alldiffs}}, 
          \code{\link{subset.alldiffs}},  \cr
-         \code{\link{allDifferences.data.frame}}, \code{\link{redoErrorIntervals.alldiffs}},  
-         \code{\link{recalcLSD.alldiffs}}, \cr
-         \code{\link{predictPlus.asreml}}, \code{\link{plotPredictions.data.frame}}, 
+         \code{\link{allDifferences.data.frame}}, \code{\link{reorderClassify.alldiffs}}, 
+         \code{\link{redoErrorIntervals.alldiffs}},  \cr
+         \code{\link{recalcLSD.alldiffs}}, 
+         \code{\link{predictPlus.asreml}}, \code{\link{plotPredictions.data.frame}},  \cr
         \code{\link{predictPresent.asreml}}}
 \examples{\dontrun{
   Var.pred <- predict(current.asr, classify="Variety", sed=TRUE)$predictions
@@ -123,7 +129,7 @@
   den.df <- wald.tab[match("Variety", rownames(wald.tab)), "denDF"]
   Var.diffs <- as.alldiffs(predictions = Var.pred$pvals, 
                            sed = Var.pred$sed, 
-                           tdf = den.df)
+                           classify = "Variety", response = "Yield", tdf = den.df)
 }}
 \keyword{asreml}
 \keyword{htest}
