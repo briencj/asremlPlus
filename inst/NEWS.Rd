@@ -1,5 +1,10 @@
 \name{news}
 \title{News for Package asremlPlus}
+\section{asremlPlus Version 4.1-04 (2018-08-16)}{
+  \itemize{
+    \item{Modify legend size and position in plotPvalues.alldiffs.}
+  }
+}
 \section{asremlPlus Version 4.1-03 (2018-08-12)}{
   \itemize{
     \item{Add new function reorderClassify.alldiffs.}

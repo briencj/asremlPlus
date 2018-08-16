@@ -34,7 +34,8 @@
             axis.text.y=element_text(size=12),
             plot.title=element_text(face="bold"),
             panel.grid = element_blank(),
-            legend.position = "bottom", legend.key.width=unit(2,"cm"), 
+            legend.position = "right", 
+            legend.key.height=unit(2,"lines"), legend.key.width=unit(1.5,"lines"), 
             aspect.ratio = 1) +
       guides(fill=guide_colourbar(title = "p", nbin=50))
     if (show.sig)

@@ -10,11 +10,11 @@
  \item{rmClassifyVars}{A \code{\link{character}} that contains the names of the 
               variables in the \code{classify} attribute of \code{x} that are to be 
               removed from the predictions \code{data.frame} and the names of the 
-              dimensions of the other components of \code{x}. It is advisable that 
-              this is only done when the combinations of the \code{rmClassifyVars} 
-              have only a single unique value; otherwise, the predictions and the 
-              rows an columns of the other components of \code{x} will not be 
-              unambiguously identified.}
+              dimensions of the other components of \code{x}. In doing this, 
+              the combinations of the remaining \code{classify} variables must 
+              uniquely index the predictions. This will be the case when the 
+              combinations of the \code{rmClassifyVars} have only a single unique 
+              value.}
  \item{\dots}{further arguments passed to \code{\link{recalcLSD.alldiffs}}.}
 }
 \value{An \code{alldiffs} object with the following components of the supplied 
