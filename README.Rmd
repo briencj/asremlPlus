@@ -5,11 +5,23 @@ output:
     keep_md: yes
   pdf_document: default
 ---
+ 
+---
+ 
+ 
+---
+ 
+ 
+---
+ 
+ 
+---
+ 
 
 [![Project Status: Active:  The project has reached a stable, usable state and is being actively developed.](http://www.repostatus.org/badges/latest/active.svg)](http://www.repostatus.org/#active)
 [![minimal R version](https://img.shields.io/badge/R%3E%3D-2.10.0-6666ff.svg)](https://cran.r-project.org/)
 [![CRAN_Status_Badge](http://www.r-pkg.org/badges/version/asremlPlus)](https://cran.r-project.org/package=asremlPlus)
-[![packageversion](https://img.shields.io/badge/Package%20version-4.1.04-orange.svg?style=flat-square)]()
+[![packageversion](https://img.shields.io/badge/Package%20version-4.1.05-orange.svg?style=flat-square)]()
 `[![Last-changedate](https://img.shields.io/badge/last%20change-`r gsub('-', '--', Sys.Date())`-yellowgreen.svg)](/commits/master)
 [![Licence](https://img.shields.io/github/license/mashape/apistatus.svg)](http://choosealicense.com/licenses/mit/)
 [![Downloads](https://cranlogs.r-pkg.org/badges/last-week/asremlPlus)](commits/master)
@@ -34,6 +46,12 @@ For more information install the package and run the R command `news(package = â
 An overview can be obtained using `?asremlPlus`. In particular, an example of its use is given towards the bottom of the help information.
 
 ## Installing the package
+
+### From a repository using `drat`
+
+Windows binaries and source tarballs of the latest version of `asremlPlus` are available for installation from my [repository](http://chris.brien.name/rpackages). Installation instructions are available there.
+
+### Directly from  GitHub
 
 `asremlPlus` is an R package available on GitHub, so it can be installed from the RStudio console or an R command line session using the `devtools` command `install_github`. First, make sure `devtools` is installed, which, if you do not have it, can be done as follows:
 

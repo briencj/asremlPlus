@@ -1,5 +1,11 @@
 \name{news}
 \title{News for Package asremlPlus}
+\section{asremlPlus Version 4.1-05 (2018-08-29)}{
+  \itemize{
+    \item{Allow no \code{Vmatrix} in linTransform.alldiffs when \code{error.intervals} is \code{none} and allow transformation of \code{predicted.value} only when \code{vcov component} of \code{alldiffs} object is not available.}
+    \item{Allow no \code{sed} in allDifferences.data.frame when not \code{pairwise} is \code{TRUE}.}
+  }
+}
 \section{asremlPlus Version 4.1-04 (2018-08-16)}{
   \itemize{
     \item{Modify legend size and position in plotPvalues.alldiffs.}

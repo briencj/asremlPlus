@@ -782,7 +782,7 @@ redoErrorIntervals.alldiffs <- function(alldiffs.obj, error.intervals = "Confide
                               tdf = tdf)
   
   #Check alldiffs.obj
-  if (is.null(alldiffs.obj$sed))
+  if (pairwise && is.null(alldiffs.obj$sed))
     stop(paste("No sed supplied in alldiffs.obj \n",
                "- can obtain using sed=TRUE in predict.asreml"))
   predictions <- alldiffs.obj$predictions
@@ -839,7 +839,6 @@ redoErrorIntervals.alldiffs <- function(alldiffs.obj, error.intervals = "Confide
     alldiffs.obj <- sort(alldiffs.obj, decreasing = decreasing, sortFactor = sortFactor, 
                          sortWithinVals = sortWithinVals, sortOrder = sortOrder)
   
-  #Ensure that predictions and other components are in standard order for the classify
   #Ensure that predictions and other components are in standard order for the classify
   class <- unlist(strsplit(classify, ":", fixed = TRUE))
   if (!all(class == names(alldiffs.obj$predictions)[1:length(class)]))
@@ -1077,8 +1076,11 @@ redoErrorIntervals.alldiffs <- function(alldiffs.obj, error.intervals = "Confide
     warning("A linear transformation has not been specified")
   else
   {
+    #Get error.intervals
+    int.options <- c("none", "Confidence", "StandardError", "halfLeastSignificant")
+    int.opt <- int.options[check.arg.values(error.intervals, int.options)]
     #Check have vcov
-    if (is.null(alldiffs.obj$vcov))
+    if (int.opt != "none" && is.null(alldiffs.obj$vcov))
       stop("Need to have stored the variance matrix of the predictions in alldiffs.obj")
     
     #Get table option and  check if must form pairwise differences
@@ -1135,17 +1137,24 @@ redoErrorIntervals.alldiffs <- function(alldiffs.obj, error.intervals = "Confide
              " is not a subspace of the space for the classify ", classify)
       
       #Form predictions projected onto submodel
-      lintrans.vcov <- Q.submod %*% alldiffs.obj$vcov %*% Q.submod
       lintrans <- alldiffs.obj$predictions
       lintrans$predicted.value <- as.vector(Q.submod %*% lintrans$predicted.value)
-      lintrans$standard.error <- as.vector(sqrt(diag(lintrans.vcov)))
       
-      # Calculate the variance matrix for differences between predictions
-      n <- nrow(lintrans.vcov)
-      lintrans.sed <- matrix(rep(diag(lintrans.vcov), each = n), nrow = n) + 
-                        matrix(rep(diag(lintrans.vcov), times = n), nrow = n) - 
-                        2 * lintrans.vcov
-      lintrans.sed <- sqrt(lintrans.sed)  
+      # Calculate standard errors andthe variance matrix for differences between predictions
+      if (!is.null(alldiffs.obj$vcov))
+      {
+        lintrans.vcov <- Q.submod %*% alldiffs.obj$vcov %*% Q.submod
+        lintrans$standard.error <- as.vector(sqrt(diag(lintrans.vcov)))
+        n <- nrow(lintrans.vcov)
+        lintrans.sed <- matrix(rep(diag(lintrans.vcov), each = n), nrow = n) + 
+          matrix(rep(diag(lintrans.vcov), times = n), nrow = n) - 
+          2 * lintrans.vcov
+        lintrans.sed <- sqrt(lintrans.sed)  
+      } else
+      {
+        lintrans$standard.error <- NA
+        lintrans.sed <- NULL  
+      }
       
       #Form alldiffs object for linear transformation
       if (!Vmatrix)
@@ -1172,18 +1181,25 @@ redoErrorIntervals.alldiffs <- function(alldiffs.obj, error.intervals = "Confide
         lintrans <- data.frame(X = 1:nrow(linear.transformation))
       names(lintrans) <- "Combination"
       lintrans$Combination <- factor(lintrans$Combination, levels = lintrans$Combination)
-      lintrans.vcov <- linear.transformation %*% alldiffs.obj$vcov %*% t(linear.transformation)
       lintrans$predicted.value <- as.vector(linear.transformation %*% 
                                               alldiffs.obj$predictions$predicted.value)
-      lintrans$standard.error <- as.vector(sqrt(diag(lintrans.vcov)))
       lintrans$est.status <- "Estimable"
       lintrans$est.status[is.na(lintrans$predicted.value)] <- "Aliased"
       
-      # Calculate the variance matrix for differences between predictions
-      n <- nrow(lintrans.vcov)
-      lintrans.sed <- matrix(rep(diag(lintrans.vcov), each = n), nrow = n) + 
-        matrix(rep(diag(lintrans.vcov), times = n), nrow = n) - 2 * lintrans.vcov
-      lintrans.sed <- sqrt(lintrans.sed)  
+      # Calculate standard errors andthe variance matrix for differences between predictions
+      if (!is.null(alldiffs.obj$vcov))
+      {
+        lintrans.vcov <- linear.transformation %*% alldiffs.obj$vcov %*% t(linear.transformation)
+        lintrans$standard.error <- as.vector(sqrt(diag(lintrans.vcov)))
+        n <- nrow(lintrans.vcov)
+        lintrans.sed <- matrix(rep(diag(lintrans.vcov), each = n), nrow = n) + 
+          matrix(rep(diag(lintrans.vcov), times = n), nrow = n) - 2 * lintrans.vcov
+        lintrans.sed <- sqrt(lintrans.sed)  
+      } else
+      {
+        lintrans$standard.error <- NA
+        lintrans.sed <- NULL  
+      }
       
       #Form alldiffs object for linear transformation
       if (!Vmatrix)

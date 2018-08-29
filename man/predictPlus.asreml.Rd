@@ -1,15 +1,10 @@
 \name{predictPlus.asreml}
 \alias{predictPlus.asreml}
 \alias{predictPlus}
-\title{Forms the predictions and associated statistics for a term, 
-       using an asreml object and a wald.tab and taking into account that a 
-       numeric vector and a factor having parallel values may occur in 
-       the model. If a linear transformation is specified then the values of 
-       the linear transformation of predictions are returned, along with 
-       their standard errors and the pairwise differences and associated 
-       statistics. It stores the results in an object of 
-       class alldifffs and may print the results. 
-       It can be used when there are not parallel values.}
+\title{Forms the predictions for a term, their pairwise differences and 
+       associated statistics. A factor having parallel values may occur in 
+       the model and a linear transformation of the predictions can be specified.
+       It the results in an object of class alldifffs. }
 \description{This function forms the predictions for \code{term} using 
              \code{classify} and the supplied \code{asreml} object and stores 
              them in an \code{alldiffs} object. If \code{x.num} is 
@@ -45,7 +40,12 @@
              \code{list} components named \code{differences}, \code{sed}, 
              \code{p.differences} and \code{LSD}.
 
-             If a transformation has been applied (any one of 
+            If a linear transformation of the predictions is specified then the 
+            values of this linear transformation are returned, 
+            instead of the original predictions, along with their standard errors 
+            and the pairwise differences and associated statistics. 
+
+             If a transformation has been applied in the analysis (any one of 
              \code{transform.power} is not one, \code{scale} is  not one and 
              \code{offset} is nonzero), the backtransforms of the transformed 
              values and their lower and upper confidence intervals are added 
