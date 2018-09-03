@@ -1,5 +1,10 @@
 \name{news}
 \title{News for Package asremlPlus}
+\section{asremlPlus Version 4.1-06 (2018-09-03)}{
+  \itemize{
+    \item{Fix minor bugs in redoErrorIntervals.alldiffs}.}
+  }
+}
 \section{asremlPlus Version 4.1-05 (2018-08-29)}{
   \itemize{
     \item{Allow no \code{Vmatrix} in linTransform.alldiffs when \code{error.intervals} is \code{none} and allow transformation of \code{predicted.value} only when \code{vcov component} of \code{alldiffs} object is not available.}

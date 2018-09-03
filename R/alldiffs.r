@@ -580,10 +580,12 @@ redoErrorIntervals.alldiffs <- function(alldiffs.obj, error.intervals = "Confide
   denom.df <- attr(alldiffs.obj, which = "tdf")
   
   #Remove any intervals
-  if (any(grepl("upper", names(alldiffs.obj$predictions), fixed = TRUE)))
+  if (any(grepl("lower", names(alldiffs.obj$predictions), fixed = TRUE)
+          | grepl("upper", names(alldiffs.obj$predictions), fixed = TRUE)))
   {
-    alldiffs.obj$predictions <- alldiffs.obj$predictions[, -pmatch(c("lower.", "upper."), 
-                                                                   names(alldiffs.obj$predictions))]
+    cols <- pmatch(c("lower.", "upper."), names(alldiffs.obj$predictions))
+    cols <- cols[!is.na(cols)]
+    alldiffs.obj$predictions <- alldiffs.obj$predictions[, -cols]
   }
   
   #Add lower and upper uncertainty limits
@@ -736,8 +738,9 @@ redoErrorIntervals.alldiffs <- function(alldiffs.obj, error.intervals = "Confide
       if ("status" %in% names(alldiffs.obj$predictions))
         ks <- match("status", names(alldiffs.obj$predictions))
     }
-    if (!is.na(ks) && ks != length(names(alldiffs.obj$predictions)))
-      alldiffs.obj$predictions <- alldiffs.obj$predictions[, c(1:(ks-1), (ks+1), (ks+2), ks)]
+    klen <- length(names(alldiffs.obj$predictions))
+    if (!is.na(ks) && ks != klen)
+      alldiffs.obj$predictions <- alldiffs.obj$predictions[, c(1:(ks-1), (ks+1):klen, ks)]
   }
   return(alldiffs.obj)
 }
@@ -1186,7 +1189,7 @@ redoErrorIntervals.alldiffs <- function(alldiffs.obj, error.intervals = "Confide
       lintrans$est.status <- "Estimable"
       lintrans$est.status[is.na(lintrans$predicted.value)] <- "Aliased"
       
-      # Calculate standard errors andthe variance matrix for differences between predictions
+      # Calculate standard errors and the variance matrix for differences between predictions
       if (!is.null(alldiffs.obj$vcov))
       {
         lintrans.vcov <- linear.transformation %*% alldiffs.obj$vcov %*% t(linear.transformation)
