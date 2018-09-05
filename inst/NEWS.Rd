@@ -1,8 +1,13 @@
 \name{news}
 \title{News for Package asremlPlus}
+\section{asremlPlus Version 4.1-07 (2018-09-05)}{
+  \itemize{
+    \item{Add Ladybird.dat data set.}
+  }
+}
 \section{asremlPlus Version 4.1-06 (2018-09-03)}{
   \itemize{
-    \item{Fix minor bugs in redoErrorIntervals.alldiffs}.}
+    \item{Fix minor bugs in redoErrorIntervals.alldiffs.}
   }
 }
 \section{asremlPlus Version 4.1-05 (2018-08-29)}{
