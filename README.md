@@ -4,7 +4,7 @@
 [![minimal R version](https://img.shields.io/badge/R%3E%3D-2.10.0-6666ff.svg)](https://cran.r-project.org/)
 [![CRAN_Status_Badge](http://www.r-pkg.org/badges/version/asremlPlus)](https://cran.r-project.org/package=asremlPlus)
 [![packageversion](https://img.shields.io/badge/Package%20version-4.1.07-orange.svg?style=flat-square)]()
-`[![Last-changedate](https://img.shields.io/badge/last%20change-2018--09--05-yellowgreen.svg)](/commits/master)
+`[![Last-changedate](https://img.shields.io/badge/last%20change-2018--09--10-yellowgreen.svg)](/commits/master)
 [![Licence](https://img.shields.io/github/license/mashape/apistatus.svg)](http://choosealicense.com/licenses/mit/)
 [![Downloads](https://cranlogs.r-pkg.org/badges/last-week/asremlPlus)](commits/master)
 
@@ -37,7 +37,7 @@ Windows binaries and source tarballs of the latest version of `asremlPlus` are a
 
 Next, install `asremlPlus` from GitHub by entering:
 
-`devtools::install_github("briencj\asremlPlus")`.
+`devtools::install_github("briencj/asremlPlus")`.
 
 Version 2.0-12 of the package is available from CRAN so that you could first install it and its dependencies using:
 
