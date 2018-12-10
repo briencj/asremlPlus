@@ -127,8 +127,8 @@ REMLRT.asreml <- function(h0.asreml.obj, h1.asreml.obj,
   asr4 <- isASRemlVersionLoaded(4, notloaded.fault = TRUE)
   if (asr4)
   {
-    bound.h0 <- asreml::vpc.char(h0.asreml.obj) #asreml4::vpc.char(h0.asreml.obj)
-    bound.h1 <- asreml::vpc.char(h1.asreml.obj) #asreml4::vpc.char(h1.asreml.obj)
+    bound.h0 <- asreml::vpc.char(h0.asreml.obj)
+    bound.h1 <- asreml::vpc.char(h1.asreml.obj)
   }
   else
   {
@@ -202,7 +202,7 @@ infoCriteria.asreml <- function(asreml.obj, DF = NULL,
   asr4 <- isASRemlVersionLoaded(4, notloaded.fault = TRUE)
   if (asr4)
   {
-    bound <- asreml::vpc.char(asreml.obj) #asreml4::vpc.char(asreml.obj)
+    bound <- asreml::vpc.char(asreml.obj)
   }
   else
   {

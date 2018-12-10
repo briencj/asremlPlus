@@ -1,5 +1,5 @@
 #devtools::test("asremlPlus")
-context("prediction_presentation3")
+context("prediction_alldiffs3")
 asr3.lib <- "D:\\Analyses\\R oldpkg" 
 
 cat("#### Test for allDifferences.data.frame sort.alldiffs on Oats with asreml3\n")

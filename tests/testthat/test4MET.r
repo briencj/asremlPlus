@@ -94,4 +94,6 @@ test_that("MET_estimateV_asreml4", {
   Vrr <- estimateV(asreml.obj)
   testthat::expect_true(all(abs(Vrr - V.g) < 1e-06))
   
+  asreml.options(design = FALSE) 
+
 })

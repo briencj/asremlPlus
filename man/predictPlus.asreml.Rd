@@ -86,7 +86,8 @@
                  define the margins of the multiway table to be predicted. 
                  Multiway tables are specified by forming an interaction type 
                  term from the classifying variables, that is, separating the 
-                 variable names with the \code{:} operator.}
+                 variable names with the \code{:} operator. To predict the overall 
+                 mean, set the \code{classify} to "\code{(Intercept)}".}
  \item{term}{a \code{\link{character}} string giving the variables that define the term 
                that was fitted using \code{asreml} and that corresponds 
                to \code{classify}. It only needs to be specified when 

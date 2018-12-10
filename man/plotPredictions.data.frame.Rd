@@ -39,7 +39,9 @@
  \item{classify}{a character string giving the combinations of the independent 
                  variables on which the predictions are based. It is 
                  an interaction type term formed from the independent variables, 
-                 that is, separating the variable names with the \code{:} operator.}
+                 that is, separating the variable names with the \code{:} operator. 
+                 To predict the overall mean, set the \code{classify} to 
+                 "\code{(Intercept)}".}
  \item{y}{a character string giving the name of the variable that is to be plotted 
                  on the Y axis.}
  \item{x.num}{A character string giving the name of the numeric covariate that 
@@ -132,7 +134,7 @@ predictions <- predictions[predictions$est.status == "Estimable",]
 #### for asreml4
 predictions <- predictions$pvals
 predictions <- predictions[predictions$status == "Estimable",]
-
+#### end
 plotPredictions(classify="Species:Date:xDay", y = "predicted.value", 
                 data = predictions, wald.tab = current.asrt$wald.tab, 
                 x.num = "xDay", x.fac = "Date", 

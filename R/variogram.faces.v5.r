@@ -309,7 +309,7 @@
   {
     env.var <- foreach (i = 1:nsim, .packages = c("asreml","asremlPlus"))  %dopar%
                         { 
-                          asreml::asreml.options(fail = "soft") #asreml4::asreml.options(fail = "soft")
+                          asreml::asreml.options(fail = "soft")
                           while (!conv)
                           { 
                             env.dat <- within(env.dat, 
@@ -333,7 +333,7 @@
                             else
                               sect.dat <- res.dat[res.dat[[fac.sec]]==k, -1]
                             #      sect.dat <- as.matrix(sect.dat)
-                            sim.var <- asreml::asr_varioGram(sect.dat) #asreml4::asr_varioGram(sect.dat)
+                            sim.var <- asreml::asr_varioGram(sect.dat)
                             names(sim.var)[1:2] <- grid.facs
                             env.var[[1]][[k]] <- sim.var[sim.var[[fac2]]==0,]$gamma
                             env.var[[2]][[k]] <- sim.var[sim.var[[fac1]]==0,]$gamma
@@ -392,7 +392,7 @@
       sect.dat <- res.dat[res.dat[[fac.sec]]==k, -1]
     #    sect.dat <- as.matrix(sect.dat)
     if (asr4)
-      object.var <- asreml::asr_varioGram(sect.dat) #asreml4::asr_varioGram(sect.dat)
+      object.var <- asreml::asr_varioGram(sect.dat)
     else
       object.var <- asreml::asreml.variogram(sect.dat)
     names(object.var)[1:2] <- grid.facs
@@ -616,7 +616,7 @@
     sim <- foreach (i = 1:nsim, .combine=rbind,
                     .packages = c("asreml","asremlPlus"))  %dopar%
                     { 
-                      asreml::asreml.options(fail = "soft") #asreml4::asreml.options(fail = "soft")
+                      asreml::asreml.options(fail = "soft")
                       while (!conv)
                       { 
                         env.dat <- within(env.dat, 
@@ -794,7 +794,7 @@
       else
         sect.dat$res <- residuals[data[[fac.sec]] == k, (nvars+i-1)]
       if (asr4)
-        sim.var <- asreml::asr_varioGram(sect.dat) #asreml4::asr_varioGram(sect.dat)
+        sim.var <- asreml::asr_varioGram(sect.dat)
       else
         sim.var <- asreml::asreml.variogram(sect.dat)
       
@@ -818,7 +818,7 @@
     else
       sect.dat <- data[data[[fac.sec]]==k, -1]
     if (asr4)
-      object.var <- asreml::asr_varioGram(sect.dat) #asreml4::asr_varioGram(sect.dat)
+      object.var <- asreml::asr_varioGram(sect.dat)
     else
       object.var <- asreml::asreml.variogram(sect.dat)
     names(object.var)[1:2] <- grid.facs

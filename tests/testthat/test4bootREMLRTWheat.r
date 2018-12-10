@@ -95,4 +95,5 @@ test_that("Wheatboot_asreml4", {
   testthat::expect_lt(abs(boot.units$REMLRT - 56.1), 1e-01)
   testthat::expect_lt(abs(boot.units$REMLRT - arC.lrt$REMLRT), 1e-01)
   
+  asreml.options(design = FALSE) 
 })

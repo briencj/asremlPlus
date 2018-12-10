@@ -10,12 +10,13 @@ test_that("HEB25_estimateV_asreml4", {
   data(cart.dat)
   
   #us(Treatment):Genotype
+  asreml.options(keep.order = TRUE) #required for asreml4 only
   HEB25.asr <- asreml(fixed = Height ~ Smarthouse + Check + Treatment.1 + 
                         Smarthouse:xMainPosn + Smarthouse:xLane + Check:Treatment.1, 
                       random = ~ us(Treatment.1):Genotype.ID + Smarthouse:Zones:Mainplots, 
                       residual = ~idh(Treat.Smarthouse):Zones:Mainplots, 
                       data = cart.dat, na.action=na.method(y="include", x="include"), 
-                      keep.order = TRUE, maxiter = 1000, trace = FALSE)
+                      maxiter = 1000, trace = FALSE)
   summary(HEB25.asr)$varcomp
   Vus <- estimateV(HEB25.asr)
   Vus[1:10, 1:9]
@@ -26,7 +27,7 @@ test_that("HEB25_estimateV_asreml4", {
                       random = ~ corv(Treatment.1):Genotype.ID + Smarthouse:Zones:Mainplots, 
                       residual = ~idh(Treat.Smarthouse):Zones:Mainplots, 
                       data = cart.dat, na.action=na.method(y="include", x="include"), 
-                      keep.order = TRUE, maxiter = 1000, trace = FALSE)
+                      maxiter = 1000, trace = FALSE)
   summary(HEB25.asr)$varcomp
   V <- estimateV(HEB25.asr)
   V[1:10, 1:9]
@@ -38,7 +39,7 @@ test_that("HEB25_estimateV_asreml4", {
                       random = ~ corh(Treatment.1):Genotype.ID + Smarthouse:Zones:Mainplots, 
                       residual = ~idh(Treat.Smarthouse):Zones:Mainplots, 
                       data = cart.dat, na.action=na.method(y="include", x="include"), 
-                      keep.order = TRUE, maxiter = 1000, trace = FALSE)
+                      maxiter = 1000, trace = FALSE)
   summary(HEB25.asr)$varcomp
   V <- estimateV(HEB25.asr)
   V[1:10, 1:9]
@@ -50,7 +51,7 @@ test_that("HEB25_estimateV_asreml4", {
                       random = ~ corgh(Treatment.1):Genotype.ID + Smarthouse:Zones:Mainplots, 
                       residual = ~idh(Treat.Smarthouse):Zones:Mainplots, 
                       data = cart.dat, na.action=na.method(y="include", x="include"), 
-                      keep.order = TRUE, maxiter = 1000, trace = FALSE)
+                      maxiter = 1000, trace = FALSE)
   summary(HEB25.asr)$varcomp
   V <- estimateV(HEB25.asr)
   V[1:10, 1:9]
@@ -62,7 +63,7 @@ test_that("HEB25_estimateV_asreml4", {
                       random = ~ corgh(Treatment.1):Genotype.ID + Smarthouse:Zones:Mainplots, 
                       residual = ~diag(Treat.Smarthouse):Zones:Mainplots, 
                       data = cart.dat, na.action=na.method(y="include", x="include"), 
-                      keep.order = TRUE, maxiter = 1000, trace = FALSE)
+                      maxiter = 1000, trace = FALSE)
   summary(HEB25.asr)$varcomp
   Vdiag <- estimateV(HEB25.asr)
   Vdiag[1:10, 1:9]

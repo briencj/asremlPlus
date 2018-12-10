@@ -1,5 +1,11 @@
 \name{news}
 \title{News for Package asremlPlus}
+\section{asremlPlus Version 4.1-08 (2018-12-10)}{
+  \itemize{
+    \item{Correct predictPlus, plotPredictions and allDifferences.dat.frame to deal with a \code{classify} equal to \code{"(Intercept)"}.}
+    \item{Implement fix of \code{R.param} and \code{G.param} in supplied object for \code{corb} in estimateV function.}
+  }
+}
 \section{asremlPlus Version 4.1-07 (2018-09-05)}{
   \itemize{
     \item{Add Ladybird.dat data set.}

@@ -18,11 +18,7 @@
   }
   else #form wald.tab
   { 
-#    asr4 <- isASRemlVersionLoaded(4, notloaded.fault = TRUE)
-#    if (asr4)
-#      wald.tab <- asreml4::wald.asreml(asreml.obj, denDF = denDF, trace = FALSE, ...)
-#    else
-      wald.tab <- asreml::wald.asreml(asreml.obj, denDF = denDF, trace = FALSE, ...)
+    wald.tab <- asreml::wald.asreml(asreml.obj, denDF = denDF, trace = FALSE, ...)
     if (!is.data.frame(wald.tab))
       wald.tab <- wald.tab$Wald
   }
@@ -68,14 +64,6 @@
   #Call wald.asreml if recalc.wald is TRUE
   if (recalc.wald)
     wald.tab <- asreml::wald.asreml(asreml.obj, denDF = denDF, trace = FALSE, ...)
-  # { 
-  #   if (asr4)
-  #     wald.tab <- asreml4::wald.asreml(asreml.obj, denDf=denDF, trace = trace, ...)
-  #   else
-  #     wald.tab <- asreml::wald.asreml(asreml.obj, denDf=denDF, trace = trace, ...)
-  #   if (!is.data.frame(wald.tab))
-  #     wald.tab <- wald.tab$Wald
-  # }
   else #extract wald.tab from the asrtests object
     wald.tab <- asrtests.obj$wald.tab
   nofixed <- dim(wald.tab)[1]
@@ -565,7 +553,7 @@
   
   #Evaluate the call
   if (asr4 & keep.order)
-    asreml::asreml.options(keep.order = TRUE) #asreml4::asreml.options(keep.order = TRUE)
+    asreml::asreml.options(keep.order = TRUE)
   asreml.new.obj <- eval(call, sys.parent())
   asreml.new.obj$call <- call
   #If not converged, issue warning
@@ -613,7 +601,7 @@
     #Find boundary terms
     if (asr4)
     {
-      allvcomp <- data.frame(bound = asreml::vpc.char(asreml.obj), #asreml4::vpc.char(asreml.obj), 
+      allvcomp <- data.frame(bound = asreml::vpc.char(asreml.obj),  
                              component = asreml.obj$vparameters, 
                              stringsAsFactors = FALSE)
       bound.terms <- allvcomp$bound == "B" | allvcomp$bound == "S"
@@ -912,9 +900,6 @@
     {
       asreml.obj <- asreml.new.obj
       #Update wald.tab
-#      if (asr4)
-#        wald.tab <- asreml4::wald.asreml(asreml.obj, denDF = denDF, trace = trace, ...)
-#      else
       wald.tab <- asreml::wald.asreml(asreml.obj, denDF = denDF, trace = trace, ...)
       if (!is.data.frame(wald.tab))
         wald.tab <- wald.tab$Wald
@@ -942,9 +927,6 @@
       asreml.obj <- temp.asrt$asreml.obj
       test.summary <- temp.asrt$test.summary
       #Update wald.tab
-      # if (asr4)
-      #   wald.tab <- asreml4::wald.asreml(asreml.obj, denDF = denDF, trace = trace, ...)
-      # else
       wald.tab <- asreml::wald.asreml(asreml.obj, denDF = denDF, trace = trace, ...)
       if (!is.data.frame(wald.tab))
         wald.tab <- wald.tab$Wald
@@ -972,9 +954,6 @@
         asreml.obj <- temp.asrt$asreml.obj
         test.summary <- temp.asrt$test.summary
         #Update wald.tab
-        # if (asr4)
-        #   wald.tab <- asreml4::wald.asreml(asreml.obj, denDF = denDF, trace = trace, ...)
-        # else
         wald.tab <- asreml::wald.asreml(asreml.obj, denDF = denDF, trace = trace, ...)
         if (!is.data.frame(wald.tab))
           wald.tab <- wald.tab$Wald
@@ -1058,9 +1037,6 @@
     else
     #Have a fixed term
     { 
-      # if (asr4)
-      #   wald.tab <- asreml4::wald.asreml(asreml.obj, denDF = denDF, trace = trace, ...)
-      # else
       wald.tab <- asreml::wald.asreml(asreml.obj, denDF = denDF, trace = trace, ...)
       if (!is.data.frame(wald.tab))
              wald.tab <- wald.tab$Wald
@@ -1137,12 +1113,8 @@
               action <- "Dropped"
               asreml.obj <- asreml.new.obj
               #Update wald.tab
-              # if (asr4)
-              #   wald.tab <- asreml4::wald.asreml(asreml.obj, denDF = denDF, 
-              #                                    trace = trace, ...)
-              # else
               wald.tab <- asreml::wald.asreml(asreml.obj, denDF = denDF, 
-                                                 trace = trace, ...)
+                                              trace = trace, ...)
               if (!is.data.frame(wald.tab))
                 wald.tab <- wald.tab$Wald
               if (!asreml.obj$converge)
@@ -1332,9 +1304,6 @@
           action <- "Dropped - old unconverged"
           asreml.obj <- asreml.new.obj
           #Update wald.tab
-          # if (asr4)
-          #   wald.tab <- asreml4::wald.asreml(asreml.obj, denDF = denDF, trace = trace, ...)
-          # else
           wald.tab <- asreml::wald.asreml(asreml.obj, denDF = denDF, trace = trace, ...)
           if (!is.data.frame(wald.tab))
             wald.tab <- wald.tab$Wald
@@ -1359,9 +1328,6 @@
             action <- "Dropped"
             asreml.obj <- asreml.new.obj
             #Update wald.tab
-            # if (asr4)
-            #   wald.tab <- asreml4::wald.asreml(asreml.obj, denDF = denDF, trace = trace, ...)
-            # else
             wald.tab <- asreml::wald.asreml(asreml.obj, denDF = denDF, trace = trace, ...)
             if (!is.data.frame(wald.tab))
               wald.tab <- wald.tab$Wald
@@ -1575,10 +1541,7 @@
     asreml.obj <- temp.asrt$asreml.obj
     test.summary <- temp.asrt$test.summary
     #Update wald.tab
-    # if (asr4)
-    #   wald.tab <- asreml4::wald.asreml(asreml.obj, denDF = denDF, trace = trace, ...)
-    # else
-     wald.tab <- asreml::wald.asreml(asreml.obj, denDF = denDF, trace = trace, ...)
+    wald.tab <- asreml::wald.asreml(asreml.obj, denDF = denDF, trace = trace, ...)
     if (!is.data.frame(wald.tab))
       wald.tab <- wald.tab$Wald
   }
@@ -1756,9 +1719,6 @@
     asreml.obj <- temp.asrt$asreml.obj
     test.summary <- temp.asrt$test.summary
     #Update wald.tab
-    # if (asr4)
-    #   wald.tab <- asreml4::wald.asreml(asreml.obj, denDF = denDF, trace = trace, ...)
-    # else
     wald.tab <- asreml::wald.asreml(asreml.obj, denDF = denDF, trace = trace, ...)
     if (!is.data.frame(wald.tab))
       wald.tab <- wald.tab$Wald
@@ -2031,9 +1991,6 @@
         asrtests.obj <- temp.asrt
         asreml.obj <- asrtests.obj$asreml.obj
         #Update wald.tab
-        # if (asr4)
-        #   wald.tab <- asreml4::wald.asreml(asreml.obj, denDF = denDF, trace = trace, ...)
-        # else
         wald.tab <- asreml::wald.asreml(asreml.obj, denDF = denDF, trace = trace, ...)
         if (!is.data.frame(wald.tab))
           wald.tab <- wald.tab$Wald
@@ -2124,14 +2081,22 @@
   if ("all" %in% table.opt || "differences" %in% table.opt || 
       int.opt == "halfLeastSignificant")
     pairwise <- TRUE
-  #Make sure no functions in classify
-  vars <- fac.getinTerm(classify, rmfunction=TRUE)
-  classify <- fac.formTerm(vars)
-  #Check if need vcov matrix
-  if (!is.null(linear.transformation) || Vmatrix)
-    get.vcov <- TRUE
-  else
+  if (classify == "(Intercept)")
+  {
+    pairwise <- FALSE
     get.vcov <- FALSE
+    vars <- classify
+  } else
+  {
+    #Make sure no functions in classify
+    vars <- fac.getinTerm(classify, rmfunction=TRUE)
+    classify <- fac.formTerm(vars)
+    #Check if need vcov matrix
+    if (!is.null(linear.transformation) || Vmatrix)
+      get.vcov <- TRUE
+    else
+      get.vcov <- FALSE
+  }
 
   #Get the predicted values when x.num is not involved in classify
   if (is.null(x.num) || !(x.num %in% vars))
@@ -2431,8 +2396,15 @@
   }
   #Do plots
   #Make sure no functions in classify
-  vars <- fac.getinTerm(classify, rmfunction = TRUE)
-  classify <- fac.formTerm(vars)
+  if (classify == "(Intercept)")
+  {
+    vars <- "Intercept"
+    names(data)[match("(Intercept)", names(data))] <- "Intercept"
+  } else
+  {
+    vars <- fac.getinTerm(classify, rmfunction = TRUE)
+    classify <- fac.formTerm(vars)
+  }
   non.x.terms <- setdiff(vars, c(x.fac, x.num))
   n.non.x <- length(non.x.terms)
   if ((length(vars) != n.non.x && n.non.x > 2) || (length(vars) == n.non.x && n.non.x > 3)) 
@@ -2488,7 +2460,11 @@
     else
       x.title <- vars[[1]]
     pred.plot <-  ggplot(data=data, ...) + theme_bw() + 
-                    scale_x_discrete(x.title) + scale_y_continuous(y.title)
+                       scale_y_continuous(y.title)
+    if (classify == "(Intercept)")
+      pred.plot <- pred.plot + scale_x_discrete(x.title, labels = NULL)
+    else
+      pred.plot <- pred.plot + scale_x_discrete(x.title)
     if (scheme.opt == "black")
       pred.plot <-  pred.plot + theme_bw() +
                          theme(panel.grid.major = element_line(colour = "grey95", 

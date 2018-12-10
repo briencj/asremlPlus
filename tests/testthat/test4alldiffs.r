@@ -1,5 +1,5 @@
 #devtools::test("asremlPlus")
-context("prediction_presentation")
+context("prediction_alldiffs")
 
 cat("#### Test for allDifferences.data.frame sort.alldiffs on Oats with asreml4\n")
 test_that("allDifferences_asreml4", {
@@ -23,7 +23,7 @@ test_that("allDifferences_asreml4", {
   Var.diffs <- as.alldiffs(predictions = Var.pred$pvals, 
                            sed = Var.pred$sed, 
                            classify = "Nitrogen:Variety", response = "Yield", tdf = den.df)
-  testthat::expect_equal(length(attributes(Var.diffs)),3)
+  testthat::expect_equal(length(attributes(Var.diffs)),5)
   testthat::expect_null(attr(Var.diffs, which = "sortOrder"))
   
   #Test for allDifferences
@@ -306,7 +306,7 @@ test_that("subset.alldiffs4", {
   asreml.options(keep.order = TRUE) #required for asreml4 only
   current.asr <- asreml(fixed = pH ~ Benches + (Sources * (Type + Species)), 
                         random = ~ Benches:MainPlots,
-                        keep.order=TRUE, data= WaterRunoff.dat)
+                        data= WaterRunoff.dat)
   current.asrt <- asrtests(current.asr, NULL, NULL)
   diffs <- predictPlus.asreml(classify = "Sources:Type", 
                               asreml.obj = current.asr, tables = "none", 
@@ -391,9 +391,10 @@ test_that("linear.transformation_asreml4", {
   #Test example in manual
   data(WaterRunoff.dat)
   #Run analysis and produce alldiffs object
+  asreml.options(keep.order = TRUE) #required for asreml4 only
   current.asr <- asreml(fixed = pH ~ Benches + (Sources * (Type + Species)), 
                         random = ~ Benches:MainPlots,
-                        keep.order=TRUE, data= WaterRunoff.dat)
+                        data= WaterRunoff.dat)
   current.asrt <- asrtests(current.asr, NULL, NULL)
   diffs <- predictPlus(classify = "Sources:Species", Vmatrix = TRUE, 
                        asreml.obj = current.asr, tables = "none", 
@@ -426,9 +427,10 @@ test_that("linear.transformation_asreml4", {
   
   #More efficient version for manual
   data(WaterRunoff.dat)
+    asreml.options(keep.order = TRUE) #required for asreml4 only
   current.asr <- asreml(fixed = pH ~ Benches + (Sources * (Type + Species)), 
                         random = ~ Benches:MainPlots,
-                        keep.order=TRUE, data= WaterRunoff.dat)
+                        data= WaterRunoff.dat)
   current.asrt <- asrtests(current.asr, NULL, NULL)
   #Get additive predictions directly using predictPlus
   diffs.sub <- predictPlus.asreml(classify = "Sources:Species", Vmatrix = TRUE, 
@@ -498,6 +500,7 @@ test_that("linear.transformation_asreml4", {
   save <- vector(mode = "list", length = nresp)
   names(save) <- responses.lRGR
   nresp <- 1
+  asreml.options(keep.order = TRUE) #required for asreml4 only
   for (k in 1:nresp)
   {
     fix <- paste(responses.lRGR[k], 
@@ -508,7 +511,6 @@ test_that("linear.transformation_asreml4", {
                                      random = ~ Smarthouse:Zones:Mainplots, 
                                      residual = ~ idh(Treat.Smarthouse):Zones:Mainplots, 
                                      data = cart.dat, workspace="500mb", 
-                                     keep.order=TRUE, 
                                      na.action=na.method(y="include", x="include"),
                                      maxiter=50))
     summary(HEB25.asr)$varcomp

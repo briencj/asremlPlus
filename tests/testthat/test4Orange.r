@@ -90,5 +90,7 @@ test_that("Orange_estimateV_asreml4", {
                                   random= ~ str( ~Tree/x, ~diag(2):id(5)) + spl(X) + dev(X),
                                   knot.points = list(x = c(118,484,664,1004,1231,1372,1582)), 
                                   data = orange))
+
+  asreml.options(design = FALSE) 
   
 })

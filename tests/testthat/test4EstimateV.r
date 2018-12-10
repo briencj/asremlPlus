@@ -38,12 +38,32 @@ test_that("chickpea_estimateV_asreml4", {
                                      colnames(asreml.obj$design), fixed = TRUE)])
   V <- V + asreml.obj$sigma2 * asreml.obj$vparameters[2] * (Zspl %*% t(Zspl))
   testthat::expect_false(any(abs(Vranspl - V) > 1e-08))
-
+  
   #Estimate G and R separately
   Granspl <- estimateV(asreml.obj, which.matrix = "G")
   Rranspl <- estimateV(asreml.obj, which.matrix = "R")
   testthat::expect_false(any(abs(Rranspl - Rnospl) > 1e-06))
   testthat::expect_false(any(abs(Granspl + Rranspl - Vranspl) > 1e-06))
+  testthat::expect_false(any(abs(Granspl + Rranspl - V) > 1e-06))
+  
+  #Estimate with random spline and k = 6
+  asreml.obj <- asreml(fixed = Biomass.plant ~ Lines * TRT + Smarthouse/(vLanes + vPos), 
+                       random = ~ Smarthouse:spl(vLanes, k = 6), 
+                       residual = ~Smarthouse:ar1(Lane):ar1(Position), 
+                       data = chkpeadat, trace = FALSE)
+  summary(asreml.obj)$varcomp
+  V <- kronecker(mat.ar1(asreml.obj$vparameters[3], length(levels(chkpeadat$Lane))),
+                 mat.ar1(asreml.obj$vparameters[4], length(levels(chkpeadat$Position))))
+  V <- kronecker(diag(1,2), V)
+  Vranspl6 <- estimateV(asreml.obj)
+  Zspl6 <- as.matrix(asreml.obj$design[ , grepl("Smarthouse:spl(vLanes, k = 6)", 
+                                                colnames(asreml.obj$design), fixed = TRUE)])
+  V <- asreml.obj$sigma2 * (V + asreml.obj$vparameters[1] * (Zspl6 %*% t(Zspl6)))
+  testthat::expect_false(any(abs(Vranspl6 - V) > 1e-08))
+  
+  #Estimate G and R separately
+  Granspl <- estimateV(asreml.obj, which.matrix = "G")
+  Rranspl <- estimateV(asreml.obj, which.matrix = "R")
   testthat::expect_false(any(abs(Granspl + Rranspl - V) > 1e-06))
   
   asreml.options(design = FALSE)
@@ -193,4 +213,59 @@ test_that("Wheat_estimateV_asreml4", {
   V <- s2*V
   testthat::expect_false(any(abs(VWheat - V) > 1e-08))
 
+  #residual with Row corb  
+  asreml.obj <- asreml(fixed = yield ~ Rep + Variety, 
+                       random = ~Row, 
+                       residual = ~corb(Row, b = 1):ar1(Column), 
+                       data = Wheat.dat, maxiter = 25, trace = FALSE)
+  VWheat <- estimateV(asreml.obj)
+  s2 <- asreml.obj$sigma2
+  gamma.Row <- asreml.obj$vparameters[1]
+  rho.r <- asreml.obj$vparameters[3]
+  rho.c <- c(asreml.obj$vparameters[4])
+  row.corb <- mat.banded(x = c(1,rho.r), nrow=10, ncol=10)
+  col.ar1 <- mat.ar1(order=15, rho=rho.c)
+  V <- fac.vcmat(Wheat.dat$Row, gamma.Row) +
+    mat.dirprod(row.corb, col.ar1)
+  V <- s2*V
+  testthat::expect_false(any(abs(VWheat - V) > 1e-08))
+  
+  #residual with Col corb  
+  asreml.obj <- asreml(fixed = yield ~ Rep + Variety, 
+                       random = ~Row, 
+                       residual = ~ar1(Row):corb(Column, b = 4), 
+                       data = Wheat.dat, maxiter = 25, trace = FALSE)
+  VWheat <- estimateV(asreml.obj)
+  s2 <- asreml.obj$sigma2
+  gamma.Row <- asreml.obj$vparameters[1]
+  rho.r <- asreml.obj$vparameters[3]
+  rho.c <- c(asreml.obj$vparameters[4:7])
+  row.ar1 <- mat.ar1(order=10, rho=rho.r)
+  col.corb <- mat.banded(x = c(1,rho.c), nrow=15, ncol=15)
+  V <- fac.vcmat(Wheat.dat$Row, gamma.Row) +
+    mat.dirprod(row.ar1, col.corb)
+  V <- s2*V
+  testthat::expect_false(any(abs(VWheat - V) > 1e-08))
+
+  #residual with two corb  
+  asreml.obj <- asreml(fixed = yield ~ Rep + Variety, 
+                       random = ~Row, 
+                       residual = ~corb(Row, b = 1):corb(Column, b = 4), 
+                       data = Wheat.dat, maxiter = 25, trace = FALSE)
+  VWheat <- estimateV(asreml.obj)
+  s2 <- asreml.obj$sigma2
+  gamma.Row <- asreml.obj$vparameters[1]
+  rho.r <- asreml.obj$vparameters[3]
+  rho.c <- c(asreml.obj$vparameters[c(4:7)])
+  row.corb <- mat.banded(x=c(1,rho.r), nrow=10, ncol=10)
+  col.corb <- mat.banded(x = c(1,rho.c), nrow=15, ncol=15)
+  V <- fac.vcmat(Wheat.dat$Row, gamma.Row) +
+    mat.dirprod(row.corb, col.corb)
+  V <- s2*V
+  testthat::expect_false(any(abs(VWheat - V) > 1e-08))
+  RWheat <- estimateV(asreml.obj, which.matrix = "R")
+  R <- s2*mat.dirprod(row.corb, col.corb)
+  testthat::expect_false(any(abs(RWheat - R) > 1e-08))
+  
 })
+

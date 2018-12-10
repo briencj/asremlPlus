@@ -158,8 +158,14 @@ makePredictionLabels <- function(predictions, classify, response = NULL,
 {
   #determine factors for row and column names
   #Make sure no functions in classify
-  factors <- fac.getinTerm(classify, rmfunction = TRUE)
-  classify <- fac.formTerm(factors)
+  if (classify == "(Intercept)")
+  {
+    factors <- classify
+  } else
+  {
+    factors <- fac.getinTerm(classify, rmfunction = TRUE)
+    classify <- fac.formTerm(factors)
+  }
   nfac <- length(factors)
   #Check all factors in classify are in predictions
   if (length(setdiff (factors, names(predictions))) != 0)

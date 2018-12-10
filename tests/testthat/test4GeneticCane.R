@@ -90,5 +90,7 @@ test_that("HEB25_estimateV_asreml4", {
   V.g <- asreml.obj$sigma2 * (V.g + ar1C * ar1R)
   V <- estimateV(asreml.obj)
   testthat::expect_true(all(abs(V - V.g) < 1e-03))
-  
+
+  asreml.options(design = FALSE) 
+ 
 })

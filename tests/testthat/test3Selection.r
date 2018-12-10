@@ -33,6 +33,50 @@ test_that("choose.model.asrtests_asreml3", {
   testthat::expect_equal(sig.terms[[2]], "Date:Sources")
 })
 
+cat("#### Test for spline testing with asreml3\n")
+test_that("spl.asrtests_asreml3", {
+  skip_if_not_installed("asreml")
+  skip_on_cran()
+  library(dae)
+  library(asreml, lib.loc = asr3.lib)
+  library(asremlPlus)
+  print(packageVersion("asreml"))
+  data(WaterRunoff.dat)
+  current.asr <- do.call("asreml", 
+                         args = list(fixed = log.Turbidity ~ Benches + 
+                                       (Sources * (Type + Species)) * Date, 
+                                     random = ~Benches:MainPlots:SubPlots:spl(xDay, k = 6), 
+                                     keep.order = TRUE, data = WaterRunoff.dat))
+  current.asrt <- asrtests(current.asr, NULL, NULL)
+  
+  #Test random splines
+  current.asrt <- testranfix(current.asrt, term = "Benches:MainPlots:SubPlots:spl(xDay, k = 6)")
+  current.asrt$test.summary
+  
+  testthat::expect_equal(nrow(current.asrt$test.summary), 1)
+  testthat::expect_true(abs(current.asrt$test.summary$p - 0.08013755) < 1e-08)
+  
+  data(Wheat.dat)
+  #'## Add cubic trend to Row so that spline is not bound
+  Wheat.dat <- within(Wheat.dat, 
+                      {
+                        vRow <- as.numeric(Row)
+                        vRow <- vRow - mean(unique(vRow))
+                        yield <- yield + 10*vRow + 5 * (vRow^2) + 5 * (vRow^3)
+                      })
+  
+  #'## Fit model using asreml
+  testthat::expect_warning(asreml.obj <- asreml(fixed = yield ~ Rep + vRow + Variety, 
+                                                random = ~spl(vRow, k=6) + units, 
+                                                residual = ~ar1(Row):ar1(Column), 
+                                                data = Wheat.dat, trace = FALSE))
+  testthat::expect_warning(asreml.obj <- asreml(fixed = yield ~ Rep + vRow + Variety, 
+                       random = ~spl(vRow) + units, 
+                       residual = ~ar1(Row):ar1(Column), 
+                       data = Wheat.dat, trace = FALSE))
+
+})
+
 cat("#### Test for reparamSigDevn.asrtests with asreml3\n")
 test_that("reparamSigDevn.asrtests_asreml3", {
   skip_if_not_installed("asreml")

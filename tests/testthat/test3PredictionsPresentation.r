@@ -2,6 +2,39 @@
 context("prediction_presentation3")
 asr3.lib <- "D:\\Analyses\\R oldpkg" 
 
+cat("#### Test for Intercept prediction on Oats with asreml4\n")
+test_that("predict_Intercept4", {
+  skip_if_not_installed("asreml")
+  skip_on_cran()
+  library(asreml, lib.loc = asr3.lib)
+  library(asremlPlus)
+  library(dae)
+  data(Oats.dat)
+  
+  m1.asr <- asreml(Yield ~ Nitrogen*Variety, 
+                   random=~Blocks/Wplots,
+                   data=Oats.dat)
+  testthat::expect_equal(length(m1.asr$gammas),3)
+  current.asrt <- asrtests(m1.asr)
+  
+  #Test for Intercept predict
+  Int.pred <- predict(m1.asr, classify="(Intercept)")$predictions$pvals
+  testthat::expect_equal(nrow(Int.pred), 1)
+  testthat::expect_true(abs( Int.pred$predicted.value - 103.9722) < 1e-04)
+  Int.diffs <- predictPlus(m1.asr, classify="(Intercept)")
+  testthat::expect_equal(length(Int.diffs),7)
+  testthat::expect_equal(nrow(Int.diffs$predictions), 1)
+  testthat::expect_true(abs( Int.diffs$predictions$predicted.value - 103.9722) < 1e-04)
+  
+  xtitl <- "Overall mean"
+  names(xtitl) <- "Intercept"
+  testthat::expect_silent(plotPredictions(classify="(Intercept)", y = "predicted.value", 
+                                          data = Int.diffs$predictions, 
+                                          y.title = "Yield", titles = xtitl,
+                                          error.intervals = "Conf"))
+})
+
+
 cat("#### Test for predictPlus.asreml3\n")
 test_that("predictPlus_asreml3", {
   skip_if_not_installed("asreml")

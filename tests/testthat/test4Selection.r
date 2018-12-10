@@ -5,15 +5,17 @@ cat("#### Test for chooseModel.asrtests with asreml4\n")
 test_that("choose.model.asrtests_asreml4", {
   skip_if_not_installed("asreml")
   skip_on_cran()
+  library(dae)
   library(asreml)
   library(asremlPlus)
+  print(packageVersion("asreml"))
   data(WaterRunoff.dat)
   asreml.options(keep.order = TRUE)
-  current.asr <- do.call("asreml", 
-                         args = list(log.Turbidity ~ Benches + 
-                                       (Sources * (Type + Species)) * Date, 
-                                     random = ~Benches:MainPlots:SubPlots:spl(xDay), 
-                                     data = WaterRunoff.dat))
+  current.asr <- do.call("asreml",
+                         args = list(fixed = log.Turbidity ~ Benches +
+                                       (Sources * (Type + Species)) * Date,
+                                     random = ~Benches:MainPlots:SubPlots:spl(xDay),
+                                     data = quote(WaterRunoff.dat)))
   current.asrt <- asrtests(current.asr, NULL, NULL)
   terms.treat <- c("Sources", "Type", "Species", 
                    "Sources:Type", "Sources:Species")
@@ -32,6 +34,55 @@ test_that("choose.model.asrtests_asreml4", {
   testthat::expect_equal(length(sig.terms), 2)
   testthat::expect_equal(sig.terms[[1]], "Date:Species")
   testthat::expect_equal(sig.terms[[2]], "Date:Sources")
+})
+
+cat("#### Test for spline testing with asreml4\n")
+test_that("spl.asrtests_asreml4", {
+  skip_if_not_installed("asreml")
+  skip_on_cran()
+  library(dae)
+  library(asreml)
+  library(asremlPlus)
+  print(packageVersion("asreml"))
+  data(WaterRunoff.dat)
+  asreml.options(keep.order = TRUE)
+  current.asr <- do.call("asreml", 
+                         args = list(fixed = log.Turbidity ~ Benches + 
+                                       (Sources * (Type + Species)) * Date, 
+                                     random = ~Benches:MainPlots:SubPlots:spl(xDay, k = 6), 
+                                     data = WaterRunoff.dat))
+  current.asrt <- asrtests(current.asr, NULL, NULL)
+  
+  #Test random splines
+  current.asrt <- testranfix(current.asrt, term = "Benches:MainPlots:SubPlots:spl(xDay, k = 6)")
+  current.asrt$test.summary
+  
+  testthat::expect_equal(nrow(current.asrt$test.summary), 1)
+  testthat::expect_true(abs(current.asrt$test.summary$p - 0.08013755) < 1e-08)
+  
+  data(Wheat.dat)
+  #'## Add cubic trend to Row so that spline is not bound
+  Wheat.dat <- within(Wheat.dat, 
+                      {
+                        vRow <- as.numeric(Row)
+                        vRow <- vRow - mean(unique(vRow))
+                        yield <- yield + 10*vRow + 5 * (vRow^2) + 5 * (vRow^3)
+                      })
+  
+  #'## Fit model using asreml4
+  asreml.obj <- asreml(fixed = yield ~ Rep + vRow + Variety, 
+                       random = ~spl(vRow, k=6) + units, 
+                       residual = ~ar1(Row):ar1(Column), 
+                       data = Wheat.dat, trace = FALSE)
+  testthat::expect_false(abs(summary(asreml.obj)$varcomp$component[1] - 1.316595e-01) > 1e-06)
+  testthat::expect_true(summary(asreml.obj)$varcomp$bound[1] == "B")
+  asreml.obj <- asreml(fixed = yield ~ Rep + vRow + Variety, 
+                       random = ~spl(vRow) + units, 
+                       residual = ~ar1(Row):ar1(Column), 
+                       data = Wheat.dat, trace = FALSE)
+  testthat::expect_false(abs(summary(asreml.obj)$varcomp$component[1] - 4.902267e-02) > 1e-06)
+  testthat::expect_true(summary(asreml.obj)$varcomp$bound[1] == "B")
+
 })
 
 cat("#### Test for reparamSigDevn.asrtests with asreml4\n")

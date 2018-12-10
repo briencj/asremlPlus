@@ -78,7 +78,7 @@ bootREMLRT.asreml <- function(h0.asreml.obj, h1.asreml.obj,
         #Check whether have the design matrix
         if (is.null(h0.asreml.obj$design))
         {
-          asreml::asreml.options(design = TRUE) #asreml4::asreml.options(design = TRUE)
+          asreml::asreml.options(design = TRUE)
           h0.asreml.obj <- eval(h0.asreml.obj$call)
         }
         for (term in fixed.spline.terms)
@@ -213,8 +213,8 @@ bootREMLRT.asreml <- function(h0.asreml.obj, h1.asreml.obj,
   asr4 <- isASRemlVersionLoaded(4, notloaded.fault = TRUE)
   if (asr4)
   {
-    bound.h0 <- asreml::vpc.char(h0.asreml.obj) #asreml4::vpc.char(h0.asreml.obj)
-    bound.h1 <- asreml::vpc.char(h1.asreml.obj) #asreml4::vpc.char(h1.asreml.obj)
+    bound.h0 <- asreml::vpc.char(h0.asreml.obj)
+    bound.h1 <- asreml::vpc.char(h1.asreml.obj)
   }
   else
   {
@@ -253,7 +253,7 @@ bootREMLRT.asreml <- function(h0.asreml.obj, h1.asreml.obj,
     REMLRT.out <- foreach (i = 1:nboot, .combine = rbind, .inorder=FALSE,
                            .packages = c("asreml","asremlPlus"))  %dopar%
                            { 
-                             asreml::asreml.options(fail = "soft") #asreml4::asreml.options(fail = "soft")
+                             asreml::asreml.options(fail = "soft")
                              while (!conv)
                              { 
                                nnonconv <- 0

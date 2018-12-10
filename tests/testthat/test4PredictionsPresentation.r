@@ -1,6 +1,39 @@
 #devtools::test("asremlPlus")
 context("prediction_presentation")
 
+cat("#### Test for Intercept prediction on Oats with asreml4\n")
+test_that("predict_Intercept4", {
+  skip_if_not_installed("asreml")
+  skip_on_cran()
+  library(asreml)
+  library(asremlPlus)
+  library(dae)
+  data(Oats.dat)
+  
+  m1.asr <- asreml(Yield ~ Nitrogen*Variety, 
+                   random=~Blocks/Wplots,
+                   data=Oats.dat)
+  testthat::expect_equal(length(m1.asr$vparameters),3)
+  current.asrt <- asrtests(m1.asr)
+  
+  #Test for Intercept predict
+  Int.pred <- predict(m1.asr, classify="(Intercept)")$pvals
+  testthat::expect_equal(nrow(Int.pred), 1)
+  testthat::expect_true(abs( Int.pred$predicted.value - 103.9722) < 1e-04)
+  Int.diffs <- predictPlus(m1.asr, classify="(Intercept)")
+  testthat::expect_equal(length(Int.diffs),7)
+  testthat::expect_equal(nrow(Int.diffs$predictions), 1)
+  testthat::expect_true(abs( Int.diffs$predictions$predicted.value - 103.9722) < 1e-04)
+  
+  xtitl <- "Overall mean"
+  names(xtitl) <- "Intercept"
+  testthat::expect_silent(plotPredictions(classify="(Intercept)", y = "predicted.value", 
+                  data = Int.diffs$predictions, 
+                  y.title = "Yield", titles = xtitl,
+                  error.intervals = "Conf"))
+})
+
+
 cat("#### Test for predictPlus.asreml4\n")
 test_that("predictPlus.asreml4", {
   skip_if_not_installed("asreml")
@@ -9,9 +42,10 @@ test_that("predictPlus.asreml4", {
   library(asremlPlus)
   library(dae)
   data(WaterRunoff.dat)
+  asreml.options(keep.order = TRUE) #required for asreml4 only
   testthat::expect_warning(current.asr <- asreml(fixed = pH ~ Benches + (Sources * (Type + Species)), 
                                                  random = ~ Benches:MainPlots,
-                                                 keep.order=TRUE, data= WaterRunoff.dat))
+                                                 data= WaterRunoff.dat))
   testthat::expect_output(current.asrt <- asrtests(current.asr, NULL, NULL))
   testthat::expect_silent(diffs <- predictPlus(classify = "Sources:Type", 
                                                asreml.obj = current.asr, tables = "none", 
@@ -29,7 +63,7 @@ test_that("predictPlus.asreml4", {
   current.asr <- asreml(fixed = log.Turbidity ~ Benches + Sources + Type + Species +
                           Sources:Type + Sources:Species + 
                           Sources:xDay + Species:xDay + Species:Date,
-                        data = WaterRunoff.dat, keep.order = TRUE)
+                        data = WaterRunoff.dat)
   current.asrt <- asrtests(current.asr, NULL, NULL)
   
   diffs.p <- predictPlus(asreml.obj = current.asr, 
@@ -61,10 +95,11 @@ test_that("plotPredictions.asreml4", {
   levs <- as.list(levs[levs$Freq != 0, class.facs])
   levs$xDay <- as.numfac(levs$xDay)
 
+  asreml.options(keep.order = TRUE) #required for asreml4 only
   current.asr <- asreml(fixed = log.Turbidity ~ Benches + Sources + Type + Species +
                           Sources:Type + Sources:Species + 
                           Sources:xDay + Species:xDay + Species:Date,
-                        data = WaterRunoff.dat, keep.order = TRUE)
+                        data = WaterRunoff.dat)
   current.asrt <- asrtests(current.asr, NULL, NULL)
   predictions <- predict(current.asr, class="Species:Date:xDay", 
                          parallel = TRUE, levels = levs, 
@@ -73,6 +108,7 @@ test_that("plotPredictions.asreml4", {
   
   x.title <- "Days since first observation"
   names(x.title) <- "xDay"
+  #Get predictions without specifying levels
   plotPredictions(classify="Species:Date:xDay", y = "predicted.value", 
                   data = predictions, wald.tab = current.asrt$wald.tab, 
                   x.num = "xDay", x.fac = "Date", 
@@ -82,7 +118,7 @@ test_that("plotPredictions.asreml4", {
                   error.intervals = "none", 
                   ggplotFuncs = list(ggtitle("Transformed turbidity over time")))
   
-  
+  #Specify the levs and parallel = TRUE
   diffs <- predictPlus(asreml.obj = current.asr, 
                        classify="Species:Date:xDay", 
                        term = "Species:Date", 
@@ -116,10 +152,11 @@ test_that("predictPresent.asreml4", {
 
   titles <- list("Days since first observation", "Days since first observation", "pH", "Turbidity (NTU)")
   names(titles) <- names(WaterRunoff.dat)[c(5,7,11:12)]
+  asreml.options(keep.order = TRUE) #required for asreml4 only
   current.asr <- asreml(fixed = log.Turbidity ~ Benches + Sources + Type + Species + 
                           Sources:Type + Sources:Species + Sources:Species:xDay + 
                           Sources:Species:Date, 
-                        data = WaterRunoff.dat, keep.order = TRUE)
+                        data = WaterRunoff.dat)
   current.asrt <- asrtests(current.asr, NULL, NULL)
   #Example that fails because Date has levels that are not numeric in nature
   testthat::expect_error(diff.list <- predictPresent(terms = "Date:Sources:Species", 
@@ -178,9 +215,10 @@ test_that("plotPvalues.asreml4", {
   library(dae)
   library(reshape)
   data(WaterRunoff.dat)
+  asreml.options(keep.order = TRUE) #required for asreml4 only
   testthat::expect_output(current.asr <- asreml(fixed = pH ~ Benches + (Sources * (Type + Species)), 
                                                 random = ~ Benches:MainPlots,
-                                                keep.order=TRUE, data= WaterRunoff.dat))
+                                                data= WaterRunoff.dat))
   current.asrt <- asrtests(current.asr, NULL, NULL)
   diffs <- predictPlus.asreml(classify = "Sources:Type", 
                               asreml.obj = current.asr, tables = "none", 
@@ -299,9 +337,10 @@ test_that("recalcLSD.alldiffs4", {
   library(dae)
   library(reshape)
   data(WaterRunoff.dat)
+  asreml.options(keep.order = TRUE) #required for asreml4 only
   testthat::expect_output(current.asr <- asreml(fixed = pH ~ Benches + (Sources * (Type + Species)), 
                                                 random = ~ Benches:MainPlots,
-                                                keep.order=TRUE, data= WaterRunoff.dat))
+                                                data= WaterRunoff.dat))
   current.asrt <- asrtests(current.asr, NULL, NULL)
   diffs <- predictPlus.asreml(classify = "Sources:Type", 
                               asreml.obj = current.asr, tables = "none", 
