@@ -112,7 +112,7 @@
          \code{\link{recalcLSD.alldiffs}}, \code{ggplot}, \code{Devices}}
 \examples{\dontrun{
 data(WaterRunoff.dat)
-asreml.options(keep.order = TRUE) #required for asreml4 only
+asreml.options(keep.order = TRUE) #required for asreml-R4 only
 current.asr <- asreml(fixed = log.Turbidity ~ Benches + Sources + Type + Species +
                                 Sources:Type + Sources:Species + 
                                 Sources:xDay + Species:xDay + Species:Date,
@@ -128,10 +128,10 @@ levs$xDay <- as.numfac(levs$xDay)
 predictions <- predict(current.asr, classify="Species:Date:xDay", 
                        parallel = TRUE, levels = levs, 
                        present = c("Type","Species","Sources"))
-#### for asreml3
+#### for asreml-R3
 predictions <- predictions$predictions$pvals
 predictions <- predictions[predictions$est.status == "Estimable",]
-#### for asreml4
+#### for asreml-R4
 predictions <- predictions$pvals
 predictions <- predictions[predictions$status == "Estimable",]
 #### end

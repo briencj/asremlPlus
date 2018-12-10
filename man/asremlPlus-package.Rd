@@ -213,10 +213,10 @@ Maintainer: \packageMaintainer{asremlPlus}
 \keyword{ package }
 \seealso{\code{asreml}}
 \examples{\dontrun{
-## Analyse wheat dat using asreml4 and asremlPlus
+## Analyse wheat dat using asreml and asremlPlus
 ## Set up for analysis
 library(dae)
-library(asreml4)
+library(asreml)
 library(asremlPlus)
 ## use ?Wheat.dat for data set details
 data(Wheat.dat)

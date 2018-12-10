@@ -1,6 +1,5 @@
 # asremlPlus
 
- 
 [![Project Status: Active:  The project has reached a stable, usable state and is being actively developed.](http://www.repostatus.org/badges/latest/active.svg)](http://www.repostatus.org/#active)
 [![minimal R version](https://img.shields.io/badge/R%3E%3D-2.10.0-6666ff.svg)](https://cran.r-project.org/)
 [![CRAN_Status_Badge](http://www.r-pkg.org/badges/version/asremlPlus)](https://cran.r-project.org/package=asremlPlus)
@@ -11,12 +10,9 @@
 
 
 
-asremlPlus is an R package that augments the use of `ASReml-R` and `ASReml4-R` in fitting mixed models.
+`asremlPlus` is an R package that augments the use of `ASReml-R` in fitting mixed models. This version is compatible with both `ASReml-R` versions 3 and 4.1, but not 4.0.  
 
-This version is compatible with both `ASReml-R` versions 3 and 4.1, but not 4.0. `ASReml-R` version 4 is currently undergoing beta-testing and 
-has some changes in syntax that necessitate changes in asremlPlus. 
-
-Versions 4.x-xx of `asremlPlus` are a major revamp of the package and include substantial syntax changes. 
+Versions 4.x-xx of `asremlPlus` are a major revamp of the package and include substantial syntax changes. In particular, most functions are S3 methods and so the type of the object can be omitted from the function name when calling the function.  
 
 ## More information
 

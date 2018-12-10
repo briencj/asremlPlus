@@ -4,6 +4,7 @@
   \itemize{
     \item{Correct predictPlus, plotPredictions and allDifferences.dat.frame to deal with a \code{classify} equal to \code{"(Intercept)"}.}
     \item{Implement fix of \code{R.param} and \code{G.param} in supplied object for \code{corb} in estimateV function.}
+    \item{Make documentation changes for asreml-R4.1.}
   }
 }
 \section{asremlPlus Version 4.1-07 (2018-09-05)}{

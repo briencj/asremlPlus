@@ -3,8 +3,8 @@
 \alias{testresidual}
 \title{Fits a new residual formula, tests whether the change 
        is significant and records the result in a data.frame.}
-\description{Fits a new \code{residual formula} using \code{asreml4} 
-       (a new \code{rcov} \code{formula} with version 3 of asreml) and tests 
+\description{Fits a new \code{residual formula} using \code{asreml-R4} 
+       (replaces the \code{rcov} \code{formula} of asreml-R3) and tests 
        whether the change is significant. If \code{simpler = FALSE} the model 
        to be fitted must be more complex than the one whose fit has been stored in 
        \code{asrtests.obj}. That is, the new model must have more parameters. 
@@ -32,7 +32,7 @@
                 \code{data.frame} with 4 columns, and a \code{data.frame} with 
                 5 columns that records any previous changes and tests in the 
                 fitted model.}
- \item{terms}{a model for the \code{residual} argument in \code{asreml4} 
+ \item{terms}{a model for the \code{residual} argument in \code{asreml-R4} 
              (the \code{rcov} formula in older versions of \code{asreml}), stored 
              as a \code{character}.}
  \item{label}{a character string to use as the label in \code{test.summary} and 

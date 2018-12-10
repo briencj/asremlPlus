@@ -26,7 +26,7 @@
                     \code{predicted.value}, \code{standard.error} and \code{est.status}; 
                     each row contains a single predicted value. Note that the names 
                     \code{standard.error} and \code{est.status} have been changed to 
-                    \code{std.error} and \code{status} in asreml4; if the new names are 
+                    \code{std.error} and \code{status} in asreml-R4; if the new names are 
                     present in \code{predictions}, they will be returned to the previous 
                     names. It may also contain
                     columns for the lower and upper confidence limits for the predictions. 

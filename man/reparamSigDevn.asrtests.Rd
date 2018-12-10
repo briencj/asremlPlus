@@ -107,7 +107,7 @@
          \code{\link{newfit.asreml}}, \code{\link{chooseModel.asrtests}}}
 \examples{\dontrun{
   data(WaterRunoff.dat)
-  asreml.options(keep.order = TRUE) #required for asreml4 only
+  asreml.options(keep.order = TRUE) #required for asreml-R4 only
   current.asr <- asreml(fixed = log.Turbidity ~ Benches + Sources + Type + Species + 
                             Sources:Type + Sources:Species + Sources:Species:xDay + 
                             Sources:Species:Date, 

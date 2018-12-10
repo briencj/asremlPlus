@@ -45,7 +45,7 @@
          \code{\link{predictPlus.asreml}}, \code{\link{predictPresent.asreml}}}
 \examples{\dontrun{
 data(WaterRunoff.dat)
-asreml.options(keep.order = TRUE) #required for asreml4 only
+asreml.options(keep.order = TRUE) #required for asreml-R4 only
 current.asr <- asreml(fixed = pH ~ Benches + (Sources * (Type + Species)), 
                       random = ~ Benches:MainPlots,
                       keep.order=TRUE, data= WaterRunoff.dat)

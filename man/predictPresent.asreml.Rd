@@ -300,7 +300,7 @@ data(WaterRunoff.dat)
 titles <- list("Days since first observation", "Days since first observation", 
                "pH", "Turbidity (NTU)")
 names(titles) <- names(WaterRunoff.dat)[c(5,7,11:12)]
-asreml.options(keep.order = TRUE) #required for asreml4 only
+asreml.options(keep.order = TRUE) #required for asreml-R4 only
 current.asr <- asreml(fixed = log.Turbidity ~ Benches + Sources + Type + Species + 
                                  Sources:Type + Sources:Species + Sources:Species:xDay + 
                                  Sources:Species:Date, 
