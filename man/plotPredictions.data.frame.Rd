@@ -20,14 +20,24 @@
                 y.title = NULL, filestem = NULL, ggplotFuncs = NULL, ...)
 }
 \arguments{
- \item{data}{a \code{data.frame} containing the values of the variables to be plotted. It 
-                 should be consistent with an object of class \code{asremlPredict} or 
-                 \code{asreml.predict} such as is stored in the \code{pvals} component 
-                 of the value produced by \code{predict.asreml}; that is, in addition to 
-                 variables classifying the predictions, it will include a column 
-                 with the name specified in the \code{y} argument, usually 
-                 \code{predicted.value} or \code{backtransformed.predictions}; 
-                 each row contains a single predicted value. If \code{error.intervals} 
+ \item{data}{A \code{\link{predictions.frame}}, or \code{data.frame}, containing the 
+                 values of the variables to be plotted. 
+                 Generally, it should contain the variables classifying the predictions 
+                 and include a column with the name specified in the \code{y} argument, 
+                 usually \code{predicted.value} or \code{backtransformed.predictions}; 
+                 each row contains a single predicted value.  It should also include 
+                 columns for the \code{standard.error} and \code{est.status}. 
+                 The number of rows should equal the number of unique combinations of 
+                 the classifying variables. While such a \code{data.frame} 
+                 can be constructed from the beginning, the \code{pvals} component 
+                 of the value produced by \code{predict.asreml} is a suitable value to 
+                 supply for this argument. Note that the names \code{standard.error} and 
+                 \code{est.status} have been changed to \code{std.error} and \code{status} 
+                 in the \code{pvals} component produced by \code{asreml-R4}; if the new names 
+                 are in the \code{data.frame} supplied to \code{predictions}, they will be 
+                 returned to the previous names. 
+
+                 If \code{error.intervals} 
                  is not \code{"none"}, then the \code{predictions} component and, 
                  if present, the \code{backtransforms} component should contain 
                  columns for the lower and upper values of the limits for the interval 
@@ -36,13 +46,13 @@
                  \code{Confidence}, \code{StandardError} or 
                  \code{halfLeastSignificant}. The last part needs to be consistent 
                  between the lower and upper limits.}
- \item{classify}{a character string giving the combinations of the independent 
+ \item{classify}{A character string giving the combinations of the independent 
                  variables on which the predictions are based. It is 
                  an interaction type term formed from the independent variables, 
                  that is, separating the variable names with the \code{:} operator. 
                  To predict the overall mean, set the \code{classify} to 
                  "\code{(Intercept)}".}
- \item{y}{a character string giving the name of the variable that is to be plotted 
+ \item{y}{A character string giving the name of the variable that is to be plotted 
                  on the Y axis.}
  \item{x.num}{A character string giving the name of the numeric covariate that 
               corresponds to \code{x.fac}, is potentially included in terms in the 
@@ -136,7 +146,7 @@ predictions <- predictions$pvals
 predictions <- predictions[predictions$status == "Estimable",]
 #### end
 plotPredictions(classify="Species:Date:xDay", y = "predicted.value", 
-                data = predictions, wald.tab = current.asrt$wald.tab, 
+                data = predictions, 
                 x.num = "xDay", x.fac = "Date", 
                 x.title = "Days since first observation",
                 y.title = "Predicted log(Turbidity)",
@@ -154,9 +164,28 @@ diffs <- predictPlus(classify="Species:Date:xDay",
 x.title <- "Days since first observation"
 names(x.title) <- "xDay"
 plotPredictions(classify="Species:Date:xDay", y = "predicted.value", 
-               data = diffs$predictions, wald.tab = current.asrt$wald.tab, 
+               data = diffs$predictions, 
                x.num = "xDay", x.fac = "Date", 
                titles = x.title,
                y.title = "Predicted log(Turbidity)")
-}}
+}
+
+## Use lmerTest and emmmeans to get predictions and associated statistics
+if (requireNamespace("lmerTest", quietly = TRUE) & 
+    requireNamespace("emmeans", quietly = TRUE))
+{
+  data(Ladybird.dat)
+  m1.lmer <- lmerTest::lmer(logitP ~ Host*Cadavers*Ladybird + (1|Run),
+                            data=Ladybird.dat)
+  HCL.emm <- emmeans::emmeans(m1.lmer, specs = ~ Host:Cadavers:Ladybird)
+  HCL.preds <- summary(HCL.emm)
+  den.df <- min(HCL.preds$df)
+  ## Modify HCL.preds to be compatible with a predictions.frame
+  HCL.preds <- as.predictions.frame(HCL.preds, predictions = "emmean", 
+                                   se = "SE", interval.type = "CI", 
+                                   interval.names = c("lower.CL", "upper.CL"))
+  ## Plot the predictions
+  plotPredictions(HCL.preds, y = "predicted.value", "Host:Cadavers:Ladybird")
+}
+}
 \keyword{asreml}

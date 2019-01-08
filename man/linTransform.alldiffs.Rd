@@ -2,11 +2,11 @@
 \alias{linTransform.alldiffs}
 \alias{linTransform}
 \title{Calculates a linear transformation of the predictions stored in an 
-       alldiffs object.}
+       \code{\link{alldiffs.object}}.}
 \description{Effects the linear transformation of the predictions in the 
-             supplied \code{alldiffs} object, the transformation being specified 
+             supplied \code{\link{alldiffs.object}}, the transformation being specified 
              by a \code{\link{matrix}} or a \code{\link{formula}}. The values of 
-             the transformed values are stored in an \code{alldiffs} object. 
+             the transformed values are stored in an \code{\link{alldiffs.object}}. 
              A \code{\link{matrix}} might be a contrast \code{\link{matrix}} or 
              a \code{\link{matrix}} of weights for the levels of a 
              \code{\link{factor}} used to obtain the weighted average over  
@@ -20,7 +20,7 @@
              linear transforms of the \code{predictions}, their standard errors, 
              p-values and LSD statistics are computed as using 
              \code{\link{allDifferences.data.frame}}. 
-             This adds them to the \code{alldiffs} object as additional 
+             This adds them to the \code{\link{alldiffs.object}} as additional 
              \code{list} components named \code{differences}, \code{sed}, 
              \code{p.differences} and \code{LSD}.
 
@@ -28,13 +28,11 @@
              \code{transform.power} is not one, \code{scale} is  not one and 
              \code{offset} is nonzero), the backtransforms of the transformed 
              values and their lower and upper confidence intervals are added 
-             to a \code{data.frame} that is consistent with an object of class 
-             \code{asremlPredict}, such as is stored in the \code{pvals} 
-             component of the \code{prediction} component of the value produced 
-             by \code{predict.asreml}. If \code{transform.power} is other than 
+             to a \code{data.frame} that is consistent with a 
+             \code{\link{predictions.frame}}.  If \code{transform.power} is other than 
              one, the \code{standard.error} column of the \code{data.frame} 
              is set to \code{NA}. This \code{data.frame} is added to the 
-             \code{alldiffs} object as a \code{list} component called 
+             \code{\link{alldiffs.object}} as a \code{list} component called 
              \code{backtransforms}.
 
              The printing of the components produced is controlled by the 
@@ -55,17 +53,17 @@
              inestimable.rm = TRUE, ...)
 }
 \arguments{
-\item{alldiffs.obj}{An object of S3-class \code{alldiffs} (see \code{\link{as.alldiffs}}).}
-\item{classify}{a \code{\link{character}} string giving the variables that 
+\item{alldiffs.obj}{An \code{\link{alldiffs.object}}.}
+\item{classify}{A \code{\link{character}} string giving the variables that 
                  define the margins of the multiway table to be predicted. 
                  Multiway tables are specified by forming an interaction type 
                  term from the classifying variables, that is, separating the 
                  variable names with the \code{:} operator.}
- \item{term}{a \code{\link{character}} string giving the variables that define the term 
+ \item{term}{A \code{\link{character}} string giving the variables that define the term 
                that was fitted using \code{asreml} and that corresponds 
                to \code{classify}. It only needs to be specified when 
                it is different to \code{classify}.}
- \item{linear.transformation}{a \code{\link{formula}} or a \code{\link{matrix}}. 
+ \item{linear.transformation}{A \code{\link{formula}} or a \code{\link{matrix}}. 
                If a \code{\link{formula}} is given then it is taken to be a submodel of 
                the model term corresponding to the \code{classify}. The projection matrix 
                that transforms the \code{predictions} so that they conform to the submodel 
@@ -86,8 +84,8 @@
                their standard errors, pairwise differences and associated statistics 
                are returned.}
 \item{Vmatrix}{A \code{\link{logical}} indicating whether the variance matrix of the 
-             \code{predictions} will be stored as a component of the \code{alldiffs} 
-             object that is returned. If \code{linear.transformation} is set, it will 
+             \code{predictions} will be stored as a component of the \code{\link{alldiffs.object}} 
+             that is returned. If \code{linear.transformation} is set, it will 
              be stored irrespective of the value of \code{Vmatrix}.}
  \item{error.intervals}{A \code{\link{character}} string indicating the type of error interval, if any, 
              to calculate in order to indicate uncertainty in the results. 
@@ -134,14 +132,13 @@
              in calculating \code{error.intervals} and, hence, is used for plots.}
 \item{LSDby}{A \code{\link{character}} (vector) of factor names, being the names of the 
              \code{\link{factor}s} for each of whose levels combinations a mean LSD, 
-             minLSD and max LSD is stored in the \code{LSD} component of the \code{alldiffs} 
-             object when \code{meanLSD.type} is \code{factor.combinatons}.}
- \item{response}{a \code{character} specifying the response variable for the 
-                    predictions. It is stored as an attribute to the \code{alldiffs} 
-                    object.}
- \item{response.title}{a \code{character} specifying the title for the response variable 
-                    for the predictions. It is stored as an attribute to the \code{alldiffs} 
-                    object.}
+             minLSD and max LSD is stored in the \code{LSD} component of the 
+             \code{\link{alldiffs.object}} when \code{meanLSD.type} is \code{factor.combinatons}.}
+ \item{response}{A \code{character} specifying the response variable for the 
+                    predictions. It is stored as an attribute to the \code{\link{alldiffs.object}} .}
+ \item{response.title}{A \code{character} specifying the title for the response variable 
+                    for the predictions. It is stored as an attribute to the 
+                    \code{\link{alldiffs.object}}.}
  \item{x.num}{A \code{\link{character}} string giving the name of the numeric covariate that 
               (i) corresponds to \code{x.fac}, (ii) is potentially included in 
               terms in the fitted model, and (iii) which corresponds to the 
@@ -160,8 +157,7 @@
               \code{none}, 
               \code{predictions}, \code{vcov}, \code{backtransforms}, \code{differences}, 
               \code{p.differences}, \code{sed}, \code{LSD} and \code{all}.
-              These nominate which components of the \code{alldiffs} 
-              object to print.}
+              These nominate which components of the \code{\link{alldiffs.object}} to print.}
  \item{level.length}{The maximum number of characters from the the levels of 
             factors to use in the row and column labels of the tables of 
             pairwise differences and their p-values and standard errors.}
@@ -186,11 +182,11 @@
                before adding any offset and applying any power transformation.}
  \item{inestimable.rm}{A \code{logical} indicating whether rows for  predictions 
                that are not estimable are to be removed from the components of 
-               the \code{alldiffs} object.}
+               the \code{\link{alldiffs.object}}.}
  \item{\dots}{provision for passsing arguments to functions called internally - 
             not used at present.}
 }
-\value{A \code{alldiffs} object with the linear transformation of the predictions 
+\value{A \code{\link{alldiffs.object}} with the linear transformation of the predictions 
        and their standard errors and all pairwise differences between the linear 
        transforms of their predictions, their standard errors and p-values 
        and LSD statistics.
@@ -237,8 +233,12 @@
          \code{\link{redoErrorIntervals.alldiffs}},  \code{\link{recalcLSD.alldiffs}},  \cr
          \code{\link{predictPresent.asreml}}, 
          \code{\link{plotPredictions.data.frame}}, \code{as.Date}, \code{predict.asreml}}
-\examples{\dontrun{
+\examples{
 data(WaterRunoff.dat)
+
+##Use asreml to get predictions and associated statistics
+
+\dontrun{
 asreml.options(keep.order = TRUE) #required for asreml-R4 only
 current.asr <- asreml(fixed = pH ~ Benches + (Sources * (Type + Species)), 
                       random = ~ Benches:MainPlots,
@@ -250,14 +250,48 @@ diffs.sub <- predictPlus.asreml(classify = "Sources:Species", Vmatrix = TRUE,
                                 asreml.obj = current.asr, tables = "none", 
                                 wald.tab = current.asrt$wald.tab, 
                                 present = c("Type","Species","Sources"))
-#Contrast matrix for differences between each species and non-planted for the last source
-L <- cbind(matrix(rep(0,7*32), nrow = 7, ncol = 32),
-           diag(1, nrow = 7), 
-           matrix(rep(-1, 7), ncol = 1))
-rownames(L) <- as.character(diffs.sub$predictions$Species[33:39])
-diffs.L <- linTransform(diffs.sub, 
-                        classify = "Sources:Species",
-                        linear.transformation = L,
-                        tables = "predictions")
-}}
+}
+
+## Use lmeTest and emmmeans to get predictions and associated statistics
+
+if (requireNamespace("lmerTest", quietly = TRUE) & 
+    requireNamespace("emmeans", quietly = TRUE))
+{
+  m1.lmer <- lmerTest::lmer(pH ~ Benches + (Sources * Species) + 
+                              (1|Benches:MainPlots),
+                            data=na.omit(WaterRunoff.dat))
+  SS.emm <- emmeans::emmeans(m1.lmer, specs = ~ Sources:Species)
+  SS.preds <- summary(SS.emm)
+  den.df <- min(SS.preds$df, na.rm = TRUE)
+  ## Modify SS.preds to be compatible with a predictions.frame
+  SS.preds <- as.predictions.frame(SS.preds, predictions = "emmean", 
+                                   se = "SE", interval.type = "CI", 
+                                   interval.names = c("lower.CL", "upper.CL"))
+  
+  ## Form an all.diffs object and check its validity
+  SS.vcov <- vcov(SS.emm)
+  SS.diffs <- allDifferences(predictions = SS.preds, classify = "Sources:Species", 
+                             vcov = SS.vcov, tdf = den.df)
+  validAlldiffs(SS.diffs)
+
+  #Get additive predictions
+  diffs.sub <- linTransform(SS.diffs, classify = "Sources:Species", 
+                            linear.transformation = ~ Sources + Species,
+                            Vmatrix = TRUE, tables = "none")
+}  
+ 
+##Calculate contrasts from prediction obtained using asreml or lmerTest 
+if (exists("diffs.sub"))
+{ 
+  #Contrast matrix for differences between each species and non-planted for the last source
+  L <- cbind(matrix(rep(0,7*32), nrow = 7, ncol = 32),
+             diag(1, nrow = 7), 
+             matrix(rep(-1, 7), ncol = 1))
+  rownames(L) <- as.character(diffs.sub$predictions$Species[33:39])
+  diffs.L <- linTransform(diffs.sub, 
+                          classify = "Sources:Species",
+                          linear.transformation = L,
+                          tables = "predictions")
+}
+}
 \keyword{asreml}

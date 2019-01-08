@@ -1,16 +1,16 @@
 \name{reorderClassify.alldiffs}
 \alias{reorderClassify.alldiffs}
 \alias{reorderClassify}
-\title{Reorders the components in an alldiffs object according to a new classify.}
-\description{All the components of an \code{alldiffs} object are re-ordered to be in 
+\title{Reorders the components in an \code{\link{alldiffs.object}} according to a new classify.}
+\description{All the components of an \code{\link{alldiffs.object}} are re-ordered to be in 
              standard order for the variables in a new classify, using 
              \code{\link{allDifferences.data.frame}}.}
 \usage{\method{reorderClassify}{alldiffs}(alldiffs.obj, newclassify, 
                 sortFactor = NULL, sortWithinVals = NULL, 
                 sortOrder = NULL, decreasing = FALSE, ...)}
 \arguments{
-\item{alldiffs.obj}{An object of S3-class \code{alldiffs} (see \code{\link{as.alldiffs}}).}
-\item{newclassify}{a \code{\link{character}} string giving the variables that 
+\item{alldiffs.obj}{An \code{\link{alldiffs.object}}.}
+\item{newclassify}{A \code{\link{character}} string giving the variables that 
                  define the margins of the multiway table that was predicted, 
                  but ordered so that the predictions are in the desired order when they are 
                  arranged in standard order for the \code{newclassify}. 
@@ -43,8 +43,8 @@
               classify then \code{sortWithinVals} is ignored.}
  \item{sortOrder}{A \code{\link{character}} vector whose length is the same as the number 
                of levels for \code{sortFactor} in the \code{predictions} component of the 
-              \code{alldiffs} object. It specifies the desired order of the 
-              levels in the reordered components of the \code{alldiffs} object. 
+              \code{\link{alldiffs.object}}. It specifies the desired order of the 
+              levels in the reordered components of the \code{\link{alldiffs.object}}. 
               The argument \code{sortWithinVals} is ignored.
 
               The following creates a \code{sortOrder} vector \code{levs} for factor 
@@ -55,11 +55,11 @@
               values.}
  \item{\dots}{further arguments passed to \code{\link{allDifferences.data.frame}}.}
 }
-\value{The \code{alldiffs} object supplied with the following components, 
+\value{The \code{\link{alldiffs.object}} supplied with the following components, 
        if present, sorted: \code{predictions}, \code{vcov}, \code{backtransforms}, \code{differences}, 
        \code{p.differences} and \code{sed}. Also, the \code{sortFactor} and \code{sortOrder} 
        attributes are set.}
-\details{First, the components of the \code{alldiffs} object is arranged in standard order for
+\details{First, the components of the \code{\link{alldiffs.object}} is arranged in standard order for
          the \code{newclassify}. Then predictions are reordered according to the settings of 
          \code{sortFactor}, \code{sortWithinVals}, \code{sortOrder} and \code{decreasing} (see 
          \code{\link{sort.alldiffs}} for details).}
@@ -70,20 +70,59 @@
          \code{\link{print.alldiffs}}, \code{\link{sort.alldiffs}}, \cr 
          \code{\link{redoErrorIntervals.alldiffs}}, \code{\link{recalcLSD.alldiffs}},  \cr
           \code{\link{predictPlus.asreml}}, \code{\link{predictPresent.asreml}}}
-\examples{\dontrun{
-data(Smarthouse.dat)
-#Set up without any sorting
-m1.asr <- asreml(y1 ~ Genotype*A*B, 
-                 random=~Replicate/Mainplot/Subplot,
-                 data=Smarthouse.dat)
+\examples{
+data(WaterRunoff.dat)
+
+##Use asreml to get predictions and associated statistics
+
+\dontrun{
+#Analyse pH  
+m1.asr <- asreml(fixed = pH ~ Benches + (Sources * (Type + Species)), 
+                 random = ~ Benches:MainPlots,
+                 keep.order=TRUE, data= WaterRunoff.dat)
+current.asrt <- asrtests(m1.asr, NULL, NULL)
 current.asrt <- asrtests(m1.asr)
 current.asrt <- rmboundary(current.asrt)
 m1.asr <- current.asrt$asreml.obj
-diffs <- predictPlus(m1.asr, classify = "Genotype:A:B", 
-                     wald.tab = current.asrt$wald.tab,
-                     error.intervals = "Stand", tables = "none")
-  
-#Re-order predictions so have all Genotypes together for each combination of A and B
-diffs.reord <- reorderClassify(diffs, newclassify = "A:B:Genotype")
-}}
+
+#Get predictions and associated statistics  
+TS.diffs <- predictPlus.asreml(classify = "Sources:Type", 
+                               asreml.obj = m1.asr, tables = "none", 
+                               wald.tab = current.asrt$wald.tab, 
+                               present = c("Type","Species","Sources"))
+}
+
+## Use lmeTest and emmmeans to get predictions and associated statistics
+
+if (requireNamespace("lmerTest", quietly = TRUE) & 
+    requireNamespace("emmeans", quietly = TRUE))
+{
+  #Analyse pH
+  m1.lmer <- lmerTest::lmer(pH ~ Benches + (Sources * (Type + Species)) + 
+                              (1|Benches:MainPlots),
+                            data=na.omit(WaterRunoff.dat))
+  TS.emm <- emmeans::emmeans(m1.lmer, specs = ~ Sources:Type)
+  TS.preds <- summary(TS.emm)
+  den.df <- min(TS.preds$df, na.rm = TRUE)
+  ## Modify TS.preds to be compatible with a predictions.frame
+  TS.preds <- as.predictions.frame(TS.preds, predictions = "emmean", 
+                                   se = "SE", interval.type = "CI", 
+                                   interval.names = c("lower.CL", "upper.CL"))
+   
+  ## Form an all.diffs object and check its validity
+  TS.vcov <- vcov(TS.emm)
+  TS.diffs <- allDifferences(predictions = TS.preds, 
+                               classify = "Sources:Type", 
+                               vcov = TS.vcov, tdf = den.df)
+  validAlldiffs(TS.diffs)
+}  
+
+#Re-order predictions from asreml or lmerTest so all Sources for the same Type are together 
+#for each combination of A and B
+if (exists("TS.diffs"))
+{
+  TS.diffs.reord <- reorderClassify(TS.diffs, newclassify = "Type:Sources")
+  validAlldiffs(TS.diffs.reord)
+}
+}
 \keyword{asreml}

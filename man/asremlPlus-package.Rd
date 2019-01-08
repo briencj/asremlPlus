@@ -28,27 +28,47 @@
 (ii) Object manipulation \cr\cr
 
 \code{\link{as.alldiffs}}
-      \tab Forms an object of S3-class 'alldiffs' that stores the \cr
-      \tab predictions for a model fitted using asreml, along \cr
-      \tab with statistics for all pairwise differences.\cr
-\code{\link{asrtests}} 
-      \tab Forms an object of S3-class 'asrtests' that stores (i) a \cr
-      \tab fitted asreml object, (ii) a pseudo-anova table for the \cr
-      \tab fixed and (iii) a history of changes and hypthesis testing \cr
+      \tab Forms an \code{\link{alldiffs.object}} from the supplied \cr
+      \tab predictions, along with those statistics, associated with the \cr 
+      \tab predictions and their pairwise differnces, that have been supplied. \cr
+\code{\link{asrtests}}
+      \tab Pseudonym for \code{\link{as.asrtests}}. \cr
+\code{\link{as.asrtests}}
+      \tab Forms an \code{\link{asrtests.object}} that stores (i) a fitted asreml object, \cr
+      \tab (ii) a pseudo-anova table for the fixed terms and \cr
+      \tab (iii) a history of changes and hypthesis testing \cr
       \tab used in obtaining the model. \cr
+\code{\link{as.predictions.frame}}
+      \tab Forms a \code{\link{predictions.frame}} from a data.frame, ensuring that \cr
+      \tab the correct columns are present. \cr
 \code{\link{facCombine.alldiffs}}
       \tab Combines several factors into one in the components of \cr
-      \tab an alldiffs object.  \cr
+      \tab an \code{\link{alldiffs.object}}.  \cr
+\code{\link{is.alldiffs}}
+      \tab A single-line function that tests whether an object is \cr 
+      \tab of class alldiffs.   \cr
+\code{\link{is.asrtests}}
+      \tab A single-line function that tests whether an object is \cr 
+      \tab of class asrtests.   \cr
+\code{\link{is.predictions.frame}}
+      \tab A single-line function that tests whether an object is \cr 
+      \tab of classes \code{\link{predictions.frame}} and \code{\link{data.frame}}.   \cr
 \code{\link{print.alldiffs}}
-      \tab Prints the values in an 'alldiffs' object in a nice format. \cr
+      \tab Prints the values in an \code{\link{alldiffs.object}} in a nice format. \cr
 \code{\link{print.asrtests}}
-      \tab Prints the values in an 'asrtests' object. \cr
+      \tab Prints the values in an \code{\link{asrtests.object}}. \cr
 \code{\link{sort.alldiffs}}
-      \tab Sorts the components of an 'alldiffs' object according to \cr
+      \tab Sorts the components of an \code{\link{alldiffs.object}} according to \cr
       \tab the predicted values associated with a factor. \cr
 \code{\link{subset.alldiffs}}
-       \tab Subsets the components in an \code{alldiffs} object according \cr 
+       \tab Subsets the components in an \code{\link{alldiffs.object}} according \cr 
        \tab to the supplied condition. \cr
+\code{\link{validAlldiffs}}
+       \tab Checks that an object is a valid \code{\link{alldiffs.object}}. \cr
+\code{\link{validAsrtests}}
+       \tab Checks that an object is a valid \code{\link{asrtests.object}}. \cr
+\code{\link{validPredictionsFrame}}
+       \tab Checks that an object is a valid \code{\link{predictions.frame}}. \cr
 \cr
 (iii) Model modification \cr\cr
 
@@ -124,18 +144,19 @@
 (vi) Prediction production and presentation \cr\cr
 
 \code{\link{allDifferences.data.frame}}
-       \tab Using supplied predictions, forms all pairwise \cr
-       \tab differences between a set of predictions, their \cr
-       \tab standard errors and p-values for the differences. \cr
+       \tab Using supplied predictions and standard errors of pairwise \cr
+       \tab differences or the variance matrix of predictions, forms \cr
+       \tab all pairwise differences between the set of predictions, and \cr
+       \tab p-values for the differences. \cr
 \code{\link{linTransform.alldiffs}} 
        \tab Calculates a linear transformation of the \cr
-       \tab predictions stored in an alldiffs object. \cr
+       \tab predictions stored in an \code{\link{alldiffs.object}}. \cr
 \code{\link{plotPredictions.data.frame}}
        \tab Plots the predictions for a term, possibly with \cr
        \tab error bars. \cr
 \code{\link{plotPvalues.alldiffs}}
        \tab Plots the p-values in the p.differences components \cr
-       \tab of an \code{alldiffs} object as a heat map. \cr
+       \tab of an \code{\link{alldiffs.object}} as a heat map. \cr
 \code{\link{plotPvalues.data.frame}}
        \tab Plots the p-values in data.frame as a heat map.\cr
 \code{\link{predictPlus.asreml}}
@@ -151,18 +172,18 @@
        \tab and presents them in tables and/or graphs. \cr
 \code{\link{recalcLSD.alldiffs}} 
        \tab Adds or recalculates the LSD component of an \cr 
-       \tab \code{alldiffs} object.                           \cr
+       \tab \code{\link{alldiffs.object}}.                           \cr
 \code{\link{redoErrorIntervals.alldiffs}} 
        \tab Adds or replaces the error intervals stored in the \cr
-       \tab prediction component of an alldiffs.object. \cr
+       \tab prediction component of an \code{\link{alldiffs.object}}. \cr
 \code{\link{reorderClassify.alldiffs}}
-       \tab Reorders the components in an alldiffs object \cr 
+       \tab Reorders the components in an \code{\link{alldiffs.object}} \cr 
        \tab according to a new classify. \cr
 \code{\link{sort.alldiffs}}
-       \tab Sorts the components in an \code{alldiffs} object \cr 
+       \tab Sorts the components in an \code{\link{alldiffs.object}} \cr 
        \tab according to the predicted values associated with a factor. \cr
 \code{\link{subset.alldiffs}}
-       \tab Subsets the components in an \code{alldiffs} object according \cr 
+       \tab Subsets the components in an \code{\link{alldiffs.object}} according \cr 
        \tab to the supplied condition. \cr
 \cr
 (vii) Response transformation \cr\cr
@@ -193,7 +214,15 @@
        \tab Permutes a square matrix until all the lower \cr
        \tab triangular elements are zero. \cr
 }
-The functions whose names end in 'asrtests', which are most of the model functions, utilize an \code{asrtests} object that stores:  
+The functions whose names end in 'alldiffs" utilize an \code{\link{alldiffs.object}} that stores:
+   (i) a \code{\link{predictions.frame}}, being a data frame containing predicted values, variables indexing them and their standard errores and estimability status; 
+       the lower and upper limits of error intervals will be included when these are requested,
+   (ii) optionally, square matrices containing all pairwise differences, the standard errors and p-values of the differences, 
+        and a summary of the LSD values, 
+   (iii) optionally, the variance matrix of the predictions, and 
+   (iv) if the response was trandformed for analysis, a data frame with backtransforms of the predicted values.
+
+The functions whose names end in 'asrtests', which are most of the model functions, utilize an \code{\link{asrtests.object}} that stores:  
   (i) the currently fitted model in \code{asreml.obj}, 
   (ii) the table of test statistics for the fixed effects in \code{wald.tab}, and 
   (iii) a data frame that contains a history of the changes made to the model in \code{test.summary}. 

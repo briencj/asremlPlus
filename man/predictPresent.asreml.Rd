@@ -7,7 +7,8 @@
              using a supplied \code{asreml} object and 
              \code{\link{predictPlus.asreml}}. 
              Tables are produced using \code{\link{predictPlus.asreml}}, 
-             in conjunction with \code{\link{allDifferences.data.frame}}, 
+             in conjunction with \cr 
+             \code{\link{allDifferences.data.frame}}, 
              with the argument \code{tables} specifying which tables are printed. 
              The argument \code{plots}, along with \code{transform.power}, 
              controls which plots are produced. The plots are 
@@ -44,9 +45,9 @@
 }
 \arguments{
  \item{asreml.obj}{\code{asreml} object for a fitted model.}
- \item{terms}{a \code{character vector} giving the terms for which predictions 
+ \item{terms}{A \code{character vector} giving the terms for which predictions 
                  are required.}
- \item{linear.transformation}{a \code{\link{formula}} or a \code{\link{matrix}} specifying 
+ \item{linear.transformation}{A \code{\link{formula}} or a \code{\link{matrix}} specifying 
                a linear transformation to be applied to the predictions. 
                If a \code{\link{formula}} is given then it is taken to be a submodel of 
                the model term corresponding to the \code{classify}. The projection matrix 
@@ -68,12 +69,12 @@
                
                In either case, as well as the values of the linear combinations, 
                their standard errors, pairwise differences and associated statistics 
-               are returned in the \code{alldiffs} object.}
- \item{wald.tab}{a \code{data frame} containing the pseudo-anova table for the 
+               are returned in the \code{\link{alldiffs.object}}.}
+ \item{wald.tab}{A \code{data frame} containing the pseudo-anova table for the 
                  fixed terms produced by a call to \code{wald.asreml}. The main 
                  use of it here is in getting denominator degrees of freedom when
                  confidence intervals are to be plotted.}
- \item{dDF.na}{the method to use to obtain approximate denominator degrees of freedom. 
+ \item{dDF.na}{The method to use to obtain approximate denominator degrees of freedom. 
               when the numeric or algebraic methods produce an \code{NA}. Consistent with 
               when no denDF are available, the default is \code{"residual"} and so the residual 
               degrees of freedom from \code{asreml.obj$nedf} are used. If 
@@ -180,7 +181,7 @@
              in calculating \code{error.intervals} and, hence, is used for plots.}
 \item{LSDby}{A \code{\link{character}} (vector) of factor names, being the names of the 
              \code{\link{factor}s} for each of whose levels combinations a mean LSD, 
-             minLSD and max LSD is stored in the \code{LSD} component of the \code{alldiffs} 
+             minLSD and max LSD is stored in the \code{LSD} component of the \code{\link{alldiffs.object}} 
              object when \code{meanLSD.type} is \code{factor.combinatons}.}
 \item{titles}{A \code{list}, each component of which is named for a column in 
                the \code{data.frame} for \code{asreml.obj} and contains a 
@@ -221,26 +222,26 @@
                 \code{"halfLeastSignificant"}, they will be stored irrespective of the 
                 value of \code{pairwise}.}
 \item{Vmatrix}{A \code{\link{logical}} indicating whether the variance matrix of the 
-             \code{predictions} will be stored as a component of the \code{alldiffs} 
-             object that is returned. If \code{linear.transformation} is set, it will 
+             \code{predictions} will be stored as a component of the \code{\link{alldiffs.object}} 
+             that is returned. If \code{linear.transformation} is set, it will 
              be stored irrespective of the value of \code{Vmatrix}.}
  \item{tables}{A \code{character vector} containing a combination of 
               \code{predictions}, \code{vcov}, \code{backtransforms}, 
               \code{differences}, \code{p.differences}, \code{sed}, 
               \code{LSD} and \code{all}.
-              These nominate which components of the \code{alldiffs} 
-              object to print.}
+              These nominate which components of the \code{\link{alldiffs.object}} 
+              to print.}
  \item{level.length}{The maximum number of characters from the the levels of 
             factors to use in the row and column labels of the tables produced by 
             \code{\link{allDifferences.data.frame}}.}
- \item{alpha}{the significance level for LSDs or 1 - alpha is the confidence level 
+ \item{alpha}{The significance level for LSDs or 1 - alpha is the confidence level 
               for confidence intervals.}
  \item{inestimable.rm}{A \code{logical} indicating whether rows for  predictions that 
                        are not estimable are to be removed from the components of the
-                       \code{alldiffs} object.}
+                       \code{\link{alldiffs.object}}.}
 \item{sortFactor}{A \code{character} containing the name of the 
               \code{factor} that indexes the set of predicted values that determines 
-              the sorting of the \code{alldiffs} components by 
+              the sorting of the components  of the \code{\link{alldiffs.object}} by 
               \code{\link{sort.alldiffs}}. If \code{NULL} then sorting is not carried 
               out. If there is more than one variable 
               in the \code{classify} term then \code{sortFactor} is sorted for the 
@@ -262,17 +263,17 @@
               classify then \code{sortWithinVals} is ignored.}
  \item{sortOrder}{A \code{character vector} whose length is the same as the number 
                of levels for \code{sortFactor} in the \code{predictions} component of the 
-              \code{alldiffs} object. It specifies the desired order of the 
-              levels in the reordered components of the \code{alldiffs} object. 
+              \code{\link{alldiffs.object}}. It specifies the desired order of the 
+              levels in the reordered components of the \code{\link{alldiffs.object}}. 
               The argument \code{sortWithinVals} is ignored.
 
               The following creates a \code{sortOrder} vector \code{levs} for factor 
               \code{f} based on the values in \code{x}: 
               \code{levs <- levels(f)[order(x)]}.}
  \item{decreasing}{A \code{logical} passed to \code{order} that detemines whether 
-              the order for sorting the \code{alldiffs} components is for 
+              the order for sorting the components of the \code{\link{alldiffs.object}} is for 
                increasing or decreasing magnitude of the predicted values.}
- \item{trace}{if TRUE then partial iteration details are displayed when ASReml-R 
+ \item{trace}{If TRUE then partial iteration details are displayed when ASReml-R 
               functions are invoked; if FALSE then no output is displayed.}
  \item{ggplotFuncs}{A \code{\link{list}}, each element of which contains the 
                 results of evaluating a \code{\link{ggplot}} function. 
@@ -283,7 +284,7 @@
             \code{\link{predictPlus.asreml}} and to \code{ggplot} 
             via \code{\link{plotPredictions.data.frame}}.}
 }
-\value{a \code{\link{list}} containing an \code{alldiffs} object for each \code{term} for 
+\value{A \code{\link{list}} containing an \code{\link{alldiffs.object}} for each \code{term} for 
              which tables are produced. The names of the components of this list are 
              the \code{terms} with full-stops (\code{.}) replacing colons (\code{:}). 
              Plots are also preduced depending on the setting of the \code{plot} 

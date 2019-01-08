@@ -1,48 +1,145 @@
 #alldiffs functions
 
-#Form an alldiffs object from supplied component objects
-"as.alldiffs" <- function(predictions, vcov = NULL, 
-                          differences = NULL, p.differences = NULL, 
-                          sed = NULL, LSD = NULL, backtransforms = NULL, 
-                          response = NULL, response.title = NULL, 
-                          term = NULL, classify = NULL, 
-                          tdf = NULL, sortFactor = NULL, sortOrder = NULL)
-{ 
-  asr4 <- isASRemlVersionLoaded(4, notloaded.fault = TRUE)
+# "changeAsr4toAsr3names" <- function(predictions)
+# {
+#   #Change asreml4 names to asreml3 names
+#   if ("std.error" %in% colnames(predictions))
+#     names(predictions)[match("std.error", names(predictions))] <- "standard.error"
+#   if ("status" %in% colnames(predictions))
+#     names(predictions)[match("status", names(predictions))] <- "est.status"
+#   return(predictions)
+# }
+
+"is.predictions.frame" <- function(object)
+{
+  inherits(object, "predictions.frame") && inherits(object, "data.frame")
+}
+
+
+"validPredictionsFrame" <- function(object)
+{
+  ispredframe <- TRUE 
+  #Check that is a data.frame
+  if (!is.data.frame(object))
+  {
+    ispredframe[1] <- FALSE
+    ispredframe <- c(ispredframe, 
+                     "\n  Predictions.frame is not a data.frame")
+  }
+  #Check have appropriate columns
+  if (!all(c("predicted.value", "standard.error", "est.status") %in% colnames(object)))
+  {
+    ispredframe[1] <- FALSE
+    ispredframe <- c(ispredframe, 
+                     "\n  Predictions.frame does not include the expected column names",
+                     paste("\n  (must be predicted.value, standard.error and est.status",
+                           "not std.error and status)"))
+  }    
+  if (length(ispredframe) > 1)
+    ispredframe[1] <- "Error in validPredictionsFrame : "
+  return(ispredframe)
+}
+
+"as.predictions.frame" <- function(data, predictions = NULL, se = NULL, 
+                                   est.status = NULL, interval.type = NULL, 
+                                   interval.names = NULL)
+{
+  #Check interval.typ argument
+  int.type <-NULL
+  if (!is.null(interval.type))
+  {
+    options <- c("CI", "SE", "halfLSD")
+    int.type <- options[check.arg.values(interval.type, options)]
+  }
   
+  ## Modify data to be compatible with a predictions.frame
+  if (!is.null(predictions))
+  {
+    if (!("predicted.value" %in% names(data)))
+      names(data)[match(predictions, names(data))] <- c("predicted.value")
+  }
+  if (!is.null(se))
+  {
+    if (!("standard.error" %in% names(data)))
+      names(data)[match(se, names(data))] <- c("standard.error")
+  }
+  if (!is.null(est.status))
+  {
+    if (!("est.status" %in% names(data)))
+      names(data)[match(est.status, names(data))] <- c("est.status")
+  }
+  if (!is.null(int.type))
+  {
+    if (length(interval.names) != 2)
+      stop("The number of interval names does not equal 2")
+    if (int.type == "SE")
+    {
+      if (!all( c("lower.StandardError.limit", 
+                  "upper.StandardError.limit") %in% names(data)))
+        int.names <- c("lower.StandardError.limit", "upper.StandardError.limit")
+    } else if (int.type == "CI")
+    {
+      if (!all( c("lower.Confidence.limit", "upper.Confidence.limit") %in% names(data)))
+        int.names <- c("lower.Confidence.limit", "upper.Confidence.limit")
+    } else if (int.type == "halfLSD")
+    {
+      if (!all( c("lower.halfLeastSignificant.limit", 
+                  "upper.halfLeastSignificant.limit") %in% names(data)))
+        int.names <- c("lower.halfLeastSignificant.limit", "upper.halfLeastSignificant.limit")
+    } 
+    names(data)[match(interval.names, names(data))] <- int.names
+  }
+  if (!("est.status" %in% names(data)))
+  {
+    data$est.status <- "Estimable"
+    data$est.status[is.na(data$predicted.value)] <- "Aliased"
+  }
+  class(data) <- c("predictions.frame", "data.frame")
+  
+  #Check that have valid predictions.frame
+  validpframe <- validPredictionsFrame(data)  
+  if (is.character(validpframe))
+    stop(validpframe)
+  
+  return(data)
+}
+
+setOldClass("predictions.frame")
+
+#Form an alldiffs object from supplied component objects
+#A function that constructs an alldiffs object without the validity check
+"makeAlldiffs" <- function(predictions, vcov = NULL, 
+                           differences = NULL, p.differences = NULL, 
+                           sed = NULL, LSD = NULL, backtransforms = NULL, 
+                           response = NULL, response.title = NULL, 
+                           term = NULL, classify = NULL, 
+                           tdf = NULL, sortFactor = NULL, sortOrder = NULL)
+{
   #Check arguments
-  #Change asreml4 names to asreml3 names
-  if ("std.error" %in% colnames(predictions))
-    names(predictions)[match("std.error", names(predictions))] <- "standard.error"
-  if ("status" %in% colnames(predictions))
-    names(predictions)[match("status", names(predictions))] <- "est.status"
   if (!is.null(sed))
     sed <- as.matrix(sed)
   if (!is.null(vcov))
     vcov <- as.matrix(vcov)
-  #Check have appropriate columns
-  if (!("predicted.value" %in% colnames(predictions)) || 
-      !("standard.error" %in% colnames(predictions)) || !("est.status" %in% colnames(predictions))) 
-    warning("Predictions argument does not include the expected column names (e.g. predicted.value)")
   npred <- nrow(predictions)
   if ((!is.null(differences) && !("matrix" %in% class(differences))) ||
       (!is.null(p.differences) && !("matrix" %in% class(p.differences))) || 
       (!is.null(sed) && !("matrix" %in% class(sed))) || 
       (!is.null(vcov) && !("matrix" %in% class(vcov))))
     warning("At least one of differences, p.differences, sed and vcov is not of type matrix")
-  if (!is.null(differences) && !is.null(p.differences) && !is.null(sed))
-  { 
-    dimens <- c(nrow(differences), nrow(p.differences), nrow(sed), 
-                ncol(differences), ncol(p.differences), ncol(sed))
-    if (any(npred != dimens))
-      stop("At least one of differences, p.differences or sed is not conformable with predictions")
-  }
-  if (!is.null(vcov))
-  {
-    #check that vcov conforms to predictions
-    if (any(npred != c(nrow(vcov), ncol(vcov))))
-      stop("vcov is not conformable with predictions")
-  }
+  #Check dimensions
+  if (!all(unlist(lapply(list(differences, p.differences, sed, vcov), 
+                         function(comp, npred) 
+                         {
+                           dimsOK <- TRUE
+                           if (is.null(comp))
+                           {
+                             if (any(dim(comp) != npred))
+                               dimsOK <- FALSE
+                           }
+                           return(dimsOK)
+                         }, npred = npred))))
+    stop("At least one of differences, p.differences, sed or vcov is not conformable with predictions")
+  #Check backtransforms
   if (!is.null(backtransforms))
   { 
     if (!("backtransformed.predictions" %in% colnames(backtransforms))) 
@@ -53,9 +150,11 @@
   #ensure diag of sed is NA
   if (!is.null(sed))
     diag(sed) <- NA
-  meanLSD <- NULL
   if (!is.null(LSD))
     attr(predictions, which = "meanLSD") <- LSD$meanLSD
+  else
+    attr(predictions, which = "meanLSD") <- NA
+  
   p <- list(predictions = predictions, vcov = vcov, 
             differences = differences, p.differences = p.differences, sed = sed, 
             LSD = LSD, backtransforms = backtransforms)
@@ -70,8 +169,164 @@
   return(p)
 }
 
+
+"as.alldiffs" <- function(predictions, vcov = NULL, 
+                          differences = NULL, p.differences = NULL, 
+                          sed = NULL, LSD = NULL, backtransforms = NULL, 
+                          response = NULL, response.title = NULL, 
+                          term = NULL, classify = NULL, 
+                          tdf = NULL, sortFactor = NULL, sortOrder = NULL)
+{ 
+  asr4 <- isASRemlVersionLoaded(4, notloaded.fault = FALSE)
+  
+  #Change asreml4 names to asreml3 names
+  predictions <- as.predictions.frame(predictions, se = "std.error", est.status = "status")
+
+  p <- makeAlldiffs(predictions = predictions, vcov = vcov, 
+                    differences = differences, p.differences = p.differences, 
+                    sed = sed, LSD = LSD, backtransforms = backtransforms, 
+                    response = response, response.title = response.title, 
+                    term = term, classify = classify, 
+                    tdf = tdf, sortFactor = sortFactor, sortOrder = sortOrder)
+  
+  return(p)
+}
+
+"is.alldiffs" <- function(object)
+{
+  inherits(object, "alldiffs")
+}
+
+"validAlldiffs" <- function(object)
+{
+  isalldiff <- TRUE 
+  #Check have only legal attributes
+  if (!all(names(attributes(object)) %in% c("names", "class", "response", "response.title",
+                                            "classify", "term", "tdf",
+                                            "sortFactor", "sortOrder", "meanLSD")))
+  {
+    isalldiff[1] <- FALSE
+    isalldiff <- c(isalldiff, 
+                   paste("\n  An unexpected attribute is present in"), 
+                   deparse(substitute(object)))
+  }
+  #Check class
+  if (!is.alldiffs(object))
+  {
+    isalldiff[1] <- FALSE 
+    isalldiff <- c(isalldiff, paste("\n ", deparse(substitute(object)),
+                                    "is not of class alldiffs",
+                                    "(use class<- to assign to alldiffs class)"))
+  }
+  #Check have all components
+  if (!all(c("predictions", "vcov", "differences", "p.differences", "sed", "LSD",
+             "backtransforms") %in% names(object)))
+  {
+    warning("Not all of predictions, vcov, differences, p.differences, sed, LSD and
+             backtransforms are present in ", deparse(substitute(object)))
+   }
+  #Check predictions frame
+  valpred <- validPredictionsFrame(object$predictions)
+  if (is.character(valpred))
+  {
+    isalldiff[1] <- FALSE
+    isalldiff <- c(isalldiff, 
+                   valpred[2:length(valpred)],
+                   paste("\n  Predictions frame is the predictions component of", 
+                         deparse(substitute(object))))
+  }    
+  #Check that classify variables are the first variables in classify order 
+  #in the predictions.frame
+  classify <- attr(object, which = "classify")
+  if (is.null(classify))
+  {
+    isalldiff[1] <- FALSE
+    isalldiff <- c(isalldiff, 
+                   paste("\n ",deparse(substitute(object)),
+                         "does not have a classify attribute",
+                         "\n  (if appropriate, specify classify argument when creating",
+                         deparse(substitute(object)),")"))
+  } else
+  {
+    class <- unlist(strsplit(classify, ":", fixed = TRUE))
+    if (!all(class == names(object$predictions)[1:length(class)]))
+    {
+      isalldiff[1] <- FALSE
+      isalldiff <- c(isalldiff, 
+                     paste("\n  Initial columns of predictions component in", 
+                           deparse(substitute(object)), "are not the classify",
+                           "variables in the same order as in the classify"))
+    }
+  }
+  #Check components that should be matrices
+  npred <- nrow(object$predictions)
+  if ((!is.null(object$differences) && !("matrix" %in% class(object$differences))) ||
+      (!is.null(object$p.differences) && !("matrix" %in% class(object$p.differences))) || 
+      (!is.null(object$sed) && !("matrix" %in% class(object$sed))) || 
+      (!is.null(object$vcov) && !("matrix" %in% class(object$vcov))))
+  {
+    isalldiff[1] <- FALSE 
+    isalldiff <- c(isalldiff, 
+                   paste("\n  At least one of differences, p.differences, sed and vcov in", 
+                         deparse(substitute(object)), "is not of type matrix"))
+  }
+  #Check dimensions
+  if (!all(unlist(lapply(c("differences", "p.differences", "sed", "vcov"), 
+                         function(comp, object, npred) 
+                         {
+                           dimsOK <- TRUE
+                           if (is.null(object[[comp]]))
+                           {
+                             if (any(dim(comp) != npred))
+                               dimsOK <- FALSE
+                           }
+                           return(dimsOK)
+                         }, object = object, npred = npred))))
+  {
+    isalldiff[1] <- FALSE 
+    isalldiff <- c(isalldiff, 
+                   paste("\n  At least one of differences, p.differences, sed and vcov in", 
+                         deparse(substitute(object)), 
+                         "is not conformable with predictions"))
+  }
+  #Check backtransforms, if present
+  if (!is.null(object$backtransforms))
+  { 
+    if (!("backtransformed.predictions" %in% colnames(object$backtransforms))) 
+    {
+      isalldiff[1] <- FALSE
+      isalldiff <- c(isalldiff, paste("\n  Backtransforms argument does not include a column",
+                                      "named backtransformed.predictions"))
+    }
+    if (npred != nrow(object$backtransforms))
+    {
+      isalldiff[1] <- FALSE
+      isalldiff <- c(isalldiff, paste("\n  Backtransforms do not contain the same number of rows",
+                                      "as the predictions"))
+    }
+  }
+  #ensure diag of sed is NA
+  if (!is.null(object$sed))
+    if (!all(is.na(diag(object$sed))))
+    {
+      isalldiff[1] <- FALSE 
+      isalldiff <- c(isalldiff, 
+                     paste("\n  Not all diagonal elements of the sed component of", 
+                           deparse(substitute(object)), "are NA"))
+    }
+  if (length(isalldiff) > 1)
+    isalldiff[1] <- paste("Error(s) in validAlldiffs(", deparse(substitute(object)), ") : ")
+  return(isalldiff)
+}
+
+setOldClass("alldiffs")
+
 "print.alldiffs" <- function(x, which = "all", ...)
 { 
+  #Check that a valid object of class alldiffs
+  validalldifs <- validAlldiffs(x)  
+  if (is.character(validalldifs))
+   stop(validalldifs)
   options <- c("predictions", "backtransforms", "vcov", 
                "differences", "p.differences", "sed", "LSD", "all")
   opt <- options[unlist(lapply(which, check.arg.values, options=options))]
@@ -228,6 +483,10 @@ makePredictionLabels <- function(predictions, classify, response = NULL,
 facCombine.alldiffs <- function(object, factors, order="standard", combine.levels=TRUE, 
                                 sep="_", level.length = NA,  ...)
 {
+  #Check that a valid object of class alldiffs
+  validalldifs <- validAlldiffs(object)  
+  if (is.character(validalldifs))
+    stop(validalldifs)
   if (any(!(factors %in% names(object$predictions))))
     stop("Some factors are not in the predictions component of object")
   if (length(factors) <= 1)
@@ -251,7 +510,7 @@ facCombine.alldiffs <- function(object, factors, order="standard", combine.level
   
   classify <- attr(object, which = "classify")
   if (is.null(classify))
-    stop("The alldiffs object does not have the classify attrtibute set")
+    stop("The alldiffs object does not have the classify attribute set")
   class.facs <- fac.getinTerm(classify, rmfunction = TRUE)
   class.facs[fstfac] <- newfac
   class.facs <- class.facs[-c(match(factors[-1], class.facs))]
@@ -260,7 +519,13 @@ facCombine.alldiffs <- function(object, factors, order="standard", combine.level
   response <- attr(object, which = "response")
   pred.labs <- makePredictionLabels(object$predictions, classify, response)
   pred.lev <- pred.labs$pred.lev
-  
+  #Set meanLSD attribute of predictions component
+  predictions <- object$predictions
+  if (is.null(object$LSD))
+    attr(predictions, which = "meanLSD") <- NA
+  else
+    attr(predictions, which = "meanLSD") <- object$LSD$meanLSD
+  object$predictions <- predictions
   
   if (!is.null(object$vcov))
   {
@@ -283,6 +548,12 @@ facCombine.alldiffs <- function(object, factors, order="standard", combine.level
 
 subset.alldiffs <- function(x, subset, rmClassifyVars = NULL, ...)
 {
+  #Check that a valid object of class alldiffs
+  validalldifs <- validAlldiffs(x)  
+  if (is.character(validalldifs))
+    stop(validalldifs)
+  #Save attributes
+  x.attr <- attributes(x)
   #Deal with unsupported parameters
   tempcall <- list(...)
   if (length(tempcall)) 
@@ -309,6 +580,14 @@ subset.alldiffs <- function(x, subset, rmClassifyVars = NULL, ...)
                                               x <- factor(x)
                                             return(x)
                                           }), stringsAsFactors = FALSE)
+    #Set meanLSD attribute of predictions component
+    predictions <- x$predictions
+    if (is.null(x$LSD))
+      attr(predictions, which = "meanLSD") <- NA
+    else
+      attr(predictions, which = "meanLSD") <- x$LSD$meanLSD
+    x$predictions <- predictions
+    
     if (!is.null(x$vcov))
     {
       x$vcov <- x$vcov[cond, cond]
@@ -333,7 +612,7 @@ subset.alldiffs <- function(x, subset, rmClassifyVars = NULL, ...)
   }
   if (!is.null(rmClassifyVars))
   {
-    classify <- attr(x, which = "classify")
+    classify <- x.attr[["classify"]]
     if (is.null(classify))
       stop("The alldiffs object does not have the classify attrtibute set")
     rmfac <- fac.combine(as.list(x$predictions[rmClassifyVars]))
@@ -348,12 +627,13 @@ subset.alldiffs <- function(x, subset, rmClassifyVars = NULL, ...)
       x$backtransforms <- x$backtransforms[, -c(match(rmClassifyVars, 
                                                       names(x$backtransforms)))]
     }
-    attr(x, which = "classify") <- classify
-    response <- attr(x, which = "response")
+    x.attr["classify"] <- classify
+    response <- x.attr[["response"]]
     if (is.null(response))
-      stop("The alldiffs object does not have the response attrtibute set")
+      stop("The alldiffs object does not have the response attribute set")
     pred.labs <- makePredictionLabels(x$predictions, classify, response)
     pred.lev <- pred.labs$pred.lev
+    attributes(x) <- x.attr
     
     if (!is.null(x$vcov))
     {
@@ -387,8 +667,10 @@ sort.alldiffs <- function(x, decreasing = FALSE, classify = NULL,
                           sortFactor = NULL, sortWithinVals = NULL, 
                           sortOrder = NULL, ...)
 {
-  if (!class(x) == "alldiffs")
-    stop("x must be of class alldiffs")
+  #Check that a valid object of class alldiffs
+  validalldifs <- validAlldiffs(x)  
+  if (is.character(validalldifs))
+    stop(validalldifs)
   
   if (is.null(classify))
     classify <- attr(x, which = "classify")
@@ -526,6 +808,14 @@ sort.alldiffs <- function(x, decreasing = FALSE, classify = NULL,
                                              levels = newlevs)
   }
   x$predictions <- x$predictions[tmp$Ord,]
+  #Set meanLSD attribute of predictions component
+  predictions <- x$predictions
+  if (is.null(x$LSD))
+    attr(predictions, which = "meanLSD") <- NA
+  else
+    attr(predictions, which = "meanLSD") <- x$LSD$meanLSD
+  x$predictions <- predictions
+  
   if (!is.null(x$vcov))
     x$vcov <- x$vcov[tmp$Ord, tmp$Ord]
   if (!is.null(x$backtransforms))
@@ -538,6 +828,7 @@ sort.alldiffs <- function(x, decreasing = FALSE, classify = NULL,
     x$sed <- x$sed[tmp$Ord, tmp$Ord]
   
   #Set attributes
+#  if (is.null(sortFactor)) sortFactor <- NA
   attr(x, which = "sortFactor") <- sortFactor
   attr(x, which = "sortOrder") <- newlevs
   
@@ -547,6 +838,10 @@ sort.alldiffs <- function(x, decreasing = FALSE, classify = NULL,
 recalcLSD.alldiffs <- function(alldiffs.obj, meanLSD.type = "overall", LSDby = NULL, 
                                alpha = 0.05, ...)
 {
+  #Check that a valid object of class alldiffs
+  validalldifs <- validAlldiffs(alldiffs.obj)  
+  if (is.character(validalldifs))
+    stop(validalldifs)
   kattr <- attributes(alldiffs.obj)
   alldiffs.obj <- allDifferences(alldiffs.obj$predictions, 
                                  classify = attr(alldiffs.obj, which = "classify"), 
@@ -571,8 +866,12 @@ redoErrorIntervals.alldiffs <- function(alldiffs.obj, error.intervals = "Confide
                                         alpha = 0.05, avsed.tolerance = 0.25, 
                                         meanLSD.type = "overall", LSDby = NULL, ...)
 {
-  asr4 <- isASRemlVersionLoaded(4, notloaded.fault = TRUE)
+  asr4 <- isASRemlVersionLoaded(4, notloaded.fault = FALSE)
   
+  #Check that a valid object of class alldiffs
+  validalldifs <- validAlldiffs(alldiffs.obj)  
+  if (is.character(validalldifs))
+    stop(validalldifs)
   AvLSD.options <- c("overall", "factor.combinations", "per.prediction")
   avLSD <- AvLSD.options[check.arg.values(meanLSD.type, AvLSD.options)]
   if (!is.null(LSDby) &&  !is.character(LSDby))
@@ -598,7 +897,7 @@ redoErrorIntervals.alldiffs <- function(alldiffs.obj, error.intervals = "Confide
   if (int.opt != "none")
   { 
     revert <- FALSE
-    if (is.null(denom.df) && c("Confidence", "halfLeastSignificant") %in% int.opt)
+    if (is.na(denom.df) && c("Confidence", "halfLeastSignificant") %in% int.opt)
     {
       warning(paste("The degrees of freedom of the t-distribtion are not available in alldiffs.obj\n",
                     "- reverting to Standard Error"))
@@ -748,6 +1047,14 @@ redoErrorIntervals.alldiffs <- function(alldiffs.obj, error.intervals = "Confide
     if (!is.na(ks) && ks != klen)
       alldiffs.obj$predictions <- alldiffs.obj$predictions[, c(1:(ks-1), (ks+1):klen, ks)]
   }
+  #Set meanLSD attribute of predictions component
+  predictions <- alldiffs.obj$predictions
+  if (is.null(alldiffs.obj$LSD))
+    attr(predictions, which = "meanLSD") <- NA
+  else
+    attr(predictions, which = "meanLSD") <- alldiffs.obj$LSD$meanLSD
+  alldiffs.obj$predictions <- predictions
+  
   return(alldiffs.obj)
 }
 
@@ -758,7 +1065,7 @@ redoErrorIntervals.alldiffs <- function(alldiffs.obj, error.intervals = "Confide
                                         LSDby = NULL, backtransforms = NULL, 
                                         response = NULL, response.title = NULL, 
                                         term = NULL, tdf = NULL, 
-                                        x.num = NULL, x.fac = NULL,level.length = NA, 
+                                        x.num = NULL, x.fac = NULL, level.length = NA, 
                                         pairwise = TRUE, alpha = 0.05,
                                         inestimable.rm = TRUE, 
                                         sortFactor = NULL, sortWithinVals = NULL, 
@@ -768,7 +1075,7 @@ redoErrorIntervals.alldiffs <- function(alldiffs.obj, error.intervals = "Confide
 #takes a table of asreml predictions and forms associated statistics
 #  for all pairwise differences
 { 
-  asr4 <- isASRemlVersionLoaded(4, notloaded.fault = TRUE)
+  asr4 <- isASRemlVersionLoaded(4, notloaded.fault = FALSE)
   
   AvLSD.options <- c("overall", "factor.combinations", "per.prediction")
   avLSD <- AvLSD.options[check.arg.values(meanLSD.type, AvLSD.options)]
@@ -779,28 +1086,28 @@ redoErrorIntervals.alldiffs <- function(alldiffs.obj, error.intervals = "Confide
   if ("levels.length" %in% names(tempcall))
     stop("levels.length has been deprecated - use level.length")
   
-  alldiffs.obj <- as.alldiffs(predictions = predictions, 
-                              vcov = vcov,
-                              differences = differences, 
-                              p.differences = p.differences, 
-                              sed = sed, LSD = LSD, 
-                              backtransforms = backtransforms, 
-                              response = response, 
-                              response.title = response.title, 
-                              term = term, classify = classify, 
-                              tdf = tdf)
+  #Change asreml4 names to asreml3 names
+  predictions <- as.predictions.frame(predictions, se = "std.error", est.status = "status")
+  
+  alldiffs.obj <- makeAlldiffs(predictions = predictions, 
+                               vcov = vcov,
+                               differences = differences, 
+                               p.differences = p.differences, 
+                               sed = sed, LSD = LSD, 
+                               backtransforms = backtransforms, 
+                               response = response, 
+                               response.title = response.title, 
+                               term = term, classify = classify, 
+                               tdf = tdf)
   
   #Check alldiffs.obj
-  if (pairwise && is.null(alldiffs.obj$sed))
-    stop(paste("No sed supplied in alldiffs.obj \n",
-               "- can obtain using sed=TRUE in predict.asreml"))
+  if (pairwise && is.null(alldiffs.obj$sed) && is.null(alldiffs.obj$vcov))
+    stop(paste("No sed or vcov supplied in alldiffs.obj \n",
+               "- can obtain using sed=TRUE or vcov=TRUE in predict.asreml"))
   predictions <- alldiffs.obj$predictions
   rownames(predictions) <- NULL
   #Retain only estimable predictions
-  if (asr4)
-    which.estim <- (predictions$est.status == "Estimable")
-  else
-    which.estim <- (predictions$est.status == "Estimable")
+  which.estim <- (predictions$est.status == "Estimable")
   if (inestimable.rm & sum(which.estim) != nrow(predictions))
   { 
     predictions <- predictions[which.estim, ]
@@ -826,29 +1133,37 @@ redoErrorIntervals.alldiffs <- function(alldiffs.obj, error.intervals = "Confide
       if (inestimable.rm)
         alldiffs.obj$sed <- alldiffs.obj$sed[which.estim, which.estim]
       diag(alldiffs.obj$sed) <- NA
-    }
-    
+    }     
     #Reset the other components to NULL
-    alldiffs.obj <- as.alldiffs(predictions = alldiffs.obj$predictions, 
-                                vcov = alldiffs.obj$vcov, 
-                                differences = NULL, 
-                                p.differences = NULL, 
-                                sed = alldiffs.obj$sed, LSD = NULL, 
-                                backtransforms = backtransforms, 
-                                response = response, 
-                                response.title = response.title, 
-                                term = term, classify = classify, 
-                                tdf = tdf)
-    attr(alldiffs.obj, which = "meanLSD") <- NULL
+    alldiffs.obj <- makeAlldiffs(predictions = alldiffs.obj$predictions, 
+                                 vcov = alldiffs.obj$vcov, 
+                                 differences = NULL, 
+                                 p.differences = NULL, 
+                                 sed = alldiffs.obj$sed, LSD = NULL, 
+                                 backtransforms = backtransforms, 
+                                 response = response, 
+                                 response.title = response.title, 
+                                 term = term, classify = classify, 
+                                 tdf = tdf)
+    predictions <- alldiffs.obj$predictions
+    attr(predictions, which = "meanLSD") <- NA
+    alldiffs.obj$predictions <- predictions
   }
   response <- as.character(attr(alldiffs.obj, which = "response"))
   
-  #Sort if sortFactor set
-  if (!is.null(sortFactor))
-    alldiffs.obj <- sort(alldiffs.obj, decreasing = decreasing, sortFactor = sortFactor, 
-                         sortWithinVals = sortWithinVals, sortOrder = sortOrder)
+  #Deal with case when have vcov, but not sed
+  if (pairwise && !is.null(alldiffs.obj$vcov) && is.null(alldiffs.obj$sed))
+  {
+    alldiffs.obj$sed <- alldiffs.obj$vcov
+    n <- nrow(alldiffs.obj$sed)
+    dvcov <- diag(alldiffs.obj$sed)
+    alldiffs.obj$sed <- matrix(rep(dvcov, each = n), nrow = n) + 
+      matrix(rep(dvcov, times = n), nrow = n) - 2 * alldiffs.obj$sed
+    alldiffs.obj$sed <- sqrt(alldiffs.obj$sed)
+    diag(alldiffs.obj$sed) <- NA_real_
+  }
   
-  #Ensure that predictions and other components are in standard order for the classify
+  #Ensure that the columns of predictions are in the same order as the classify 
   class <- unlist(strsplit(classify, ":", fixed = TRUE))
   if (!all(class == names(alldiffs.obj$predictions)[1:length(class)]))
   {
@@ -857,6 +1172,13 @@ redoErrorIntervals.alldiffs <- function(alldiffs.obj, error.intervals = "Confide
                                       alldiffs.obj$predictions[rest])
     rownames(alldiffs.obj$predictions) <- NULL
   }
+
+  #Sort if sortFactor set
+  if (!is.null(sortFactor))
+    alldiffs.obj <- sort(alldiffs.obj, decreasing = decreasing, sortFactor = sortFactor, 
+                         sortWithinVals = sortWithinVals, sortOrder = sortOrder)
+  
+  #Make sure that the predictions and other components are in standard order for the classify
   ord <- do.call(order, alldiffs.obj$predictions)
   alldiffs.obj$predictions <- alldiffs.obj$predictions[ord,]
   predictions <- alldiffs.obj$predictions
@@ -934,43 +1256,58 @@ redoErrorIntervals.alldiffs <- function(alldiffs.obj, error.intervals = "Confide
       alldiffs.obj$p.differences <- p.diff
     }
     
-    #calculate LSDs, if not present
-    if (is.null(alldiffs.obj$LSD) && pairwise && (nrow(alldiffs.obj$predictions) != 1))
+    #Set meanLSD attribute of predictions
+    if (pairwise && (nrow(alldiffs.obj$predictions) != 1))
     { 
-      t.value = qt(1-alpha/2, denom.df)
-      if (avLSD == "overall")
+      #calculate LSDs, if not present
+      if (is.null(alldiffs.obj$LSD))
       {
-        minLSD <- t.value * min(alldiffs.obj$sed, na.rm = TRUE)
-        maxLSD <- t.value * max(alldiffs.obj$sed, na.rm = TRUE)
-        meanLSD <- t.value * sqrt(mean(alldiffs.obj$sed * alldiffs.obj$sed, 
-                                       na.rm = TRUE))
-      } else 
-      {
-        if (avLSD == "factor.combinations") #factor.combinations
+        t.value = qt(1-alpha/2, denom.df)
+        if (avLSD == "overall")
         {
-          if (is.null(LSDby))
-            stop("Need to specify factors using LSDby for meanLSD.typ = factor.combinations")
-          LSDs <- sliceLSDs(alldiffs.obj, by = LSDby, t.value = t.value, alpha = alpha)
-          meanLSD <- LSDs$meanLSD
-          names(meanLSD) <- rownames(LSDs)
-          minLSD <- LSDs$minLSD
-          names(minLSD) <- rownames(LSDs)
-          maxLSD <- LSDs$maxLSD
-          names(maxLSD) <- rownames(LSDs)
-        } else #per.prediction
+          minLSD <- t.value * min(alldiffs.obj$sed, na.rm = TRUE)
+          maxLSD <- t.value * max(alldiffs.obj$sed, na.rm = TRUE)
+          meanLSD <- t.value * sqrt(mean(alldiffs.obj$sed * alldiffs.obj$sed, 
+                                         na.rm = TRUE))
+        } else 
         {
-          meanLSD <- t.value * sqrt(apply(alldiffs.obj$sed*alldiffs.obj$sed, 
-                                          FUN = mean, MARGIN = 1, na.rm = TRUE))
-          maxLSD <- t.value * apply(alldiffs.obj$sed, FUN = max, MARGIN = 1, na.rm = TRUE)
-          minLSD <- t.value * apply(alldiffs.obj$sed, FUN = min, MARGIN = 1, na.rm = TRUE)
+          if (avLSD == "factor.combinations") #factor.combinations
+          {
+            if (is.null(LSDby))
+              stop("Need to specify factors using LSDby for meanLSD.typ = factor.combinations")
+            LSDs <- sliceLSDs(alldiffs.obj, by = LSDby, t.value = t.value, alpha = alpha)
+            meanLSD <- LSDs$meanLSD
+            names(meanLSD) <- rownames(LSDs)
+            minLSD <- LSDs$minLSD
+            names(minLSD) <- rownames(LSDs)
+            maxLSD <- LSDs$maxLSD
+            names(maxLSD) <- rownames(LSDs)
+          } else #per.prediction
+          {
+            meanLSD <- t.value * sqrt(apply(alldiffs.obj$sed*alldiffs.obj$sed, 
+                                            FUN = mean, MARGIN = 1, na.rm = TRUE))
+            maxLSD <- t.value * apply(alldiffs.obj$sed, FUN = max, MARGIN = 1, na.rm = TRUE)
+            minLSD <- t.value * apply(alldiffs.obj$sed, FUN = min, MARGIN = 1, na.rm = TRUE)
+          }
         }
-      }
-      alldiffs.obj$LSD <- data.frame(minLSD  = minLSD, 
-                                     meanLSD = meanLSD, 
-                                     maxLSD = maxLSD)
-      attr(alldiffs.obj, which = "meanLSD") <- meanLSD
-    }
+        alldiffs.obj$LSD <- data.frame(minLSD  = minLSD, 
+                                       meanLSD = meanLSD, 
+                                       maxLSD = maxLSD)
+      } 
+    } 
   }
+  #Set meanLSD attribute of predictions component
+  predictions <- alldiffs.obj$predictions
+  if (is.null(alldiffs.obj$LSD))
+    attr(predictions, which = "meanLSD") <- NA
+  else
+    attr(predictions, which = "meanLSD") <- alldiffs.obj$LSD$meanLSD
+  alldiffs.obj$predictions <- predictions
+  
+  #Check that have a valid alldiffs object
+  validalldifs <- validAlldiffs(alldiffs.obj)  
+  if (is.character(validalldifs))
+    stop(validalldifs)
   
   return(alldiffs.obj)
 }
@@ -1040,6 +1377,8 @@ redoErrorIntervals.alldiffs <- function(alldiffs.obj, error.intervals = "Confide
         backtransforms[[ks]] <- backtransforms[[ks]] / scale
       }
     }
+    #Set meanLSD attribute of predictions component
+    attr(backtransforms, which = "meanLSD") <- NA
     alldiffs.obj$backtransforms <- backtransforms
   }
   return(alldiffs.obj)
@@ -1149,7 +1488,7 @@ redoErrorIntervals.alldiffs <- function(alldiffs.obj, error.intervals = "Confide
       lintrans <- alldiffs.obj$predictions
       lintrans$predicted.value <- as.vector(Q.submod %*% lintrans$predicted.value)
       
-      # Calculate standard errors andthe variance matrix for differences between predictions
+      # Calculate standard errors and the variance matrix for differences between predictions
       if (!is.null(alldiffs.obj$vcov))
       {
         lintrans.vcov <- Q.submod %*% alldiffs.obj$vcov %*% Q.submod

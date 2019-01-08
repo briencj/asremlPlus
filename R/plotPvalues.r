@@ -94,8 +94,10 @@
   #show.sig is a logical indicating whether to put stars onto plot
   #title is a character string giving the plot main title
 { 
-  if (!class(object) == "alldiffs")
-    stop("object must be of class alldiffs")
+  #Check that a valid object of class alldiffs
+  validalldifs <- validAlldiffs(object)  
+  if (is.character(validalldifs))
+    stop(validalldifs)
   if (is.null(object$p.differences))
     stop("The p.differences component of object cannot be NULL")
   if (all(is.na(object$p.differences)))

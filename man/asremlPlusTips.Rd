@@ -12,6 +12,8 @@ Need help getting started? Look at the example in ?`asremlPlus-package`.
 
 To avoid start-up message that ASReml-R is needed, load asreml before asremlPlus.
 
+The methods for alldiffs and data.frame do not require asreml
+
 Use suppressPackageStartupMessages() to eliminate all package startup messages.
 
 To see all the intermittent, randomly-presented, startup tips enter ?asremlPlusTips.

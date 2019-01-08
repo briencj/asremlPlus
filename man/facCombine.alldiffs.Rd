@@ -1,17 +1,17 @@
 \name{facCombine.alldiffs}
 \alias{facCombine.alldiffs}
 \alias{facCombine}
-\title{Combines several factors into one in the components of an alldiffs object}
+\title{Combines several factors into one in the components of an \code{\link{alldiffs.object}}}
 \description{Combines several \code{\link{factor}s}, in the \code{prediction} component 
              of \code{object}, into one whose \code{levels} are the combinations of the 
               used \code{levels} of the individual \code{\link{factor}s}. The matching 
-             changes are made to the other components of the \code{alldiffs} object. 
+             changes are made to the other components of the \code{\link{alldiffs.object}}. 
              The levels of the \code{factors} are combined using \code{fac.combine} 
              from the \code{dae} package.}
 \usage{\method{facCombine}{alldiffs}(object, factors, order="standard", 
            combine.levels=TRUE, sep="_", level.length = NA, ...)}
 \arguments{
- \item{object}{An object of S3-class \code{alldiffs}.}
+ \item{object}{An \code{\link{alldiffs.object}}.}
  \item{factors}{A \code{\link{character}} containing the names of \code{\link{factor}s} 
    in the \code{prediction} component of \code{object} whose levels are to be combined.}
  \item{order}{Either \code{standard} or \code{yates}. The order in which the 
@@ -42,20 +42,60 @@
 \seealso{\code{\link{as.alldiffs}}, \code{\link{allDifferences.data.frame}}, 
          \code{\link{print.alldiffs}}, \code{\link{sort.alldiffs}}, \cr
          \code{\link{reorderClassify.alldiffs}}, \code{fac.combine} in package \pkg{dae}.}
-\examples{\dontrun{
-data(Smarthouse.dat)
-#Set up without any sorting
-m1.asr <- asreml(y1 ~ Genotype*A*B, 
-                 random=~Replicate/Mainplot/Subplot,
-                 data=Smarthouse.dat)
-current.asrt <- asrtests(m1.asr)
-current.asrt <- rmboundary(current.asrt)
-m1.asr <- current.asrt$asreml.obj
-diffs <- predictPlus(m1.asr, classify = "Genotype:A:B", 
-                     wald.tab = current.asrt$wald.tab,
-                     error.intervals = "Stand", tables = "none")
-diffs <- facCombine(diffs, factors = c("A","B")
-}}
+\examples{
+  data("Ladybird.dat")
+  
+  ## Use asreml to get predictions and associated statistics
+
+  \dontrun{
+  m1.asr <- asreml(logitP ~ Host*Cadavers*Ladybird, 
+                   random = ~ Run,
+                   data = Ladybird.dat)
+  current.asrt <- asrtests(m1.asr)
+  HCL.pred <- asreml::predict.asreml(m1.asr, classify="Host:Cadavers:Ladybird", 
+                                     sed=TRUE)
+  HCL.preds <- HCL.pred$pvals
+  HCL.sed <- HCL.pred$sed
+  HCL.vcov <- NULL
+  wald.tab <-  current.asrt$wald.tab
+  den.df <- wald.tab[match("Host:Cadavers:Ladybird", rownames(wald.tab)), "denDF"]
+  }
+  
+  ## Use lmeTest and emmmeans to get predictions and associated statistics
+  if (requireNamespace("lmerTest", quietly = TRUE) & 
+      requireNamespace("emmeans", quietly = TRUE))
+  {
+    m1.lmer <- lmerTest::lmer(logitP ~ Host*Cadavers*Ladybird + (1|Run),
+                              data=Ladybird.dat)
+    HCL.emm <- emmeans::emmeans(m1.lmer, specs = ~ Host:Cadavers:Ladybird)
+    HCL.preds <- summary(HCL.emm)
+    den.df <- min(HCL.preds$df)
+    ## Modify HCL.preds to be compatible with a predictions.frame
+    HCL.preds <- as.predictions.frame(HCL.preds, predictions = "emmean", 
+                                      se = "SE", interval.type = "CI", 
+                                      interval.names = c("lower.CL", "upper.CL"))
+    HCL.vcov <- vcov(HCL.emm)
+    HCL.sed <- NULL
+  }
+  
+  ## Use the predictions obtained with either asreml or lmerTest
+  if (exists("HCL.preds"))
+  {
+    ## Form an all.diffs object
+    HCL.diffs <- as.alldiffs(predictions = HCL.preds, classify = "Host:Cadavers:Ladybird", 
+                             sed = HCL.sed, vcov = HCL.vcov, tdf = den.df)
+    
+    ## Check the class and validity of the alldiffs object
+    is.alldiffs(HCL.diffs)
+    validAlldiffs(HCL.diffs)
+
+    ## Combine Cadavers and Ladybird
+    HCL.diffs <- facCombine(HCL.diffs, factors = c("Cadavers","Ladybird"))
+    
+    ## Check the validity of HCL.diffs
+    validAlldiffs(HCL.diffs)
+  }
+}
 \keyword{asreml}
 \keyword{factor}
 \keyword{manip}

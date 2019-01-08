@@ -73,7 +73,7 @@ Stefanova, Smith & Cullis (2009).}
               \code{ignore}. If standardized conditional residuals are plotted and 
               the BLUPs for \code{units} are to be added then it is the standardized 
               BLUPs that are added.}
- \item{update}{if \code{TRUE }then the arguments \code{R.param} 
+ \item{update}{If \code{TRUE }then the arguments \code{R.param} 
               and \code{G.param} are set to those in the \code{asreml} object 
               supplied in \code{object} so that the values from the original 
               model are used as starting values. If \code{FALSE} then calls are made to 
@@ -81,7 +81,7 @@ Stefanova, Smith & Cullis (2009).}
               (i) the model is fitted to simulated data and (ii) modifications 
               specified via \code{\dots} are made, except that changes cannot be made to 
               any of the models.}
- \item{trace}{if TRUE then partial iteration details are displayed when ASReml-R 
+ \item{trace}{If TRUE then partial iteration details are displayed when ASReml-R 
               functions are invoked; if FALSE then no output is displayed.}
  \item{graphics.device}{A \code{character} specifying a graphics device for plotting. 
               The default is \cr\code{graphics.device = NULL}, which will result 

@@ -25,11 +25,12 @@ test_that("sort.alldiffs_asreml3", {
                        wald.tab = current.asrt$wald.tab,
                        error.intervals = "Stand", tables = "none")
   testthat::expect_is(diffs, "alldiffs")
+  testthat::expect_true(validAlldiffs(diffs))
   testthat::expect_equal(nrow(diffs$predictions),120)
   testthat::expect_equal(ncol(diffs$predictions),8)
   testthat::expect_equal(as.character(diffs$predictions$Genotype[1]),"Axe")
-  testthat::expect_equal(length(attributes(diffs)),8)
-  testthat::expect_null(attr(diffs, which = "sortOrder"))
+  testthat::expect_equal(length(attributes(diffs)),7)
+  testthat::expect_true(is.null(attr(diffs, which = "sortOrder")))
   
   testthat::expect_silent(plotPredictions(data = diffs$predictions, 
                                           classify = "Genotype:A:B", 
@@ -54,7 +55,7 @@ test_that("sort.alldiffs_asreml3", {
   testthat::expect_equal(nrow(diffs.sort$predictions),120)
   testthat::expect_equal(ncol(diffs.sort$predictions),8)
   testthat::expect_equal(as.character(diffs.sort$predictions$Genotype[1]),"Gladius")
-  testthat::expect_equal(length(attributes(diffs.sort)),10)
+  testthat::expect_equal(length(attributes(diffs.sort)),9)
   testthat::expect_equal(length(attr(diffs.sort, which = "sortOrder")),10)
   
   #Test sort.alldiffs with supplied sortOrder
@@ -132,8 +133,8 @@ test_that("sort.alldiffs_asreml3", {
   testthat::expect_equal(nrow(diffs$predictions),12)
   testthat::expect_equal(ncol(diffs$predictions),7)
   testthat::expect_equal(as.character(diffs$predictions$Variety[1]),"Victory")
-  testthat::expect_equal(length(attributes(diffs)),8)
-  testthat::expect_null(attr(diffs, which = "sortOrder"))
+  testthat::expect_equal(length(attributes(diffs)),7)
+  testthat::expect_true(is.null(attr(diffs, which = "sortOrder")))
   
   testthat::expect_silent(plotPredictions(data = diffs$predictions, 
                                           classify ="Nitrogen:Variety", 
@@ -169,7 +170,7 @@ test_that("sort.alldiffs_asreml3", {
   testthat::expect_equal(nrow(diffs[[1]]$predictions),12)
   testthat::expect_equal(ncol(diffs[[1]]$predictions),7)
   testthat::expect_equal(as.character(diffs[[1]]$predictions$Variety[[1]]),"Marvellous")
-  testthat::expect_equal(length(attributes(diffs$xNitrogen.Variety)),10)
+  testthat::expect_equal(length(attributes(diffs$xNitrogen.Variety)),9)
   testthat::expect_equal(length(attr(diffs[[1]], which = "sortOrder")),3)
   
   #Test for predictPlus with sortFactor
@@ -183,7 +184,7 @@ test_that("sort.alldiffs_asreml3", {
   testthat::expect_equal(nrow(diffs$predictions),12)
   testthat::expect_equal(ncol(diffs$predictions),7)
   testthat::expect_equal(as.character(diffs$predictions$Variety[1]),"Marvellous")
-  testthat::expect_equal(length(attributes(diffs)),10)
+  testthat::expect_equal(length(attributes(diffs)),9)
   testthat::expect_true(all(attr(diffs, which = "sortOrder") == 
                               levels(diffs$predictions$Variety)))
   testthat::expect_true(all(attr(diffs, which = "sortOrder") == 
@@ -223,7 +224,9 @@ test_that("classify.sort_asreml3", {
                            sed = Var.pred$sed, 
                            tdf = den.df)
   testthat::expect_equal(length(attributes(Var.diffs)),3)
-  testthat::expect_null(attr(Var.diffs, which = "sortOrder"))
+  testthat::expect_true(is.null(attr(Var.diffs, which = "sortOrder")))
+  #asreml-R3 does not ensure that factors are in the same order as the classify - 
+  #they are in the same order as the term in asreml call
   testthat::expect_true(all(names(Var.diffs$predictions)[1:2] ==  c("Nitrogen","Variety")))
   
   #Test for allDifferences without sortFactor

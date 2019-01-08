@@ -71,14 +71,17 @@ REMLRT.asreml <- function(h0.asreml.obj, h1.asreml.obj,
       stop("reduced.asreml.obj has been deprecated in REMLRT.asreml - use h0.asreml.obj")
   }
   
-  #Check have asreml objects
-  if ((is.null(h1.asreml.obj) | is.null(h0.asreml.obj)) |
-        class(h1.asreml.obj) != "asreml" | 
-        class(h0.asreml.obj) != "asreml")
-    stop("Must supply two objects of class 'asreml'")
-
   asr4 <- isASRemlVersionLoaded(4, notloaded.fault = TRUE)
   
+  #Check that have a valid objects of class asreml
+  validasr <- validAsreml(h0.asreml.obj)  
+  if (is.character(validasr))
+    stop(validasr)
+  #Check that have a valid object of class asreml
+  validasr <- validAsreml(h1.asreml.obj)  
+  if (is.character(validasr))
+    stop(validasr)
+
   #Check that fixed and sparse models are the same
   if (asr4)
   {
@@ -198,8 +201,13 @@ REMLRT.asreml <- function(h0.asreml.obj, h1.asreml.obj,
 infoCriteria.asreml <- function(asreml.obj, DF = NULL, 
                                 bound.exclusions = c("F","B","S","C"), ...)
 {
-  #Get bound values
   asr4 <- isASRemlVersionLoaded(4, notloaded.fault = TRUE)
+  #Check that have a valid object of class asreml
+  validasr <- validAsreml(asreml.obj)  
+  if (is.character(validasr))
+    stop(validasr)
+  
+  #Get bound values
   if (asr4)
   {
     bound <- asreml::vpc.char(asreml.obj)

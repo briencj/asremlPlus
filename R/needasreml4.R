@@ -20,6 +20,7 @@ ASReml-R is available from VSNi. Please visit http://www.vsni.co.uk/ for more in
             "Find out what has changed in asremlPlus: enter news(package = 'asremlPlus').",
             "Need help getting started? Look at the example in ?`asremlPlus-package`.", 
             "To avoid start-up message that ASReml-R is needed, load asreml before asremlPlus.",
+            "The methods for alldiffs and data.frame do not require asreml",
             "Use suppressPackageStartupMessages() to eliminate all package startup messages.", 
             "To see all the intermittent, randomly-presented, startup tips enter ?asremlPlusTips.",
             "To install the latest version: enter devtools::install_github('briencj/asremlPlus')",

@@ -74,11 +74,13 @@
 #... parameters to supply to asreml calls within variofaces.asreml
 { 
   asr4 <- isASRemlVersionLoaded(4, notloaded.fault = TRUE)
+  #Check that have a valid object of class asreml
+  validasr <- validAsreml(asreml.obj)  
+  if (is.character(validasr))
+    stop(validasr)
   
   options <- c("addtoresiduals", "ignore")
   unit.opt <- options[check.arg.values(units, options)] 
-  if (class(asreml.obj) != "asreml")
-    stop("asreml.obj should be an asreml object")
   #Check V
   if (is.null(V))
   {
@@ -484,15 +486,17 @@
 #... parameters to supply to plot functions called within variofaces.asreml
 { 
   asr4 <- isASRemlVersionLoaded(4, notloaded.fault = TRUE)
-
+  #Check that have a valid object of class asreml
+  validasr <- validAsreml(object)  
+  if (is.character(validasr))
+    stop(validasr)
+  
   options <- c("data", "fitted", "residuals", "all")
   opt <- options[unlist(lapply(which, check.arg.values, options=options))]
   if ("all" %in% opt)
     opt <-  c("data", "fitted", "residuals")
   options <- c("addtoresiduals", "ignore")
   unit.opt <- options[check.arg.values(units, options)]
-  if (class(object) != "asreml")
-    stop("object should be an asreml object")
   n <- length(object$residuals)
   if (!is.null(means) & length(means) != n)
     stop("The lengths of means  and the response variable are not the same")

@@ -4,6 +4,8 @@ export(addrm.terms.asreml,
        allDifferences.data.frame,
        alldiffs,
        as.alldiffs,
+       as.asrtests,
+       as.predictions.frame,
        angular,
        angular.mod,
        asrtests, 
@@ -24,6 +26,9 @@ export(addrm.terms.asreml,
        infoCriteria.asreml,
        info.crit.asreml,
        info.crit,
+       is.alldiffs,
+       is.asrtests,
+       is.predictions.frame,
        linTransform, 
        linTransform.alldiffs,
        loadASRemlVersion,
@@ -87,8 +92,12 @@ export(addrm.terms.asreml,
        testswapran.asreml,
        testswapran,
        testswapran.asrtests,
+       validAlldiffs,
+       validAsrtests,
+       validPredictionsFrame,
        variofaces,
        variofaces.asreml)
+exportClasses(alldiffs, asrtests, predictions.frame)
 import(dae, ggplot2)
 importFrom("stats", "as.formula", "fitted", "fitted.values", "formula", "model.matrix", 
                     "na.omit", "pchisq", "pf", "predict", "pt", "qt", "quantile", 
@@ -97,7 +106,7 @@ importFrom("stats", "as.formula", "fitted", "fitted.values", "formula", "model.m
 importFrom("RColorBrewer", "brewer.pal")
 importFrom("grDevices", "savePlot")
 importFrom("dplyr", "anti_join")
-importFrom("methods", "languageEl", "languageEl<-")
+importFrom("methods", "languageEl", "languageEl<-", "validObject")
 importFrom("reshape", "melt")
 importFrom("utils", "data", sessionInfo, "tail")
 importFrom("foreach", "foreach", "%do%", "%dopar%")

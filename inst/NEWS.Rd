@@ -1,5 +1,15 @@
 \name{news}
 \title{News for Package asremlPlus}
+\section{asremlPlus Version 4.1-10 (2019-01-08)}{
+  \itemize{
+    \item{Add entries for \code{predictions.frame}, \code{alldiffs.object} and \code{asrtests.object} and made changes to the documentation to provide links to these pages.}
+    \item{Defined classes alldiffs, asrtests and predictions.frame.}
+    \item{Added the functions is.alldiffs, validAlldiffs, is.asrtests, validAsrtests, is.predictions.frame and validPredictionsFrame for validating the objects.}
+    \item{Added tests for the validity of objects to methods functions.}
+    \item{Provided as.asrtests function, while retaining asrtests function as a pseudonym for as.asrtests. Added as.prediction.frame function.}
+    \item{Add examples for \code{alldiffs} and \code{data.frame} methods functions that use lme4 to show how to use asremlPlus with packages othere than asreml.}
+  }
+}
 \section{asremlPlus Version 4.1-08 (2018-12-10)}{
   \itemize{
     \item{Correct predictPlus, plotPredictions and allDifferences.dat.frame to deal with a \code{classify} equal to \code{"(Intercept)"}.}

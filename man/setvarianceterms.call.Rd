@@ -22,9 +22,9 @@
              its \code{name} argument set to \code{"asreml"}. Another is to 
              obtain it from the \code{call} component of an \code{asreml} 
              object  (e.g. \code{call <- asreml.obj$call}).}
- \item{terms}{a character vector specifying the terms 
+ \item{terms}{A character vector specifying the terms 
               that are to have bounds and/or initial values specified.}
- \item{ignore.suffices}{a logical vector specifying whether the suffices of the 
+ \item{ignore.suffices}{A logical vector specifying whether the suffices of the 
                     \code{asreml}-assigned names of the variance terms (i.e. the 
                     information to the right of an "!", other than "R!") is to be ignored in 
                     matching elements of \code{terms}. If \code{TRUE} for 
@@ -36,7 +36,7 @@
                     If it is of length one then the same action is 
                     applied to the \code{asreml}-assigned suffices for all the terms 
                     in \code{terms}.}
- \item{bounds}{a \code{\link{character}} vector specifying the bounds to be applied 
+ \item{bounds}{A \code{\link{character}} vector specifying the bounds to be applied 
                     to the terms specified in \code{set.terms}. This vector 
                     must be of length one or the same length as \code{set.terms}. 
                     If it is of length one then the same constraint is 
@@ -52,7 +52,7 @@
                      \item C - Constrained by user; 
                      \item U - unbounded.
                    }}
- \item{initial.values}{a character vector specifying the initial values for  
+ \item{initial.values}{A character vector specifying the initial values for  
                     the terms specified in \code{terms}. This vector 
                     must be of length one or the same length as \code{terms}. 
                     If it is of length one then the same initial value is 

@@ -20,12 +20,9 @@
                bounds = "P", initial.values = NA,...)
 }
 \arguments{
- \item{asrtests.obj}{an \code{\link{asrtests}} object for a fitted model that is a list 
-                containing an \code{asreml} object, a \code{wald.tab} 
-                \code{data.frame} with 4 columns, and a \code{data.frame} with 
-                5 columns that records any previous changes and tests in the 
-                fitted model.}
- \item{terms}{a character string vector giving the terms that are to be reparameterized.}
+ \item{asrtests.obj}{an \code{\link{asrtests.object}} containing the components (i) \code{asreml.obj},
+       (ii) \code{wald.tab}, and (iii) \code{test.summary}.}
+ \item{terms}{A character string vector giving the terms that are to be reparameterized.}
  \item{trend.num}{A character string giving the name of the numeric covariate that 
               corresponds to \code{devn.fac} and is potentially included in terms 
               in the fitted model.}
@@ -38,7 +35,7 @@
                       the final fit does not converge, an attempt is made to achieve 
                       convergence by removing any boundary terms. If this is unsuccessful, 
                       the supplied \code{asrtsts} object is returned.}
- \item{checkboundaryonly}{if \code{TRUE} then boundary and singular terms are not removed by 
+ \item{checkboundaryonly}{If \code{TRUE} then boundary and singular terms are not removed by 
               \code{\link{rmboundary.asrtests}}; a warning is issued instead.}
  \item{denDF}{Specifies the enthod to use in computing approximate denominator 
               degrees of freedom when \code{wald.asreml} is called. Can be \code{none} 
@@ -48,9 +45,9 @@
               on problem size. The denominator degrees of freedom are calculated 
               according to Kenward and Roger (1997) for fixed terms in the dense 
               part of the model.}
- \item{trace}{if TRUE then partial iteration details are displayed when ASReml-R 
+ \item{trace}{If TRUE then partial iteration details are displayed when ASReml-R 
               functions are invoked; if FALSE then no output is displayed.}
-\item{update}{if \code{TRUE }then \code{update.asreml} is called in removing and 
+\item{update}{If \code{TRUE }then \code{update.asreml} is called in removing and 
               adding terms to the model. In doing this the arguments \code{R.param} 
               and \code{G.param} are set to those in the \code{asreml} object stored 
               in the supplied \code{asrtests.obj} so that the values from the previous 
@@ -58,9 +55,9 @@
               \code{asreml} in which the only changes from the previous call are 
               (i) that the models are updated and (ii) modifications 
               specified via \code{\dots} are made.}
- \item{set.terms}{a character vector specifying the terms that are to have 
+ \item{set.terms}{A character vector specifying the terms that are to have 
                   bounds and/or initial values set prior to fitting.}
- \item{ignore.suffices}{a logical vector specifying whether the suffices of the 
+ \item{ignore.suffices}{A logical vector specifying whether the suffices of the 
                     \code{asreml}-assigned names of the variance terms (i.e. the 
                     information to the right of an "!", other than "R!") is to 
                     be ignored in matching elements of \code{terms}. 
@@ -72,14 +69,14 @@
                     same length as \code{terms}. If it is of length one then 
                     the same action is applied to the \code{asreml}-assigned 
                     suffices for all the terms in \code{terms}.}
- \item{bounds}{a \code{\link{character}} vector specifying the bounds to be applied 
+ \item{bounds}{A \code{\link{character}} vector specifying the bounds to be applied 
                     to the terms specified in \code{set.terms}. This vector 
                     must be of length one or the same length as \code{set.terms}. 
                     If it is of length one then the same constraint is 
                     applied to all the terms in \code{set.terms}. 
                     If any of the bounds are equal to NA then they are 
                     left unchanged for those terms.}
- \item{initial.values}{a character vector specifying the initial values for  
+ \item{initial.values}{A character vector specifying the initial values for  
                     the terms specified in \code{terms}. This vector 
                     must be of length one or the same length as \code{terms}. 
                     If it is of length one then the same initial value is 
@@ -87,22 +84,13 @@
                     If any of the initial.values are equal to NA then they are 
                     left unchanged for those terms.}
  \item{\dots}{further arguments passed to \code{asreml} via 
-            \code{\link{changeTerms.asrtests}} and \code{\link{asrtests}}.}
+            \code{\link{changeTerms.asrtests}} and \code{\link{as.asrtests}}.}
 }
-\value{An \code{\link{asrtests}} object, which is a list containing:
-       \enumerate{
-         \item \code{asreml.obj}: an \code{asreml} object containing the fit 
-               of the model after all boundary and singular terms have been removed;
-         \item \code{wald.tab}: a 4-column \code{data.frame} containing a 
-               pseudo-anova table for the fixed terms produced by \code{wald.asreml};
-         \item \code{test.summary}: a \code{data.frame} with columns \code{term}, 
-                \code{DF}, \code{denDF}, \code{p} and \code{action}. It contains a row for each term
-                that is dropped, added or tested or a note that several terms have been
-                added or removed.}
-}
+\value{An \code{\link{asrtests.object}} containing the components (i) \code{asreml.obj},
+       (ii) \code{wald.tab}, and (iii) \code{test.summary}.}
 
 \author{Chris Brien}
-\seealso{\code{\link{asrtests}}, \code{\link{changeTerms.asrtests}}, 
+\seealso{\code{\link{as.asrtests}}, \code{\link{changeTerms.asrtests}}, 
          \code{\link{testranfix.asrtests}}, \code{\link{testresidual.asrtests}},  \cr
          \code{\link{newfit.asreml}}, \code{\link{chooseModel.asrtests}}}
 \examples{\dontrun{

@@ -1,8 +1,46 @@
+test <- function(object = 5)
+{ deparse(substitute(object)) } 
+
+"validAsreml" <- function(object)
+{
+  asr4 <- isASRemlVersionLoaded(4, notloaded.fault = TRUE)
+  isasr <- TRUE 
+  #Check class
+  if (!inherits(object, "asreml") || is.null(object))
+  {
+    isasr[1] <- FALSE 
+    isasr <- c(isasr, "\n ",deparse(substitute(object)),"is not of class asreml")
+  }
+  #Check have corresponding asreml version
+  if ((asr4 && !"vparameters" %in% names(object)) || 
+      (!asr4 && "vparameters" %in% names(object)))
+  {
+    isasr[1] <- FALSE 
+    isasr <- c(isasr, 
+               paste("\n ",deparse(substitute(object)), "is not compatible with the",
+                     "version of asreml currently loaded"))
+  }
+  if (length(isasr) > 1)
+    isasr[1] <- "Error(s) in validAlldiffs(object) : "
+  return(isasr)
+}
+
 "asrtests" <- function(asreml.obj, wald.tab = NULL, test.summary = NULL, 
                        denDF = "numeric", ...)
+{
+  test <- as.asrtests(asreml.obj = asreml.obj, wald.tab = wald.tab, 
+                      test.summary = test.summary, denDF = denDF, ...)
+  return(test)
+}
+
+"as.asrtests" <- function(asreml.obj, wald.tab = NULL, test.summary = NULL, 
+                       denDF = "numeric", ...)
 { 
-  if (class(asreml.obj) != "asreml")
-    stop("asreml.obj in an asrtests object should be of class asreml")
+  #Check that have a valid object of class asreml
+  validasr <- validAsreml(asreml.obj)  
+  if (is.character(validasr))
+    stop(validasr)
+  
   if (is.null(test.summary))
   { 
     test.summary <- data.frame(matrix(nrow = 0, ncol=5))
@@ -28,17 +66,56 @@
   return(test)
 }
 
+"is.asrtests" <- function(object)
+{
+  inherits(object, "asrtests")
+}
+
+"validAsrtests" <- function(object)
+{
+  asr4 <- isASRemlVersionLoaded(4, notloaded.fault = TRUE)
+  isasrtests <- TRUE 
+  
+  #Check that have a valid object of class asrtests
+  if (is.null(object) || !is.asrtests(object))
+  {
+    if (asr4)
+      msg <- paste0("\n  In analysing ",object$asreml.obj$formulae$fixed[[2]],
+                    ", must supply an object of class asrtests", sep = "")
+    else
+      msg <- paste0("\n  In analysing ",object$asreml.obj$fixed.formula[[2]],
+                    ", must supply an object of class asrtests", sep = "")
+    isasrtests[1] <- FALSE
+    isasrtests <- c(isasrtests, msg)
+  }    
+
+  #Check have appropriate columns
+  if (!all(c("asreml.obj", "wald.tab", "test.summary") %in% names(object)))
+  {
+    isasrtests[1] <- FALSE
+    isasrtests <- c(isasrtests, 
+                     paste("\n ", deparse(substitute(object)), 
+                           "is not a list with named components",
+                           "asreml.obj, wald.tab and test.summary"))
+  }    
+  if (length(isasrtests) > 1)
+    isasrtests[1] <- "Error in validAsrtests : "
+  return(isasrtests)
+}
+
+setOldClass("asrtests")
 
 "print.asrtests" <- function(x, which = "all", ...)
  { 
-  asr4 <- isASRemlVersionLoaded(4, notloaded.fault = TRUE)
+  #Check that have a valid object of class asrtests
+  validasrt <- validAsrtests(x)  
+  if (is.character(validasrt))
+    stop(validasrt)
+  
   options <- c("asremlsummary", "pseudoanova", "testsummary", "all")
    opt <- options[unlist(lapply(which, check.arg.values, options=options))]
    if ("asremlsummary" %in% opt | "all" %in% opt)
-#      if (asr4) 
-        print(summary(x$asreml.obj), ...)
-#   else
-#     print(asreml::summary.asreml(x$asreml.obj), ...)
+     print(summary(x$asreml.obj), ...)
    if ("pseudoanova" %in% opt | "all" %in% opt)
    {
      cat("\n\n  Pseudo-anova table for fixed terms \n\n")
@@ -57,9 +134,14 @@
                                      denDF="numeric", dDF.na = "none", 
                                      dDF.values = NULL, trace = FALSE, ...)
 { 
-  asr4 <- isASRemlVersionLoaded(4, notloaded.fault = TRUE)
-  if (is.null(asrtests.obj) | class(asrtests.obj) != "asrtests")
+  #Check that have a valid object of class asrtests
+  validasrt <- validAsrtests(asrtests.obj)  
+  if (is.character(validasrt))
+    stop(validasrt)
+  if (is.null(asrtests.obj))
     stop("Must supply an asrtests object")
+  
+  #Initialize
   asreml.obj <- asrtests.obj$asreml.obj
   #Call wald.asreml if recalc.wald is TRUE
   if (recalc.wald)
@@ -250,6 +332,8 @@
       stop("constraints has been deprecated in setvarianceterms.asreml - use bounds")
 
   asr4 <- isASRemlVersionLoaded(4, notloaded.fault = TRUE)
+  if (!inherits(call, "call"))
+    stop("Need to supply an argument of class call")
   
   #test for compatibility of arguments
   nt <- length(terms)
@@ -348,6 +432,10 @@
       stop("constraints has been deprecated in setvarianceterms.asreml - use bounds")
   
   asr4 <- isASRemlVersionLoaded(4, notloaded.fault = TRUE)
+  #Check that have a valid object of class asreml
+  validasr <- validAsreml(asreml.obj)  
+  if (is.character(validasr))
+    stop(validasr)
   
   "my.update.formula" <- function(old, new, keep.order = TRUE, ...) 
     #function to update a formula
@@ -529,8 +617,6 @@
       languageEl(call, which = z) <- tempcall[[z]]
   }
   #Check whether formulae has been reduced to no terms
-  # if (!is.null(languageEl(call, which = "random")) && 
-  #     length(attr(terms(as.formula(languageEl(call, which = "random"))), "factors")) == 0) 
   if (!is.null(languageEl(call, which = "random")) && 
       length(attr(terms(as.formula(languageEl(call, which = "random"))), 
                   "factors")) == 0) 
@@ -574,6 +660,7 @@
 #one by one from largest to smallest
 #For a list of bounds codes see setvarianceterms.call
 { 
+  
   #Deal with deprecated constraints parameter
   tempcall <- list(...)
   if (length(tempcall)) 
@@ -581,16 +668,18 @@
       stop("constraints has been deprecated in setvarianceterms.asreml - use bounds")
   
   asr4 <- isASRemlVersionLoaded(4, notloaded.fault = TRUE)
+  #Check that a valid object of class asrtests
+  validasrt <- validAsrtests(asrtests.obj)  
+  if (is.character(validasrt))
+    stop(validasrt)
   
   #check input arguments
   if (asr4)
     kresp <- asrtests.obj$asreml.obj$formulae$fixed[[2]]
   else
     kresp <- asrtests.obj$asreml.obj$fixed.formula[[2]]    
-  if (class(asrtests.obj) != "asrtests")
-  {
-    stop("In analysing ", kresp, ", must supply an asrtests object")
-  }
+  
+  #Initialize
   asreml.obj <- asrtests.obj$asreml.obj
   reml <- asreml.obj$loglik
   test.summary <- asrtests.obj$test.summary
@@ -765,6 +854,7 @@
                                    bounds = "P", initial.values = NA, ...)
   #Adds or removes sets of terms from one or both of the fixed or random asreml models
 { 
+  
   #Deal with deprecated constraints parameter
   tempcall <- list(...)
   if (length(tempcall)) 
@@ -772,6 +862,10 @@
       stop("constraints has been deprecated in setvarianceterms.asreml - use bounds")
   
   asr4 <- isASRemlVersionLoaded(4, notloaded.fault = TRUE)
+  #Check that have a valid object of class asrtests
+  validasrt <- validAsrtests(asrtests.obj)  
+  if (is.character(validasrt))
+    stop(validasrt)
   
   #check input arguments
   if (asr4)
@@ -785,9 +879,7 @@
     stop("In analysing ", kresp, ", a tilde (~) has been included with the terms")
   if (!is.character(all.terms))
     stop("In analysing ", kresp, ", must supply terms as character")
-  if (class(asrtests.obj) != "asrtests")
-    stop("In analysing ", kresp, ", must supply an asrtests object")
-  
+
   #initialize
   asreml.obj <- asrtests.obj$asreml.obj
   wald.tab <- asrtests.obj$wald.tab
@@ -992,17 +1084,12 @@
       stop("constraints has been deprecated in setvarianceterms.asreml - use bounds")
   
   asr4 <- isASRemlVersionLoaded(4, notloaded.fault = TRUE)
-  
-  #check input arguments
-  if (class(asrtests.obj) != "asrtests")
-  {
-    if (asr4)
-      stop("In analysing ",asrtests.obj$asreml.obj$formulae$fixed[[2]],
-           ", must supply an asrtests object")
-    else
-      stop("In analysing ",asrtests.obj$asreml.obj$fixed.formula[[2]],
-           ", must supply an asrtests object")
-  }
+   #Check that have a valid object of class asrtests
+  validasrt <- validAsrtests(asrtests.obj)  
+  if (is.character(validasrt))
+    stop(validasrt)
+
+  #Initialize
   asreml.obj <- asrtests.obj$asreml.obj
   wald.tab <- asrtests.obj$wald.tab
   test.summary <- asrtests.obj$test.summary
@@ -1390,17 +1477,11 @@
       stop("constraints has been deprecated in setvarianceterms.asreml - use bounds")
   
   asr4 <- isASRemlVersionLoaded(4, notloaded.fault = TRUE)
-
-    #check input arguments
-  if (class(asrtests.obj) != "asrtests")
-  {
-    if (asr4)
-      stop("In analysing ",asrtests.obj$asreml.obj$formulae$fixed[[2]],
-              ", must supply an asrtests object")
-    else
-      stop("In analysing ",asrtests.obj$asreml.obj$fixed.formula[[2]],
-              ", must supply an asrtests object")
-  }
+  #Check that have a valid object of class asrtests
+  validasrt <- validAsrtests(asrtests.obj)  
+  if (is.character(validasrt))
+    stop(validasrt)
+  
   asreml.obj <- asrtests.obj$asreml.obj
   wald.tab <- asrtests.obj$wald.tab
   test.summary <- asrtests.obj$test.summary
@@ -1570,6 +1651,10 @@
       stop("constraints has been deprecated in testresidual.asreml - use bounds")
 
   asr4 <- isASRemlVersionLoaded(4, notloaded.fault = TRUE)
+  #Check that have a valid asrtests object
+  validasrt <- validAsrtests(asrtests.obj)  
+  if (is.character(validasrt))
+    stop(validasrt)
   
   #check input arguments
   if (asr4)
@@ -1581,8 +1666,6 @@
   else
     if (!is.character(terms))
       stop("In analysing ", kresp, ", must supply terms as character")
-  if (class(asrtests.obj) != "asrtests")
-    stop("In analysing ", kresp, ", must supply an asrtests object")
   
   #initialize
   asreml.obj <- asrtests.obj$asreml.obj
@@ -1799,49 +1882,32 @@
       stop("constraints has been deprecated in setvarianceterms.asreml - use bounds")
   
   asr4 <- isASRemlVersionLoaded(4, notloaded.fault = TRUE)
-
-  #check input arguments
-  if (class(asrtests.obj) != "asrtests")
-  {
-    if (asr4)
-      stop("In analysing ",asrtests.obj$asreml.obj$formulae$fixed[[2]],
-              ", must supply an asrtests object")
-    else
-      stop("In analysing ",asrtests.obj$asreml.obj$fixed.formula[[2]],
-              ", must supply an asrtests object")
-  }
-
+  #Check that have a valid object of class asrtests
+  validasrt <- validAsrtests(asrtests.obj)  
+  if (is.character(validasrt))
+    stop(validasrt)
+  
   #check matrix  
+  if (asr4)
+    kresp <- asrtests.obj$asreml.obj$formulae$fixed[[2]]
+  else
+    kresp <- asrtests.obj$asreml.obj$fixed.formula[[2]]
   if (!is.matrix(terms.marginality) || 
            nrow(terms.marginality) != ncol(terms.marginality))
   {
-    if (asr4)
-      stop("In analysing ",asrtests.obj$asreml.obj$formulae$fixed[[2]],
-           ", must supply an asrtests object")
-    else
-      stop("In analysing ",asrtests.obj$asreml.obj$fixed.formula[[2]],
-           ", must supply an asrtests object")
-  }
-  else
-   if (is.null(rownames(terms.marginality)) || is.null(colnames(terms.marginality)))
-   {
-     if (asr4)
-       stop("In analysing ",asrtests.obj$asreml.obj$formulae$fixed[[2]],
-            ", terms.marginality must have row and column names that are the terms to be tested")
-     else
-       stop("In analysing ",asrtests.obj$asreml.obj$fixed.formula[[2]],
-            ", terms.marginality must have row and column names that are the terms to be tested")
-   }
-   else
-     if (det(terms.marginality) == 0)
-     {
-       if (asr4)
-         warning("In analysing ",asrtests.obj$asreml.obj$formulae$fixed[[2]],
-                 ", Suspect marginalities of terms not properly specified - check")
-       else
-         warning("In analysing ",asrtests.obj$asreml.obj$fixed.formula[[2]],
-                 ", Suspect marginalities of terms not properly specified - check")
-     }
+    stop("In analysing ",kresp,
+         ", must supply a valid marginality matrix")
+  } else
+    if (is.null(rownames(terms.marginality)) || is.null(colnames(terms.marginality)))
+    {
+      stop("In analysing ",kresp,
+           ", terms.marginality must have row and column names that are the terms to be tested")
+    } else
+      if (det(terms.marginality) == 0)
+      {
+        warning("In analysing ",kresp,
+                ", Suspect marginalities of terms not properly specified - check")
+      }
   #make sure have a terms.marginality matrix with lower triangle all zero
   terms.marginality <- permute.to.zero.lowertri(terms.marginality)
   #perform tests
@@ -1920,6 +1986,10 @@
       stop("constraints has been deprecated in setvarianceterms.asreml - use bounds")
   
   asr4 <- isASRemlVersionLoaded(4, notloaded.fault = TRUE)
+  #Check that have a valid object of class asrtests
+  validasrt <- validAsrtests(asrtests.obj)  
+  if (is.character(validasrt))
+    stop(validasrt)
   
   #find out if any terms have either a devn.fac or a trend.num term 
   #  - (marginality implies cannot be both)
@@ -2045,6 +2115,10 @@
   #a function to get asreml predictions when there a parallel vector and factor are involved
 { 
   asr4 <- isASRemlVersionLoaded(4, notloaded.fault = TRUE)
+  #Check that have a valid object of class asreml
+  validasr <- validAsreml(asreml.obj)  
+  if (is.character(validasr))
+    stop(validasr)
   
   AvLSD.options <- c("overall", "factor.combinations", "per.prediction")
   avLSD <- AvLSD.options[check.arg.values(meanLSD.type, AvLSD.options)]
@@ -2344,7 +2418,19 @@
                                          titles = NULL, y.title = NULL, 
                                          filestem = NULL, ggplotFuncs = NULL, ...)
 #a function to plot asreml predictions and associated statistics
-{ #Check options
+{ 
+  
+  #Change asreml4 names to asreml3 names
+  data <- as.predictions.frame(data, se = "std.error", est.status = "status")
+  #Check that a valid object of class predictions.frame
+  validpframe <- validPredictionsFrame(data)  
+  if (is.character(validpframe))
+    stop(validpframe)
+  #check have some predictions
+  if (nrow(data) == 0)
+    stop("no rows in object supplied to data argument")
+  
+  #Check options
   scheme.options <- c("black", "colour")
   scheme.opt <- scheme.options[check.arg.values(colour.scheme, scheme.options)]
   panel.options <- c("single", "multiple")
@@ -2352,9 +2438,6 @@
   int.options <- c("none", "Confidence", "StandardError", "halfLeastSignificant")
   int.opt <- int.options[check.arg.values(error.intervals, int.options)]
   intervals <- !(int.opt == "none")
-  #check have some predictions
-  if (nrow(data) == 0)
-    stop("no rows in object supplied to data argument")
   #check that x.fac is numeric in nature when no x.num
   if (is.null(x.num))
     if (!is.null(x.fac) && all(is.na((as.numfac(data[[x.fac]])))))
@@ -2443,8 +2526,10 @@
   else
     vars <- non.x.terms
   meanLSD <- attr(data, which = "meanLSD")
-  if (length(meanLSD) > 0)
+  if (!is.null(meanLSD) && !is.na(meanLSD))
     meanLSD <- sqrt(mean(meanLSD*meanLSD, na.rm = TRUE))
+  else
+    meanLSD <- NA
   #Plot predicted values
   cbPalette <- rep(c("#CC79A7", "#56B4E9", "#009E73", "#E69F00", "#0072B2", "#D55E00", "#000000"), times=2)
   symb <- rep(c(18,17,15,3,13,8,21,9,3,2,11,1,7,5,10,0), times=10)
@@ -2492,7 +2577,7 @@
         pred.plot <- pred.plot + 
                         annotate("text", x=Inf, y=-Inf,  hjust=1, vjust=-0.3, size = 2, 
                                  label = paste("Error bars are ", labend, sep=""))
-        if (low.parts[2] == "halfLeastSignificant" && !is.null(meanLSD))
+        if (low.parts[2] == "halfLeastSignificant" && !is.na(meanLSD))
            pred.plot <- pred.plot + 
                          annotate("text", x=-Inf, y=-Inf,  hjust=-0.01, vjust=-0.3, size = 2, 
                                  label = paste("mean LSD = ",signif(meanLSD, digits=3)))
@@ -2529,7 +2614,7 @@
                                   hjust=1, vjust=-1.3, size = 2) +
                         geom_text(data = annot, label = labend, 
                                   hjust=1, vjust=-0.3, size = 2)
-        if (low.parts[2] == "halfLeastSignificant" && !is.null(meanLSD)) 
+        if (low.parts[2] == "halfLeastSignificant" && !is.na(meanLSD)) 
         { 
           annot <- data.frame(-Inf, -Inf, 
                               factor(non.x.lev[1], levels = non.x.lev))
@@ -2574,7 +2659,7 @@
                                   hjust=1, vjust=-2.1, size = 2) +
                         geom_text(data = annot, label = labend, 
                                   hjust=1, vjust=-1.1, size = 2)
-        if (low.parts[2] == "halfLeastSignificant" && !is.null(meanLSD)) 
+        if (low.parts[2] == "halfLeastSignificant" && !is.na(meanLSD)) 
         { 
           annot <- data.frame(-Inf, -Inf, 
                               factor(non.x.lev1[length(non.x.lev1)], levels = non.x.lev1),
@@ -2634,7 +2719,7 @@
         pred.plot <- pred.plot + 
                        annotate("text", x=Inf, y=-Inf,  hjust=1, vjust=-0.3, size = 2, 
                                 label =  paste("Error bars are ", labend, sep=""))
-       if (low.parts[2] == "halfLeastSignificant" && !is.null(meanLSD)) 
+       if (low.parts[2] == "halfLeastSignificant" && !is.na(meanLSD)) 
          pred.plot <- pred.plot + 
                        annotate("text", x=-Inf, y=-Inf,  hjust=-0.01, vjust=-0.3, size = 2, 
                                label = paste("mean LSD = ",signif(meanLSD, digits=3)))
@@ -2664,7 +2749,7 @@
                                        linetype = "solid", position = position_dodge(1)) +
                          annotate("text", x=Inf, y=-Inf,  hjust=1, vjust=-0.3, size = 2, 
                                   label =  paste("Error bars are ", labend, sep=""))
-          if (low.parts[2] == "halfLeastSignificant" && !is.null(meanLSD)) 
+          if (low.parts[2] == "halfLeastSignificant" && !is.na(meanLSD)) 
           { pred.plot <- pred.plot + 
                            annotate("text", x=-Inf, y=-Inf,  hjust=-0.01, vjust=-0.3, size = 2, 
                                     label = paste("mean LSD = ",signif(meanLSD, digits=3)))
@@ -2702,7 +2787,7 @@
                                     hjust=1, vjust=-1.3, size = 2) +
                           geom_text(data = annot, label = labend, 
                                     hjust=1, vjust=-0.3, size = 2)
-          if (low.parts[2] == "halfLeastSignificant" && !is.null(meanLSD)) 
+          if (low.parts[2] == "halfLeastSignificant" && !is.na(meanLSD)) 
           { annot <- data.frame(-Inf, -Inf, 
                                 factor(non.x.lev[1], levels = non.x.lev))
             names(annot) <- c(x.var, y, non.x.terms)
@@ -2747,7 +2832,7 @@
                                     hjust=1, vjust=-1.3, size = 2) +
                           geom_text(data = annot, label = labend, 
                                     hjust=1, vjust=-0.3, size = 2)
-          if (low.parts[2] == "halfLeastSignificant" && !is.null(meanLSD)) 
+          if (low.parts[2] == "halfLeastSignificant" && !is.na(meanLSD)) 
           { annot <- data.frame(-Inf, -Inf, 
                                 factor(non.x.lev1[1], levels = non.x.lev1),
                                 factor(non.x.lev2[length(non.x.lev2)], levels = non.x.lev2))
@@ -2866,6 +2951,10 @@ sliceLSDs <- function(alldiffs.obj, by, t.value, alpha = 0.05)
 #Probably need to supply x.plot.values if x.fac is to be plotted
 { 
   asr4 <- isASRemlVersionLoaded(4, notloaded.fault = TRUE)
+  #Check that have a valid object of class asreml
+  validasr <- validAsreml(asreml.obj)  
+  if (is.character(validasr))
+    stop(validasr)
   
   AvLSD.options <- c("overall", "factor.combinations", "per.prediction")
   avLSD <- AvLSD.options[check.arg.values(meanLSD.type, AvLSD.options)]

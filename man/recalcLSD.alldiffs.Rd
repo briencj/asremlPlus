@@ -1,14 +1,14 @@
 \name{recalcLSD.alldiffs}
 \alias{recalcLSD.alldiffs}
 \alias{recalcLSD}
-\title{Adds or recalculates the LSD component of an alldiffs object.}
-\description{Given an alldiffs object, adds or recalculate its LSD component.
+\title{Adds or recalculates the LSD component of an \code{\link{alldiffs.object}}.}
+\description{Given an \code{\link{alldiffs.object}}, adds or recalculate its LSD component.
 }
 \usage{
 \method{recalcLSD}{alldiffs}(alldiffs.obj, meanLSD.type = "overall", LSDby = NULL, 
           alpha = 0.05, ...)}
 \arguments{
-\item{alldiffs.obj}{An object of S3-class \code{alldiffs} (see \code{\link{as.alldiffs}}).}
+\item{alldiffs.obj}{An \code{\link{alldiffs.object}}.}
 \item{meanLSD.type}{A \code{\link{character}} string determining whether the mean LSD stored is 
              (i) the \code{overall} mean, based on the square root of the mean of the variances of 
              all pairwise variances, (ii) the mean for each \code{factor.combination} of the 
@@ -21,20 +21,14 @@
              in calculating \code{error.intervals} and, hence, is used for plots.}
 \item{LSDby}{A \code{\link{character}} (vector) of factor names, being the names of the 
              \code{\link{factor}s} for each of whose levels combinations a mean LSD, 
-             minLSD and max LSD is stored in the \code{LSD} component of the \code{alldiffs} 
-             object when \code{meanLSD.type} is \code{factor.combinatons}.}
+             minLSD and max LSD is stored in the \code{LSD} component of the 
+             \code{\link{alldiffs.object}} when \code{meanLSD.type} is \code{factor.combinatons}.}
 \item{alpha}{The significance level for an LSD to compare a pair of predictions.}
 \item{\dots}{further arguments passed to \code{\link{allDifferences.data.frame}}.}
 }
-\value{An \code{alldiffs} object that is a list with components 
-       \code{predictions} containing the predictions and 
-       their standard errors, \code{vcov} containing the variance matrix of the 
-       \code{predictions}, \code{differences} containing all pairwise 
-       differences between the predictions, \code{p.differences} containing 
-       p-values for all pairwise differences between the predictions, 
-       \code{sed} containing the standard errors of all pairwise differences 
-       between the predictions, and an \code{LSD} containing the mean, minimum 
-       and maximum LSDs.}
+\value{An \code{\link{alldiffs.object}} with components 
+       \code{predictions}, \code{vcov}, \code{differences}, \code{p.differences} 
+       \code{sed}, and \code{LSD}.}
 
 
 \author{Chris Brien}
@@ -43,17 +37,52 @@
          \code{\link{reorderClassify.alldiffs}}, \code{\link{redoErrorIntervals.alldiffs}},  
          \code{\link{plotPredictions.data.frame}}, \cr 
          \code{\link{predictPlus.asreml}}, \code{\link{predictPresent.asreml}}}
-\examples{\dontrun{
+\examples{
 data(WaterRunoff.dat)
+
+##Use asreml to get predictions and associated statistics
+
+\dontrun{
 asreml.options(keep.order = TRUE) #required for asreml-R4 only
 current.asr <- asreml(fixed = pH ~ Benches + (Sources * (Type + Species)), 
                       random = ~ Benches:MainPlots,
                       keep.order=TRUE, data= WaterRunoff.dat)
 current.asrt <- asrtests(current.asr, NULL, NULL)
-diffs <- predictPlus(classify = "Sources:Type", 
-                     asreml.obj = current.asr, 
-                     wald.tab = current.asrt$wald.tab, 
-                     present = c("Sources", "Type", "Species"))
-diffs <- recalcLSD.alldiffs(diffs, meanLSD.type = "factor.combinations", LSDby = "Sources")
-}}
+TS.diffs <- predictPlus(classify = "Sources:Type", 
+                        asreml.obj = current.asr, 
+                        wald.tab = current.asrt$wald.tab, 
+                       present = c("Sources", "Type", "Species"))
+}
+
+## Use lmeTest and emmmeans to get predictions and associated statistics
+
+if (requireNamespace("lmerTest", quietly = TRUE) & 
+    requireNamespace("emmeans", quietly = TRUE))
+{
+  m1.lmer <- lmerTest::lmer(pH ~ Benches + (Sources * (Type + Species)) + 
+                              (1|Benches:MainPlots),
+                            data=na.omit(WaterRunoff.dat))
+  TS.emm <- emmeans::emmeans(m1.lmer, specs = ~ Sources:Species)
+  TS.preds <- summary(TS.emm)
+  den.df <- min(TS.preds$df, na.rm = TRUE)
+  ## Modify TS.preds to be compatible with a predictions.frame
+  TS.preds <- as.predictions.frame(TS.preds, predictions = "emmean", 
+                                   se = "SE", interval.type = "CI", 
+                                   interval.names = c("lower.CL", "upper.CL"))
+  
+  ## Form an all.diffs object and check its validity
+  TS.vcov <- vcov(TS.emm)
+  TS.diffs <- allDifferences(predictions = TS.preds, classify = "Sources:Species", 
+                             vcov = TS.vcov, tdf = den.df)
+  validAlldiffs(TS.diffs)
+}  
+
+## Plot p-values for predictions obtained using asreml or lmerTest
+if (exists("TS.diffs"))
+{
+  ##Recalculate the LSD values for predictions obtained using asreml or lmerTest  
+  TS.diffs <- recalcLSD.alldiffs(TS.diffs, meanLSD.type = "factor.combinations", 
+                                 LSDby = "Sources")
+}
+}
 \keyword{asreml}

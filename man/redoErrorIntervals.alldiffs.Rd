@@ -2,9 +2,10 @@
 \alias{redoErrorIntervals.alldiffs}
 \alias{redoErrorIntervals}
 \title{Adds or replaces the error intervals stored in a prediction component 
-       of an alldiffs.object.}
-\description{Given an \code{alldiffs} object, adds or replaces \code{error.intervals} 
-             for its \code{prediction} component.
+       of an \code{\link{alldiffs.object}}.}
+\description{Given an \code{\link{alldiffs.object}}, adds or replaces \code{error.intervals} 
+             for its \code{prediction} component. If the \code{backtransforms} component is 
+             present, \code{error.intervals} will be calculated for it too. 
 }
 \usage{
 \method{redoErrorIntervals}{alldiffs}(alldiffs.obj, error.intervals = "Confidence", 
@@ -12,9 +13,9 @@
                    meanLSD.type = "overall", LSDby = NULL, ...)
 }
 \arguments{
- \item{alldiffs.obj}{An object of S3-class \code{alldiffs} (see \code{\link{as.alldiffs}}).}
+ \item{alldiffs.obj}{An \code{\link{alldiffs.object}}.}
  \item{error.intervals}{A \code{\link{character}} string indicating the type of error interval, if any, 
-             to calculate in order to indicate uncertainty in the results. 
+             to calculate in order to indicate uncertainty in the predicted values. 
              Possible values are \code{"none"}, \code{"StandardError"}, \code{"Confidence"} 
              and \code{"halfLeastSignificant"}. The default is for confidence limits to 
              be used. The \code{"halfLeastSignificant"} option results in half the 
@@ -59,17 +60,16 @@
              in calculating \code{error.intervals} and, hence, is used for plots.}
 \item{LSDby}{A \code{\link{character}} (vector) of factor names, being the names of the 
              \code{\link{factor}s} for each of whose levels combinations a mean LSD, 
-             minLSD and max LSD is stored in the \code{LSD} component of the \code{alldiffs} 
-             object when \code{meanLSD.type} is \code{factor.combinatons}.}
+             minLSD and max LSD is stored in the \code{LSD} component of the 
+             \code{\link{alldiffs.object}} object when \code{meanLSD.type} is \code{factor.combinatons}.}
  \item{\dots}{provision for passsing arguments to functions called internally - 
             not used at present.}
 }
-\value{An \code{alldiffs} object with predictions and their standard 
-           errors and, depending on the settings of the arguments, all pairwise 
-           differences between predictions, their standard errors and p-values 
-           and LSD statistics. If \code{power.transform} is not one, it will 
-           contain a \code{data.frame} with the backtransformed predictions. If 
-           \code{error.intervals} is not \code{"none"}, then the 
+\value{An \code{\link{alldiffs.object}} with components 
+       \code{predictions}, \code{vcov}, \code{differences}, \code{p.differences} 
+       \code{sed}, and \code{LSD}. 
+
+           If \code{error.intervals} is not \code{"none"}, then the 
            \code{predictions} component and, if present, the 
            \code{backtransforms} component will contain columns for the lower 
            and upper values of the limits for the interval. The names of these 
@@ -89,17 +89,54 @@
          \code{\link{recalcLSD.alldiffs}},  \code{\link{predictPresent.asreml}},  \cr
          \code{\link{plotPredictions.data.frame}}, 
          \code{as.Date}, \code{predict.asreml}}
-\examples{\dontrun{
+\examples{
 data(WaterRunoff.dat)
+
+##Use asreml to get predictions and associated statistics
+
+\dontrun{
 asreml.options(keep.order = TRUE) #required for asreml-R4 only
 current.asr <- asreml(fixed = pH ~ Benches + (Sources * (Type + Species)), 
                       random = ~ Benches:MainPlots,
                       keep.order=TRUE, data= WaterRunoff.dat)
 current.asrt <- asrtests(current.asr, NULL, NULL)
-diffs <- predictPlus(classify = "Sources:Type", 
-                     asreml.obj = current.asr, 
-                     wald.tab = current.asrt$wald.tab, 
-                     present = c("Sources", "Type", "Species"))
-diffs <- redoErrorIntervals.alldiffs(diffs, error.intervals = "halfLeastSignificant")
-}}
+TS.diffs <- predictPlus(classify = "Sources:Type", 
+                        asreml.obj = current.asr, 
+                        wald.tab = current.asrt$wald.tab, 
+                       present = c("Sources", "Type", "Species"))
+}
+
+## Use lmeTest and emmmeans to get predictions and associated statistics
+
+if (requireNamespace("lmerTest", quietly = TRUE) & 
+    requireNamespace("emmeans", quietly = TRUE))
+{
+  m1.lmer <- lmerTest::lmer(pH ~ Benches + (Sources * (Type + Species)) + 
+                              (1|Benches:MainPlots),
+                            data=na.omit(WaterRunoff.dat))
+  TS.emm <- emmeans::emmeans(m1.lmer, specs = ~ Sources:Species)
+  TS.preds <- summary(TS.emm)
+  den.df <- min(TS.preds$df, na.rm = TRUE)
+  ## Modify TS.preds to be compatible with a predictions.frame
+  TS.preds <- as.predictions.frame(TS.preds, predictions = "emmean", 
+                                   se = "SE", interval.type = "CI", 
+                                   interval.names = c("lower.CL", "upper.CL"))
+  
+  ## Form an all.diffs object and check its validity
+  TS.vcov <- vcov(TS.emm)
+  TS.diffs <- allDifferences(predictions = TS.preds, 
+                             classify = "Sources:Species", 
+                             vcov = TS.vcov, tdf = den.df)
+  validAlldiffs(TS.diffs)
+}  
+
+## Plot p-values for predictions obtained using asreml or lmerTest
+if (exists("TS.diffs"))
+{
+  ##Recalculate the LSD values for predictions obtained using asreml or lmerTest  
+  TS.diffs <- redoErrorIntervals.alldiffs(TS.diffs, 
+                                          error.intervals = "halfLeastSignificant")
+
+}
+}
 \keyword{asreml}

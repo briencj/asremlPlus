@@ -10,7 +10,7 @@
              plots to be produced, one for each combination of the levels of the factors 
              listed in \code{sections}. Otherwise, a single plot is produced for all 
              observed combinations of the levels of the factors in the \code{classify} 
-             for the \code{alldiffs} object. The plots are produced using 
+             for the \code{\link{alldiffs.object}}. The plots are produced using 
              \code{\link{plotPvalues.data.frame}}. The order of plotting the levels of 
              one of the factors indexing the predictions can be modified and is achieved 
              using \code{\link{sort.alldiffs}}.
@@ -25,12 +25,8 @@
             sortWithinVals = NULL, sortOrder = NULL, 
             decreasing = FALSE, ...)}
 \arguments{
- \item{object}{An \code{alldiffs} object with a \code{p.differences} component that is not 
-             \code{NULL}. with either 3 or 4 columns. Only if there are 4 columns, the
-             first should be a factor indexing sections for which separate variogram plots are 
-             to be produced. In either case, the other 3 columns should be, in order, 
-             (i) a factor indexing the x-direction, (ii) a factor indexing the y-direction, 
-             and (iii) the residuals for the observed response.}
+ \item{object}{An \code{\link{alldiffs.object}} with a \code{p.differences} component that is not 
+             \code{NULL}.}
  \item{sections}{A \code{character} listing the names of the factors that are to be used 
                  to break the plot into sections. A separate plot will be produced for 
                  each observed combination of the levels of these factors.}
@@ -75,7 +71,7 @@
                 It is passed to \code{ggplot} via \code{\link{plotPvalues.data.frame}}.}
 \item{sortFactor}{A \code{character} containing the name of the 
               \code{factor} that indexes the set of predicted values that determines 
-              the sorting of the \code{alldiffs} components by 
+              the sorting of the components of the \code{\link{alldiffs.object}} by 
               \code{\link{sort.alldiffs}}. If \code{NULL} then sorting is not carried 
               out. If there is more than one variable 
               in the \code{classify} term then \code{sortFactor} is sorted for the 
@@ -97,15 +93,15 @@
               classify then \code{sortWithinVals} is ignored.}
  \item{sortOrder}{A \code{character vector} whose length is the same as the number 
                of levels for \code{sortFactor} in the \code{predictions} component of the 
-              \code{alldiffs} object. It specifies the desired order of the 
-              levels in the reordered components of the \code{alldiffs} object. 
+              \code{\link{alldiffs.object}}. It specifies the desired order of the 
+              levels in the reordered components of the \code{\link{alldiffs.object}}. 
               The argument \code{sortWithinVals} is ignored.
 
               The following creates a \code{sortOrder} vector \code{levs} for factor 
               \code{f} based on the values in \code{x}: 
               \code{levs <- levels(f)[order(x)]}.}
  \item{decreasing}{A \code{logical} passed to \code{order} that detemines whether 
-              the order for sorting the \code{alldiffs} components is for 
+              the order for sorting the \code{\link{alldiffs.object}} components is for 
                increasing or decreasing magnitude of the predicted values.}
  \item{\dots}{Provision for passsing arguments to functions called internally - 
             not used at present.}
@@ -116,21 +112,53 @@
 \author{Chris Brien}
 \seealso{\code{\link{plotPvalues.data.frame}}, \code{\link{allDifferences.data.frame}}, 
          \code{\link{sort.alldiffs}}, \code{\link{subset.alldiffs}}, \code{ggplot}}
-\examples{\dontrun{
+\examples{
 data(WaterRunoff.dat)
+
+##Use asreml to get predictions and associated statistics
+
+\dontrun{
 asreml.options(keep.order = TRUE) #required for asreml-R4 only
 current.asr <- asreml(fixed = pH ~ Benches + (Sources * (Type + Species)), 
                       random = ~ Benches:MainPlots,
                       keep.order=TRUE, data= WaterRunoff.dat))
 current.asrt <- asrtests(current.asr, NULL, NULL)
-diffs <- predictPlus.asreml(classify = "Sources:Type", 
-                            asreml.obj = current.asr, tables = "none", 
-                            wald.tab = current.asrt$wald.tab, 
-                            present = c("Type","Species","Sources"))
+SS.diffs <- predictPlus.asreml(classify = "Sources:Type", 
+                               asreml.obj = current.asr, tables = "none", 
+                               wald.tab = current.asrt$wald.tab, 
+                               present = c("Type","Species","Sources"))
+}
+
+## Use lmeTest and emmmeans to get predictions and associated statistics
+
+if (requireNamespace("lmerTest", quietly = TRUE) & 
+    requireNamespace("emmeans", quietly = TRUE))
+{
+  m1.lmer <- lmerTest::lmer(pH ~ Benches + (Sources * (Type + Species)) + 
+                              (1|Benches:MainPlots),
+                            data=na.omit(WaterRunoff.dat))
+  TS.emm <- emmeans::emmeans(m1.lmer, specs = ~ Sources:Species)
+  TS.preds <- summary(TS.emm)
+  den.df <- min(TS.preds$df, na.rm = TRUE)
+  ## Modify TS.preds to be compatible with a predictions.frame
+  TS.preds <- as.predictions.frame(TS.preds, predictions = "emmean", 
+                                   se = "SE", interval.type = "CI", 
+                                   interval.names = c("lower.CL", "upper.CL"))
   
-plotPvalues(diffs, gridspacing = rep(c(3,4), c(4,2)), show.sig = TRUE)
-plotPvalues(diffs, sections = "Sources", show.sig = TRUE, axis.labels = TRUE)
-}}
+  ## Form an all.diffs object and check its validity
+  TS.vcov <- vcov(TS.emm)
+  TS.diffs <- allDifferences(predictions = TS.preds, classify = "Sources:Species", 
+                             vcov = TS.vcov, tdf = den.df)
+  validAlldiffs(TS.diffs)
+}  
+
+## Plot p-values for predictions obtained using asreml or lmerTest
+if (exists("TS.diffs"))
+{
+  plotPvalues(TS.diffs, gridspacing = rep(c(3,4), c(4,2)), show.sig = TRUE)
+  plotPvalues(TS.diffs, sections = "Sources", show.sig = TRUE, axis.labels = TRUE)
+}
+}
 \keyword{hplot}
 \keyword{dplot}
 \keyword{asreml}

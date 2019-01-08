@@ -22,32 +22,32 @@
        set.terms = NULL, ignore.suffices = TRUE, bounds = "P", 
        initial.values = NA, ...)}
 \arguments{
- \item{asreml.obj}{a valid \code{asreml} object with with 
+ \item{asreml.obj}{A valid \code{asreml} object with with 
                    a component named \code{call} (from a previous 
                    call to either \code{asreml} or \code{update.asreml}).}
- \item{fixed.}{a character or formula specifying changes to the fixed 
+ \item{fixed.}{A character or formula specifying changes to the fixed 
                formula. This is a two-sided formula 
                where "." is substituted for existing components in the 
                fixed component of \code{asreml.obj$call}.}
- \item{random.}{a character or formula specifying changes to the random 
+ \item{random.}{A character or formula specifying changes to the random 
                 formula. This is a one-sided formula 
                 where "." is substituted for existing components in the 
                 random component of \code{asreml.obj$call}.}
- \item{sparse.}{a character or formula specifying changes to the sparse 
+ \item{sparse.}{A character or formula specifying changes to the sparse 
                 formula. This is a one-sided formula 
                 where "." is substituted for existing components in the 
                 sparse component of \code{asreml.obj$call}.}
- \item{residual.}{a character or formula specifying changes to the error 
+ \item{residual.}{A character or formula specifying changes to the error 
                 formula, used when version 4 or later of ASReml-R is loaded.
                 This is a one-sided formula 
                 where "." is substituted for existing components in the 
                 residual component of \code{asreml.obj$call}.}
- \item{rcov.}{a character or formula specifying changes to the error 
+ \item{rcov.}{A character or formula specifying changes to the error 
                 formula, used when version 3 of ASReml-R is loaded. 
                 This is a one-sided formula 
                 where "." is substituted for existing components in the 
                 residual component of \code{asreml.obj$call}.}
- \item{update}{a logical indicated whether to use \code{update.asreml} or 
+ \item{update}{A logical indicated whether to use \code{update.asreml} or 
                \code{asreml} to evaluate the modified call. 
                If \code{TRUE},  use \code{update.asreml} to evaluate the 
                modified \code{call}. In doing this the arguments 
@@ -60,14 +60,14 @@
  \item{allow.unconverged}{A \code{logical} indicating whether to accept a new model 
                       even when it does not converge. If \code{FALSE} and the fit does not 
                       converge, the supplied \code{asreml} object is returned.}
- \item{keep.order}{a logical value indicating whether the terms should keep 
+ \item{keep.order}{A logical value indicating whether the terms should keep 
                their positions. If \code{FALSE} the terms are reordered so 
                that main effects come first, followed by the interactions, 
                all second-order, all third-order and so on. Effects of a 
                given order are kept in the order specified.}
- \item{set.terms}{a character vector specifying the terms that are to have 
+ \item{set.terms}{A character vector specifying the terms that are to have 
                   bounds and/or initial values set prior to fitting.}
- \item{ignore.suffices}{a logical vector specifying whether the suffices of the 
+ \item{ignore.suffices}{A logical vector specifying whether the suffices of the 
                     \code{asreml}-assigned names of the variance terms (i.e. the 
                     information to the right of an "!", other than "R!") is to 
                     be ignored in matching elements of \code{terms}. 
@@ -79,14 +79,14 @@
                     same length as \code{terms}. If it is of length one then 
                     the same action is applied to the \code{asreml}-assigned 
                     suffices for all the terms in \code{terms}.}
- \item{bounds}{a \code{\link{character}} vector specifying the bounds to be applied 
+ \item{bounds}{A \code{\link{character}} vector specifying the bounds to be applied 
                     to the terms specified in \code{set.terms}. This vector 
                     must be of length one or the same length as \code{set.terms}. 
                     If it is of length one then the same constraint is 
                     applied to all the terms in \code{set.terms}. 
                     If any of the bounds are equal to NA then they are 
                     left unchanged for those terms.}
- \item{initial.values}{a character vector specifying the initial values for  
+ \item{initial.values}{A character vector specifying the initial values for  
                     the terms specified in \code{terms}. This vector 
                     must be of length one or the same length as \code{terms}. 
                     If it is of length one then the same initial value is 

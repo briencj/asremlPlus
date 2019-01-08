@@ -232,8 +232,9 @@ test_that("plotPvalues.asreml4", {
                 X2 <- factor(X2, levels=levels(X1))
               })
   names(p)[match("value", names(p))] <- "p"
-  plotPvalues(p, x = "X1", y = "X2", gridspacing = rep(c(3,4), c(4,2)), 
-              show.sig = TRUE)
+  testthat::expect_silent(plotPvalues(p, x = "X1", y = "X2", 
+                                      gridspacing = rep(c(3,4), c(4,2)), 
+                                      show.sig = TRUE))
 
   #Plot with sections
   pdata <- plotPvalues(diffs, sections = "Sources", show.sig = TRUE)
@@ -305,7 +306,7 @@ test_that("plotPvalues.asreml4", {
 })
 
 cat("#### Test for factor combinations asreml4\n")
-test_that("factor.combinations asreml4", {
+test_that("factor.combinations.asreml4", {
   skip_if_not_installed("asreml")
   skip_on_cran()
   library(asreml)

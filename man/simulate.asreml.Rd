@@ -24,7 +24,7 @@ quantites related to the simulated data}
               generator is used and \code{nextRNGStream} is used to seed each core from the
               original \code{seed}.}
  \item{tolerance}{The value such that eigenvalues less than it are considered to be zero.}
- \item{update}{if \code{TRUE }then the arguments \code{R.param} 
+ \item{update}{If \code{TRUE }then the arguments \code{R.param} 
               and \code{G.param} are set to those in the \code{asreml} object 
               supplied in \code{object} so that the values from the original 
               model are used as starting values. If \code{FALSE} then calls are made to 
@@ -32,7 +32,7 @@ quantites related to the simulated data}
               (i) the model is fitted to simulated data and (ii) modifications 
               specified via \code{\dots} are made, except that changes cannot be made to 
               any of the models.}
- \item{trace}{if \code{TRUE} then partial iteration details are displayed when ASReml-R 
+ \item{trace}{If \code{TRUE} then partial iteration details are displayed when ASReml-R 
               functions are invoked; if \code{FALSE} then no output is displayed.}
  \item{which}{The quantites from the simulated data set to be stored. Any combination of
               \code{"response"}, \code{"residuals"} and \code{"fitted"}, or \code{"all"}. 

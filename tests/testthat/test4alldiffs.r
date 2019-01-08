@@ -23,17 +23,21 @@ test_that("allDifferences_asreml4", {
   Var.diffs <- as.alldiffs(predictions = Var.pred$pvals, 
                            sed = Var.pred$sed, 
                            classify = "Nitrogen:Variety", response = "Yield", tdf = den.df)
-  testthat::expect_equal(length(attributes(Var.diffs)),5)
-  testthat::expect_null(attr(Var.diffs, which = "sortOrder"))
+  testthat::expect_true(is.alldiffs(Var.diffs))
+  testthat::expect_equal(nrow(Var.diffs$predictions),12)
+  testthat::expect_true(validAlldiffs(Var.diffs))
+  testthat::expect_true(is.null(attr(Var.diffs, which = "sortOrder")))
   
   #Test for allDifferences
   Var.sort.diffs <- allDifferences(predictions = Var.pred$pvals,
                                    classify = "Nitrogen:Variety", 
                                    sed = Var.pred$sed, tdf = den.df, 
                                    sortFactor = "Variety", decreasing = TRUE)
+  testthat::expect_true(is.alldiffs(Var.sort.diffs))
+  testthat::expect_true(validAlldiffs(Var.sort.diffs))
+  testthat::expect_equal(length(attr(Var.sort.diffs, which = "sortOrder")),3)
   testthat::expect_true(as.character(Var.sort.diffs$predictions$Variety[1]) == "Marvellous" & 
                           as.character(Var.sort.diffs$predictions$Variety[2]) == "Golden Rain")
-  testthat::expect_equal(length(attr(Var.sort.diffs, which = "sortOrder")),3)
   
   #Test for re-order factors with allDifferences
   Var.reord.diffs <- allDifferences(predictions = Var.pred$pvals,
@@ -58,7 +62,11 @@ test_that("allDifferences_asreml4", {
                                      sortFactor = "Variety", decreasing = TRUE)
   testthat::expect_true(as.character(Var.both.diffs$predictions$Variety[1]) == "Marvellous" & 
                           as.character(Var.both.diffs$predictions$Variety[2]) == "Marvellous")
-})
+
+  #Test a single factor prediction
+  diffsN <- predictPlus(m1.asr, classify = "Nitrogen", tables = "none")
+  testthat::expect_true(validAlldiffs(diffsN))
+  })
 
 cat("#### Test for sort.alldiffs on Smarthouse with asreml4\n")
 test_that("sort.alldiffs4", {
@@ -82,12 +90,12 @@ test_that("sort.alldiffs4", {
   diffs <- predictPlus(m, classify = "Genotype:A:B", 
                        wald.tab = current.asrt$wald.tab,
                        error.intervals = "Stand", tables = "none")
-  testthat::expect_is(diffs, "alldiffs")
+  testthat::expect_true(is.alldiffs(diffs))
+  testthat::expect_true(validAlldiffs(diffs))
   testthat::expect_equal(nrow(diffs$predictions),120)
   testthat::expect_equal(ncol(diffs$predictions),8)
   testthat::expect_equal(as.character(diffs$predictions$Genotype[1]),"Axe")
-  testthat::expect_equal(length(attributes(diffs)),8)
-  testthat::expect_null(attr(diffs, which = "sortOrder"))
+  testthat::expect_true(is.null(attr(diffs, which = "sortOrder")))
   
   #Test reodering of the classify
   diffs.reord <- reorderClassify(diffs, newclassify = "A:B:Genotype")
@@ -115,10 +123,11 @@ test_that("sort.alldiffs4", {
   diffs.sort <- sort(diffs, sortFactor = "Genotype")
   sort.order <- attr(diffs.sort, which = "sortOrder")
   testthat::expect_is(diffs.sort, "alldiffs")
+  testthat::expect_true(validAlldiffs(diffs.sort))
   testthat::expect_equal(nrow(diffs.sort$predictions),120)
   testthat::expect_equal(ncol(diffs.sort$predictions),8)
   testthat::expect_equal(as.character(diffs.sort$predictions$Genotype[1]),"Gladius")
-  testthat::expect_equal(length(attributes(diffs.sort)),10)
+  testthat::expect_equal(length(attributes(diffs.sort)),9)
   testthat::expect_equal(length(attr(diffs.sort, which = "sortOrder")),10)
   
   #Test sort.alldiffs with supplied sortOrder
@@ -154,6 +163,71 @@ test_that("sort.alldiffs4", {
                                           sortFactor = "Genotype"))
 })
 
+cat("#### Test for sort.alldiffs on WaterRunoff with asreml4\n")
+test_that("sort.alldiffsWater4", {
+  skip_if_not_installed("asreml")
+  skip_on_cran()
+  library(asreml)
+  library(asremlPlus)
+  library(dae)
+  data(WaterRunoff.dat)
+  
+  #Analyse pH  
+  m1.asr <- asreml(fixed = pH ~ Benches + (Sources * (Type + Species)), 
+                        random = ~ Benches:MainPlots,
+                        keep.order=TRUE, data= WaterRunoff.dat)
+  current.asrt <- asrtests(m1.asr, NULL, NULL)
+  testthat::expect_equal(length(m1.asr$vparameters),2)
+  current.asrt <- asrtests(m1.asr)
+  current.asrt <- rmboundary(current.asrt)
+  m1.asr <- current.asrt$asreml.obj
+  testthat::expect_equal(length(m1.asr$vparameters),1)
+  
+  TS.diffs <- predictPlus.asreml(classify = "Sources:Type", 
+                                 asreml.obj = m1.asr, tables = "none", 
+                                 wald.tab = current.asrt$wald.tab, 
+                                 present = c("Type","Species","Sources"))
+  testthat::expect_true(is.alldiffs(TS.diffs))
+  testthat::expect_true(validAlldiffs(TS.diffs))
+  testthat::expect_equal(nrow(TS.diffs$predictions),20)
+  testthat::expect_equal(ncol(TS.diffs$predictions),7)
+  testthat::expect_equal(as.character(TS.diffs$predictions$Type[1]),"Landscape")
+  testthat::expect_true(is.null(attr(TS.diffs, which = "sortOrder")))
+  
+  #Test reodering of the classify
+  TS.diffs.reord <- reorderClassify(TS.diffs, newclassify = "Type:Sources")
+  testthat::expect_equal(as.character(TS.diffs.reord$predictions$Sources[1]),"Rainwater")
+  testthat::expect_equal(as.character(TS.diffs.reord$predictions$Sources[2]),"Recycled water")
+  testthat::expect_true(abs(TS.diffs.reord$predictions$predicted.value[2] - 7.646389) < 1e-06)
+  
+  #Test sort.alldiffs and save order for use with other response variables
+  TS.diffs.sort <- sort(TS.diffs, sortFactor = "Sources", sortWithinVals = list(Type = "Control"))
+  sort.order <- attr(TS.diffs.sort, which = "sortOrder")
+  testthat::expect_is(TS.diffs.sort, "alldiffs")
+  testthat::expect_true(validAlldiffs(TS.diffs.sort))
+  testthat::expect_equal(nrow(TS.diffs.sort$predictions),20)
+  testthat::expect_equal(ncol(TS.diffs.sort$predictions),7)
+  testthat::expect_equal(as.character(TS.diffs.sort$predictions$Sources[1]),"Recycled water")
+  testthat::expect_equal(length(attributes(TS.diffs.sort)),9)
+  testthat::expect_equal(length(attr(TS.diffs.sort, which = "sortOrder")),6)
+  
+  #Test sort.alldiffs with supplied sortOrder
+  m2.asr <- asreml(fixed = Turbidity ~ Benches + (Sources * (Type + Species)), 
+                   random = ~ Benches:MainPlots,
+                   keep.order=TRUE, data= WaterRunoff.dat)
+  testthat::expect_equal(length(m2.asr$vparameters),2)
+  current.asrt <- asrtests(m2.asr)
+  diffs2.sort <- predictPlus(m2.asr, classify = "Sources:Type", 
+                             pairwise = FALSE, error.intervals = "Stand", 
+                             tables = "none", present = c("Type","Species","Sources"),
+                             sortFactor = "Sources", 
+                             sortOrder = sort.order)
+  testthat::expect_equal(as.character(TS.diffs.sort$predictions$Sources[1]),
+                         as.character(diffs2.sort$predictions$Sources[1]))
+  testthat::expect_equal(attr(TS.diffs.sort, which = "sortOrder"),
+                         attr(diffs2.sort, which = "sortOrder"))
+})
+
 cat("#### Test for sort.alldiffs on Oats with asreml4\n")
 test_that("sort.alldiffs4", {
   skip_if_not_installed("asreml")
@@ -175,20 +249,22 @@ test_that("sort.alldiffs4", {
   den.df <- wald.tab[match("Variety", rownames(wald.tab)), "denDF"]
   Var.diffs <- as.alldiffs(predictions = Var.pred$pvals, 
                            sed = Var.pred$sed, 
-                           tdf = den.df)
-  testthat::expect_equal(length(attributes(Var.diffs)),3)
-  testthat::expect_null(attr(Var.diffs, which = "sortOrder"))
+                           tdf = den.df, classify = "Nitrogen:Variety")
+  testthat::expect_true(validAlldiffs(Var.diffs))
+  testthat::expect_equal(length(attributes(Var.diffs)),4)
+  testthat::expect_true(is.null(attr(Var.diffs, which = "sortOrder")))
   
   #Test for predictPlus no sorting
   diffs <- predictPlus(m1.asr, classify = "Nitrogen:Variety", 
                        wald.tab = current.asrt$wald.tab,
                        error.intervals = "Stand", tables = "none")
   testthat::expect_is(diffs, "alldiffs")
+  testthat::expect_true(validAlldiffs(diffs))
   testthat::expect_equal(nrow(diffs$predictions),12)
   testthat::expect_equal(ncol(diffs$predictions),7)
   testthat::expect_equal(as.character(diffs$predictions$Variety[1]),"Victory")
-  testthat::expect_equal(length(attributes(diffs)),8)
-  testthat::expect_null(attr(diffs, which = "sortOrder"))
+  testthat::expect_equal(length(attributes(diffs)),7)
+  testthat::expect_true(is.null(attr(diffs, which = "sortOrder")))
   
   testthat::expect_silent(plotPredictions(data = diffs$predictions, 
                                           classify ="Nitrogen:Variety", 
@@ -221,10 +297,11 @@ test_that("sort.alldiffs4", {
                           error.intervals = "Stand", tables = "none",
                           sortFactor = "Variety", decreasing = TRUE)
   testthat::expect_is(diffs[[1]], "alldiffs")
-  testthat::expect_equal(nrow(diffs[[1]]$predictions),12)
+  testthat::expect_true(validAlldiffs(diffs$xNitrogen.Variety))
+  testthat::expect_equal(nrow(diffs$xNitrogen.Variety$predictions),12)
   testthat::expect_equal(ncol(diffs[[1]]$predictions),7)
   testthat::expect_equal(as.character(diffs[[1]]$predictions$Variety[[1]]),"Marvellous")
-  testthat::expect_equal(length(attributes(diffs$xNitrogen.Variety)),10)
+  testthat::expect_equal(length(attributes(diffs$xNitrogen.Variety)),9)
   testthat::expect_equal(length(attr(diffs[[1]], which = "sortOrder")),3)
   
   #Test for predictPlus with sortFactor
@@ -235,10 +312,11 @@ test_that("sort.alldiffs4", {
                        error.intervals = "Stand", tables = "none",
                        sortFactor = "Variety", decreasing = TRUE)
   testthat::expect_is(diffs, "alldiffs")
+  testthat::expect_true(validAlldiffs(diffs))
   testthat::expect_equal(nrow(diffs$predictions),12)
   testthat::expect_equal(ncol(diffs$predictions),7)
   testthat::expect_equal(as.character(diffs$predictions$Variety[1]),"Marvellous")
-  testthat::expect_equal(length(attributes(diffs)),10)
+  testthat::expect_equal(length(attributes(diffs)),9)
   testthat::expect_true(all(attr(diffs, which = "sortOrder") == 
                               levels(diffs$predictions$Variety)))
   testthat::expect_true(all(attr(diffs, which = "sortOrder") == 
@@ -277,26 +355,29 @@ test_that("subset.alldiffs4", {
                        wald.tab = current.asrt$wald.tab,
                        error.intervals = "Stand", tables = "none")
   testthat::expect_is(diffs, "alldiffs")
+  testthat::expect_true(validAlldiffs(diffs))
   testthat::expect_equal(nrow(diffs$predictions),120)
   testthat::expect_equal(ncol(diffs$predictions),8)
   testthat::expect_equal(as.character(diffs$predictions$Genotype[1]),"Axe")
-  testthat::expect_equal(length(attributes(diffs)),8)
-  testthat::expect_null(attr(diffs, which = "sortOrder"))
+  testthat::expect_equal(length(attributes(diffs)),7)
+  testthat::expect_true(is.null(attr(diffs, which = "sortOrder")))
   
   #Form subset
   diffs.subs <- subset(diffs, 
                        subset = !grepl("E",Genotype, fixed = TRUE) & 
                          B %in% c("D1","D2"))
   testthat::expect_is(diffs.subs, "alldiffs")
+  testthat::expect_true(validAlldiffs(diffs.subs))
   testthat::expect_equal(nrow(diffs.subs$predictions),48)
   testthat::expect_equal(ncol(diffs.subs$predictions),8)
   testthat::expect_false(any(diffs.subs$predictions$Genotype %in% c("Excalibur","Espada")))
   testthat::expect_false(any(diffs.subs$predictions$B %in% c("D3","D4")))
-  testthat::expect_equal(length(attributes(diffs.subs)),8)
+  testthat::expect_equal(length(attributes(diffs.subs)),7)
   
   #Test subset with removal of vars
   diffs.subs <- subset(diffs, subset = A == "N1" & B == "D2", rmClassifyVars = c("A","B"))
   testthat::expect_is(diffs.subs, "alldiffs")
+  testthat::expect_true(validAlldiffs(diffs.subs))
   testthat::expect_equal(nrow(diffs.subs$predictions),10)
   testthat::expect_equal(ncol(diffs.subs$predictions),6)
   testthat::expect_false(any(c("A","B") %in% names(diffs.subs$predictions)))
@@ -319,12 +400,45 @@ test_that("subset.alldiffs4", {
                        subset = grepl("R", Sources, fixed = TRUE) & 
                          Type %in% c("Control","Medicinal"))
   testthat::expect_is(diffs.subs, "alldiffs")
+  testthat::expect_true(validAlldiffs(diffs.subs))
   testthat::expect_equal(nrow(diffs.subs$predictions),10)
   testthat::expect_equal(ncol(diffs.subs$predictions),7)
   testthat::expect_false(any(diffs.subs$predictions$Sources == "Tap water"))
   testthat::expect_false(any(diffs.subs$predictions$B %in% c("Landscape","Culinary")))
-  testthat::expect_equal(length(attributes(diffs.subs)),8)
+  testthat::expect_equal(length(attributes(diffs.subs)),7)
 })
+
+cat("#### Test for facCombine.alldiffs on Ladybird with asreml4\n")
+test_that("facCombine.alldiffs4", {
+  skip_if_not_installed("asreml")
+  skip_on_cran()
+  library(asreml)
+  library(asremlPlus)
+  library(dae)
+  data("Ladybird.dat")
+  
+  #Mixed model analysis of logits 
+  m1.asr <- asreml(logitP ~ Host*Cadavers*Ladybird, 
+                   random = ~ Run,
+                   data = Ladybird.dat)
+
+  testthat::expect_equal(length(m1.asr$vparameters),2)
+  current.asrt <- asrtests(m1.asr)
+  testthat::expect_true(validAsrtests(current.asrt))
+
+  HCL.pred <- asreml::predict.asreml(m1.asr, classify="Host:Cadavers:Ladybird", 
+                                     sed=TRUE)
+  if (getASRemlVersionLoaded(nchar = 1) == "3")
+    HCL.pred <- HCL.pred$predictions
+  HCL.preds <- HCL.pred$pvals
+  HCL.sed <- HCL.pred$sed
+  HCL.vcov <- NULL
+  wald.tab <-  current.asrt$wald.tab
+  den.df <- wald.tab[match("Host:Cadavers:Ladybird", rownames(wald.tab)), "denDF"]
+  testthat::expect_equal(den.df,60)
+})
+
+
 
 cat("#### Test for linear.transformation with asreml4\n")
 test_that("linear.transformation_asreml4", {

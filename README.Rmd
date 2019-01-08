@@ -12,10 +12,16 @@ output:
 ---
  
  
+---
+ 
+ 
+---
+ 
+ 
 [![Project Status: Active:  The project has reached a stable, usable state and is being actively developed.](http://www.repostatus.org/badges/latest/active.svg)](http://www.repostatus.org/#active)
 [![minimal R version](https://img.shields.io/badge/R%3E%3D-2.10.0-6666ff.svg)](https://cran.r-project.org/)
 [![CRAN_Status_Badge](http://www.r-pkg.org/badges/version/asremlPlus)](https://cran.r-project.org/package=asremlPlus)
-[![packageversion](https://img.shields.io/badge/Package%20version-4.1.08-orange.svg?style=flat-square)]()
+[![packageversion](https://img.shields.io/badge/Package%20version-4.1.10-orange.svg?style=flat-square)]()
 `[![Last-changedate](https://img.shields.io/badge/last%20change-`r gsub('-', '--', Sys.Date())`-yellowgreen.svg)](/commits/master)
 [![Licence](https://img.shields.io/github/license/mashape/apistatus.svg)](http://choosealicense.com/licenses/mit/)
 [![Downloads](https://cranlogs.r-pkg.org/badges/last-week/asremlPlus)](commits/master)
@@ -26,7 +32,7 @@ suppressMessages(suppressWarnings(badgecreatr::badgeplacer(status = "active",
 ```
 
 
-`asremlPlus` is an R package that augments the use of `ASReml-R` in fitting mixed models. This version is compatible with both `ASReml-R` versions 3 and 4.1, but not 4.0.  
+`asremlPlus` is an R package that augments the use of `ASReml-R` in fitting mixed models and packages generally in exploring prediction differences. This version is compatible with both `ASReml-R` versions 3 and 4.1, but not 4.0.
 
 Versions 4.x-xx of `asremlPlus` are a major revamp of the package and include substantial syntax changes. In particular, most functions are S3 methods and so the type of the object can be omitted from the function name when calling the function.  
 
@@ -64,10 +70,9 @@ If you have not previously installed `asremlPlus` then you will need to install 
 
 ## What is does
 
-It assists in automating the testing of terms in mixed models when 'asreml' is used 
+It assists in automating the testing of terms in mixed models when `asreml-R` is used 
 to fit the models. A history of the fitting of a sequence of models is kept in a data frame. 
-Procedures are available for choosing models that conform to the hierarchy or marginality principle 
-and for displaying predictions for significant terms in tables and graphs. 
+Procedures are available for choosing models that conform to the hierarchy or marginality principle. It can also be used to display, in tables and graphs, predictions obtained from a mixed model using your favourite model fitting functions and to explore differences between predictions. As a general rule functions that are methods for `asreml` and `asrtests` objects require `asreml-R`; on the other hand, functions that are methods for `alldiffs` and `data.frame` objects do not require `asreml-R`.
 
 The content falls into the following natural groupings: 
 
@@ -89,10 +94,7 @@ The content falls into the following natural groupings:
   
 ## What it needs  
   
-To use `asremlPlus`, you must have a licensed version of either of the packages `asreml` and `asreml4`. 
-They provide a computationally efficient algorithm for fitting mixed models using Residual Maximum 
-  Likelihood. They can be purchased from 'VSNi' <http://www.vsni.co.uk/> as `asreml-R`, 
-  who will supply a zip file for local installation/updating.
+To use those functon in `asremlPlus` that are methods for `asreml` or `asrtests` objects, you must have a licensed version of the package `asreml`. It provides a computationally efficient algorithm for fitting mixed models using Residual Maximum Likelihood. It can be purchased from 'VSNi' <http://www.vsni.co.uk/> as `asreml-R`, who will supply a zip file for local installation/updating.
   
   It also imports [dae](<https://CRAN.R-project.org/package=dae>), [ggplot2](<https://CRAN.R-project.org/package=ggplot2>), `stats`, `methods`, `utils`, [reshape](<https://CRAN.R-project.org/package=reshape>), [plyr](<https://CRAN.R-project.org/package=plyr>), [dplyr](<https://CRAN.R-project.org/package=dplyr>), [stringr](<https://CRAN.R-project.org/package=stringr>), [RColorBrewer](<https://CRAN.R-project.org/package=RColorBrewer>), `grDevices`, 
 [foreach](<https://CRAN.R-project.org/package=foreach>), [parallel](<https://CRAN.R-project.org/package=parallel>), [doParallel](<https://CRAN.R-project.org/package=doParallel>).

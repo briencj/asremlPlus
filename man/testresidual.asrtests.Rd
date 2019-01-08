@@ -27,26 +27,24 @@
              set.terms = NULL, ignore.suffices = TRUE, 
              bounds = "P", initial.values = NA, ...)}
 \arguments{
- \item{asrtests.obj}{an \code{\link{asrtests}} object for a fitted model that is a list 
-                containing an \code{asreml} object, a \code{wald.tab} 
-                \code{data.frame} with 4 columns, and a \code{data.frame} with 
-                5 columns that records any previous changes and tests in the 
-                fitted model.}
- \item{terms}{a model for the \code{residual} argument in \code{asreml-R4} 
+ \item{asrtests.obj}{an \code{\link{asrtests.object}} for a fitted model that is a list 
+                containing the componets (i) \code{asreml.obj}, (ii) \code{wald.tab} 
+                (iii) \code{test.summary}.}
+ \item{terms}{A model for the \code{residual} argument in \code{asreml-R4} 
              (the \code{rcov} formula in older versions of \code{asreml}), stored 
              as a \code{character}.}
- \item{label}{a character string to use as the label in \code{test.summary} and 
+ \item{label}{A character string to use as the label in \code{test.summary} and 
               which indicates what is being tested.}
- \item{simpler}{a logical indicating whether the new model to be fitted is 
+ \item{simpler}{A logical indicating whether the new model to be fitted is 
                 simpler than the already fitted model whose fit is stored in 
                 \code{asrtests.obj}.}
- \item{alpha}{the significance level for the test.}
+ \item{alpha}{The significance level for the test.}
  \item{allow.unconverged}{A \code{logical} indicating whether to accept a new model 
                       even when it does not converge. If \code{FALSE} and the fit of the new 
                       model does not converge, the supplied \code{asreml} object is returned.  
                       Also, if \code{FALSE} and the fit of the new model has converged, but that 
                       of the old model has not, the new model will be accepted.}
- \item{checkboundaryonly}{if \code{TRUE} then boundary and singular terms are not removed by 
+ \item{checkboundaryonly}{If \code{TRUE} then boundary and singular terms are not removed by 
               \code{\link{rmboundary.asrtests}}; a warning is issued instead.}
  \item{positive.zero}{Indicates whether the hypothesized values for the 
                       variance components being tested are on the boundary 
@@ -85,7 +83,7 @@
               on problem size. The denominator degrees of freedom are calculated 
               according to Kenward and Roger (1997) for fixed terms in the dense 
               part of the model.}
- \item{update}{if \code{TRUE }then \code{update.asreml} is called to fit the model with 
+ \item{update}{If \code{TRUE }then \code{update.asreml} is called to fit the model with 
               the \code{residual} (\code{rcov}) model supplied in \code{terms}. 
               In doing this the arguments 
               \code{R.param} and \code{G.param} are set to those in the \code{asreml} 
@@ -94,11 +92,11 @@
               \code{asreml} in which the only changes from the previous call are that 
               (i) \code{residual} (\code{rcov})  model is that specified in \code{terms} 
               and (ii) modifications specified via \code{\dots} are made.}
- \item{trace}{if \code{TRUE } then partial iteration details are displayed when ASReml-R 
+ \item{trace}{If \code{TRUE } then partial iteration details are displayed when ASReml-R 
               functions are invoked; if FALSE then no output is displayed.}
- \item{set.terms}{a \code{\link{character}} vector specifying the terms that are to have 
+ \item{set.terms}{A \code{\link{character}} vector specifying the terms that are to have 
                   bounds and/or initial values set prior to fitting.}
- \item{ignore.suffices}{a \code{\link{logical}} vector specifying whether the suffices of the 
+ \item{ignore.suffices}{A \code{\link{logical}} vector specifying whether the suffices of the 
                     \code{asreml}-assigned names of the variance terms (i.e. the 
                     information to the right of an "!", other than "R!") is to 
                     be ignored in matching elements of \code{terms}. 
@@ -110,14 +108,14 @@
                     same length as \code{terms}. If it is of length one then 
                     the same action is applied to the \code{asreml}-assigned 
                     suffices for all the terms in \code{terms}.}
- \item{bounds}{a \code{\link{character}} vector specifying the bounds to be applied 
+ \item{bounds}{A \code{\link{character}} vector specifying the bounds to be applied 
                     to the terms specified in \code{set.terms}. This vector 
                     must be of length one or the same length as \code{set.terms}. 
                     If it is of length one then the same constraint is 
                     applied to all the terms in \code{set.terms}. 
                     If any of the bounds are equal to NA then they are 
                     left unchanged for those terms.}
- \item{initial.values}{a character vector specifying the initial values for  
+ \item{initial.values}{A character vector specifying the initial values for  
                     the terms specified in \code{terms}. This vector 
                     must be of length one or the same length as \code{terms}. 
                     If it is of length one then the same initial value is 
@@ -125,35 +123,19 @@
                     If any of the initial.values are equal to NA then they are 
                     left unchanged for those terms.}
  \item{\dots}{Further arguments passed to \code{asreml}, \code{wald.asreml} and 
-                   \code{\link{asrtests}}.}
+                   \code{\link{as.asrtests}}.}
 }
-\value{An \code{\link{asrtests}} object, which is a list containing:
-       \enumerate{
-         \item \code{asreml.obj}: an \code{asreml} object containing the fit 
-               after the \code{term} has been omitted from the model;
-         \item \code{wald.tab}: a 4-column \code{data.frame} containing a 
-               pseudo-anova table for the fixed terms produced by \code{wald.asreml};
-         \item \code{test.summary}: a \code{data.frame} with columns \code{term}, 
-                \code{DF}, \code{denDF}, \code{p} and \code{action}. A row is added to 
-                it for each term 
-                that is dropped, added or tested or a note that several terms have been
-                added or removed. A row contains the name of the term, the 
-                DF, the p-value and the action taken. Possible codes are: 
-                \code{Dropped}, \code{Retained}, \code{Swapped}, \code{Unswapped},   
-                \code{Significant}, \code{Nonsignificant}, \code{Absent}, \code{Added}, 
-                \code{Removed} and \code{Boundary}. If the changed model did not
-                 converge, \code{Unconverged} will be added to the code. 
-                 Note that the logical \code{asreml.obj$converge} also
-                reflects whether there is convergence.}
-       If the \code{term} is not in the model, then the supplied \code{asreml} 
-       object will be returned. Also, \code{reml.test} will have the likelihood 
+\value{An \code{\link{asrtests.object}} containing the components (i) \code{asreml.obj},
+       (ii) \code{wald.tab}, and (iii) \code{test.summary}.
+       If the \code{term} is not in the model, then the supplied \code{asreml.obj} 
+       will be returned. Also, \code{reml.test} will have the likelihood 
        ratio and the p-value set to \code{NA} and the degrees of freedom to zero.
        Similarly, the row of \code{test.summary} for the \code{term} will have 
        its name, a p-value set to \code{NA}, and action set to Absent.
 }
 
 \author{Chris Brien}
-\seealso{\code{\link{asremlPlus-package}}, \code{\link{asrtests}}, \code{\link{changeTerms.asrtests}}, \cr
+\seealso{\code{\link{asremlPlus-package}}, \code{\link{as.asrtests}}, \code{\link{changeTerms.asrtests}}, \cr
          \code{\link{chooseModel.asrtests}}, 
          \code{\link{REMLRT.asreml}}, \code{\link{rmboundary.asrtests}}, \cr
          \code{\link{newfit.asreml}}, \code{\link{testswapran.asrtests}}, 

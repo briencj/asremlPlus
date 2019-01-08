@@ -50,27 +50,59 @@
 \value{No values are returned, but a plot is printed.}
 \author{Chris Brien}
 \seealso{\code{\link{plotPvalues.alldiffs}}, \code{\link{allDifferences.data.frame}}, \code{ggplot}}
-\examples{\dontrun{
+\examples{
 data(WaterRunoff.dat)
+
+##Use asreml to get predictions and associated statistics
+
+\dontrun{
 asreml.options(keep.order = TRUE) #required for asreml-R4 only
 current.asr <- asreml(fixed = pH ~ Benches + (Sources * (Type + Species)), 
                       random = ~ Benches:MainPlots,
-                      keep.order=TRUE, data= WaterRunoff.dat)
+                      keep.order=TRUE, data= WaterRunoff.dat))
 current.asrt <- asrtests(current.asr, NULL, NULL)
-diffs <- predictPlus.asreml(classify = "Sources:Type", 
-                            asreml.obj = current.asr, tables = "none", 
-                            wald.tab = current.asrt$wald.tab, 
-                            present = c("Type","Species","Sources"))
- 
-p <- within(reshape::melt(diffs$p.differences), 
-            { 
-              X1 <- factor(X1, levels=dimnames(diffs$p.differences)[[1]])
-              X2 <- factor(X2, levels=levels(X1))
-            })
-names(p)[match("value", names(p))] <- "p"
-plotPvalues(p, x = "X1", y = "X2", 
-            gridspacing = rep(c(3,4), c(4,2)), show.sig = TRUE)
-}}
+SS.diffs <- predictPlus.asreml(classify = "Sources:Type", 
+                               asreml.obj = current.asr, tables = "none", 
+                               wald.tab = current.asrt$wald.tab, 
+                               present = c("Type","Species","Sources"))
+}
+
+## Use lmeTest and emmmeans to get predictions and associated statistics
+
+if (requireNamespace("lmerTest", quietly = TRUE) & 
+    requireNamespace("emmeans", quietly = TRUE))
+{
+  m1.lmer <- lmerTest::lmer(pH ~ Benches + (Sources * (Type + Species)) + 
+                              (1|Benches:MainPlots),
+                            data=na.omit(WaterRunoff.dat))
+  TS.emm <- emmeans::emmeans(m1.lmer, specs = ~ Sources:Species)
+  TS.preds <- summary(TS.emm)
+  den.df <- min(TS.preds$df, na.rm = TRUE)
+  ## Modify TS.preds to be compatible with a predictions.frame
+  TS.preds <- as.predictions.frame(TS.preds, predictions = "emmean", 
+                                   se = "SE", interval.type = "CI", 
+                                   interval.names = c("lower.CL", "upper.CL"))
+  
+  ## Form an all.diffs object and check its validity
+  TS.vcov <- vcov(TS.emm)
+  TS.diffs <- allDifferences(predictions = TS.preds, classify = "Sources:Species", 
+                             vcov = TS.vcov, tdf = den.df)
+  validAlldiffs(TS.diffs)
+}  
+
+## Plot p-values for predictions obtained using asreml or lmerTest
+if (exists("TS.diffs"))
+{
+  p <- within(reshape::melt(TS.diffs$p.differences), 
+              { 
+                X1 <- factor(X1, levels=dimnames(TS.diffs$p.differences)[[1]])
+                X2 <- factor(X2, levels=levels(X1))
+              })
+  names(p)[match("value", names(p))] <- "p"
+  plotPvalues(p, x = "X1", y = "X2", 
+              gridspacing = rep(c(3,4), c(4,2)), show.sig = TRUE)
+}
+}
 \keyword{hplot}
 \keyword{dplot}
 \keyword{asreml}

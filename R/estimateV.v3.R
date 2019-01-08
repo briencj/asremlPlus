@@ -7,6 +7,11 @@
   if (!asr4)
     stop("This function requires asreml4 or later.")
   
+  #Check that have a valid object of class asreml
+  validasr <- validAsreml(asreml.obj)  
+  if (is.character(validasr))
+    stop(validasr)
+  
   #Check which.matrix option
   mat.options <- c("V", "G", "R")
   mat.opt <- mat.options[check.arg.values(which.matrix, mat.options)]

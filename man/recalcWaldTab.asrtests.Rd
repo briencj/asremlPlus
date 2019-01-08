@@ -14,14 +14,11 @@
               denDF="numeric", dDF.na = "none", 
               dDF.values = NULL, trace = FALSE, ...)}
 \arguments{
- \item{asrtests.obj}{an \code{\link{asrtests}} object for a fitted model that is a list 
-                containing an \code{asreml} object, a \code{wald.tab} 
-                \code{data.frame} with 4 columns, and a \code{data.frame} with 
-                5 columns that records any previous changes and tests in the 
-                fitted model.}
- \item{recalc.wald}{a \code{logical} indicating whether to call \code{wald.asreml} to recalculate 
+ \item{asrtests.obj}{an \code{\link{asrtests.object}} containing the components (i) \code{asreml.obj},
+       (ii) \code{wald.tab}, and (iii) \code{test.summary}.}
+ \item{recalc.wald}{A \code{logical} indicating whether to call \code{wald.asreml} to recalculate 
                the pseudoanova table for the model fit stored in the \code{asreml} object 
-               contained in \code{\link{asrtests}}.}
+               contained in \code{asrtests.obj}.}
  \item{denDF}{Specifies the method to use in computing approximate denominator 
               degrees of freedom when \code{wald.asreml} is called. Can be \code{none} 
               to suppress the computations, \code{numeric} for numerical methods,
@@ -47,7 +44,7 @@
               Its values will be used when \code{denDF} in a test for a fixed effect
               is \code{NA}. This vector must be the same length as the number of 
               fixed terms, including (Intercept) whose value could be \code{NA}.}
- \item{trace}{if TRUE then partial iteration details are displayed when ASReml-R 
+ \item{trace}{If TRUE then partial iteration details are displayed when ASReml-R 
               functions are invoked; if FALSE then no output is displayed.}
  \item{\dots}{further arguments passed to \code{asreml} and to \code{wald.asreml}.}
 }
@@ -56,7 +53,7 @@
 }
 
 \author{Chris Brien}
-\seealso{\code{\link{asrtests}}, \code{\link{testranfix.asrtests}}}
+\seealso{\code{\link{as.asrtests}}, \code{\link{testranfix.asrtests}}}
 \examples{\dontrun{
   wald.tab <- recalcWaldTab(current.asrt, 
                             dDF.na = "supplied", 
