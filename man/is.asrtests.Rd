@@ -23,7 +23,7 @@ current.asr <- asreml(yield ~ Rep + WithinColPairs + Variety,
                       data=Wheat.dat)
 
 # Load current fit into an asrtests object
-current.asrt <- asrtests(current.asr, NULL, NULL)
+current.asrt <- as.asrtests(current.asr, NULL, NULL)
 
 # check the class of current.asrt
 is.asrtests(current.asrt)

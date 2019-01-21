@@ -8,6 +8,7 @@ reparamSigDevn <- function(asrtests.obj, ...) UseMethod("reparamSigDevn")
 testranfix <- function(asrtests.obj, ...) UseMethod("testranfix")
 testresidual <- function(asrtests.obj, ...) UseMethod("testresidual")
 testswapran <- function(asrtests.obj, ...) UseMethod("testswapran")
+getTestPvalue <- function(asrtests.obj, ...) UseMethod("getTestPvalue")
 
 infoCriteria <- function(asreml.obj, ...) UseMethod("infoCriteria")
 estimateV <- function(asreml.obj, ...) UseMethod("estimateV")

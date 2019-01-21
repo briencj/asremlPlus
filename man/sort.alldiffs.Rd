@@ -99,8 +99,8 @@ data(WaterRunoff.dat)
 m1.asr <- asreml(fixed = pH ~ Benches + (Sources * (Type + Species)), 
                  random = ~ Benches:MainPlots,
                  keep.order=TRUE, data= WaterRunoff.dat)
-current.asrt <- asrtests(m1.asr, NULL, NULL)
-current.asrt <- asrtests(m1.asr)
+current.asrt <- as.asrtests(m1.asr, NULL, NULL)
+current.asrt <- as.asrtests(m1.asr)
 current.asrt <- rmboundary(current.asrt)
 m1.asr <- current.asrt$asreml.obj
 
@@ -118,7 +118,7 @@ sort.order <- attr(TS.diffs.sort, which = "sortOrder")
 m2.asr <- asreml(fixed = Turbidity ~ Benches + (Sources * (Type + Species)), 
                  random = ~ Benches:MainPlots,
                  keep.order=TRUE, data= WaterRunoff.dat)
-current.asrt <- asrtests(m2.asr)
+current.asrt <- as.asrtests(m2.asr)
 #Use pH sort.order to sort Turbidity alldiffs object
 diffs2.sort <- predictPlus(m2.asr, classify = "Sources:Type", 
                            pairwise = FALSE, error.intervals = "Stand", 

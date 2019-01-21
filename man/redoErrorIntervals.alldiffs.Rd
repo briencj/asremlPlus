@@ -10,7 +10,7 @@
 \usage{
 \method{redoErrorIntervals}{alldiffs}(alldiffs.obj, error.intervals = "Confidence", 
                    alpha = 0.05, avsed.tolerance = 0.25, 
-                   meanLSD.type = "overall", LSDby = NULL, ...)
+                   meanLSD.type = NULL, LSDby = NULL, ...)
 }
 \arguments{
  \item{alldiffs.obj}{An \code{\link{alldiffs.object}}.}
@@ -55,15 +55,17 @@
              the mean of the variances for all pairwise differences for each factor combination, or 
              (iii) the \code{per.prediction} mean, based, for each prediction, 
              on the square root of the mean of the variances for all pairwise differences 
-             involving that prediction. It also 
-             determines, in conjunction with \code{avsed.tolerance}, which LSD will be used
-             in calculating \code{error.intervals} and, hence, is used for plots.}
+             involving that prediction. If \code{NULL}, the attributes \code{meanLSD.type} and 
+             \code{LSDby} of the \code{alldiffs.obj} will be used to determine the LSDs to be calculated. 
+             If the \code{meanLSD.type} attribute is \code{NULL} then \code{meanLSD.type} will be set to 
+             \code{overall}. The \code{meanLSD.type} also determines, in conjunction with 
+             \code{avsed.tolerance}, which LSD will be usedin calculating \code{error.intervals} and, hence, 
+             is used for plots. }
 \item{LSDby}{A \code{\link{character}} (vector) of factor names, being the names of the 
              \code{\link{factor}s} for each of whose levels combinations a mean LSD, 
              minLSD and max LSD is stored in the \code{LSD} component of the 
              \code{\link{alldiffs.object}} object when \code{meanLSD.type} is \code{factor.combinatons}.}
- \item{\dots}{provision for passsing arguments to functions called internally - 
-            not used at present.}
+ \item{\dots}{further arguments passed to \code{\link{allDifferences.data.frame}}.}
 }
 \value{An \code{\link{alldiffs.object}} with components 
        \code{predictions}, \code{vcov}, \code{differences}, \code{p.differences} 
@@ -99,7 +101,7 @@ asreml.options(keep.order = TRUE) #required for asreml-R4 only
 current.asr <- asreml(fixed = pH ~ Benches + (Sources * (Type + Species)), 
                       random = ~ Benches:MainPlots,
                       keep.order=TRUE, data= WaterRunoff.dat)
-current.asrt <- asrtests(current.asr, NULL, NULL)
+current.asrt <- as.asrtests(current.asr, NULL, NULL)
 TS.diffs <- predictPlus(classify = "Sources:Type", 
                         asreml.obj = current.asr, 
                         wald.tab = current.asrt$wald.tab, 

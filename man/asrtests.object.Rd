@@ -23,7 +23,7 @@ a mixed model using \code{asreml}.
                fitted and four columns. If denominator degrees of freedom were 
                calculated then the columns are \code{Df}, \code{denDF}, 
                \code{F.inc}, \code{Pr}; otherwise the columns are \code{Df}, 
-               code{Sum of Sq}, \code{Wald statistic}, and \code{Pr(Chisq)}.
+               \code{Sum of Sq}, \code{Wald statistic}, and \code{Pr(Chisq)}.
          \item \code{test.summary}: A \code{data.frame} with columns \code{term}, 
                 \code{DF}, \code{denDF}, \code{p} and \code{action}. A row is added to 
                 it for each term 

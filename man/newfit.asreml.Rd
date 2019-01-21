@@ -100,8 +100,8 @@
 
 
 \references{Butler, D. G., Cullis, B. R., Gilmour, A. R., Gogel, B. J. and 
-            Thompson, R. (2017). \emph{{ASReml-R} User Guide Version 4.}  
-            VSN International Ltd, \url{http://www.vsni.co.uk/software/asreml/}.}
+            Thompson, R. (2018). \emph{{ASReml-R} Reference Manual Version 4.}  
+            VSN International Ltd, \url{http://asreml.org}.}
 
 \author{Chris Brien}
 \seealso{\code{update.asreml}, \code{\link{setvarianceterms.call}}}

@@ -13,7 +13,7 @@ test_that("choose.model.asrtests_asreml3", {
   current.asr <- asreml(log.Turbidity ~ Benches + (Sources * (Type + Species)) * Date, 
                         random = ~Benches:MainPlots:SubPlots:spl(xDay), 
                         data = WaterRunoff.dat, keep.order = TRUE)
-  current.asrt <- asrtests(current.asr, NULL, NULL)
+  current.asrt <- as.asrtests(current.asr, NULL, NULL)
   terms.treat <- c("Sources", "Type", "Species", 
                    "Sources:Type", "Sources:Species")
   terms <- sapply(terms.treat, 
@@ -47,7 +47,7 @@ test_that("spl.asrtests_asreml3", {
                                        (Sources * (Type + Species)) * Date, 
                                      random = ~Benches:MainPlots:SubPlots:spl(xDay, k = 6), 
                                      keep.order = TRUE, data = WaterRunoff.dat))
-  current.asrt <- asrtests(current.asr, NULL, NULL)
+  current.asrt <- as.asrtests(current.asr, NULL, NULL)
   
   #Test random splines
   current.asrt <- testranfix(current.asrt, term = "Benches:MainPlots:SubPlots:spl(xDay, k = 6)")
@@ -89,7 +89,7 @@ test_that("reparamSigDevn.asrtests_asreml3", {
                           Sources:Type + Sources:Species + Sources:Species:xDay + 
                           Sources:Species:Date, 
                         data = WaterRunoff.dat, keep.order = TRUE)
-  current.asrt <- asrtests(current.asr, NULL, NULL)
+  current.asrt <- as.asrtests(current.asr, NULL, NULL)
   
   #Examine terms that describe just the interactions of Date and the treatment factors
   terms.treat <- c("Sources", "Type", "Species", "Sources:Type", "Sources:Species")

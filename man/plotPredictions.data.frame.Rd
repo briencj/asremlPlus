@@ -3,7 +3,7 @@
 \alias{plotPredictions}
 \title{Plots the predictions for a term, possibly with error bars.}
 \description{This function plots the predictions \code{y} that are based on 
-             \code{classify} and stored in the \code{data.frame data}. The package 
+             \code{classify} and stored in the \code{data.frame} \code{data}. The package 
              \code{ggplot2} is used to produce the plots. Line plots are 
              produced when variables involving \code{x.num} or \code{x.fac} are 
              involved in \code{classify} for the predictions; otherwise, bar 
@@ -127,7 +127,7 @@ current.asr <- asreml(fixed = log.Turbidity ~ Benches + Sources + Type + Species
                                 Sources:Type + Sources:Species + 
                                 Sources:xDay + Species:xDay + Species:Date,
                       data = WaterRunoff.dat, keep.order = TRUE)
-current.asrt <- asrtests(current.asr, NULL, NULL)
+current.asrt <- as.asrtests(current.asr, NULL, NULL)
 
 #### Get the observed combinations of the factors and variables in classify
 class.facs <- c("Species","Date","xDay")

@@ -8,7 +8,7 @@
   approximate denDF values are to be obtained. This is done through the \code{dDF.na} and 
   \code{dDF.values} arguments. Note that if denDF values are available in the Wald table then 
   only those that are \code{NA} will be replaced. It is noted that, as of asreml version 4, 
-  \code{wald.asreml} has a code{kenadj} argument.}
+  \code{wald.asreml} has a \code{kenadj} argument.}
 \usage{
 \method{recalcWaldTab}{asrtests}(asrtests.obj, recalc.wald = FALSE,
               denDF="numeric", dDF.na = "none", 

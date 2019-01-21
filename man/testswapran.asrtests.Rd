@@ -1,9 +1,9 @@
 \name{testswapran.asrtests}
 \alias{testswapran.asrtests}
 \alias{testswapran}
-\title{Tests, using a REMLRT, the significance of the difference between current 
+\title{Tests, using a REMLRT, the significance of the difference between the current 
        random model and one in which oldterms are dropped and newterms are added.
-       The result is recorded in a data.frame.}
+       The result is recorded in an \code{\link{asrtests.object}}.}
 \description{Fits a new random model using \code{asreml} by removing \code{oldterms} 
        and adding \code{newterms}. If \code{simpler = FALSE} the model to be fitted 
        must be more complex than the one whose fit has been stored in 

@@ -1,7 +1,7 @@
 \name{setvarianceterms.call}
 \alias{setvarianceterms.call}
 \alias{setvarianceterms}
-\title{allows the seting of bounds and initial values for terms in the 
+\title{allows the setting of bounds and initial values for terms in the 
        \code{random} and \code{residual} arguments of an \code{asreml} call, with 
        the resulting call being evaluated. }
 \description{Takes an unevaluated \code{call} and evaluates the \code{call} 
@@ -66,8 +66,8 @@
 
 
 \references{Butler, D. G., Cullis, B. R., Gilmour, A. R., Gogel, B. J. and 
-            Thompson, R. (2017). \emph{{ASReml-R} User Guide Version 4.}  
-            VSN International Ltd, \url{http://www.vsni.co.uk/software/asreml/}.}
+            Thompson, R. (2018). \emph{{ASReml-R} Reference Manual Version 4.}  
+            VSN International Ltd, \url{http://asreml.org}.}
 
 \author{Chris Brien}
 \seealso{\code{update.asreml}}

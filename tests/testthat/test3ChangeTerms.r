@@ -37,7 +37,7 @@ test_that("Wheatchange_asreml3", {
                                      rcov = ~ ar1(Row):ar1(Column), 
                                      data=Wheat.dat))
   summary(current.asr)$varcomp
-  current.asrt <- asrtests(current.asr, NULL, NULL)
+  current.asrt <- as.asrtests(current.asr, NULL, NULL)
   testthat::expect_equal(nrow(summary(current.asrt$asreml.obj)$varcomp), 5)
   testthat::expect_equal(nrow(current.asrt$wald.tab), 4)
   
@@ -69,7 +69,7 @@ test_that("Wheatchange_asreml3", {
                                      random = ~ Row + Column,
                                      rcov = ~ ar1(Row):ar1(Column), 
                                      data=Wheat.dat))
-  current.asrt <- asrtests(current.asr, NULL, NULL)
+  current.asrt <- as.asrtests(current.asr, NULL, NULL)
   current.asrt <- changeTerms(current.asrt, newResidual = "-(.)")
   testthat::expect_equal(sum(chk.changes(current.asrt$test.summary)), 1)
   testthat::expect_equal(nrow(summary(current.asrt$asreml.obj)$varcomp), 2)
@@ -85,14 +85,14 @@ test_that("Wheatchange_asreml3", {
                                      rcov = ~ ar1(Row):ar1(Column), 
                                      data=Wheat.dat))
   summary(current.asr)$varcomp
-  current.asrt <- asrtests(current.asr, NULL, NULL)
+  current.asrt <- as.asrtests(current.asr, NULL, NULL)
   current.asrt <- changeTerms(current.asrt, addRandom = "Column")
   testthat::expect_equal(sum(chk.changes(current.asrt$test.summary)), 1)
   testthat::expect_equal(nrow(summary(current.asrt$asreml.obj)$varcomp), 3)
   testthat::expect_equal(nrow(current.asrt$wald.tab), 4)
   
   #Change residual with no random terms  
-  current.asrt <- asrtests(current.asr, NULL, NULL)
+  current.asrt <- as.asrtests(current.asr, NULL, NULL)
   current.asrt <- changeTerms(current.asrt, 
                               newResidual = "Row:ar1(Column)", 
                               label="Row autocorrelation")

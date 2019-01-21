@@ -27,7 +27,7 @@ asrtests(asreml.obj, wald.tab = NULL, test.summary = NULL,
        times a \code{list}. For example, it may return a \code{list} when 
        \code{denDF} is used. In this case, the \code{Wald} component of the 
        \code{list} is to be extracted and stored. It is noted that, 
-       as of asreml version 4, \code{wald.asreml} has a code{kenadj} argument.}
+       as of asreml version 4, \code{wald.asreml} has a \code{kenadj} argument.}
  \item{test.summary}{A \code{data.frame} with columns \code{term}, 
                 \code{DF}, \code{denDF}, \code{p} and \code{action} containing the 
                 results of previous hypothesis tests.}
@@ -61,7 +61,7 @@ current.asr <- asreml(yield ~ Rep + WithinColPairs + Variety,
                       data=Wheat.dat)
 
 # Load current fit into an asrtests object
-current.asrt <- asrtests(current.asr, NULL, NULL)
+current.asrt <- as.asrtests(current.asr, NULL, NULL)
 
 # Check for and remove any boundary terms
 current.asrt <- rmboundary(current.asrt)

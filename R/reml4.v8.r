@@ -1,5 +1,11 @@
-test <- function(object = 5)
-{ deparse(substitute(object)) } 
+"getTestPvalue.asrtests" <- function(asrtests.obj, label, ...)
+{
+  k <- match(label, asrtests.obj$test.summary$terms)
+  if (is.na(k))
+    stop("Label not found in test.summary of supplied asrtests.obj")
+  p <- asrtests.obj$test.summary$p
+  return(p[k])
+}
 
 "validAsreml" <- function(object)
 {

@@ -31,7 +31,7 @@ current.asr <- asreml(yield ~ Rep + WithinColPairs + Variety,
                       data=Wheat.dat)
 
 # Load current fit into an asrtests object
-current.asrt <- asrtests(current.asr, NULL, NULL)
+current.asrt <- as.asrtests(current.asr, NULL, NULL)
 
 # check validity of current.asrt
 validAsrtests(current.asrt)

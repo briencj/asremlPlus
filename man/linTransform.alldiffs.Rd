@@ -243,7 +243,7 @@ asreml.options(keep.order = TRUE) #required for asreml-R4 only
 current.asr <- asreml(fixed = pH ~ Benches + (Sources * (Type + Species)), 
                       random = ~ Benches:MainPlots,
                       keep.order=TRUE, data= WaterRunoff.dat)
-current.asrt <- asrtests(current.asr, NULL, NULL)
+current.asrt <- as.asrtests(current.asr, NULL, NULL)
 #Get additive predictions directly using predictPlus
 diffs.sub <- predictPlus.asreml(classify = "Sources:Species", Vmatrix = TRUE, 
                                 linear.transformation = ~ Sources + Species,

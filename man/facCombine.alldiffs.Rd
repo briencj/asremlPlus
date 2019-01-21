@@ -51,7 +51,7 @@
   m1.asr <- asreml(logitP ~ Host*Cadavers*Ladybird, 
                    random = ~ Run,
                    data = Ladybird.dat)
-  current.asrt <- asrtests(m1.asr)
+  current.asrt <- as.asrtests(m1.asr)
   HCL.pred <- asreml::predict.asreml(m1.asr, classify="Host:Cadavers:Ladybird", 
                                      sed=TRUE)
   HCL.preds <- HCL.pred$pvals

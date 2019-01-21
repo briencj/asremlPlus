@@ -50,7 +50,7 @@ current.asr <- asreml(yield ~ Rep + WithinColPairs + Variety,
                       random = ~ Row + Column + units,
                       residual = ~ ar1(Row):ar1(Column), 
                       data=Wheat.dat)
-current.asrt <- asrtests(current.asr, NULL, NULL)
+current.asrt <- as.asrtests(current.asr, NULL, NULL)
 current.asrt <- rmboundary.asrtests(current.asrt)
 # Form variance matrix based on estimated variance parameters
 s2 <- current.asr$sigma2

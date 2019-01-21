@@ -2,7 +2,7 @@
 \alias{chooseModel.asrtests}
 \alias{chooseModel}
 \title{Determines the set of significant terms taking into account the hierarchy or 
-       marginality relations and records the tests performed in a data.frame.}
+       marginality relations and records the tests performed in an \code{\link{asrtests.object}}.}
 \description{Performs a series of hypothesis tests taking into account the 
   marginality of terms. In particular, a term will not be tested if it is 
   marginal to (or nested in) one that is significant. For example, if A:B is significant, then 
@@ -151,7 +151,7 @@ asreml.options(keep.order = TRUE) #required for asreml-R4 only
 current.asr <- asreml(log.Turbidity ~ Benches + (Sources * (Type + Species)) * Date, 
                       random = ~Benches:MainPlots:SubPlots:spl(xDay), 
                       data = WaterRunoff.dat, keep.order = TRUE)
-current.asrt <- asrtests(current.asr, NULL, NULL)
+current.asrt <- as.asrtests(current.asr, NULL, NULL)
 terms.treat <- c("Sources", "Type", "Species", 
                  "Sources:Type", "Sources:Species")
 terms <- sapply(terms.treat, 

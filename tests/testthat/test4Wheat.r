@@ -22,13 +22,14 @@ test_that("Wheat_asreml4", {
   testthat::expect_lt(abs(info$AIC - 1346.76), 1e-03)
   
   # Load current fit into an asrtests object
-  current.asrt <- asrtests(current.asr, NULL, NULL)
+  current.asrt <- as.asrtests(current.asr, NULL, NULL)
   
   # Check for and remove any boundary terms
   current.asrt <- rmboundary(current.asrt)
   
   #Check term for within Column pairs
-  current.asrt <- testranfix(current.asrt, "WithinColPairs", drop.fix.ns=TRUE)
+  current.asrt <- testranfix(current.asrt, term = "WithinColPairs", 
+                             drop.fix.ns=TRUE)
   
   # Test nugget term
   current.asrt <- testranfix(current.asrt, "units", positive=TRUE)
@@ -38,9 +39,9 @@ test_that("Wheat_asreml4", {
                                label="Row autocorrelation", simpler=TRUE)
   
   # Test Col autocorrelation (depends on whether Row autocorrelation retained)
-  k <- match("Row autocorrelation", current.asrt$test.summary$terms)
-  p <- current.asrt$test.summary$p
-  { if (p[k] <= 0.05)
+  p <- getTestPvalue(current.asrt, label = "Row autocorrelation")
+  testthat::expect_true((abs(p - 2.314881e-06) < 1e-05))
+  { if (p <= 0.05)
     current.asrt <- testresidual(current.asrt, "~ ar1(Row):Column", 
                                  label="Col autocorrelation", simpler=TRUE,
                                  update=FALSE)
@@ -89,6 +90,7 @@ test_that("Wheat_asreml4", {
   testthat::expect_equal(nrow(Var.diffs$p.differences), 25)
   testthat::expect_equal(ncol(Var.diffs$p.differences), 25)
   testthat::expect_equal(length(Var.diffs$LSD), 3)
+  testthat::expect_true("lower.halfLeastSignificant.limit" %in% names(Var.diffs$predictions))
   testthat::expect_equal(Var.diffs$backtransforms, NULL)
   testthat::expect_equal(as.character(Var.diffs$predictions$Variety[[1]]),"10")
   testthat::expect_silent(plotPvalues(Var.diffs))

@@ -1,5 +1,13 @@
 \name{news}
 \title{News for Package asremlPlus}
+\section{asremlPlus Version 4.1-11 (2019-01-21)}{
+  \itemize{
+    \item{Fix bug in test of the range of SEDs against \code{avsed.tolerance} when caclulating LSDs.}
+    \item{Add attributes \code{meanLSD.type} and \code{LSDby} to \code{alldiffs} objects so that redoErrorIntervals.alldiffs can determine these attributes when its \code{meanLSD.type} argument is not set.}
+    \item{Add function getTestPvalue.asrtests.}
+    \item{Minor documentation changes.}
+  }
+}
 \section{asremlPlus Version 4.1-10 (2019-01-08)}{
   \itemize{
     \item{Add entries for \code{predictions.frame}, \code{alldiffs.object} and \code{asrtests.object} and made changes to the documentation to provide links to these pages.}

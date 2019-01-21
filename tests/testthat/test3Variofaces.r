@@ -20,7 +20,7 @@ test_that("Variofaces_asreml3", {
                         rcov = ~at(Smarthouse):ar1(Lane):ar1(Position), 
                         data = chkpeadat, trace = FALSE)
   summary(current.asr)$varcomp
-  current.asrt <- asrtests(current.asr, denDF = "numeric")
+  current.asrt <- as.asrtests(current.asr, denDF = "numeric")
   current.asrt$wald.tab
   recalcWaldTab(current.asrt, denDF="numeric", dDF.na = "maximum")
   testthat::expect_equal(length(current.asrt), 3)
@@ -35,7 +35,7 @@ test_that("Variofaces_asreml3", {
   summary(current.asr)$varcomp
   
   # Load current fit into an asrtests object
-  current.asrt <- asrtests(current.asr, NULL, NULL)
+  current.asrt <- as.asrtests(current.asr, NULL, NULL)
   
   # Check for and remove any boundary terms
   current.asrt <- rmboundary(current.asrt)

@@ -6,10 +6,10 @@
 \description{The specified terms are simply added or dropped, without testing, from 
        either the fixed or random model and/or the residual (rcov) model replaced. 
        No hypothesis testing is performed, but a check is made for boundary or singular 
-       terms. A row is added to the \code{test.summary} \code{data.frame} stating which 
-       models have been changed. Convergence in fitting the model is checked 
-       and a note included in the action if there was not. All components of the 
-       \code{\link{asrtests.object}} are updated.}
+       terms. A row is added to the \code{test.summary} \code{data.frame} using the 
+       supplied \code{label} and stating which models have been changed. Convergence 
+       in fitting the model is checked and a note included in the action if there was 
+       not. All components of the \code{\link{asrtests.object}} are updated.}
 \usage{
 \method{changeTerms}{asrtests}(asrtests.obj, 
             dropFixed = NULL, addFixed = NULL, 
@@ -111,7 +111,7 @@ current.asr <- asreml(yield ~ Rep + WithinColPairs + Variety,
                       random = ~ Row + Column + units,
                       residual = ~ ar1(Row):ar1(Column), 
                       data=Wheat.dat)
-current.asrt <- asrtests(current.asr, NULL, NULL)
+current.asrt <- as.asrtests(current.asr, NULL, NULL)
 current.asrt <- rmboundary(current.asrt)
 # Add and drop both fixed and random terms
 current.asrt <- changeTerms(current.asrt, 

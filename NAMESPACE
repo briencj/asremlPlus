@@ -22,6 +22,8 @@ export(addrm.terms.asreml,
        facCombine,
        facCombine.alldiffs,
        getASRemlVersionLoaded,
+       getTestPvalue,
+       getTestPvalue.asrtests,
        infoCriteria,
        infoCriteria.asreml,
        info.crit.asreml,
@@ -118,6 +120,7 @@ S3method(changeTerms, asrtests)
 S3method(chooseModel, asrtests) 
 S3method(estimateV, asreml) 
 S3method(facCombine, alldiffs)
+S3method(getTestPvalue, asrtests)
 S3method(infoCriteria, asreml) 
 S3method(linTransform, alldiffs)
 S3method(newfit, asreml) 

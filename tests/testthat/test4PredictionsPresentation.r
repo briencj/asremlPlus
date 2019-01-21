@@ -14,7 +14,7 @@ test_that("predict_Intercept4", {
                    random=~Blocks/Wplots,
                    data=Oats.dat)
   testthat::expect_equal(length(m1.asr$vparameters),3)
-  current.asrt <- asrtests(m1.asr)
+  current.asrt <- as.asrtests(m1.asr)
   
   #Test for Intercept predict
   Int.pred <- predict(m1.asr, classify="(Intercept)")$pvals
@@ -46,7 +46,7 @@ test_that("predictPlus.asreml4", {
   testthat::expect_warning(current.asr <- asreml(fixed = pH ~ Benches + (Sources * (Type + Species)), 
                                                  random = ~ Benches:MainPlots,
                                                  data= WaterRunoff.dat))
-  testthat::expect_output(current.asrt <- asrtests(current.asr, NULL, NULL))
+  testthat::expect_output(current.asrt <- as.asrtests(current.asr, NULL, NULL))
   testthat::expect_silent(diffs <- predictPlus(classify = "Sources:Type", 
                                                asreml.obj = current.asr, tables = "none", 
                                                wald.tab = current.asrt$wald.tab, 
@@ -64,7 +64,7 @@ test_that("predictPlus.asreml4", {
                           Sources:Type + Sources:Species + 
                           Sources:xDay + Species:xDay + Species:Date,
                         data = WaterRunoff.dat)
-  current.asrt <- asrtests(current.asr, NULL, NULL)
+  current.asrt <- as.asrtests(current.asr, NULL, NULL)
   
   diffs.p <- predictPlus(asreml.obj = current.asr, 
                          classify="Species:Date:xDay", 
@@ -100,7 +100,7 @@ test_that("plotPredictions.asreml4", {
                           Sources:Type + Sources:Species + 
                           Sources:xDay + Species:xDay + Species:Date,
                         data = WaterRunoff.dat)
-  current.asrt <- asrtests(current.asr, NULL, NULL)
+  current.asrt <- as.asrtests(current.asr, NULL, NULL)
   predictions <- predict(current.asr, class="Species:Date:xDay", 
                          parallel = TRUE, levels = levs, 
                          present = c("Type","Species","Sources"))$pvals
@@ -157,7 +157,7 @@ test_that("predictPresent.asreml4", {
                           Sources:Type + Sources:Species + Sources:Species:xDay + 
                           Sources:Species:Date, 
                         data = WaterRunoff.dat)
-  current.asrt <- asrtests(current.asr, NULL, NULL)
+  current.asrt <- as.asrtests(current.asr, NULL, NULL)
   #Example that fails because Date has levels that are not numeric in nature
   testthat::expect_error(diff.list <- predictPresent(terms = "Date:Sources:Species", 
                                                     asreml.obj = current.asrt$asreml.obj, 
@@ -219,7 +219,7 @@ test_that("plotPvalues.asreml4", {
   testthat::expect_output(current.asr <- asreml(fixed = pH ~ Benches + (Sources * (Type + Species)), 
                                                 random = ~ Benches:MainPlots,
                                                 data= WaterRunoff.dat))
-  current.asrt <- asrtests(current.asr, NULL, NULL)
+  current.asrt <- as.asrtests(current.asr, NULL, NULL)
   diffs <- predictPlus.asreml(classify = "Sources:Type", 
                               asreml.obj = current.asr, tables = "none", 
                               wald.tab = current.asrt$wald.tab, 
@@ -316,14 +316,14 @@ test_that("factor.combinations.asreml4", {
   LeafSucculence.diff <- readRDS("./data/LeafSucculence.diff")
   LeafSucculence.diff <- LeafSucculence.diff[[1]]
   
-  LeafSucculence.diff <- recalcLSD.alldiffs(LeafSucculence.diff, meanLSD.type = "factor.combinations", 
-                                            LSDby = "Species")
-  testthat::expect_silent(LeafSucculence.diff <- redoErrorIntervals.alldiffs(LeafSucculence.diff, 
-                                                                               error.intervals = "half"))
+  LeafSucculence.diff <- recalcLSD(LeafSucculence.diff, meanLSD.type = "factor.combinations", 
+                                   LSDby = "Species")
+  testthat::expect_warning(LeafSucculence.diff <- redoErrorIntervals(LeafSucculence.diff, 
+                                                                    error.intervals = "half"))
   testthat::expect_equal(nrow(LeafSucculence.diff$LSD), 3)
   testthat::expect_equal(ncol(LeafSucculence.diff$LSD), 3)
   testthat::expect_true(all(c("P1","P2","P3") %in% rownames(LeafSucculence.diff$LSD)))
-  testthat::expect_true("lower.halfLeastSignificant.limit" %in% names(LeafSucculence.diff$predictions))
+  testthat::expect_false("lower.halfLeastSignificant.limit" %in% names(LeafSucculence.diff$predictions))
   testthat::expect_true(names(LeafSucculence.diff$predictions)[length(names(
     LeafSucculence.diff$predictions))] == "est.status")
   
@@ -342,18 +342,19 @@ test_that("recalcLSD.alldiffs4", {
   testthat::expect_output(current.asr <- asreml(fixed = pH ~ Benches + (Sources * (Type + Species)), 
                                                 random = ~ Benches:MainPlots,
                                                 data= WaterRunoff.dat))
-  current.asrt <- asrtests(current.asr, NULL, NULL)
+  current.asrt <- as.asrtests(current.asr, NULL, NULL)
   diffs <- predictPlus.asreml(classify = "Sources:Type", 
                               asreml.obj = current.asr, tables = "none", 
                               wald.tab = current.asrt$wald.tab, 
                               present = c("Type","Species","Sources"))
   testthat::expect_is(diffs, "alldiffs")
   
-  diffs <- redoErrorIntervals.alldiffs(diffs, error.intervals = "halfLeastSignificant")
-  testthat::expect_true("upper.halfLeastSignificant.limit" %in% names(diffs$predictions))
   diffs <- recalcLSD.alldiffs(diffs, meanLSD.type = "factor.combinations", LSDby = "Sources")
   testthat::expect_equal(nrow(diffs$LSD), 6)
   testthat::expect_equal(ncol(diffs$LSD), 3)
+  testthat::expect_warning(diffs <- redoErrorIntervals(diffs, 
+                                                       error.intervals = "halfLeastSignificant"))
+  testthat::expect_false("upper.halfLeastSignificant.limit" %in% names(diffs$predictions))
   
 })
 
@@ -402,9 +403,19 @@ test_that("LSDby4", {
   testthat::expect_equal(nrow(wald.tab), 8)
   diffs <- predictPlus(m1, classify = "Nozzle:Pressure:Speed", 
                        #linear.transformation = ~(Nozzle + Pressure):Speed,
-                       error.intervals = "half", meanLSD.type = "factor",
+                       wald.tab = wald.tab,
+                       tables = "none")
+  diffs.LSD <- recalcLSD(diffs, meanLSD.type = "factor",
+                         LSDby = c("Speed","Pressure"))
+  testthat::expect_equal(nrow(diffs.LSD$LSD), 9)
+  testthat::expect_true(abs(diffs.LSD$LSD$minLSD[1]- 11.92550) < 1e-05)
+  testthat::expect_true(all(abs(diffs.LSD$LSD$minLSD- diffs.LSD$LSD$maxLSD) < 1e-05))
+  diffs.LSD <- redoErrorIntervals(diffs.LSD, error.intervals = "half")
+  testthat::expect_true("upper.halfLeastSignificant.limit" %in% names(diffs.LSD$predictions))
+  diffs <- redoErrorIntervals(diffs, error.intervals = "half", meanLSD.type = "factor",
                        LSDby = c("Speed","Pressure"), wald.tab = wald.tab,
                        tables = "none")
+  testthat::expect_true("upper.halfLeastSignificant.limit" %in% names(diffs$predictions))
   testthat::expect_equal(nrow(diffs$LSD), 9)
   testthat::expect_true(abs(diffs$LSD$minLSD[1]- 11.92550) < 1e-05)
   testthat::expect_true(all(abs(diffs$LSD$minLSD- diffs$LSD$maxLSD) < 1e-05))

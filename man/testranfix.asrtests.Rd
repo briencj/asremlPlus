@@ -2,7 +2,7 @@
 \alias{testranfix.asrtests}
 \alias{testranfix}
 \title{Tests for a single fixed or random term in model fitted using \code{asreml}
-       and records the result in a data.frame.}
+       and records the result in an \code{\link{asrtests.object}}.}
 \description{Tests for a single term, using a REML LRT for a random term or based 
   on Wald statistics for a fixed term. The term must be in the fitted model. 
   A random term is removed from the model fit and a REML likelihood ratio test is 
@@ -162,7 +162,7 @@ current.asr <- asreml(yield ~ Rep + WithinColPairs + Variety,
                       random = ~ Row + Column + units,
                       residual = ~ ar1(Row):ar1(Column), 
                       data=Wheat.dat)
-current.asrt <- asrtests(current.asr, NULL, NULL)
+current.asrt <- as.asrtests(current.asr, NULL, NULL)
 current.asrt <- rmboundary(current.asrt)
 # Test nugget term
 current.asrt <- testranfix(current.asrt, "units", positive=TRUE)

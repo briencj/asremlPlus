@@ -89,9 +89,9 @@
 \code{\link{rmboundary.asrtests}} 
        \tab Removes any boundary or singular variance components \cr
        \tab from the fit stored in 'asreml.obj' and records their \cr
-       \tab removal in a data.frame. \cr
+       \tab removal in an \code{\link{asrtests.object}}. \cr
 \code{\link{setvarianceterms.call}} 
-       \tab Allows the seting of bounds and initial values \cr
+       \tab Allows the setting of bounds and initial values \cr
        \tab for terms in the 'random' and 'residual' arguments of an \cr
        \tab 'asreml' call. \cr
 \cr
@@ -100,7 +100,10 @@
 \code{\link{chooseModel.asrtests}}
        \tab Determines the set of significant terms taking into \cr
        \tab account hierarchy or marginality relations and records \cr 
-       \tab the tests performed in a data.frame. \cr
+       \tab the tests performed in an \code{\link{asrtests.object}}. \cr
+\code{\link{getTestPvalue.asrtests}}
+       \tab Gets the p-value for a test recorded in the test.summary \cr
+       \tab data.frame of an \code{\link{asrtests.object}}.  \cr
 \code{\link{infoCriteria.asreml}}
        \tab        Computes AIC and BIC for a model. \cr
 \code{\link{recalcWaldTab.asrtests}}
@@ -113,17 +116,17 @@
        \tab bootstrap. \cr
 \code{\link{testranfix.asrtests}}
        \tab Tests for a single fixed or random term in model \cr
-       \tab fitted using 'asreml' and records the result in a \cr
-      \tab  data.frame. \cr
+       \tab fitted using 'asreml' and records the result in an \cr
+      \tab  \code{\link{asrtests.object}}. \cr
 \code{\link{testresidual.asrtests}}
        \tab Fits a new residual formula using 'asreml', tests \cr
        \tab whether the change is significant and records the \cr
-       \tab result in a data.frame. \cr
+       \tab result in an \code{\link{asrtests.object}}. \cr
 \code{\link{testswapran.asrtests}}
        \tab Tests, using a REMLRT, the significance of the difference \cr
        \tab between the current random model and one in which oldterms \cr
        \tab are dropped and newterms are added. The result is recorded \cr
-       \tab in a data.frame.\cr
+       \tab in an \code{\link{asrtests.object}}.\cr
 \cr
 (v) Model diagnostics and simulation\cr\cr
 
@@ -233,8 +236,8 @@ The functions whose names end in 'asrtests', which are most of the model functio
 Maintainer: \packageMaintainer{asremlPlus}
 }
 \references{Butler, D. G., Cullis, B. R., Gilmour, A. R., Gogel, B. J. and 
-            Thompson, R. (2017). \emph{{ASReml-R} User Guide Version 4.}  
-            VSN International Ltd, \url{http://www.vsni.co.uk/software/asreml/}.
+            Thompson, R. (2018). \emph{{ASReml-R} Reference Manual Version 4.}  
+            VSN International Ltd, \url{http://asreml.org}.
             
             Stefanova, K. T., Smith, A. B. & Cullis, B. R. (2009) Enhanced diagnostics for the 
             spatial analysis of field trials. \emph{Journal of Agricultural, Biological, 
@@ -258,7 +261,7 @@ current.asr <- asreml(yield ~ Rep + WithinColPairs + Variety,
 summary(current.asr)
 
 # Load current fit into an asrtests object
-current.asrt <- asrtests(current.asr, NULL, NULL)
+current.asrt <- as.asrtests(current.asr, NULL, NULL)
 
 # Check for and remove any boundary terms
 current.asrt <- rmboundary(current.asrt)

@@ -306,7 +306,7 @@ current.asr <- asreml(fixed = log.Turbidity ~ Benches + Sources + Type + Species
                                  Sources:Type + Sources:Species + Sources:Species:xDay + 
                                  Sources:Species:Date, 
                       data = WaterRunoff.dat, keep.order = TRUE)
-current.asrt <- asrtests(current.asr, NULL, NULL)
+current.asrt <- as.asrtests(current.asr, NULL, NULL)
 
 #### Get the observed combinations of the factors and variables in classify
 class.facs <- c("Sources","Species","Date","xDay")

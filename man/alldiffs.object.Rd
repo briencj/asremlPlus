@@ -110,8 +110,11 @@
           \item \code{tdf}: An \code{integer} specifying the degrees of freedom of the standard error. It is used as 
                 the degrees of freedom for the t-distribution on which p-values and confidence 
                 intervals are based.
-          \item \code{meanLSD}: If \code{LSD}  component is not \code{NULL} then the mean LSD is added as an 
+          \item \code{meanLSD}: If the \code{LSD} component is not \code{NULL} then the mean LSD is added as an 
                 attribute, calculated using the square root of the mean of the variances of pairwise differences.
+          \item \code{meanLSD.type}: If the \code{LSD} component is not \code{NULL} then \code{meanLSD.type} is 
+                added as an attribute.
+          \item \code{LSDby}: If the \code{LSD} component is not \code{NULL} then \code{LSDby} is added as an attribute.
           \item \code{sortFactor}: A \code{character} containing the name of the 
               \code{factor} that indexes the set of predicted values that 
               determined the sorting of the components.
@@ -137,7 +140,7 @@
   m1.asr <- asreml(Yield ~ Nitrogen*Variety, 
                    random=~Blocks/Wplots,
                    data=Oats.dat)
-  current.asrt <- asrtests(m1.asr)
+  current.asrt <- as.asrtests(m1.asr)
   Var.pred <- asreml::predict.asreml(m1.asr, classify="Nitrogen:Variety", 
                                       sed=TRUE)
   if (getASRemlVersionLoaded(nchar = 1) == "3")

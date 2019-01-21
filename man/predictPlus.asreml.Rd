@@ -344,7 +344,7 @@ asreml.options(keep.order = TRUE) #required for asreml-R4 only
 current.asr <- asreml(fixed = pH ~ Benches + (Sources * (Type + Species)), 
                       random = ~ Benches:MainPlots,
                       keep.order=TRUE, data= WaterRunoff.dat)
-current.asrt <- asrtests(current.asr, NULL, NULL)
+current.asrt <- as.asrtests(current.asr, NULL, NULL)
 diffs <- predictPlus(classify = "Sources:Type", 
                      asreml.obj = current.asr, 
                      wald.tab = current.asrt$wald.tab, 

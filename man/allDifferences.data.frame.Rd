@@ -86,19 +86,22 @@
                     each LSD is the square root of the mean of the variances for all 
                     pairwise differences for each factor combination. 
                     If \code{LSD} is not \code{NULL} then the overall mean LSD will be added as 
-                    an attribute named \code{meanLSD} of the \code{\link{alldiffs.object}}.}
+                    an attribute named \code{meanLSD} of the \code{\link{alldiffs.object}}, as will 
+                    the values of \code{meanLSD.type} and \code{LSDby}.}
  \item{meanLSD.type}{A \code{\link{character}} string determining whether the mean LSD stored is 
              (i) the \code{overall} mean, based on the square root of the mean of the variances of 
              all pairwise variances, (ii) the mean for each \code{factor.combination} of the 
              \code{\link{factor}s} specified by \code{LSDby}, which is based on the square root of 
              the mean of the variances for all pairwise differences for each factor combination, or 
              (iii) the \code{per.prediction} mean, based, for each prediction, 
-             on the square root of the mean of the variances for all pairwise differences 
-             involving that prediction.}
+             on the square root of the mean of the variances for all pairwise differences involving 
+             that prediction. If \code{LSD} is not \code{NULL} then \code{meanLSD.type} will be added 
+             as an attribute of the \code{\link{alldiffs.object}}.}
 \item{LSDby}{A \code{\link{character}} (vector) of factor names, being the names of the 
              \code{\link{factor}s} for each of whose levels combinations a mean LSD, 
              minLSD and max LSD is stored in the \code{LSD} component of the \code{\link{alldiffs.object}} 
-             when \code{meanLSD.type} is \code{factor.combinatons}.}
+             when \code{meanLSD.type} is \code{factor.combinatons}. If \code{LSD} is not \code{NULL} then 
+             \code{LSDby} will be added as an attribute of the \code{\link{alldiffs.object}}.}
  \item{backtransforms}{A \code{data.frame} containing the backtransformed values of the predicted 
                     values  that is consistent with the \code{predictions} component, except 
                     that the column named \code{predicted.value} is replaced by one called 
@@ -211,7 +214,7 @@
   m1.asr <- asreml(Yield ~ Nitrogen*Variety, 
                    random=~Blocks/Wplots,
                    data=Oats.dat)
-  current.asrt <- asrtests(m1.asr)
+  current.asrt <- as.asrtests(m1.asr)
   Var.pred <- asreml::predict.asreml(m1.asr, classify="Nitrogen:Variety", 
                                       sed=TRUE)
   if (getASRemlVersionLoaded(nchar = 1) == "3")

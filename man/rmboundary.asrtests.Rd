@@ -2,7 +2,7 @@
 \alias{rmboundary.asrtests}
 \alias{rmboundary}
 \title{Removes any boundary or singular variance components from the fit stored in 
-       \code{asrtests.obj} and records their removal in a data.frame.}
+       \code{asrtests.obj} and records their removal in an \code{\link{asrtests.object}}.}
 \description{Any terms specified in the random model that are 
   estimated on the boundary or are singular and can be removed are removed from the fit 
   stored in the \code{asreml} object stored in the \code{\link{asrtests.object}}. 

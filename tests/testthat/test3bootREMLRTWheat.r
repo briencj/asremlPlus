@@ -29,7 +29,7 @@ context("model_selection3")
 #'   testthat::expect_lt(abs(info$AIC - 1357.65), 1e-02)
 #'   
 #'   # Load current fit into an asrtests object
-#'   current.asrt <- asrtests(current.asr, NULL, NULL)
+#'   current.asrt <- as.asrtests(current.asr, NULL, NULL)
 #'   
 #'   # Check for and remove any boundary terms
 #'   current.asrt <- rmboundary(current.asrt)

@@ -23,7 +23,7 @@ test_that("Wheat_asreml3", {
   testthat::expect_lt(abs(info$AIC - 1346.76), 1e-02)
   
   # Load current fit into an asrtests object
-  current.asrt <- asrtests(current.asr, NULL, NULL)
+  current.asrt <- as.asrtests(current.asr, NULL, NULL)
   
   # Check for and remove any boundary terms
   current.asrt <- rmboundary(current.asrt)
@@ -104,6 +104,7 @@ test_that("Wheat_asreml3", {
   testthat::expect_equal(nrow(Var.diffs$p.differences), 25)
   testthat::expect_equal(ncol(Var.diffs$p.differences), 25)
   testthat::expect_equal(length(Var.diffs$LSD), 3)
+  testthat::expect_true("lower.halfLeastSignificant.limit" %in% names(Var.diffs$predictions))
   testthat::expect_equal(Var.diffs$backtransforms, NULL)
   testthat::expect_equal(as.character(Var.diffs$predictions$Variety[[1]]),"10")
   testthat::expect_silent(plotPvalues(Var.diffs))

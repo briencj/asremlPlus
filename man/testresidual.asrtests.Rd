@@ -2,7 +2,7 @@
 \alias{testresidual.asrtests}
 \alias{testresidual}
 \title{Fits a new residual formula, tests whether the change 
-       is significant and records the result in a data.frame.}
+       is significant and records the result in an \code{\link{asrtests.object}}.}
 \description{Fits a new \code{residual formula} using \code{asreml-R4} 
        (replaces the \code{rcov} \code{formula} of asreml-R3) and tests 
        whether the change is significant. If \code{simpler = FALSE} the model 
@@ -147,7 +147,7 @@ current.asr <- asreml(yield ~ Rep + WithinColPairs + Variety,
                       random = ~ Row + Column + units,
                       residual = ~ ar1(Row):ar1(Column), 
                       data=Wheat.dat)
-current.asrt <- asrtests(current.asr, NULL, NULL)
+current.asrt <- as.asrtests(current.asr, NULL, NULL)
 current.asrt <- rmboundary(current.asrt)
 # Test Row autocorrelation
 current.asrt <- testresidual(current.asrt, "~ Row:ar1(Column)", 

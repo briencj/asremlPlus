@@ -106,7 +106,7 @@
   m1.asr <- asreml(Yield ~ Nitrogen*Variety, 
                    random=~Blocks/Wplots,
                    data=Oats.dat)
-  current.asrt <- asrtests(m1.asr)
+  current.asrt <- as.asrtests(m1.asr)
   Var.pred <- asreml::predict.asreml(m1.asr, classify="Nitrogen:Variety", 
                                       sed=TRUE)
   if (getASRemlVersionLoaded(nchar = 1) == "3")
