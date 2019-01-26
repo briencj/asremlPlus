@@ -2873,7 +2873,7 @@ setOldClass("asrtests")
 }
 
 #Function to calculate the LSDs for combinations of the levels of the by factor(s)
-sliceLSDs <- function(alldiffs.obj, by, t.value, alpha = 0.05)
+sliceLSDs <- function(alldiffs.obj, by, t.value, alpha = 0.05, tolerance = 1E-04)
 {
   sed <- alldiffs.obj$sed
   denom.df <- attr(alldiffs.obj, which = "tdf")
@@ -2914,10 +2914,14 @@ sliceLSDs <- function(alldiffs.obj, by, t.value, alpha = 0.05)
                    function(lev, sed, t.value)
                    {
                      krows <- lev == fac.comb
-                     ksed <- sed[krows, krows]
-                     minLSD <- t.value * min(ksed, na.rm = TRUE)
-                     maxLSD <- t.value * max(ksed, na.rm = TRUE)
-                     meanLSD <- t.value * sqrt(mean(ksed * ksed, na.rm = TRUE))
+                     ksed <- as.vector(sed[krows, krows])
+                     ksed <- na.omit(ksed *ksed)
+                     med.ksed <- median(ksed)
+                     if (sum(ksed/med.ksed > tolerance) > 0)
+                       ksed <- ksed[ksed/med.ksed > tolerance]
+                     minLSD <- t.value * sqrt(min(ksed))
+                     maxLSD <- t.value * sqrt(max(ksed))
+                     meanLSD <- t.value * sqrt(mean(ksed))
                      return(cbind(minLSD, meanLSD, maxLSD))
                    }, sed = sed, t.value = t.value)
     if (!is.null(LSDs))

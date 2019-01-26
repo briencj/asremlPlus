@@ -1258,6 +1258,7 @@ redoErrorIntervals.alldiffs <- function(alldiffs.obj, error.intervals = "Confide
     }
     
     #Set meanLSD attribute of predictions
+    tolerance <- 1E-04
     if (pairwise && (nrow(alldiffs.obj$predictions) != 1))
     { 
       #calculate LSDs, if not present
@@ -1266,17 +1267,22 @@ redoErrorIntervals.alldiffs <- function(alldiffs.obj, error.intervals = "Confide
         t.value = qt(1-alpha/2, denom.df)
         if (avLSD == "overall")
         {
-          minLSD <- t.value * min(alldiffs.obj$sed, na.rm = TRUE)
-          maxLSD <- t.value * max(alldiffs.obj$sed, na.rm = TRUE)
-          meanLSD <- t.value * sqrt(mean(alldiffs.obj$sed * alldiffs.obj$sed, 
-                                         na.rm = TRUE))
+          ksed <- as.vector(alldiffs.obj$sed)
+          ksed <- na.omit(ksed *ksed)
+          med.ksed <- median(ksed)
+          if (sum(ksed/med.ksed > tolerance) > 0)
+            ksed <- ksed[ksed/med.ksed > tolerance]
+          minLSD <- t.value * sqrt(min(ksed))
+          maxLSD <- t.value * sqrt(max(ksed))
+          meanLSD <- t.value * sqrt(mean(ksed))
         } else 
         {
           if (avLSD == "factor.combinations") #factor.combinations
           {
             if (is.null(LSDby))
               stop("Need to specify factors using LSDby for meanLSD.typ = factor.combinations")
-            LSDs <- sliceLSDs(alldiffs.obj, by = LSDby, t.value = t.value, alpha = alpha)
+            LSDs <- sliceLSDs(alldiffs.obj, by = LSDby, t.value = t.value, alpha = alpha, 
+                              tolerance = tolerance)
             meanLSD <- LSDs$meanLSD
             names(meanLSD) <- rownames(LSDs)
             minLSD <- LSDs$minLSD

@@ -101,9 +101,9 @@ export(addrm.terms.asreml,
        variofaces.asreml)
 exportClasses(alldiffs, asrtests, predictions.frame)
 import(dae, ggplot2)
-importFrom("stats", "as.formula", "fitted", "fitted.values", "formula", "model.matrix", 
-                    "na.omit", "pchisq", "pf", "predict", "pt", "qt", "quantile", 
-                    "resid", "rnorm","simulate", "terms", "terms.formula", 
+importFrom("stats", "as.formula", "fitted", "fitted.values", "formula", "median", 
+                    "model.matrix", "na.omit", "pchisq", "pf", "predict", "pt", "qt", 
+                    "quantile", "resid", "rnorm","simulate", "terms", "terms.formula", 
                     "update.formula")
 importFrom("RColorBrewer", "brewer.pal")
 importFrom("grDevices", "savePlot")

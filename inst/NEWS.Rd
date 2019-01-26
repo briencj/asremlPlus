@@ -1,5 +1,10 @@
 \name{news}
 \title{News for Package asremlPlus}
+\section{asremlPlus Version 4.1-12 (2019-01-26)}{
+  \itemize{
+    \item{Remove LSDs for which sed is effectively zero from the calculation of LSD statistics, provided not all are zero.}
+    }
+}
 \section{asremlPlus Version 4.1-11 (2019-01-21)}{
   \itemize{
     \item{Fix bug in test of the range of SEDs against \code{avsed.tolerance} when caclulating LSDs.}
