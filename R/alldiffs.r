@@ -851,6 +851,78 @@ recalcLSD.alldiffs <- function(alldiffs.obj, meanLSD.type = "overall", LSDby = N
   return(alldiffs.obj)
 }
 
+"LSDstats" <- function(sed, t.value)
+{
+  tolerance <- 1E-012
+  ksed <- as.vector(sed)
+  ksed <- na.omit(ksed *ksed)
+  max.ksed <- max(ksed)
+  #Retain only nonzero variances
+  if (max.ksed > tolerance && sum(ksed/max.ksed > tolerance) > 0)
+    ksed <- ksed[ksed/max.ksed > tolerance]
+  minLSD <- t.value * sqrt(min(ksed))
+  maxLSD <- t.value * sqrt(max(ksed))
+  meanLSD <- t.value * sqrt(mean(ksed))
+  stats <- cbind(minLSD, meanLSD, maxLSD)
+  names(stats) <- c("minLSD", "meanLSD", "maxLSD")
+  return(stats)
+}
+
+#Function to calculate the LSDs for combinations of the levels of the by factor(s)
+sliceLSDs <- function(alldiffs.obj, by, t.value, alpha = 0.05, tolerance = 1E-04)
+{
+  sed <- alldiffs.obj$sed
+  denom.df <- attr(alldiffs.obj, which = "tdf")
+  if (is.null(denom.df))
+  {
+    warning(paste("The degrees of freedom of the t-distribtion are not available in alldiffs.obj\n",
+                  "- p-values and LSDs not calculated"))
+    LSDs <- NULL
+  } else
+  {
+    t.value = qt(1-alpha/2, denom.df)
+    #Process the by argument
+    if (is.list(by))
+    {
+      if (any(unlist(lapply(by, function(x) class(x)!="factor"))))
+        stop("Some components of the by list are not factors")
+      fac.list <- by
+    } else
+    {
+      if (class(by) == "factor")
+        fac.list <- list(by)
+      else
+      {
+        if (is.character(by))
+          fac.list <- as.list(alldiffs.obj$predictions[by])
+        else
+          stop("by is not one of the allowed class of inputs")
+      }
+    }
+    #Form levels combination for which a mean LSD is required
+    fac.comb <- fac.combine(fac.list, combine.levels = TRUE)
+    if (length(fac.comb) != nrow(sed))
+      stop("Factor(s) in by argument are not the same length as the order of the sed matrix")
+    levs <- levels(fac.comb)
+    combs <- strsplit(levs, ",", fixed = TRUE)
+    #Get the LSDs
+    LSDs <- lapply(levs, 
+                   function(lev, sed, t.value)
+                   {
+                     krows <- lev == fac.comb
+                     ksed <- sed[krows, krows]
+                     stats <- LSDstats(ksed, t.value)
+                     return(stats)
+                   }, sed = sed, t.value = t.value)
+    if (!is.null(LSDs))
+    {
+      LSDs <- as.data.frame(do.call(rbind, LSDs))
+      rownames(LSDs) <- levs
+    }
+  }  
+  return(LSDs)
+}
+
 redoErrorIntervals.alldiffs <- function(alldiffs.obj, error.intervals = "Confidence", 
                                         alpha = 0.05, avsed.tolerance = 0.25, 
                                         meanLSD.type = NULL, LSDby = NULL, ...)
@@ -919,12 +991,10 @@ redoErrorIntervals.alldiffs <- function(alldiffs.obj, error.intervals = "Confide
         alldiffs.obj <- recalcLSD(alldiffs.obj, meanLSD.type = avLSD, LSDby = LSDby, 
                                   alpha = alpha, ...)
       #Calculate overall and individual sed ranges and overall mean LSD
-      overall.meanLSD <- sqrt(mean(alldiffs.obj$sed*alldiffs.obj$sed, na.rm = TRUE))
-#      overall.sed.range <- abs((max(alldiffs.obj$sed*alldiffs.obj$sed, na.rm = TRUE) - 
-#                                  min(alldiffs.obj$sed*alldiffs.obj$sed, na.rm = TRUE))) /overall.meanLSD
-      overall.sed.range <- abs((max(alldiffs.obj$sed, na.rm = TRUE) - 
-                                  min(alldiffs.obj$sed, na.rm = TRUE))) /overall.meanLSD
-      overall.meanLSD <- t.value * overall.meanLSD
+      overall.LSDs <- LSDstats(alldiffs.obj$sed, t.value = t.value)
+      overall.sed.range <- abs(overall.LSDs["maxLSD"] - overall.LSDs["minLSD"]) / 
+                                        overall.LSDs["meanLSD"]
+      overall.meanLSD <- overall.LSDs["meanLSD"]
       nLSD <- length(alldiffs.obj$LSD$meanLSD)
       sed.range <- abs(alldiffs.obj$LSD$minLSD - alldiffs.obj$LSD$maxLSD) /  alldiffs.obj$LSD$meanLSD
       if (!is.na(avsed.tolerance) & overall.sed.range <= avsed.tolerance) #always plot overall LSD
@@ -1258,7 +1328,7 @@ redoErrorIntervals.alldiffs <- function(alldiffs.obj, error.intervals = "Confide
     }
     
     #Set meanLSD attribute of predictions
-    tolerance <- 1E-04
+    tolerance <- 1E-12
     if (pairwise && (nrow(alldiffs.obj$predictions) != 1))
     { 
       #calculate LSDs, if not present
@@ -1267,14 +1337,10 @@ redoErrorIntervals.alldiffs <- function(alldiffs.obj, error.intervals = "Confide
         t.value = qt(1-alpha/2, denom.df)
         if (avLSD == "overall")
         {
-          ksed <- as.vector(alldiffs.obj$sed)
-          ksed <- na.omit(ksed *ksed)
-          med.ksed <- median(ksed)
-          if (sum(ksed/med.ksed > tolerance) > 0)
-            ksed <- ksed[ksed/med.ksed > tolerance]
-          minLSD <- t.value * sqrt(min(ksed))
-          maxLSD <- t.value * sqrt(max(ksed))
-          meanLSD <- t.value * sqrt(mean(ksed))
+          LSDs<- LSDstats(alldiffs.obj$sed, t.value)
+          minLSD <- LSDs["minLSD"]
+          maxLSD <- LSDs["maxLSD"]
+          meanLSD <- LSDs["meanLSD"]
         } else 
         {
           if (avLSD == "factor.combinations") #factor.combinations
@@ -1291,6 +1357,11 @@ redoErrorIntervals.alldiffs <- function(alldiffs.obj, error.intervals = "Confide
             names(maxLSD) <- rownames(LSDs)
           } else #per.prediction
           {
+            tolerance = 1E-04
+            max.var <- max(alldiffs.obj$sed*alldiffs.obj$sed, na.rm = TRUE)
+            if (max.var > tolerance || 
+                sum(alldiffs.obj$sed*alldiffs.obj$sed/max.var < tolerance) > 0)
+              alldiffs.obj$sed[alldiffs.obj$sed*alldiffs.obj$sed/max.var < tolerance] <- NA
             meanLSD <- t.value * sqrt(apply(alldiffs.obj$sed*alldiffs.obj$sed, 
                                             FUN = mean, MARGIN = 1, na.rm = TRUE))
             maxLSD <- t.value * apply(alldiffs.obj$sed, FUN = max, MARGIN = 1, na.rm = TRUE)
@@ -1476,6 +1547,12 @@ redoErrorIntervals.alldiffs <- function(alldiffs.obj, error.intervals = "Confide
     #Project predictions on submodel, if required
     if (lintrans.type == "submodel")
     {
+      #Check that factors in LSDby are in the formula
+      term.obj <- as.terms.object(linear.transformation, alldiffs.obj)
+      lintrans.fac <- rownames(attr(term.obj, which = "factor"))
+      if (!all(LSDby %in% lintrans.fac))
+        warning("Some factors in the LSDby are not in the linear.transformation submodel")
+      
       #Form projector on predictions for submodel
       suppressWarnings(Q <- pstructure(linear.transformation, grandMean = TRUE, 
                                        orthogonalize = "eigen", aliasing.print = FALSE, 

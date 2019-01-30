@@ -64,6 +64,28 @@ test_that("allDifferences_asreml3", {
                                     sortFactor = "Variety", decreasing = TRUE)
   testthat::expect_true(as.character(Var.both.diffs$predictions$Variety[1]) == "Marvellous" & 
                           as.character(Var.both.diffs$predictions$Variety[2]) == "Marvellous")
+  
+  #Test a single factor prediction
+  diffsN <- predictPlus(m1.asr, classify = "Nitrogen", tables = "none")
+  testthat::expect_true(validAlldiffs(diffsN))
+  
+  #Test single factor linear.transform
+  Var.pred <- predict(m1.asr, classify="Nitrogen:Variety", vcov=TRUE)
+  Var.diffs <- allDifferences(predictions = Var.pred$pvals,
+                              classify = "Nitrogen:Variety", 
+                              vcov = Var.pred$vcov, tdf = den.df)
+  Var.diffs.one <- linTransform(Var.diffs, linear.transformation = ~Nitrogen,
+                                error.intervals = "half", tables = "none")
+  testthat::expect_true(all(abs(Var.diffs.one$LSD - 9.883479) < 1e-06))
+  testthat::expect_true(all(abs(Var.diffs.one$LSD - 
+                                  attr(Var.diffs.one$predictions, which = "meanLSD")) < 1E-06))
+  #Test LSDby not in linear.transformation
+  testthat::expect_warning(Var.diffs.by <- linTransform(Var.diffs, 
+                                                        linear.transformation = ~Nitrogen,
+                                                        error.intervals = "half", 
+                                                        meanLSD.type = "factor", 
+                                                        LSDby = "Variety", 
+                                                        tables = "none"))
 })
 
 

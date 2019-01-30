@@ -507,8 +507,8 @@ test_that("facCombine.alldiffs_lme4", {
   
 })
 
-cat("#### Test for plotPredictions on Ladybird with lme4\n")
-test_that("facCombine.alldiffs_lme4", {
+cat("#### Test for as.predictions.frame on Ladybird with lme4\n")
+test_that("as.predictions.frame_lme4", {
   #  skip_on_cran()
   library(asremlPlus)
   library(dae)

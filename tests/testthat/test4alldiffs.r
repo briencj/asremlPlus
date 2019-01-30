@@ -15,11 +15,11 @@ test_that("allDifferences_asreml4", {
                    data=Oats.dat)
   testthat::expect_equal(length(m1.asr$vparameters),3)
   current.asrt <- as.asrtests(m1.asr)
+  wald.tab <-  current.asrt$wald.tab
+  den.df <- wald.tab[match("Variety", rownames(wald.tab)), "denDF"]
   
   #Test for as.alldiffs
   Var.pred <- predict(m1.asr, classify="Nitrogen:Variety", sed=TRUE)
-  wald.tab <-  current.asrt$wald.tab
-  den.df <- wald.tab[match("Variety", rownames(wald.tab)), "denDF"]
   Var.diffs <- as.alldiffs(predictions = Var.pred$pvals, 
                            sed = Var.pred$sed, 
                            classify = "Nitrogen:Variety", response = "Yield", tdf = den.df)
@@ -66,7 +66,25 @@ test_that("allDifferences_asreml4", {
   #Test a single factor prediction
   diffsN <- predictPlus(m1.asr, classify = "Nitrogen", tables = "none")
   testthat::expect_true(validAlldiffs(diffsN))
-  })
+  
+  #Test single factor linear.transform
+  Var.pred <- predict(m1.asr, classify="Nitrogen:Variety", vcov=TRUE)
+  Var.diffs <- allDifferences(predictions = Var.pred$pvals,
+                              classify = "Nitrogen:Variety", 
+                              vcov = Var.pred$vcov, tdf = den.df)
+  Var.diffs.one <- linTransform(Var.diffs, linear.transformation = ~Nitrogen,
+                                error.intervals = "half", tables = "none")
+  testthat::expect_true(all(abs(Var.diffs.one$LSD - 9.883479) < 1e-06))
+  testthat::expect_true(all(abs(Var.diffs.one$LSD - 
+                              attr(Var.diffs.one$predictions, which = "meanLSD")) < 1E-06))
+  #Test LSDby not in linear.transformation
+  testthat::expect_warning(Var.diffs.by <- linTransform(Var.diffs, 
+                                                        linear.transformation = ~Nitrogen,
+                                                        error.intervals = "half", 
+                                                        meanLSD.type = "factor", 
+                                                        LSDby = "Variety", 
+                                                        tables = "none"))
+})
 
 cat("#### Test for sort.alldiffs on Smarthouse with asreml4\n")
 test_that("sort.alldiffs4", {

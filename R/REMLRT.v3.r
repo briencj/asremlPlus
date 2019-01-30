@@ -140,22 +140,26 @@ REMLRT.asreml <- function(h0.asreml.obj, h1.asreml.obj,
     bound.h1 <- names(h1.asreml.obj$gammas.con)
     names(bound.h1) <- names(h1.asreml.obj$gammas)
   }
+  DF.diff <- DFdiff(bound.h1, bound.h0, bound.exclusions = bound.exclusions)
+  NBound.h1 <- DF.diff$NBound.h1
+  NBound.h0 <- DF.diff$NBound.h0
   #Perform the test
 	REMLRT <- 2*(h1.asreml.obj$loglik-h0.asreml.obj$loglik)
 	if (is.null(DF))
-	{
-	  DF.diff <- DFdiff(bound.h1, bound.h0, bound.exclusions = bound.exclusions)
 	  DF <- DF.diff$DF
-	  NBound.h1 <- DF.diff$NBound.h1
-	  NBound.h0 <- DF.diff$NBound.h0
-	} else
+
+	if (is.na(DF))	
+	{
+	  stop("DF for REML test is NA")
+	} else 
 	{
 	  if (DF == 0)
-	    warning("DF is zero indicating no difference between models in the number of parameters")
+	    warning("DF for REML test is zero indicating no difference between models in the number of parameters")
 	  else
 	    if (DF <= 0)
-	      warning("Negative degrees of freedom indicating the second model is more complex")
+	      warning("Negative degrees of freedom for REML test indicating the second model is more complex")
 	}
+
    if (par.opt != "none")
    { 
      if (REMLRT < 1e-10)

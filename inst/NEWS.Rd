@@ -1,5 +1,13 @@
 \name{news}
 \title{News for Package asremlPlus}
+\section{asremlPlus Version 4.1-13 (2019-01-30)}{
+  \itemize{
+    \item{Add a check to plotPredictions.data.frame to warn when \code{linear.transformation} is supplied.}
+    \item{Also remove zero LSDs when calculating overall LSD and sed.range.}
+    \item{Add a check to linTransform.alldiffs that factors in LSDby are in the submodel.}
+    \item{Add the Wheat example as a vignette.}
+    }
+}
 \section{asremlPlus Version 4.1-12 (2019-01-26)}{
   \itemize{
     \item{Remove LSDs for which sed is effectively zero from the calculation of LSD statistics, provided not all are zero.}

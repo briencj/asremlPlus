@@ -2426,6 +2426,11 @@ setOldClass("asrtests")
 #a function to plot asreml predictions and associated statistics
 { 
   
+  #Get ... argument so can check for linear.transformation argument
+  tempcall <- list(...)
+  if ("linear.transformation" %in% names(tempcall))
+    warning("linear.transformation is not an argument to plotPredictions - perhaps use linTransform")
+
   #Change asreml4 names to asreml3 names
   data <- as.predictions.frame(data, se = "std.error", est.status = "status")
   #Check that a valid object of class predictions.frame
@@ -2870,67 +2875,6 @@ setOldClass("asrtests")
     cat("\n#### Plot saved in ", filename,"\n")
   }
   invisible()
-}
-
-#Function to calculate the LSDs for combinations of the levels of the by factor(s)
-sliceLSDs <- function(alldiffs.obj, by, t.value, alpha = 0.05, tolerance = 1E-04)
-{
-  sed <- alldiffs.obj$sed
-  denom.df <- attr(alldiffs.obj, which = "tdf")
-  if (is.null(denom.df))
-  {
-    warning(paste("The degrees of freedom of the t-distribtion are not available in alldiffs.obj\n",
-                  "- p-values and LSDs not calculated"))
-    LSDs <- NULL
-  } else
-  {
-    t.value = qt(1-alpha/2, denom.df)
-    #Process the by argument
-    if (is.list(by))
-    {
-      if (any(unlist(lapply(by, function(x) class(x)!="factor"))))
-        stop("Some components of the by list are not factors")
-      fac.list <- by
-    } else
-    {
-      if (class(by) == "factor")
-        fac.list <- list(by)
-      else
-      {
-        if (is.character(by))
-          fac.list <- as.list(alldiffs.obj$predictions[by])
-        else
-          stop("by is not one of the allowed class of inputs")
-      }
-    }
-    #Form levels combination for which a mean LSD is required
-    fac.comb <- fac.combine(fac.list, combine.levels = TRUE)
-    if (length(fac.comb) != nrow(sed))
-      stop("Factor(s) in by argument are not the same length as the order of the sed matrix")
-    levs <- levels(fac.comb)
-    combs <- strsplit(levs, ",", fixed = TRUE)
-    #Get the LSDs
-    LSDs <- lapply(levs, 
-                   function(lev, sed, t.value)
-                   {
-                     krows <- lev == fac.comb
-                     ksed <- as.vector(sed[krows, krows])
-                     ksed <- na.omit(ksed *ksed)
-                     med.ksed <- median(ksed)
-                     if (sum(ksed/med.ksed > tolerance) > 0)
-                       ksed <- ksed[ksed/med.ksed > tolerance]
-                     minLSD <- t.value * sqrt(min(ksed))
-                     maxLSD <- t.value * sqrt(max(ksed))
-                     meanLSD <- t.value * sqrt(mean(ksed))
-                     return(cbind(minLSD, meanLSD, maxLSD))
-                   }, sed = sed, t.value = t.value)
-    if (!is.null(LSDs))
-    {
-      LSDs <- as.data.frame(do.call(rbind, LSDs))
-      rownames(LSDs) <- levs
-    }
-  }  
-  return(LSDs)
 }
 
 "predictPresent.asreml" <- function(asreml.obj, terms, 
