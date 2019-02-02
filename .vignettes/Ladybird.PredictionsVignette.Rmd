@@ -1,0 +1,262 @@
+---
+title: "The Ladybird example from Welham et al. (2014)"
+author: "Chris Brien"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output: 
+  pdf_document: default
+---
+
+# Introduction
+
+Welham et al. (2014, Example 8.2) is an experiment tot answer the question "Will ladybirds transfer fungus to aphids on plants?" The experiment consists of 2 runs of 36 containers, each with a plant and aphids. There are three factors that results in 12 treatments: Host plant (beans, trefoil), infected Cadavers (5, 10, 20), Ladybird (-, +). Ther are randomized to the containers within a run so that each is replicated 3 times within a run. The respose to be analysed is the logit of the proportion of live aphids that were infected.
+
+## Initialize
+
+```{r setup, include=TRUE}
+library(asreml)
+library(asremlPlus)
+library(dae)
+
+options(width = 105, show.signif.stars = FALSE)
+```
+
+## Get data available in asremlPlus
+
+```{r data, include = TRUE}
+data("Ladybird.dat")
+```
+
+## Do an ANOVA of logits
+
+```{r anova, include = TRUE}
+Ladybird.aov <- aov(logitP ~ Host*Cadavers*Ladybird + Error(Run/Plant), 
+                    data=Ladybird.dat)
+summary(Ladybird.aov)
+```
+
+The anova table gives the F-tests for the three-factor effects and interactions. Note the `Residuals Mean Sq` value for `Run:Plant` of 0.230. Also, it is clear that the Run component is negative, given that the `Residuals Mean Sq` value for `Run` is less than that for `Run:Plant`; it is (0.06766 – 0.230) / 36). From the table it is seen that the only significant interaction is Cadavers:Ladybird and that the Host main effect is significant.
+
+# Use asreml to analyse the logits
+
+## Mixed model analysis of logits
+
+```{r mmod, include = TRUE}
+m <- asreml(logitP ~ Host*Cadavers*Ladybird, 
+            random = ~ Run,
+            residual = ~ Run:Plant,
+            data = Ladybird.dat)
+summary(m)$varcomp
+```
+
+As expected the Run component is bound (`B`) at approximately zero. This results in a change in the estimate of the residual variance to 0.227.  To allow for a negative estimate we will unconstrain the Run component. As Littell et al. (2006, p.150) say
+
+> if you do not set the negative variance component estimate to zero, but allow it to remain negative, you get better control over Type I error and, for cases of negative wholeplot error variance estimates, greater power. Therefore, this is the recommended procedure. 
+
+### Unconstrain Reps to make the analysis equivalent to ANOVA
+
+```{r unconstrain, include = TRUE}
+m <- setvarianceterms(m$call, terms = "Run", bounds = "U")
+summary(m)$varcomp 
+```
+
+Now the `Run` component is negative and the `Run:Plant` variance estimate is now equal to that for the `Residuals Mean Sq` for `Run:Plant` from the anova table.
+
+### Set up an asrtests object
+
+```{r asrtests, include = TRUE}
+current.asrt <- as.asrtests(m)
+print(current.asrt, which = "pseudoanova")
+```
+
+The `asrtests` object contains a `wald.tab` component which can be printed by specifying that the `pseudoanova` is printed. The $F$-values for the fixed terms in this table are the same as those in the anova table.
+
+### Obtain the marginality matrix for the fixed terms
+
+The `pstructure` function from the `dae` package (Brien, 2018) produce the marginality matrix for a formula as a side effect and we take advantage of that to obtain the matrix required here. 
+
+```{r marg, include = TRUE}
+Ladybird.pstr <- pstructure(~ Host*Cadavers*Ladybird, data = Ladybird.dat)
+HCL.marg <- marginality(Ladybird.pstr)
+print(HCL.marg)
+```
+
+This marginality matrix is interpreted by taking a row term and noting that it is marginal to any column term with a one in this row. 
+
+### Choose marginality-compliant model
+
+```{r choose, include = TRUE}
+sigmod <- chooseModel(current.asrt, terms.marginality = HCL.marg)
+print(sigmod$sig.terms)
+current.asrt <- sigmod$asrtests.obj
+print(current.asrt$test.summary)
+```
+
+The `chooseModel` function produces a list with components `sigmod`, a list with the  terms in the marginality-compliant model, and `asrtests.obj`, the `asrtests` object resulting from the model selection. In particular, the `asrtests` object contains a `test.summary` that details the tests performed in choosing the model.  Note that `chooseModel` does not test the main effects for Cadavers or Ladybird, because these are marginal to the significant two-factor interaction Cadavers:Ladybird.
+
+### Form formula for selected model
+
+```{r selectmod, include = TRUE}
+mod <- paste(unlist(sigmod$sig.terms), collapse = " + ")
+mod <- as.formula(paste("~", mod))
+print(mod)
+```
+
+### Obtain predictions under the chosen model and form an alldiffs object
+
+```{r preds, include = TRUE}
+diffs <- predictPlus(current.asrt$asreml.obj, 
+                     classify = "Host:Ladybird:Cadavers", 
+                     linear.transformation = ~Cadavers:Ladybird + Host, 
+                     wald.tab = current.asrt$wald.tab, 
+                     error.intervals = "halfLeast",
+                     meanLSD.type = "factor.combination", LSDby = "Host",
+                     tables = "predictions")
+```
+
+Setting the `terms` argument to `Host:Ladybird:Cadavers` requests predictions for all combinations of the three factors and the `linear.transformation` argument is used to obtain estimated marginal means (emm) that conform to the chosen model. The `wald.tab` is supplied so that it can be used to get the degrees of freedom for the $t$-value to be used in calculating the LSD; the degrees of freedom ot the source for the `terms` argument will be used. The `error.intervals` argument has been set to `"halfLeast"`, the `meanLSD.type` argument to `"factor.combination"` and the `LSDby` argument to `"Host"` so that the average LSD will be calculated for each Host. This necessary because, under the chosen model, the LSDs differ between Hosts. It results in `lower.halfLeastSignificant.limit` and `upper.halfLeastSignificant.limit` being added to the `predictions` component of the `alldiffs` object.
+
+### Or, caclulate predictions to check first and then transform to conform to chosen model
+
+```{r full, include = TRUE}
+diffs.full <- predictPlus(current.asrt$asreml.obj, 
+                          classify = "Host:Ladybird:Cadavers", 
+                          wald.tab = current.asrt$wald.tab, 
+                          tables = "none", Vmatrix = TRUE)
+
+diffs <- linTransform(diffs.full, linear.transformation = ~Cadavers:Ladybird + Host, 
+                      wald.tab = current.asrt$wald.tab, 
+                      error.intervals = "halfLeast",
+                      meanLSD.type = "factor.combination", LSDby = "Host",
+                      tables = "predictions")
+```
+
+### Plot the predictions
+
+```{r plot, include = TRUE}
+prependerHost <- function(string, prefix = "Host: ") paste0(prefix, string)
+prependerHost <- as_labeller(prependerHost)
+prependerLBird <- function(string, prefix = "Ladybird: ") paste0(prefix, string)
+prependerLBird <- as_labeller(prependerLBird)
+plotPredictions(diffs$predictions, y ="predicted.value", 
+                y.title = "logit(P)",
+                classify = "Host:Ladybird:Cadavers", 
+                error.intervals = "halfLeast",
+                ggplotFuncs = list(facet_grid(Ladybird ~ Host, 
+                                              labeller = labeller(Host = 
+                                                                    prependerHost,
+                                                                  Ladybird = 
+                                                                    prependerLBird))))
+```
+
+The function `plotPredictions` uses `ggplot` to produce the plot and the `ggplotFuncs` argument allows the addition of `ggplot` functions to modify the plot. In this case, the `facet.grid` function is respecified to include `prepender` functions that modify the labels of the facets to include the factor names. Note the the error bars in the plots are of $\pm 0.5 LSD$ so that pairs of prediction with nonoverlapping bars are significantly different (Snee, 1981).
+
+### Get and plot the predictions with a single function call
+
+The `predictPresent` function combines the functionality of `predictPlus` and `plotPredictions`, as demonstrated now. Also, the use of `plotPvalues` to plot the pairwise $p$-values is displayed. The `predictPresent` function has the capability of producing `alldiffs` objects for multiple `terms` and these are stored in a list each of which is named for the term whose `alldiffs` object it stores. Thus, the term has to be specified in referencing components of `diffs`.
+
+```{r single, include = TRUE}
+prependerHost <- function(string, prefix = "Host: ") paste0(prefix, string)
+prependerHost <- as_labeller(prependerHost)
+prependerLBird <- function(string, prefix = "Ladybird: ") paste0(prefix, string)
+prependerLBird <- as_labeller(prependerLBird)
+diffs <- predictPresent(current.asrt$asreml.obj, 
+                        terms = "Host:Ladybird:Cadavers", 
+                        linear.transformation = ~Cadavers:Ladybird + Host, 
+                        wald.tab = current.asrt$wald.tab, 
+                        error.intervals = "halfLeast",
+                        meanLSD.type = "factor.combination", LSDby = "Host",
+                        tables = "none",
+                        ggplotFuncs = list(facet_grid(Ladybird ~ Host, 
+                                                      labeller = labeller(Host = 
+                                                                            prependerHost,
+                                                                          Ladybird = 
+                                                                            prependerLBird))))
+plotPvalues(diffs$Host.Ladybird.Cadavers, factors.per.grid = 1, show.sig = TRUE)
+options(width = 90)
+diffs$Host.Ladybird.Cadavers$differences
+options(width = 90)
+print(diffs$Host.Ladybird.Cadavers$sed)
+```
+
+## Perform the analysis with just selected model fitted
+
+The model with nonsignificant fixed terms dropped is obtained in order to compare it with the fit when they are retained and the etimated marginal means for the chosen model are obtained.
+
+```{r dropns, include = TRUE}
+ns.terms <- current.asrt$test.summary$terms[current.asrt$test.summary$action == "Nonsignificant"]
+red.asrt <- changeTerms(current.asrt, dropFixed = paste(ns.terms, collapse = "+"))
+summary(red.asrt$asreml.obj)$varcomp
+print(red.asrt, which = "pseudoanova")
+diffs.red <- predictPlus(red.asrt$asreml.obj, 
+                         classify = "Host:Ladybird:Cadavers", 
+                         wald.tab = current.asrt$wald.tab, 
+                         error.intervals = "halfLeast",
+                         meanLSD.type = "factor.combination", LSDby = "Host",
+                         tables = "predictions")
+options(width = 90)
+print(diffs.red$sed)
+```
+
+# Using lmerTest and emmeans to get the predictions and associated statistics.
+
+```{r lmer, include = TRUE}
+library(lmerTest)
+library(emmeans)
+m1.lmer <- lmerTest::lmer(logitP ~ Host*Cadavers*Ladybird + (1|Run),
+                          data=Ladybird.dat)
+HCL.emm <- emmeans::emmeans(m1.lmer, specs = ~ Host:Cadavers:Ladybird)
+HCL.preds <- summary(HCL.emm)
+den.df <- min(HCL.preds$df)
+HCL.vcov <- vcov(HCL.emm)
+HCL.sed <- NULL
+```
+
+## Modify HCL.preds to be compatible with a predictions.frame
+
+```{r aspred, include = TRUE}
+HCL.preds <- as.predictions.frame(HCL.preds, predictions = "emmean", 
+                                  se = "SE", interval.type = "CI", 
+                                  interval.names = c("lower.CL", "upper.CL"))
+```
+
+## Form an alldiffs object with predictions obtained with lmerTest
+```{r HCLdiffs, include = TRUE}
+HCL.diffs <- allDifferences(predictions = HCL.preds, classify = "Host:Cadavers:Ladybird", 
+                            sed = HCL.sed, vcov = HCL.vcov, tdf = den.df)
+```
+
+## Transform and plot the predictions
+
+```{r lmerPlots, include = TRUE}
+diffs <- linTransform(HCL.diffs, linear.transformation = ~Cadavers:Ladybird + Host, 
+                      error.intervals = "halfLeast",
+                      meanLSD.type = "factor.combination", LSDby = "Host",
+                      tables = "none")
+prependerHost <- function(string, prefix = "Host: ") paste0(prefix, string)
+prependerHost <- as_labeller(prependerHost)
+prependerLBird <- function(string, prefix = "Ladybird: ") paste0(prefix, string)
+prependerLBird <- as_labeller(prependerLBird)
+plotPredictions(diffs$predictions, y ="predicted.value", 
+                y.title = "logit(P)",
+                classify = "Host:Ladybird:Cadavers", 
+                error.intervals = "halfLeast",
+                meanLSD.type = "factor.combination", LSDby = "Host",
+                ggplotFuncs = list(facet_grid(Ladybird ~ Host, 
+                                              labeller = labeller(Host = 
+                                                                    prependerHost,
+                                                                  Ladybird = 
+                                                                    prependerLBird))))
+plotPvalues(diffs, factors.per.grid = 1, show.sig = TRUE)
+options(width = 90)
+print(diffs$sed)
+```
+
+# References
+
+Brien, C. J. (2018) `dae`: functions useful in the design and anova of experiments. version 3.0-23. <https://CRAN.R-project.org/package=dae>.
+
+Littell, R. C., Milliken, G. A., Stroup, W. W., Wolfinger, R. D., & Schabenberger, O. (2006). \emph{SAS for Mixed Models} (2nd ed.). Cary, N.C.: SAS Press.
+
+Snee, R. D. (1981). Graphical Display and Assessment of Means. \emph{Biometrics}, \textbf{37}, 835-836. 
+
+Welham, S. J., Gezan, S. A., Clark, S. J., & Mead, A. (2014). \emph{Statistical Methods in Biology: Design and Analysis of Experiments and Regression.} Boca Raton: Chapman and Hall/CRC.

@@ -514,7 +514,7 @@ test_that("as.predictions.frame_lme4", {
   library(dae)
   data("Ladybird.dat")
   
-  ## Use lme4 and emmmeans to get predictions and associated statistics
+  ## Use lmerTest and emmmeans to get the predictions and associated statistics
   if (requireNamespace("lmerTest", quietly = TRUE) & 
       requireNamespace("emmeans", quietly = TRUE))
   {

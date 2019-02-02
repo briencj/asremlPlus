@@ -124,7 +124,10 @@ setOldClass("asrtests")
      print(summary(x$asreml.obj), ...)
    if ("pseudoanova" %in% opt | "all" %in% opt)
    {
-     cat("\n\n  Pseudo-anova table for fixed terms \n\n")
+     cat("\n\n  Pseudo-anova table for fixed terms \n")
+     cat(attr(x$wald.tab, which = "heading"), "\n\n")
+     class(x$wald.tab) <- "data.frame"
+     x$wald.tab$Pr <- round(x$wald.tab$Pr, digits=4)
      print(x$wald.tab, ...)
    }
    if ("testsummary" %in% opt | "all" %in% opt)
@@ -222,7 +225,7 @@ setOldClass("asrtests")
   }
   attr(wald.tab, which = "heading") <- hd
   if (nrow(wald.tab) == 0)
-    warning("Wald.tab is empty - probably the caclulations have failed")
+    warning("Wald.tab is empty - probably the calculations have failed")
   else
     #Calc Pr
     wald.tab$Pr <- 1 - pf(wald.tab$F.inc, wald.tab$Df, wald.tab$denDF)
@@ -2322,7 +2325,10 @@ setOldClass("asrtests")
     opt <- options[check.arg.values(dDF.na, options)]
     if (opt == "supplied" && is.null(dDF.values))
       stop('Need to set dDF.values because have set dDF.na = \"supplied\"')
-    warning("Denominator degrees of freedom obtained using dDF.na method ", opt)
+    warn <- paste("Denominator degrees of freedom obtained using dDF.na method", opt)
+    if (is.null(wald.tab))
+      warn <- paste(warn, "\n- no wald.tab supplied")
+    warning(warn)
     #Compute denom.df
     denom.df <- NA
     if (opt == "supplied")

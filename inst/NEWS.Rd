@@ -1,5 +1,12 @@
 \name{news}
 \title{News for Package asremlPlus}
+\section{asremlPlus Version 4.1-14 (2019-02-02)}{
+  \itemize{
+    \item{Revise Wheat vignette and entry in asremlPlus-package documentation.}
+    \item{Add Ladybird predictions vignette.}
+    \item{Modify printing of \code{wald.tab} by print.asrtests to remove colouring because it causes problems with knitr.}
+    }
+}
 \section{asremlPlus Version 4.1-13 (2019-01-30)}{
   \itemize{
     \item{Add a check to plotPredictions.data.frame to warn when \code{linear.transformation} is supplied.}
