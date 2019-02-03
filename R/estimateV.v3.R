@@ -120,38 +120,6 @@
           }
         } else #Has a special
         {
-          #Is there more than one corb specials - this fix needed until bug in asreml is fixed
-          which.vars.corb <- unlist(lapply(G.param[[term]],
-                                           function(comp)
-                                           {
-                                             mod <- comp$model == "corb"
-                                             names(mod) <- NULL
-                                             return(mod)
-                                           }))[-1]
-          ncorb <- sum(which.vars.corb)
-          if (ncorb > 1) #Correct G.param 
-          {
-            which.vars.corb <- names(which.vars.corb)[which.vars.corb]
-            if (ncorb > 2)#This should work for ncorb >2, but is untested
-              stop("More than two corb function per term has not been implemented")
-            nbands.vars.corb <- unlist(lapply(which.vars.corb,
-                                              function(var, comp)
-                                              {
-                                                nbands <-table(comp[[var]]$con)["P"]
-                                                names(nbands) <- NULL
-                                                return(nbands)
-                                              }, comp = G.param[[term]]))
-            names(nbands.vars.corb) <- which.vars.corb
-            indx <- matrix(NA, nrow = ncorb, ncol = max(nbands.vars.corb))
-            for (k in 1:ncorb)
-              indx[k, 1:nbands.vars.corb[k]] <- k
-            indx <- na.omit(as.vector(indx))
-            vpnames <- paste(cond.fac, term,"!cor", c(1:max(nbands.vars.corb)), sep = "")
-            corb.vpar <- asreml.obj$vparameters[names(asreml.obj$vparameters) %in% vpnames]
-            for (k in 1:ncorb)
-              G.param[[term]][[which.vars.corb[k]]]$initial[1:nbands.vars.corb[k]] <- corb.vpar[indx == k]
-          }
-          
           #Extract variables in term
           termvars <- names(G.param[[term]])[-1]
           cond.fac <- ""
@@ -311,38 +279,6 @@
         #Extract 
         termvars <- names(R.param[[term]])[-1]
         
-        #Is there more than one corb specials - this fix needed until bug in asreml is fixed
-        which.vars.corb <- unlist(lapply(R.param[[term]],
-                                         function(comp)
-                                         {
-                                           mod <- comp$model == "corb"
-                                           names(mod) <- NULL
-                                           return(mod)
-                                         }))[-1]
-        ncorb <- sum(which.vars.corb)
-        if (ncorb > 1) #Correct R.param 
-        {
-          which.vars.corb <- names(which.vars.corb)[which.vars.corb]
-          if (ncorb > 2)#This should work for ncorb >2, but is untested
-            stop("More than two corb function per term has not been implemented")
-          nbands.vars.corb <- unlist(lapply(which.vars.corb,
-                                            function(var, comp)
-                                            {
-                                              nbands <-table(comp[[var]]$con)["P"]
-                                              names(nbands) <- NULL
-                                              return(nbands)
-                                            }, comp = R.param[[term]]))
-          names(nbands.vars.corb) <- which.vars.corb
-          indx <- matrix(NA, nrow = ncorb, ncol = max(nbands.vars.corb))
-          for (k in 1:ncorb)
-            indx[k, 1:nbands.vars.corb[k]] <- k
-          indx <- na.omit(as.vector(indx))
-          vpnames <- paste(cond.fac, term,"!cor", c(1:max(nbands.vars.corb)), sep = "")
-          corb.vpar <- asreml.obj$vparameters[names(asreml.obj$vparameters) %in% vpnames]
-          for (k in 1:ncorb)
-            R.param[[term]][[which.vars.corb[k]]]$initial[1:nbands.vars.corb[k]] <- corb.vpar[indx == k]
-        }
-
         #Get R matrix
         if (R.param[[term]]$variance$model == "idv")
           R <- R.param[[term]]$variance$initial
@@ -572,9 +508,8 @@ G.cor <- function(var, term, G.param, cond.fac = "")
 G.corb <- function(var, term, G.param, cond.fac = "")
 {
   #Get the correlation parameter and generate matrix
-  ### The following code assumes that the contents of G.param have been fixed
   nbands <- table(G.param[[1]][[var]]$con)["P"]
-  vpnames <- paste(cond.fac, term,"!cor", c(1:nbands), sep = "")
+  vpnames <- paste(cond.fac, term,"!",var,"!cor", c(1:nbands), sep = "")
   G <- mat.banded(c(1,G.param[[term]][[var]]$initial[vpnames]),
                   nrow = length(G.param[[term]][[var]]$levels),
                   ncol = length(G.param[[term]][[var]]$levels))

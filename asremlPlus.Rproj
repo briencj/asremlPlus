@@ -14,5 +14,6 @@ LaTeX: pdfLaTeX
 
 BuildType: Package
 PackageInstallArgs: --build --compact-docs --with-keep.source --library="D:\\Analyses\\R Library"
-PackageBuildArgs: --compact-vignettes=qpdf
+PackageBuildArgs: --no-build-vignettes
 PackageBuildBinaryArgs: --build --compact-docs --with-keep.source --library="D:\\Analyses\\R Library"
+PackageCheckArgs: --library="D:\\Analyses\\R Library"
