@@ -3,4 +3,5 @@
 .RData
 .Ruserdata
 .archive
+.vignettes
 .tests
