@@ -1,6 +1,6 @@
 \name{news}
 \title{News for Package asremlPlus}
-\section{asremlPlus Version 4.1-15 (2019-02-03)}{
+\section{asremlPlus Version 4.1-15 (2019-02-05)}{
   \itemize{
     \item{Make vignettes visible.}
     \item{Modify estimateV in response to correction of corb naming in latest build.}
