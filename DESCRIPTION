@@ -1,6 +1,6 @@
 Package: asremlPlus
-Version: 4.1-14
-Date: 2019-02-02
+Version: 4.1-15
+Date: 2019-02-05
 Title: Augments 'ASReml-R' in Fitting Mixed Models and Packages Generally in Exploring Prediction Differences
 Author: Chris Brien <Chris.Brien@unisa.edu.au>.
 Maintainer: Chris Brien <Chris.Brien@unisa.edu.au>
@@ -8,8 +8,9 @@ Depends:
     R (>= 3.1.0)
 Imports: dae, ggplot2, stats, methods, utils, reshape, plyr, dplyr, stringr, 
          RColorBrewer, grDevices, foreach, parallel, doParallel
-Suggests: testthat, lattice, emmeans, lmerTest, pbkrtest
+Suggests: testthat, lattice, emmeans, lmerTest, pbkrtest, R.rsp
 Enhances: asreml
+VignetteBuilder: R.rsp
 SystemRequirements: asreml-R 2.x
 Description: Assists in automating the testing of terms in mixed models when 'asreml' is 
   used to fit the models. Also used to display, in tables and graphs, predictions obtained  

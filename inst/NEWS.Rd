@@ -1,5 +1,11 @@
 \name{news}
 \title{News for Package asremlPlus}
+\section{asremlPlus Version 4.1-15 (2019-02-05)}{
+  \itemize{
+    \item{Make vignettes visible.}
+    \item{Modify estimateV in response to correction of corb naming in latest build.}
+    }
+}
 \section{asremlPlus Version 4.1-14 (2019-02-02)}{
   \itemize{
     \item{Revise Wheat vignette and entry in asremlPlus-package documentation.}

@@ -556,7 +556,7 @@ test_that("linear.transformation_asreml4", {
                                                    tables = "none"))
   #check for zero seds and their removal
   ksed <- na.omit(as.vector(diffs.L$sed))
-  testthat::expect_true(length(ksed[ksed/median(ksed, na.rm = TRUE) <= 1e-04]) == 64)
+  testthat::expect_true(length(ksed[ksed/max(ksed, na.rm = TRUE) <= 1e-04]) == 49)
   testthat::expect_true(abs(diffs.L$LSD["minLSD"] - 0.1246359) < 1e-06)
   testthat::expect_true(all(abs(diffs.L$predictions$predicted.value[c(1,6,11,16,21,28)] - 
                                   (diffs.sub$predictions$predicted.value[1] - diffs.sub$predictions$predicted.value[6])) < 1e-06))
