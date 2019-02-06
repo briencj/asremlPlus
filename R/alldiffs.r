@@ -1062,19 +1062,26 @@ redoErrorIntervals.alldiffs <- function(alldiffs.obj, error.intervals = "Confide
                                                             })))
               LSD.dat <- cbind(LSD.dat, alldiffs.obj$LSD$meanLSD)
               names(LSD.dat) <- c(LSDby, "meanLSD")
-              alldiffs.obj$predictions <- merge(alldiffs.obj$predictions, LSD.dat, 
-                                                all.x = TRUE, sort = FALSE)
-              alldiffs.obj$predictions <- within(alldiffs.obj$predictions, 
-                                                 { 
-                                                   lower.halfLeastSignificant.limit <- 
-                                                     alldiffs.obj$predictions[["predicted.value"]] - 
-                                                     0.5 * alldiffs.obj$predictions$meanLSD
-                                                   upper.halfLeastSignificant.limit <- 
-                                                     alldiffs.obj$predictions[["predicted.value"]] + 
-                                                     0.5 * alldiffs.obj$predictions$meanLSD
-                                                 })
-              alldiffs.obj$predictions <- alldiffs.obj$predictions[, -match("meanLSD",
-                                                                            names(alldiffs.obj$predictions))]
+              #save currrent order of predictions and use to restore after the merge
+              preds <- alldiffs.obj$predictions
+              preds$rows <- 1:nrow(preds)
+              preds.nam <- names(preds)
+              preds <- merge(preds, LSD.dat, all.x = TRUE, sort = FALSE)
+              preds <- preds[c(preds.nam, setdiff(names(preds), preds.nam))]
+              if (any(diff(preds$rows != 1)))
+                preds[preds$rows, ] <- preds
+              preds <- preds[, -match("rows", names(preds))]
+#              alldiffs.obj$predictions <- merge(alldiffs.obj$predictions, LSD.dat, 
+#                                                all.x = TRUE, sort = FALSE)
+#              alldiffs.obj$predictions <- within(alldiffs.obj$predictions, 
+              preds <- within(preds,                                                  
+                              { 
+                                lower.halfLeastSignificant.limit <- 
+                                  preds[["predicted.value"]] - 0.5 * preds$meanLSD
+                                upper.halfLeastSignificant.limit <- 
+                                  preds[["predicted.value"]] + 0.5 * preds$meanLSD
+                              })
+              alldiffs.obj$predictions <- preds[, -match("meanLSD", names(preds))]
             }
           } else
           {

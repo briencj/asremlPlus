@@ -1,5 +1,11 @@
 \name{news}
 \title{News for Package asremlPlus}
+\section{asremlPlus Version 4.1-16 (2019-02-06)}{
+  \itemize{
+    \item{More vignettes changes.}
+    \item{Fix accidental reordering of \code{alldiffs} object when \code{meanLSD.type} is \code{factor combinatons}.}
+    }
+}
 \section{asremlPlus Version 4.1-15 (2019-02-05)}{
   \itemize{
     \item{Make vignettes visible.}
