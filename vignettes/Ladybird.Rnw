@@ -1,0 +1,7 @@
+\documentclass{article}
+\usepackage{pdfpages}
+%\VignetteIndexEntry{Ladybird predictions}
+
+\begin{document}
+\includepdf[pages=-, fitpaper=true]{LadybirdPredictionsVignette.pdf}
+\end{document}

@@ -1,0 +1,7 @@
+\documentclass{article}
+\usepackage{pdfpages}
+%\VignetteIndexEntry{Manual}
+
+\begin{document}
+\includepdf[pages=-, fitpaper=true]{asremlPlus-manual.pdf}
+\end{document}
