@@ -1,5 +1,10 @@
 \name{news}
 \title{News for Package asremlPlus}
+\section{asremlPlus Version 4.1-17 (2019-02-16)}{
+  \itemize{
+    \item{Fix bug in infoCriteria.asreml when DF supplied. For both infoCriteria.asreml and REMLRT.asreml, calculate the bound terms and if appropriate give arning messages.}
+    }
+}
 \section{asremlPlus Version 4.1-16 (2019-02-07)}{
   \itemize{
     \item{More vignettes changes, including adding manual to vignettes.}

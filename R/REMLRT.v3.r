@@ -1,9 +1,8 @@
-DFdiff <- function(bound.h1, bound.h0, bound.exclusions = c("F","B","S","C"))
+DFdiff <- function(bound.h1, bound.h0, DF = NULL, bound.exclusions = c("F","B","S","C"))
 {
   asr4 <- isASRemlVersionLoaded(4, notloaded.fault = TRUE)
   
   NBound.h1 <- NBound.h0 <- NA
-  DF <- length(bound.h1) - length(bound.h0)
   if (asr4)
   {
     if (!(length(bound.exclusions) > 0) & !all(bound.exclusions %in% c("F","B","S","C")))
@@ -26,25 +25,39 @@ DFdiff <- function(bound.h1, bound.h0, bound.exclusions = c("F","B","S","C"))
     }
   }
   NBound.h1 <- sum(Bound.h1)
-  DF <- DF - NBound.h1
   Bound.h1 <- names(bound.h1)[Bound.h1] 
   NBound.h0 <- sum(Bound.h0)
-  DF <- DF + NBound.h0
   Bound.h0 <- names(bound.h0)[Bound.h0]
   Bound.diff <- c(Bound.h1[!(Bound.h1 %in% Bound.h0)], 
                   Bound.h0[!(Bound.h0 %in% Bound.h1)])
   NBound <- (NBound.h1 + NBound.h0 + length(Bound.diff))/2
   if (NBound > 0)
-    warning(paste("There were a total of", NBound, "bound terms.", sep = " "))
-  if (length(Bound.diff) > 0)
-    warning(paste("The following bound terms occur in only one of the models",
-                  "compared and so were discounted:\n",
-                  paste(Bound.diff, collapse = ", "),"\n"))
-  if (DF == 0)
-    warning("DF is zero indicating no difference between models in the number of parameters")
+  {
+    mess <- paste("There were a total of", NBound, "bound terms.", sep = " ")
+    if (length(Bound.diff) > 0)
+    {
+      if (is.null(DF))
+        warning(paste(mess, "\n  The following bound terms occur in only one of the models",
+                      "compared and so were discounted:\n  ",
+                      paste(Bound.diff, collapse = ", "),"\n"))
+      else
+        warning(paste(mess, "\n  The following bound terms occur in only one of the models",
+                      "compared, but were not discounted:\n  ",
+                      paste(Bound.diff, collapse = ", "),"\n"))
+    } else
+      if (length(Bound.diff) == 0)
+        warning(paste(mess, "These bound terms occur in both models\n"))
+  }
+  #Calculate degrees of freedom
+  DF.calc <- length(bound.h1) - length(bound.h0)
+  DF.calc <- DF.calc - NBound.h1 + NBound.h0
+  if (DF.calc == 0)
+    warning("Calculated DF is zero indicating no difference between models in the number of parameters")
   else
-    if (DF <= 0)
-      warning("Negative degrees of freedom indicating the second model is more complex")
+    if (DF.calc <= 0)
+      warning("Negative calculated degrees of freedom indicating the second model is more complex")
+  if (is.null(DF))
+    DF <- DF.calc
  return(list(DF = DF, NBound.h1 = NBound.h1, NBound.h0 = NBound.h0)) 
 }
 
@@ -140,7 +153,7 @@ REMLRT.asreml <- function(h0.asreml.obj, h1.asreml.obj,
     bound.h1 <- names(h1.asreml.obj$gammas.con)
     names(bound.h1) <- names(h1.asreml.obj$gammas)
   }
-  DF.diff <- DFdiff(bound.h1, bound.h0, bound.exclusions = bound.exclusions)
+  DF.diff <- DFdiff(bound.h1, bound.h0, DF = DF, bound.exclusions = bound.exclusions)
   NBound.h1 <- DF.diff$NBound.h1
   NBound.h0 <- DF.diff$NBound.h0
   #Perform the test
@@ -221,38 +234,44 @@ infoCriteria.asreml <- function(asreml.obj, DF = NULL,
     bound <- names(asreml.obj$gammas.con)
     names(bound) <- names(asreml.obj$gammas)
   }
+  NBound <- NA
+  if (asr4)
+  {
+    if (!(length(bound.exclusions) > 0) & !all(bound.exclusions %in% c("F","B","S","C")))
+      warning("A code other than F, B S or C has been specified in bound.exclusions")
+    Bound <- bound  %in% bound.exclusions
+  } else #asr3
+  {
+    #Check bound.exclusions
+    if (!(length(bound.exclusions) > 0) & !all(bound.exclusions %in% c("F","B","S","C")))
+    {
+      stop("At least one bound.type is not one of those allowed with ASReml-R version 3")
+    }
+    else
+    {
+      bound.exclusions3 <- c("Fixed","Boundary","Singular","Constrained")
+      bound.exclusions3 <- bound.exclusions3[bound.exclusions %in% c("F","B","S","C")]
+      Bound <- bound  %in% bound.exclusions3
+    }
+  }
+  NBound <- sum(Bound)
+  Bound <- names(bound)[Bound]
+  #Calculate the DF
   if (is.null(DF))
   {
-    NBound <- NA
     DF <- length(bound)
-    if (asr4)
-    {
-      if (!(length(bound.exclusions) > 0) & !all(bound.exclusions %in% c("F","B","S","C")))
-        warning("A code other than F, B S or C has been specified in bound.exclusions")
-      Bound <- bound  %in% bound.exclusions
-    } else #asr3
-    {
-      #Check bound.exclusions
-      if (!(length(bound.exclusions) > 0) & !all(bound.exclusions %in% c("F","B","S","C")))
-      {
-        stop("At least one bound.type is not one of those allowed with ASReml-R version 3")
-      }
-      else
-      {
-        bound.exclusions3 <- c("Fixed","Boundary","Singular","Constrained")
-        bound.exclusions3 <- bound.exclusions3[bound.exclusions %in% c("F","B","S","C")]
-        Bound <- bound  %in% bound.exclusions3
-      }
-    }
-    NBound <- sum(Bound)
     DF <- DF - NBound
-    Bound <- names(bound)[Bound]
     if (NBound > 0)
       warning(paste("The following bound terms were discounted:\n", 
                     paste(Bound, collapse = ", ")))
+  } else
+  {
+    if (NBound > 0)
+      warning(paste("The following bound terms were not discounted:\n", 
+                    paste(Bound, collapse = ", ")))
   }
-	logREML <- asreml.obj$loglik
-#calculate AIC and BIC
+  logREML <- asreml.obj$loglik
+  #calculate AIC and BIC
 	AIC <- -2 * logREML + 2 * DF
 	BIC <- -2 * logREML + DF * log(asreml.obj$nedf)
 	data.frame(DF, NBound, AIC, BIC, logREML)
