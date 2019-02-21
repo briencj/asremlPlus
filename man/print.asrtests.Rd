@@ -3,12 +3,16 @@
 \title{Prints the values in an \code{\link{asrtests.object}}}
 \description{Prints a \code{summary} of the asreml object and the test.summary 
   \code{data.frame} that are stored in the \code{\link{asrtests.object}}.}
-\usage{\method{print}{asrtests}(x, which = "all", ...)}
+\usage{\method{print}{asrtests}(x, which = "all", colourise = FALSE, ...)}
 \arguments{
  \item{x}{An \code{\link{asrtests.object}}.}
  \item{which}{Which elements of the \code{\link{asrtests.object}} to print. Possible
              values are some combination of \code{asremlsummary}, \code{pseudoanova}, 
              \code{testsummary} and \code{all}.}
+ \item{colourise}{A \code{\link{logical}} which, if \code{TRUE}, results in the header 
+                  text produced by \code{wald.asreml} to be displayed in a different colour, if 
+                  supported by the output terminal device. It overrides the \code{TRUE} 
+                  setting of the \code{colourise} argument of \code{asreml.options}.}
  \item{\dots}{further arguments passed to \code{print}.}
 }
 \value{No value is returned, but the elements of the list in \code{x} are 

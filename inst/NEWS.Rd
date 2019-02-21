@@ -1,5 +1,11 @@
 \name{news}
 \title{News for Package asremlPlus}
+\section{asremlPlus Version 4.1-18 (2019-02-21)}{
+  \itemize{
+    \item{Use R.rsp to install vignettes so that hyperlinks are active.}
+    \item{Add \code{colourise} argument to print.asrtests and modify its output when printing without colour.}
+    }
+}
 \section{asremlPlus Version 4.1-17 (2019-02-16)}{
   \itemize{
     \item{Fix bug in infoCriteria.asreml when DF supplied. For both infoCriteria.asreml and REMLRT.asreml, calculate the bound terms and if appropriate give arning messages.}

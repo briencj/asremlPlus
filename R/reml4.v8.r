@@ -111,7 +111,7 @@
 
 setOldClass("asrtests")
 
-"print.asrtests" <- function(x, which = "all", ...)
+"print.asrtests" <- function(x, which = "all", colourise = FALSE, ...)
  { 
   #Check that have a valid object of class asrtests
   validasrt <- validAsrtests(x)  
@@ -125,8 +125,14 @@ setOldClass("asrtests")
    if ("pseudoanova" %in% opt | "all" %in% opt)
    {
      cat("\n\n  Pseudo-anova table for fixed terms \n")
-     cat(attr(x$wald.tab, which = "heading"), "\n\n")
-     class(x$wald.tab) <- "data.frame"
+     if (!colourise)
+     {
+       hd <- attr(x$wald.tab, which = "heading")
+       for (i in 1:length(hd))
+         cat(hd[i],"\n")
+       cat("\n")
+       class(x$wald.tab) <- "data.frame"
+     }
      x$wald.tab$Pr <- round(x$wald.tab$Pr, digits=4)
      print(x$wald.tab, ...)
    }

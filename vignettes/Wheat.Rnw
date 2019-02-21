@@ -1,7 +1,0 @@
-\documentclass{article}
-\usepackage{pdfpages}
-%\VignetteIndexEntry{Wheat spatial analysis}
-
-\begin{document}
-\includepdf[pages=-, fitpaper=true]{WheatVignette.pdf}
-\end{document}
