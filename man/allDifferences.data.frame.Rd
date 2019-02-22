@@ -248,7 +248,8 @@
   {
     ## Order the Varieties in decreasing order for the predictions values in the 
     ## first N level 
-    Var.diffs <- allDifferences(predictions = Var.preds, classify = "Nitrogen:Variety", 
+    Var.diffs <- allDifferences(predictions = Var.preds, 
+                                classify = "Nitrogen:Variety", 
                                 sed = Var.sed, vcov = Var.vcov, tdf = den.df,
                                 sortFactor = "Variety", decreasing = TRUE)
     print.alldiffs(Var.diffs, which="differences")

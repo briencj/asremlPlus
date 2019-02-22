@@ -1,9 +1,14 @@
 \name{news}
 \title{News for Package asremlPlus}
+\section{asremlPlus Version 4.1-19 (2019-02-22)}{
+  \itemize{
+    \item{Add \code{colourise} argument to print.alldiffs so that the default is FALSE and it overrides the \code{asreml.options} setting.}
+    }
+}
 \section{asremlPlus Version 4.1-18 (2019-02-21)}{
   \itemize{
     \item{Use R.rsp to install vignettes so that hyperlinks are active.}
-    \item{Add \code{colourise} argument to print.asrtests and modify its output when printing without colour.}
+    \item{Add \code{colourise} argument to print.asrtests so that the default is FALSE and it overrides the \code{asreml.options} setting.}
     }
 }
 \section{asremlPlus Version 4.1-17 (2019-02-16)}{

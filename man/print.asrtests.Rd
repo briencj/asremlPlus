@@ -10,9 +10,9 @@
              values are some combination of \code{asremlsummary}, \code{pseudoanova}, 
              \code{testsummary} and \code{all}.}
  \item{colourise}{A \code{\link{logical}} which, if \code{TRUE}, results in the header 
-                  text produced by \code{wald.asreml} to be displayed in a different colour, if 
+                  text produced by \code{wald.asreml} being displayed in a different colour, if 
                   supported by the output terminal device. It overrides the \code{TRUE} 
-                  setting of the \code{colourise} argument of \code{asreml.options}.}
+                  setting of the \code{colourise} argument of \code{asreml::asreml.options}.}
  \item{\dots}{further arguments passed to \code{print}.}
 }
 \value{No value is returned, but the elements of the list in \code{x} are 

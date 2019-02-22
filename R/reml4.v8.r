@@ -113,6 +113,8 @@ setOldClass("asrtests")
 
 "print.asrtests" <- function(x, which = "all", colourise = FALSE, ...)
  { 
+  asr4 <- isASRemlVersionLoaded(4, notloaded.fault = TRUE)
+
   #Check that have a valid object of class asrtests
   validasrt <- validAsrtests(x)  
   if (is.character(validasrt))
@@ -124,17 +126,17 @@ setOldClass("asrtests")
      print(summary(x$asreml.obj), ...)
    if ("pseudoanova" %in% opt | "all" %in% opt)
    {
-     cat("\n\n  Pseudo-anova table for fixed terms \n")
-     if (!colourise)
-     {
-       hd <- attr(x$wald.tab, which = "heading")
-       for (i in 1:length(hd))
-         cat(hd[i],"\n")
-       cat("\n")
-       class(x$wald.tab) <- "data.frame"
-     }
      x$wald.tab$Pr <- round(x$wald.tab$Pr, digits=4)
-     print(x$wald.tab, ...)
+     cat("\n\n####  Pseudo-anova table for fixed terms \n")
+     if (!is.null(asr4) && asr4)
+     {
+       asr.col <- asreml::asreml.options()$colourise
+       if (xor(colourise,asr.col))
+            asreml::asreml.options(colourise = colourise)
+       print(x$wald.tab, ...)
+       asreml::asreml.options(colourise = asr.col)
+     } else
+       print(x$wald.tab, ...)
    }
    if ("testsummary" %in% opt | "all" %in% opt)
    {  
@@ -2385,15 +2387,13 @@ setOldClass("asrtests")
                           pairwise = pairwise, 
                           inestimable.rm = inestimable.rm, 
                           alpha = alpha)
-  
   if (is.null(linear.transformation))
   {
     #Add lower and upper uncertainty limits
     diffs <- redoErrorIntervals.alldiffs(diffs, error.intervals = error.intervals,
                                          alpha = alpha, avsed.tolerance = avsed.tolerance,
                                          meanLSD.type = meanLSD.type, LSDby = LSDby)
-    
-
+ 
     #Add backtransforms if there has been a transformation
     diffs <- addBacktransforms.alldiffs(alldiffs.obj = diffs, 
                                         transform.power = transform.power, 

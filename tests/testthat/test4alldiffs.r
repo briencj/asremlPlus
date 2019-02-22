@@ -35,6 +35,8 @@ test_that("allDifferences_asreml4", {
                                    sortFactor = "Variety", decreasing = TRUE)
   testthat::expect_true(is.alldiffs(Var.sort.diffs))
   testthat::expect_true(validAlldiffs(Var.sort.diffs))
+  testthat::expect_equal(length(attr(Var.sort.diffs$predictions, which = "heading")),4)
+  testthat::expect_true("asreml.predict" %in% class(Var.sort.diffs$predictions))
   testthat::expect_equal(length(attr(Var.sort.diffs, which = "sortOrder")),3)
   testthat::expect_true(as.character(Var.sort.diffs$predictions$Variety[1]) == "Marvellous" & 
                           as.character(Var.sort.diffs$predictions$Variety[2]) == "Golden Rain")
@@ -50,6 +52,8 @@ test_that("allDifferences_asreml4", {
   Var.reord.diffs <- reorderClassify(Var.diffs, newclassify = "Variety:Nitrogen")
   testthat::expect_true(as.character(Var.reord.diffs$predictions$Variety[1]) == "Victory" &
                           as.character(Var.reord.diffs$predictions$Variety[2]) == "Victory")
+  testthat::expect_equal(length(attr(Var.reord.diffs$predictions, which = "heading")),4)
+  testthat::expect_true("asreml.predict" %in% class(Var.reord.diffs$predictions))
   
   #Test for re-order factors and sort
   Var.both.diffs <- allDifferences(predictions = Var.pred$pvals,
@@ -478,6 +482,8 @@ test_that("linear.transformation_asreml4", {
                        wald.tab = current.asrt$wald.tab,
                        error.intervals = "Stand", tables = "none")
   testthat::expect_is(diffs, "alldiffs")
+  testthat::expect_equal(length(attr(diffs$predictions, which = "heading")),4)
+  testthat::expect_true("asreml.predict" %in% class(diffs$predictions))
   testthat::expect_equal(nrow(diffs$vcov),12)
   testthat::expect_true(all(colnames(diffs$vcov)[1:2] %in% c("0,Victory", "0,Golden Rain")))
   testthat::expect_true(all(abs((diffs$vcov[1,1:2] - c(82.93704, 35.74618))) < 1e-4))
@@ -492,6 +498,8 @@ test_that("linear.transformation_asreml4", {
                          wald.tab = current.asrt$wald.tab,
                          error.intervals = "Conf", tables = "none")
   testthat::expect_is(diffs.L, "alldiffs")
+  testthat::expect_equal(length(attr(diffs.L$predictions, which = "heading")),5)
+  testthat::expect_true("asreml.predict" %in% class(diffs.L$predictions))
   testthat::expect_true(abs((diffs$vcov[1,1] - diffs$vcov[4,1]) + 
                               (diffs$vcov[4,4] - diffs$vcov[1,4]) - diffs.L$vcov[1,1]) < 1e-04)
   testthat::expect_equal(as.character(diffs.L$predictions$Combination[1]), "0.2,Victory")
@@ -509,6 +517,8 @@ test_that("linear.transformation_asreml4", {
                            LSDby = "Nitrogen",
                            tables = "none")
   testthat::expect_is(diffs.mod, "alldiffs")
+  testthat::expect_equal(length(attr(diffs.mod$predictions, which = "heading")),5)
+  testthat::expect_true("asreml.predict" %in% class(diffs.mod$predictions))
   testthat::expect_true(is.null(diffs.mod$vcov))
   
   m2.asr <- asreml(Yield ~ Nitrogen+Variety, 
