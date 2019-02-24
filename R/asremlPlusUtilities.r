@@ -286,6 +286,14 @@ addtoTestSummary <- function(test.summary, terms, DF = 1, denDF = NA, p = NA,
   return(test.summary)
 }
 
+"chkWald" <- function(wald.tab)
+{
+  if (!is.data.frame(wald.tab))
+    wald.tab <- wald.tab$Wald
+  class(wald.tab) <- c("wald.tab", "data.frame")
+  return(wald.tab)  
+}
+
 "ginv" <- function(x, tol = .Machine$double.eps ^ 0.5)
 { 
   # computes Moore-Penrose inverse of a matrix

@@ -20,6 +20,7 @@ test_that("allDifferences_asreml3", {
   #Test for as.alldiffs
   Var.pred <- predict(m1.asr, classify="Nitrogen:Variety", 
                               sed=TRUE)$predictions
+  Var.pred$pvals$Nitrogen <- factor(Var.pred$pvals$Nitrogen)
   wald.tab <-  current.asrt$wald.tab
   den.df <- wald.tab[match("Variety", rownames(wald.tab)), "denDF"]
   Var.diffs <- as.alldiffs(predictions = Var.pred$pvals, 
@@ -37,7 +38,7 @@ test_that("allDifferences_asreml3", {
                                    sortFactor = "Variety", decreasing = TRUE)
   testthat::expect_true(is.alldiffs(Var.sort.diffs))
   testthat::expect_true(validAlldiffs(Var.sort.diffs))
-  testthat::expect_equal(length(attr(Var.sort.diffs$predictions, which = "heading")),4)
+  testthat::expect_equal(length(attr(Var.sort.diffs$predictions, which = "heading")),1)
   testthat::expect_true("asreml.predict" %in% class(Var.sort.diffs$predictions))
   testthat::expect_equal(length(attr(Var.sort.diffs, which = "sortOrder")),3)
   testthat::expect_true(as.character(Var.sort.diffs$predictions$Variety[1]) == "Marvellous" & 
@@ -72,7 +73,8 @@ test_that("allDifferences_asreml3", {
   testthat::expect_true(validAlldiffs(diffsN))
   
   #Test single factor linear.transform
-  Var.pred <- predict(m1.asr, classify="Nitrogen:Variety", vcov=TRUE)
+  Var.pred <- predict(m1.asr, classify="Nitrogen:Variety", vcov=TRUE)$predictions
+  Var.pred$pvals$Nitrogen <- factor(Var.pred$pvals$Nitrogen)
   Var.diffs <- allDifferences(predictions = Var.pred$pvals,
                               classify = "Nitrogen:Variety", 
                               vcov = Var.pred$vcov, tdf = den.df)
@@ -204,6 +206,7 @@ test_that("sort.alldiffs_asreml3", {
   #Test for as.alldiffs
   Var.pred <- predict(m1.asr, classify="Nitrogen:Variety", 
                       sed=TRUE)$predictions
+  Var.pred$pvals$Nitrogen <- factor(Var.pred$pvals$Nitrogen)
   wald.tab <-  current.asrt$wald.tab
   den.df <- wald.tab[match("Variety", rownames(wald.tab)), "denDF"]
   Var.diffs <- as.alldiffs(predictions = Var.pred$pvals, 
@@ -449,8 +452,8 @@ test_that("facCombine.alldiffs4", {
   
 })
 
-cat("#### Test for linear.transformation Oats with asreml3\n")
-test_that("linear.transformation_asreml3", {
+cat("#### Test for linear.transformation on Oats with asreml3\n")
+test_that("linear.transform_Oats_asreml3", {
   skip_if_not_installed("asreml")
   skip_on_cran()
   library(asreml, lib.loc = asr3.lib)
@@ -469,7 +472,7 @@ test_that("linear.transformation_asreml3", {
                        wald.tab = current.asrt$wald.tab,
                        error.intervals = "Stand", tables = "none")
   testthat::expect_is(diffs, "alldiffs")
-  testthat::expect_equal(length(attr(diffs$predictions, which = "heading")),4)
+  testthat::expect_equal(length(attr(diffs$predictions, which = "heading")),1)
   testthat::expect_true("asreml.predict" %in% class(diffs$predictions))
   testthat::expect_equal(nrow(diffs$vcov),12)
   testthat::expect_true(all(colnames(diffs$vcov)[1:2] %in% c("0,Victory", "0,Golden Rain")))
@@ -485,7 +488,7 @@ test_that("linear.transformation_asreml3", {
                          wald.tab = current.asrt$wald.tab,
                          error.intervals = "Conf", tables = "none")
   testthat::expect_is(diffs.L, "alldiffs")
-  testthat::expect_equal(length(attr(diffs.L$predictions, which = "heading")),5)
+  testthat::expect_equal(length(attr(diffs.L$predictions, which = "heading")),2)
   testthat::expect_true("asreml.predict" %in% class(diffs.L$predictions))
   testthat::expect_true(abs((diffs$vcov[1,1] - diffs$vcov[4,1]) + 
                               (diffs$vcov[4,4] - diffs$vcov[1,4]) - diffs.L$vcov[1,1]) < 1e-04)
@@ -504,7 +507,7 @@ test_that("linear.transformation_asreml3", {
                            LSDby = "Nitrogen",
                            tables = "none")
   testthat::expect_is(diffs.mod, "alldiffs")
-  testthat::expect_equal(length(attr(diffs.mod$predictions, which = "heading")),5)
+  testthat::expect_equal(length(attr(diffs.mod$predictions, which = "heading")),2)
   testthat::expect_true("asreml.predict" %in% class(diffs.mod$predictions))
   testthat::expect_true(is.null(diffs.mod$vcov))
 
@@ -516,7 +519,15 @@ test_that("linear.transformation_asreml3", {
                                   preds$predicted.value) < 1e-04))
   testthat::expect_true(abs(diffs.mod$predictions$standard.error[1] - 
                               preds$standard.error[1]) > 0.01)
-  
+})
+
+cat("#### Test for linear.transformation on WaterRunoff with asreml3\n")
+test_that("linear.transform_WaterRunoff_asreml3", {
+  skip_if_not_installed("asreml")
+  skip_on_cran()
+  library(asreml, lib.loc = asr3.lib)
+  library(asremlPlus)
+  library(dae)
   #Test example in manual
   data(WaterRunoff.dat)
   #Run analysis and produce alldiffs object
@@ -679,5 +690,5 @@ test_that("linear.transformation_asreml3", {
   testthat::expect_true(all(is.na(save$lRGR_sm_32_42$backtransforms[, "standard.error"])))
   testthat::expect_true(all(abs(exp(save$lRGR_sm_32_42$predictions[1, c(2,4:5)]) - 
                                   save$lRGR_sm_32_42$backtransforms[1, c(2,4:5)]) < 1e-04))
-  })
+})
 

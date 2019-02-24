@@ -19,13 +19,13 @@
                   text produced by \code{predict.asreml} being displayed in a different colour, if 
                   supported by the output terminal device. It overrides the \code{TRUE} 
                   setting of the \code{colourise} argument of \code{asreml::asreml.options}.}
- \item{\dots}{further arguments passed to or from other methods.}
+ \item{\dots}{further arguments passed to \code{print.predictions.frame}.}
 }
 \value{No value is returned, but the components of \code{x} are printed.}
 
 
 \author{Chris Brien}
-\seealso{\code{\link{as.alldiffs}}, \code{\link{allDifferences.data.frame}}}
+\seealso{\code{\link{print.predictions.frame}}, \code{\link{as.alldiffs}}, \code{\link{allDifferences.data.frame}}}
 \examples{\dontrun{
 print.alldiffs(diffs, which = "predictions")
 }}

@@ -1,5 +1,11 @@
 \name{news}
 \title{News for Package asremlPlus}
+\section{asremlPlus Version 4.1-20 (2019-02-23)}{
+  \itemize{
+    \item{Add print.predictions.frame and print.wald.tab as S3 methods to give more control over the printing of objects of class \code{wald.tab} and \code{predictions.frame}.}
+    \item{Made sure that class \code{wald.tab} is associated with a \code{wald.tab} and classes asreml.predict and predictions.frame are associated with a \code{predictions.frame} when these are produced by asreml.}
+    }
+}
 \section{asremlPlus Version 4.1-19 (2019-02-22)}{
   \itemize{
     \item{Add \code{colourise} argument to print.alldiffs so that the default is FALSE and it overrides the \code{asreml.options} setting.}

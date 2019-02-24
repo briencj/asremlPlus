@@ -86,6 +86,9 @@ test_that("predictPlus_asreml3", {
                          wald.tab = current.asrt$wald.tab)
   
   testthat::expect_is(diffs.p, "alldiffs")
+  #The headings are different
+  attr(diffs$predictions, which = "heading") <- NULL
+  attr(diffs.p$predictions, which = "heading") <- NULL
   testthat::expect_identical(diffs, diffs.p)
 })
 

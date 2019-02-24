@@ -462,8 +462,8 @@ test_that("facCombine.alldiffs4", {
 
 
 
-cat("#### Test for linear.transformation with asreml4\n")
-test_that("linear.transformation_asreml4", {
+cat("#### Test for linear.transformation on Oats with asreml4\n")
+test_that("linear.transform_Oats_asreml4", {
   skip_if_not_installed("asreml")
   skip_on_cran()
   library(asreml)
@@ -529,7 +529,15 @@ test_that("linear.transformation_asreml4", {
                                   preds$predicted.value) < 1e-04))
   testthat::expect_true(abs(diffs.mod$predictions$standard.error[1] - 
                               preds$std.error[1]) > 0.01)
+})
   
+cat("#### Test for linear.transformation on WaterRunoff with asreml4\n")
+test_that("linear.transform_WaterRunoff_asreml4", {
+  skip_if_not_installed("asreml")
+  skip_on_cran()
+  library(asreml)
+  library(asremlPlus)
+  library(dae)
   #Test example in manual
   data(WaterRunoff.dat)
   #Run analysis and produce alldiffs object
@@ -566,7 +574,7 @@ test_that("linear.transformation_asreml4", {
                                                    tables = "none"))
   #check for zero seds and their removal
   ksed <- na.omit(as.vector(diffs.L$sed))
-  testthat::expect_true(length(ksed[ksed/max(ksed, na.rm = TRUE) <= 1e-04]) == 49)
+  testthat::expect_true(length(ksed[ksed/max(ksed, na.rm = TRUE) <= 1e-6]) == 83)
   testthat::expect_true(abs(diffs.L$LSD["minLSD"] - 0.1246359) < 1e-06)
   testthat::expect_true(all(abs(diffs.L$predictions$predicted.value[c(1,6,11,16,21,28)] - 
                                   (diffs.sub$predictions$predicted.value[1] - diffs.sub$predictions$predicted.value[6])) < 1e-06))

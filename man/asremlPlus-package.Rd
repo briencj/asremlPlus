@@ -57,6 +57,10 @@
       \tab Prints the values in an \code{\link{alldiffs.object}} in a nice format. \cr
 \code{\link{print.asrtests}}
       \tab Prints the values in an \code{\link{asrtests.object}}. \cr
+\code{\link{print.predictions.frame}}
+      \tab Prints the values in a \code{\link{predictions.frame}}, with or without title and heading. \cr
+\code{\link{print.wald.tab}}
+      \tab Prints a Wald or pseudoanova table. \cr
 \code{\link{sort.alldiffs}}
       \tab Sorts the components of an \code{\link{alldiffs.object}} according to \cr
       \tab the predicted values associated with a factor. \cr

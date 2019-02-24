@@ -84,10 +84,11 @@
     data$est.status <- "Estimable"
     data$est.status[is.na(data$predicted.value)] <- "Aliased"
   }
-  if ("asreml.predict" %in% class(data))
-    class(data) <- c("predictions.frame", "asreml.predict", "data.frame")
-  else
-    class(data) <- c("predictions.frame", "data.frame")
+  class(data) <- c("predictions.frame", "asreml.predict", "data.frame")
+  # if ("asreml.predict" %in% class(data))
+  #   class(data) <- c("predictions.frame", "asreml.predict", "data.frame")
+  # else
+  #   class(data) <- c("predictions.frame", "data.frame")
   
   #Check that have valid predictions.frame
   validpframe <- validPredictionsFrame(data)  
@@ -313,6 +314,58 @@ setOldClass("predictions.frame")
 
 setOldClass("alldiffs")
 
+"print.predictions.frame" <- function(x, title = NULL,  
+                                      which.predictions = c("title", "heading", "table"), 
+                                      colourise = FALSE, ...)
+{
+  asr4 <- isASRemlVersionLoaded(4, notloaded.fault = FALSE)
+  
+  options <- c("title", "heading", "table", "all")
+  opt <- options[unlist(lapply(which.predictions, check.arg.values, options=options))]
+  
+  if (any(c("title", "all") %in% opt))
+  {
+    if (!is.null(title))
+      cat(title)
+    else
+      cat("\n\n#### Predictions\n\n")
+  }
+  if (!any(c("table", "all") %in% opt))
+  {
+    if ("heading" %in% opt)
+    {
+      hd <- attr(x, which = "heading")
+      for (i in 1:length(hd))
+        cat(hd[i],"\n")
+    }
+  } else #print out the table, possibly with the heading
+  {
+    if (any(c("heading", "all") %in% opt) && !is.null(asr4) && asr4)
+    {
+      asr.col <- asreml::asreml.options()$colourise
+      if (xor(colourise,asr.col))
+        asreml::asreml.options(colourise = colourise)
+      class(x) <- c("asreml.predict", "data.frame")
+      print(x, ...)
+      asreml::asreml.options(colourise = asr.col)
+    } else
+    {
+      if (!any(c("heading", "all") %in% opt))
+      {
+        class(x) <- class(x)[-match("asreml.predict", class(x))]
+      } else
+      {
+        hd <- attr(x, which = "heading")
+        for (i in 1:length(hd))
+          cat(hd[i],"\n")
+      }
+      if (any(c("table", "all") %in% opt))
+        print.data.frame(x, ...)
+    }
+  }
+  invisible()
+}
+
 "print.alldiffs" <- function(x, which = "all", colourise = FALSE, ...)
 { 
   asr4 <- isASRemlVersionLoaded(4, notloaded.fault = FALSE)
@@ -338,18 +391,9 @@ setOldClass("alldiffs")
       if (!is.null(title))
       {
         tt <- paste("\n\n#### Predictions for ", title, "\n\n",sep="")
-        cat(tt)
       } else
-        cat("\n\n#### Predictions\n\n")
-      if (!is.null(asr4) && asr4)
-      {
-        asr.col <- asreml::asreml.options()$colourise
-        if (xor(colourise,asr.col))
-          asreml::asreml.options(colourise = colourise)
-        print(x$predictions)
-        asreml::asreml.options(colourise = asr.col)
-      } else
-        print(x$predictions)
+        tt <- "\n\n#### Predictions\n\n"
+      print.predictions.frame(x$predictions, title = tt, colourise = colourise, ...)
     } 
     if (!is.null(x$LSD))
     { 

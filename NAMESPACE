@@ -58,6 +58,8 @@ export(addrm.terms.asreml,
        pred.present.asreml,
        print.alldiffs,
        print.asrtests, 
+       print.predictions.frame, 
+       print.wald.tab, 
        recalcLSD, 
        recalcLSD.alldiffs, 
        recalcWaldTab,
@@ -132,6 +134,8 @@ S3method(predictPresent, asreml)
 S3method(predictPlus, asreml)
 S3method(print, asrtests)
 S3method(print, alldiffs)
+S3method(print, predictions.frame)
+S3method(print, wald.tab)
 S3method(recalcWaldTab, asrtests)
 S3method(REMLRT, asreml) 
 S3method(recalcLSD, alldiffs)
