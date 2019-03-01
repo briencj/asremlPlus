@@ -1,5 +1,11 @@
 \name{news}
 \title{News for Package asremlPlus}
+\section{asremlPlus Version 4.1-21 (2019-03-01)}{
+  \itemize{
+    \item{Build in R version 3.5.2.}
+    \item{Update the license to include 2019.}
+    }
+}
 \section{asremlPlus Version 4.1-20 (2019-02-23)}{
   \itemize{
     \item{Add print.predictions.frame and print.wald.tab as S3 methods to give more control over the printing of objects of class \code{wald.tab} and \code{predictions.frame}.}
