@@ -1,5 +1,11 @@
 \name{news}
 \title{News for Package asremlPlus}
+\section{asremlPlus Version 4.1-22 (2019-03-04)}{
+  \itemize{
+    \item{Build in R version 3.5.2.}
+    \item{Update the license to remove blank line and resubmit to CRAN.}
+    }
+}
 \section{asremlPlus Version 4.1-21 (2019-03-01)}{
   \itemize{
     \item{Build in R version 3.5.2.}
