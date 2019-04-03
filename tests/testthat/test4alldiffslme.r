@@ -148,7 +148,7 @@ test_that("validity_lme4", {
   testthat::expect_true(is.alldiffs(Var.diffs))
   testthat::expect_warning(msg <- validAlldiffs(Var.diffs))
   testthat::expect_equal(length(msg),5)
-  testthat::expect_true(all(unlist(lapply(msg, nchar)) ==  c(41, 63, 84, 62, 119)))
+  testthat::expect_true(all(unlist(lapply(msg, nchar)) ==  c(41, 63, 118, 62, 119)))
   testthat::expect_true(grepl("Predictions.frame", msg[2], fixed = TRUE))
   testthat::expect_true(grepl("classify", msg[5], fixed = TRUE))
   

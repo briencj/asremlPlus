@@ -204,7 +204,28 @@ test_that("predictPresent.asreml4", {
                                      level.length = 6)
   testthat::expect_equal(length(diff.list), 1)
   testthat::expect_match(names(diff.list), "Date.Sources.Species.xDay")
-})
+
+  # test that backtransforms have halfLSD intervals
+  diff.list <- predictPresent.asreml(asreml.obj = current.asrt$asreml.obj, 
+                                     terms = "Date:Sources:Species:xDay",
+                                     x.num = "xDay", x.fac = "Date", 
+                                     parallel = TRUE, levels = levs, 
+                                     wald.tab = current.asrt$wald.tab, 
+                                     plots = "backtransforms", 
+                                     error.intervals = "halfLeast", 
+                                     avsed.tolerance = 1,
+                                     titles = titles, 
+                                     transform.power = 0, 
+                                     present = c("Type","Species","Sources"), 
+                                     tables = "none", 
+                                     level.length = 6)
+  testthat::expect_equal(length(diff.list), 1)
+  testthat::expect_match(names(diff.list), "Date.Sources.Species.xDay")
+  testthat::expect_true(all(c("upper.halfLeastSignificant.limit", 
+                              "lower.halfLeastSignificant.limit") %in% 
+                              names(diff.list$Date.Sources.Species.xDay$backtransforms)))
+  
+  })
 
 cat("#### Test for plotPvalues.asreml4\n")
 test_that("plotPvalues.asreml4", {

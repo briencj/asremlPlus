@@ -17,13 +17,14 @@
                      "\n  Predictions.frame is not a data.frame")
   }
   #Check have appropriate columns
-  if (!all(c("predicted.value", "standard.error", "est.status") %in% colnames(object)))
+  if (!any(c("predicted.value", "backtransformed.predictions") %in% colnames(object)) || 
+      !all(c("standard.error", "est.status") %in% colnames(object)))
   {
     ispredframe[1] <- FALSE
     ispredframe <- c(ispredframe, 
                      "\n  Predictions.frame does not include the expected column names",
-                     paste("\n  (must be predicted.value, standard.error and est.status",
-                           "not std.error and status)"))
+                     paste("\n  (must be predicted.value or backtransformed.predictions, standard.error and est.status\n",
+                           "- not std.error and status)"))
   }    
   if (length(ispredframe) > 1)
     ispredframe[1] <- "Error in validPredictionsFrame : "
@@ -45,7 +46,7 @@
   ## Modify data to be compatible with a predictions.frame
   if (!is.null(predictions))
   {
-    if (!("predicted.value" %in% names(data)))
+    if (!any(c("predicted.value", "backtransformed.predictions") %in% names(data)))
       names(data)[match(predictions, names(data))] <- c("predicted.value")
   }
   if (!is.null(se))
@@ -82,7 +83,12 @@
   if (!("est.status" %in% names(data)))
   {
     data$est.status <- "Estimable"
-    data$est.status[is.na(data$predicted.value)] <- "Aliased"
+    if ("predicted.value" %in% names(data))
+      data$est.status[is.na(data$predicted.value)] <- "Aliased"
+    else if ("backtransformed.predictions" %in% names(data))
+    {
+      data$est.status[is.na(data$backtransformed.predictions)] <- "Aliased"
+    }
   }
   class(data) <- c("predictions.frame", "asreml.predict", "data.frame")
   # if ("asreml.predict" %in% class(data))
@@ -1484,20 +1490,21 @@ redoErrorIntervals.alldiffs <- function(alldiffs.obj, error.intervals = "Confide
                     "- p-values and LSDs not calculated"))
     backtransforms <- alldiffs.obj$predictions
     kp <- match("predicted.value", names(backtransforms))
+    ## As of 3/4/2019 I am allowing backtransformed halfLSD intervals
     #Check if LSD used for predictions and so need to compute CIs
-    if ((strsplit(names(backtransforms)[kp+2], ".", 
-                  fixed=TRUE))[[1]][2] == "halfLeastSignificant")
-    { 
-      names(backtransforms)[kp+2] <- "lower.Confidence.limit" 
-      names(backtransforms)[kp+3] <- "upper.Confidence.limit" 
-      backtransforms <- within(backtransforms, 
-                               { 
-                                 lower.Confidence.limit <- alldiffs.obj$predictions[["predicted.value"]] - 
-                                   qt(1-alpha/2, denom.df) * alldiffs.obj$predictions[["standard.error"]]
-                                 upper.Confidence.limit <- alldiffs.obj$predictions[["predicted.value"]] + 
-                                   qt(1-alpha/2, denom.df) * alldiffs.obj$predictions[["standard.error"]]
-                               })
-    }
+    # if ((strsplit(names(backtransforms)[kp+2], ".", 
+    #               fixed=TRUE))[[1]][2] == "halfLeastSignificant")
+    # { 
+    #   names(backtransforms)[kp+2] <- "lower.Confidence.limit" 
+    #   names(backtransforms)[kp+3] <- "upper.Confidence.limit" 
+    #   backtransforms <- within(backtransforms, 
+    #                            { 
+    #                              lower.Confidence.limit <- alldiffs.obj$predictions[["predicted.value"]] - 
+    #                                qt(1-alpha/2, denom.df) * alldiffs.obj$predictions[["standard.error"]]
+    #                              upper.Confidence.limit <- alldiffs.obj$predictions[["predicted.value"]] + 
+    #                                qt(1-alpha/2, denom.df) * alldiffs.obj$predictions[["standard.error"]]
+    #                            })
+    # }
     names(backtransforms)[match("predicted.value", names(backtransforms))] <- 
       "backtransformed.predictions"
     #Backtransform predictions and intervals for power transformation

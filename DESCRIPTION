@@ -1,9 +1,10 @@
 Package: asremlPlus
-Version: 4.1-22
-Date: 2019-03-04
+Version: 4.1-23
+Date: 2019-04-03
 Title: Augments 'ASReml-R' in Fitting Mixed Models and Packages Generally in Exploring Prediction Differences
-Author: Chris Brien <Chris.Brien@unisa.edu.au>.
-Maintainer: Chris Brien <Chris.Brien@unisa.edu.au>
+Authors@R: person("Chris","Brien", role = c("aut","cre"),
+         comment = c(ORCID = "0000-0003-0581-1817"),
+         email = "chris.brien@unisa.edu.au")
 Depends: 
     R (>= 3.1.0)
 Imports: dae, ggplot2, stats, methods, utils, reshape, plyr, dplyr, stringr, 

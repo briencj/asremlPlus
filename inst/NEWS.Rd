@@ -1,5 +1,12 @@
 \name{news}
 \title{News for Package asremlPlus}
+\section{asremlPlus Version 4.1-23 (2019-04-03)}{
+  \itemize{
+    \item{Build in R version 3.5.3.}
+    \item{Update the Author field of the DESCRIPTION to include an ORCID.}
+    \item{Allow backtransformed halfLSD intervals in the \code{backtransforms} component of an \code{alldiffs.object}.}
+    }
+}
 \section{asremlPlus Version 4.1-22 (2019-03-04)}{
   \itemize{
     \item{Build in R version 3.5.2.}

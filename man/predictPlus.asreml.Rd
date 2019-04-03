@@ -50,10 +50,12 @@
              \code{offset} is nonzero), the backtransforms of the transformed 
              values and their lower and upper error intervals are added 
              to a \code{data.frame} that is consistent with the \code{predictions} 
-             \code{data.frame}. If the \code{error.intervals} are 
-             \code{halfLeastSignificant}, then backtransforms of the Confidence 
-             limits are stored, instead of the \code{halfLeastSignificant} 
-             intervals. If \code{transform.power} is other than 
+             \code{data.frame}. 
+%If the \code{error.intervals} are 
+%             \code{halfLeastSignificant}, then backtransforms of the Confidence 
+%             limits are stored, instead of the \code{halfLeastSignificant} 
+%             intervals. 
+              If \code{transform.power} is other than 
              one, the \code{standard.error} column of the \code{data.frame} 
              is set to \code{NA}. This \code{data.frame} is added to the 
              \code{\link{alldiffs.object}} as a \code{list} component called 
