@@ -27,9 +27,9 @@ Versions 4.x-xx of `asremlPlus` are a major revamp of the package and include su
 
 ## More information
 
-For more information install the package and run the R command `news(package = “asremlPlus”)` or consult the [manual](./inst/doc/asremlPlus-manual.pdf). 
+For more information install the package and run the R command `news(package = “asremlPlus”)` or consult the [manual](./vignettes/asremlPlus-manual.pdf). 
 
-An overview can be obtained using `?asremlPlus`. In particular, an example of its use is given towards the bottom of the help information.
+An overview can be obtained using `?asremlPlus`. In particular, an example of its use is given towards the bottom of the help information and this is avalable as the [Wheat vignette](./vignettes/Wheat.pdf) that is accesssed using `vignette("Wheat", package = "asremlPlus")`. A second [Ladybird vignette](./vignettes/Ladybird.pdf) is available via `vignette("Ladybird", package = "asremlPlus")`.
 
 ## Installing the package
 
@@ -51,8 +51,11 @@ Version 2.0-12 of the package is available from CRAN so that you could first ins
 
 `install.packages("asremlPlus")`
 
+If you have not previously installed `asremlPlus` then you could first install it and its dependencies from CRAN using:
 
-If you have not previously installed `asremlPlus` then you will need to install it dependencies:
+`install.packages("asremlPlus")`
+
+Otherwise, you will need to install its dependencies manually:
 
 `install.packages(c("dae", "ggplot2", "reshape", "plyr", "dplyr", "stringr", "RColorBrewer", `
 `                   "foreach", "parallel", "doParallel"))`
@@ -62,6 +65,8 @@ If you have not previously installed `asremlPlus` then you will need to install 
 It assists in automating the testing of terms in mixed models when `asreml-R` is used 
 to fit the models. A history of the fitting of a sequence of models is kept in a data frame. 
 Procedures are available for choosing models that conform to the hierarchy or marginality principle. It can also be used to display, in tables and graphs, predictions obtained from a mixed model using your favourite model fitting functions and to explore differences between predictions. As a general rule functions that are methods for `asreml` and `asrtests` objects require `asreml-R`; on the other hand, functions that are methods for `alldiffs` and `data.frame` objects do not require `asreml-R`.
+
+The use of the package is exemplified in two vignettes: the [Wheat vignette](./vignettes/Wheat.pdf) that is accesssed using `vignette("Wheat", package = "asremlPlus")` and the [Ladybird vignette](./vignettes/Ladybird.pdf) is available via `vignette("Ladybird", package = "asremlPlus")`.
 
 The content falls into the following natural groupings: 
 
