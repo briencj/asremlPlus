@@ -54,7 +54,7 @@ It assists in automating the testing of terms in mixed models when `asreml-R` is
 to fit the models. A history of the fitting of a sequence of models is kept in a data frame. 
 Procedures are available for choosing models that conform to the hierarchy or marginality principle. It can also be used to display, in tables and graphs, predictions obtained from a mixed model using your favourite model fitting functions and to explore differences between predictions. As a general rule functions that are methods for `asreml` and `asrtests` objects require `asreml-R`; on the other hand, functions that are methods for `alldiffs` and `data.frame` objects do not require `asreml-R`.
 
-The use of the package is exemplified in two vignettes: the [Wheat vignette](./vignettes/Wheat.pdf) that is accesssed using `vignette("Wheat", package = "asremlPlus")` and the [Ladybird vignette](./vignettes/Ladybird.pdf) is available via `vignette("Ladybird", package = "asremlPlus")`.
+The use of the package is exemplified in two vignettes: the [Wheat vignette](./vignettes/Wheat.pdf) that is accesssed using `vignette("Wheat", package = "asremlPlus")` and the [Ladybird vignette](./vignettes/Ladybird.pdf) that is available via `vignette("Ladybird", package = "asremlPlus")`.
 
 The content falls into the following natural groupings: 
 
