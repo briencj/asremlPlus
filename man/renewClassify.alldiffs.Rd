@@ -1,13 +1,21 @@
-\name{reorderClassify.alldiffs}
-\alias{reorderClassify.alldiffs}
-\alias{reorderClassify}
-\title{Reorders the components in an \code{\link{alldiffs.object}} according to a new classify.}
-\description{All the components of an \code{\link{alldiffs.object}} are re-ordered to be in 
-             standard order for the variables in a new classify, using 
-             \code{\link{allDifferences.data.frame}}.}
-\usage{\method{reorderClassify}{alldiffs}(alldiffs.obj, newclassify, 
-                sortFactor = NULL, sortWithinVals = NULL, 
-                sortOrder = NULL, decreasing = FALSE, ...)}
+\name{renewClassify.alldiffs}
+\alias{renewClassify.alldiffs}
+\alias{renewClassify}
+\title{Renews the components in an \code{\link{alldiffs.object}} according to a new classify.}
+\description{The \code{classify} is an attribute of an \code{\link{alldiffs.object}} and determines 
+             the order within the components of an unsorted \code{\link{alldiffs.object}}. 
+             This function resets the \code{classify} attribute and re-orders the components of 
+             \code{\link{alldiffs.object}} to be in standard order for the variables in a 
+             \code{newclassify}, using \code{\link{allDifferences.data.frame}}. The \code{newclassify} 
+             may be just a re-ordering of the variable names in the previous \code{classify}, or be 
+             based on a new set of variable names. The latter is particularly useful when 
+             \code{\link{linTransform.alldiffs}} has been used with a \code{\link{matrix}} and it 
+             is desired to replace the resulting \code{Combination} \code{classify} with a 
+             \code{newclassify} comprised of a more meaningful set of variables that have 
+             replaced \code{Combination} in the \code{predictions} component.}
+\usage{\method{renewClassify}{alldiffs}(alldiffs.obj, newclassify, 
+              sortFactor = NULL, sortWithinVals = NULL, 
+              sortOrder = NULL, decreasing = FALSE, ...)}
 \arguments{
 \item{alldiffs.obj}{An \code{\link{alldiffs.object}}.}
 \item{newclassify}{A \code{\link{character}} string giving the variables that 
@@ -16,7 +24,9 @@
                  arranged in standard order for the \code{newclassify}. 
                  Multiway tables are specified by forming an interaction type 
                  term from the classifying variables, that is, separating the 
-                 variable names with the \code{:} operator.}
+                 variable names with the \code{:} operator. The number of combined values of the 
+                 set of variable name(s) must equal the number of rows in the \code{predictions} 
+                 component.}
 \item{sortFactor}{A \code{\link{character}} containing the name of the 
               \code{factor} that indexes the set of predicted values that determines 
                the sorting of the components. If there is only one variable in the 
@@ -121,7 +131,7 @@ if (requireNamespace("lmerTest", quietly = TRUE) &
 #for each combination of A and B
 if (exists("TS.diffs"))
 {
-  TS.diffs.reord <- reorderClassify(TS.diffs, newclassify = "Type:Sources")
+  TS.diffs.reord <- renewClassify(TS.diffs, newclassify = "Type:Sources")
   validAlldiffs(TS.diffs.reord)
 }
 }

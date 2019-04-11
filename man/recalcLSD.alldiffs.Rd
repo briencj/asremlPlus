@@ -19,10 +19,11 @@
              involving that prediction. It also 
              determines, in conjunction with \code{avsed.tolerance}, which LSD will be used
              in calculating \code{error.intervals} and, hence, is used for plots.}
-\item{LSDby}{A \code{\link{character}} (vector) of factor names, being the names of the 
-             \code{\link{factor}s} for each of whose levels combinations a mean LSD, 
-             minLSD and max LSD is stored in the \code{LSD} component of the 
-             \code{\link{alldiffs.object}} when \code{meanLSD.type} is \code{factor.combinatons}.}
+\item{LSDby}{A \code{\link{character}} (vector) of variables names, being the names of the 
+             \code{\link{factor}s} or \code{\link{numeric}s} in the \code{classify} for each 
+             combination of which a mean LSD, minLSD and max LSD is stored in the \code{LSD} 
+             component of the \code{\link{alldiffs.object}} when \code{meanLSD.type} is 
+             \code{factor.combinatons}.}
 \item{alpha}{The significance level for an LSD to compare a pair of predictions.}
 \item{\dots}{further arguments passed to \code{\link{allDifferences.data.frame}}.}
 }
@@ -34,7 +35,7 @@
 \author{Chris Brien}
 \seealso{\code{\link{asremlPlus-package}}, \code{\link{as.alldiffs}}, \code{\link{sort.alldiffs}}, 
          \code{\link{subset.alldiffs}}, \code{\link{print.alldiffs}},  \cr 
-         \code{\link{reorderClassify.alldiffs}}, \code{\link{redoErrorIntervals.alldiffs}},  
+         \code{\link{renewClassify.alldiffs}}, \code{\link{redoErrorIntervals.alldiffs}},  
          \code{\link{plotPredictions.data.frame}}, \cr 
          \code{\link{predictPlus.asreml}}, \code{\link{predictPresent.asreml}}}
 \examples{

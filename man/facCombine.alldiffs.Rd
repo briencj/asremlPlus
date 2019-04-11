@@ -41,7 +41,7 @@
 \author{Chris Brien}
 \seealso{\code{\link{as.alldiffs}}, \code{\link{allDifferences.data.frame}}, 
          \code{\link{print.alldiffs}}, \code{\link{sort.alldiffs}}, \cr
-         \code{\link{reorderClassify.alldiffs}}, \code{fac.combine} in package \pkg{dae}.}
+         \code{\link{renewClassify.alldiffs}}, \code{fac.combine} in package \pkg{dae}.}
 \examples{
   data("Ladybird.dat")
   

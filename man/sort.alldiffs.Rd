@@ -17,7 +17,7 @@
              Note that reordering the \code{classify} variables in the \code{\link{alldiffs.object}} 
              and changing the order of the rows and columns of the components so 
              that they are in standard order for the new variable order can be achieved using 
-             either \code{\link{reorderClassify.alldiffs}} or \code{\link{allDifferences.data.frame}}.}
+             either \code{\link{renewClassify.alldiffs}} or \code{\link{allDifferences.data.frame}}.}
 \usage{\method{sort}{alldiffs}(x, decreasing = FALSE, classify = NULL, 
      sortFactor = NULL, sortWithinVals = NULL, sortOrder = NULL, ...)}
 \arguments{
@@ -86,7 +86,7 @@
 \author{Chris Brien}
 \seealso{\code{\link{as.alldiffs}}, \code{\link{allDifferences.data.frame}}, 
          \code{\link{print.alldiffs}}, \cr 
-         \code{\link{reorderClassify.alldiffs}}, \code{\link{redoErrorIntervals.alldiffs}}, 
+         \code{\link{renewClassify.alldiffs}}, \code{\link{redoErrorIntervals.alldiffs}}, 
          \code{\link{recalcLSD.alldiffs}},  \cr
          \code{\link{predictPlus.asreml}}, \code{\link{predictPresent.asreml}}}
 \examples{

@@ -49,7 +49,6 @@
              x.num = NULL, x.fac = NULL, 
              tables = "all", level.length = NA, 
              pairwise = TRUE, alpha = 0.05,
-             transform.power = 1, offset = 0, scale = 1, 
              inestimable.rm = TRUE, ...)
 }
 \arguments{
@@ -130,10 +129,11 @@
              involving that prediction. It also 
              determines, in conjunction with \code{avsed.tolerance}, which LSD will be used
              in calculating \code{error.intervals} and, hence, is used for plots.}
-\item{LSDby}{A \code{\link{character}} (vector) of factor names, being the names of the 
-             \code{\link{factor}s} for each of whose levels combinations a mean LSD, 
-             minLSD and max LSD is stored in the \code{LSD} component of the 
-             \code{\link{alldiffs.object}} when \code{meanLSD.type} is \code{factor.combinatons}.}
+\item{LSDby}{A \code{\link{character}} (vector) of variables names, being the names of the 
+             \code{\link{factor}s} or \code{\link{numeric}s} in the \code{classify} for each 
+             combination of which a mean LSD, minLSD and max LSD is stored in the \code{LSD} 
+             component of the \code{\link{alldiffs.object}} when \code{meanLSD.type} is 
+             \code{factor.combinatons}.}
  \item{response}{A \code{character} specifying the response variable for the 
                     predictions. It is stored as an attribute to the \code{\link{alldiffs.object}} .}
  \item{response.title}{A \code{character} specifying the title for the response variable 
@@ -169,33 +169,21 @@
              irrespective of the value of \code{pairwise}.}
  \item{alpha}{A \code{\link{numeric}} giving the significance level for LSDs or one minus 
               the confidence level for confidence intervals.}
- \item{transform.power}{A \code{\link{numeric}} specifying the power of a transformation, if 
-              one has been applied to the response variable. Unless it is equal 
-              to 1, the default, back-transforms of the predictions will be 
-              obtained and presented in tables or graphs as appropriate. 
-              The back-transformation raises the predictions to the power equal 
-              to the reciprocal of \code{transform.power}, unless it equals 0 in 
-              which case the exponential of the predictions is taken.} 
- \item{offset}{A \code{\link{numeric}} that has been added to each value of the 
-               response after any scaling and before applying any power transformation.}
- \item{scale}{A \code{\link{numeric}} by which each value of the response has been multiplied 
-               before adding any offset and applying any power transformation.}
  \item{inestimable.rm}{A \code{logical} indicating whether rows for  predictions 
                that are not estimable are to be removed from the components of 
                the \code{\link{alldiffs.object}}.}
- \item{\dots}{provision for passsing arguments to functions called internally - 
-            not used at present.}
+ \item{\dots}{further arguments passed to \code{\link{redoErrorIntervals.alldiffs}}.}
 }
 \value{A \code{\link{alldiffs.object}} with the linear transformation of the predictions 
        and their standard errors and all pairwise differences between the linear 
        transforms of their predictions, their standard errors and p-values 
        and LSD statistics.
 
-           If \code{transform.power} or \code{scale} is not one or \code{offset} 
-           is not zero, it will contain a \code{data.frame} with the backtransformed 
-           linear transformation of the predictions. The backtransformation will, after 
-           backtransforming for any power transformation, subtract the \code{offset} 
-           and then divide by the \code{scale}.
+       If the supplied \code{\link{alldiffs.object}} contained a \code{backtransforms} 
+       componnent, then the returned \code{\link{alldiffs.object}} will contain 
+       a \code{backtransforms} component with the backtransformed linear transformation 
+       of the predictions. The backtransformation will, after backtransforming for any 
+       power transformation, subtract the \code{offset} and then divide by the \code{scale}.
            
            If \code{error.intervals} is not \code{"none"}, then the 
            \code{predictions} component and, if present, the 

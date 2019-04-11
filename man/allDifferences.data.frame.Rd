@@ -44,6 +44,7 @@
                x.num = NULL, x.fac = NULL,  
                level.length = NA, 
                pairwise = TRUE, alpha = 0.05,
+               transform.power = 1, offset = 0, scale = 1, 
                inestimable.rm = TRUE,
                sortFactor = NULL, sortWithinVals = NULL, 
                sortOrder = NULL, decreasing = FALSE, ...)}
@@ -97,11 +98,11 @@
              on the square root of the mean of the variances for all pairwise differences involving 
              that prediction. If \code{LSD} is not \code{NULL} then \code{meanLSD.type} will be added 
              as an attribute of the \code{\link{alldiffs.object}}.}
-\item{LSDby}{A \code{\link{character}} (vector) of factor names, being the names of the 
-             \code{\link{factor}s} for each of whose levels combinations a mean LSD, 
-             minLSD and max LSD is stored in the \code{LSD} component of the \code{\link{alldiffs.object}} 
-             when \code{meanLSD.type} is \code{factor.combinatons}. If \code{LSD} is not \code{NULL} then 
-             \code{LSDby} will be added as an attribute of the \code{\link{alldiffs.object}}.}
+\item{LSDby}{A \code{\link{character}} (vector) of variables names, being the names of the 
+             \code{\link{factor}s} or \code{\link{numeric}s} in the \code{classify} for each 
+             combination of which a mean LSD, minLSD and max LSD is stored in the \code{LSD} 
+             component of the \code{\link{alldiffs.object}} when \code{meanLSD.type} is 
+             \code{factor.combinatons}.}
  \item{backtransforms}{A \code{data.frame} containing the backtransformed values of the predicted 
                     values  that is consistent with the \code{predictions} component, except 
                     that the column named \code{predicted.value} is replaced by one called 
@@ -141,6 +142,17 @@
                 and \code{p.differences} will be \code{NULL} in the returned 
                 \code{\link{alldiffs.object}}.}
  \item{alpha}{The significance level for an LSD to compare a pair of predictions.}
+ \item{transform.power}{A \code{\link{numeric}} specifying the power of a transformation, if 
+              one has been applied to the response variable. Unless it is equal 
+              to 1, the default, back-transforms of the predictions will be 
+              obtained and presented in tables or graphs as appropriate. 
+              The back-transformation raises the predictions to the power equal 
+              to the reciprocal of \code{transform.power}, unless it equals 0 in 
+              which case the exponential of the predictions is taken.} 
+ \item{offset}{A \code{\link{numeric}} that has been added to each value of the 
+               response after any scaling and before applying any power transformation.}
+ \item{scale}{A \code{\link{numeric}} by which each value of the response has been multiplied 
+               before adding any offset and applying any power transformation.}
  \item{inestimable.rm}{A \code{logical} indicating whether rows for  predictions that 
                        are not estimable are to be removed from the components of the
                        \code{\link{alldiffs.object}}.}
@@ -200,7 +212,7 @@
 \author{Chris Brien}
 \seealso{\code{\link{asremlPlus-package}}, \code{\link{as.alldiffs}},  \code{\link{as.predictions.frame}}, 
          \code{\link{sort.alldiffs}}, \code{\link{subset.alldiffs}},  \cr 
-         \code{\link{print.alldiffs}},  \code{\link{reorderClassify.alldiffs}},  
+         \code{\link{print.alldiffs}},  \code{\link{renewClassify.alldiffs}},  
          \code{\link{redoErrorIntervals.alldiffs}},  \cr
          \code{\link{recalcLSD.alldiffs}},  \code{\link{plotPredictions.data.frame}}, 
          \code{\link{predictPlus.asreml}}, \cr 

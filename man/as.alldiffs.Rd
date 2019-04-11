@@ -95,7 +95,7 @@
 \seealso{\code{\link{asremlPlus-package}}, \code{\link{alldiffs.object}},  \code{\link{is.alldiffs}}, \code{\link{as.alldiffs}}, 
          \code{\link{print.alldiffs}}, \cr
          \code{\link{sort.alldiffs}}, \code{\link{subset.alldiffs}}, \code{\link{allDifferences.data.frame}}, \cr
-         \code{\link{reorderClassify.alldiffs}}, \code{\link{redoErrorIntervals.alldiffs}},  \code{\link{recalcLSD.alldiffs}}, \cr
+         \code{\link{renewClassify.alldiffs}}, \code{\link{redoErrorIntervals.alldiffs}},  \code{\link{recalcLSD.alldiffs}}, \cr
          \code{\link{predictPlus.asreml}}, \code{\link{plotPredictions.data.frame}},  \code{\link{predictPresent.asreml}}}
 \examples{
   data(Oats.dat)

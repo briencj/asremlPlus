@@ -89,8 +89,8 @@ test_that("alldiffs_lme4", {
   testthat::expect_true(as.character(Var.reord.diffs$predictions$Variety[1]) == "Victory" &
                           as.character(Var.reord.diffs$predictions$Variety[2]) == "Victory")
   
-  #Test for re-order factors with reorderClassify
-  Var.reord.diffs <- reorderClassify(Var.diffs, newclassify = "Variety:Nitrogen")
+  #Test for re-order factors with renewClassify
+  Var.reord.diffs <- renewClassify(Var.diffs, newclassify = "Variety:Nitrogen")
   testthat::expect_true(as.character(Var.reord.diffs$predictions$Variety[1]) == "Victory" &
                           as.character(Var.reord.diffs$predictions$Variety[2]) == "Victory")
   
@@ -101,7 +101,7 @@ test_that("alldiffs_lme4", {
                                    sortFactor = "Variety", decreasing = TRUE)
   testthat::expect_true(as.character(Var.both.diffs$predictions$Variety[1]) == "Marvellous" & 
                           as.character(Var.both.diffs$predictions$Variety[2]) == "Marvellous")
-  Var.both.diffs <- reorderClassify(Var.diffs, newclassify = "Variety:Nitrogen", 
+  Var.both.diffs <- renewClassify(Var.diffs, newclassify = "Variety:Nitrogen", 
                                     sortFactor = "Variety", decreasing = TRUE)
   testthat::expect_true(as.character(Var.both.diffs$predictions$Variety[1]) == "Marvellous" & 
                           as.character(Var.both.diffs$predictions$Variety[2]) == "Marvellous")
@@ -331,7 +331,7 @@ test_that("sort.alldiffs_lme4", {
     testthat::expect_true(is.null(attr(GAB.diffs, which = "sortOrder")))
     
     #Test reodering of the classify
-    GAB.diffs.reord <- reorderClassify(GAB.diffs, newclassify = "A:B:Genotype")
+    GAB.diffs.reord <- renewClassify(GAB.diffs, newclassify = "A:B:Genotype")
     testthat::expect_equal(as.character(GAB.diffs.reord$predictions$Genotype[1]),"Axe")
     testthat::expect_equal(as.character(GAB.diffs.reord$predictions$Genotype[2]),"Espada")
     testthat::expect_true(abs(GAB.diffs.reord$predictions$predicted.value[2] - -0.2265723017) < 1e-06)
@@ -410,7 +410,7 @@ test_that("sort.alldiffsWater_lme4", {
     testthat::expect_true(is.null(attr(TS.diffs, which = "sortOrder")))
     
     #Test reodering of the classify
-    TS.diffs.reord <- reorderClassify(TS.diffs, newclassify = "Type:Sources")
+    TS.diffs.reord <- renewClassify(TS.diffs, newclassify = "Type:Sources")
     testthat::expect_equal(as.character(TS.diffs.reord$predictions$Sources[1]),"Rainwater")
     testthat::expect_equal(as.character(TS.diffs.reord$predictions$Sources[2]),"Recycled water")
     testthat::expect_true(abs(TS.diffs.reord$predictions$predicted.value[2] - 7.646389) < 1e-06)

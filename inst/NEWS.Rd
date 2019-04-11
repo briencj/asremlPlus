@@ -1,5 +1,14 @@
 \name{news}
 \title{News for Package asremlPlus}
+\section{asremlPlus Version 4.1-24 (2019-04-11)}{
+  \itemize{
+    \item{Allow numerics, in addition to factors, in \code{LSDby} argument of predictPlus.}
+    \item{Rename reorderClassify to renewClassify.}
+    \item{Fix a bug in retention of attributes of the \code{alldiffs.object} in  renewClassify.}
+    \item{Add \code{transform.power}, \code{offset} and \code{scale} as attributes of the \code{backtransforms} component of an \code{alldiffs.object}.}
+    \item{Rework the storage of the \code{backtransforms} component of an \code{alldiffs.object} to ensure that it is retained when manipulating \code{alldiffs.object}.}
+    }
+}
 \section{asremlPlus Version 4.1-23 (2019-04-03)}{
   \itemize{
     \item{Build in R version 3.5.3.}

@@ -16,6 +16,8 @@
 \alias{power.transform}
 \alias{recalc.wald.tab.asreml}
 \alias{recalc.wald.tab.asrtests}
+\alias{reorderClassify}
+\alias{reorderClassify.alldiffs}
 \alias{reml.lrt}
 \alias{reml.lrt.asreml}
 \alias{rmboundary.asreml}
@@ -41,6 +43,7 @@
          \item predictparallel.asreml -> \code{\link{predictPlus.asreml}}, 
          \item pred.present.asreml -> \code{\link{predictPresent.asreml}}, 
          \item recalc.wald.tab.asreml and recalc.wald.tab.asrtests -> \code{\link{recalcWaldTab.asrtests}}, 
+         \item reorderClassify and reorderClassify.alldiffs -> \code{\link{renewClassify.alldiffs}}, 
          \item reml.lrt and reml.lrt.asreml -> \code{\link{REMLRT.asreml}},
          \item rmboundary.asreml -> \code{\link{rmboundary.asrtests}}, 
          \item setvarianceterms.asreml  -> \code{\link{setvarianceterms.call}}, 
@@ -66,6 +69,7 @@ recalc.wald.tab.asreml(...)
 recalc.wald.tab.asrtests(...)
 reml.lrt(...)
 reml.lrt.asreml(...)
+\method{reorderClassify}{alldiffs}(...)
 \method{rmboundary}{asreml}(...)
 setvarianceterms.asreml(...)
 sig.devn.reparam.asreml(...)

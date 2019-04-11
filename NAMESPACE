@@ -72,8 +72,8 @@ export(addrm.terms.asreml,
        REMLRT.asreml,
        reml.lrt.asreml,
        reml.lrt,
-       reorderClassify,
-       reorderClassify.alldiffs,
+       renewClassify,
+       renewClassify.alldiffs,
        reparamSigDevn,
        reparamSigDevn.asrtests,
        rmboundary,
@@ -140,7 +140,7 @@ S3method(recalcWaldTab, asrtests)
 S3method(REMLRT, asreml) 
 S3method(recalcLSD, alldiffs)
 S3method(redoErrorIntervals, alldiffs)
-S3method(reorderClassify, alldiffs)
+S3method(renewClassify, alldiffs)
 S3method(reparamSigDevn, asrtests)
 S3method(rmboundary, asreml)
 S3method(rmboundary, asrtests)

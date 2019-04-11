@@ -2413,7 +2413,9 @@ setOldClass("asrtests")
     response <- as.character(asreml.obj$formulae$fixed[[2]])
   else
     response <- as.character(asreml.obj$fixed.formula[[2]])
-  if (!is.null(titles) & !is.na(match(response, names(titles))))
+  if (length(response) > 1)
+    response <- paste(response, collapse = ".")
+  if (!is.null(titles) && !is.na(match(response, names(titles))))
     response.title <- titles[[response]]
   else
   {
@@ -2434,23 +2436,24 @@ setOldClass("asrtests")
                           tdf = denom.df, 
                           x.num = x.num, x.fac = x.fac,
                           level.length = level.length, 
-                          pairwise = pairwise, 
+                          pairwise = pairwise,
+                          transform.power = transform.power, 
+                          offset = offset, scale = scale, 
                           inestimable.rm = inestimable.rm, 
                           alpha = alpha)
   if (is.null(linear.transformation))
   {
-    #Add lower and upper uncertainty limits
+    #Add lower and upper uncertainty limits - send transform info to addBacktransforms.alldiffs 
+    #so that backtransformed limits are updated
     diffs <- redoErrorIntervals.alldiffs(diffs, error.intervals = error.intervals,
                                          alpha = alpha, avsed.tolerance = avsed.tolerance,
-                                         meanLSD.type = meanLSD.type, LSDby = LSDby)
+                                         meanLSD.type = meanLSD.type, LSDby = LSDby,
+                                         transform.power = transform.power, 
+                                         offset = offset, scale = scale)
  
-    #Add backtransforms if there has been a transformation
-    diffs <- addBacktransforms.alldiffs(alldiffs.obj = diffs, 
-                                        transform.power = transform.power, 
-                                        offset = offset, scale = scale)
   } else
   {
-    #Linear transformation required
+    #Linear transformation required - send transform info to addBacktransforms.alldiffs
     diffs <- linTransform.alldiffs(alldiffs.obj = diffs, classify = classify,  term = term, 
                                    linear.transformation = linear.transformation, 
                                    Vmatrix = Vmatrix, 
@@ -2460,9 +2463,7 @@ setOldClass("asrtests")
                                    response = response, response.title = response.title, 
                                    x.num = x.num, x.fac = x.fac, 
                                    tables = "none", level.length = level.length, 
-                                   pairwise = pairwise, alpha = alpha,
-                                   transform.power = transform.power, 
-                                   offset = offset, scale = scale, 
+                                   pairwise = pairwise, alpha = alpha, 
                                    inestimable.rm = inestimable.rm)
   }
 

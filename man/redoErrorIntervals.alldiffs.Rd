@@ -5,7 +5,10 @@
        of an \code{\link{alldiffs.object}}.}
 \description{Given an \code{\link{alldiffs.object}}, adds or replaces \code{error.intervals} 
              for its \code{prediction} component. If the \code{backtransforms} component is 
-             present, \code{error.intervals} will be calculated for it too. 
+             present, the \code{transform.power}, \code{offset} and \code{scale} will be 
+             retieved from the \code{backtransforms} attributes, ignoring the values for the 
+             function's arguments, and the backtransformed 
+             \code{error.intervals} will also be calculated. 
 }
 \usage{
 \method{redoErrorIntervals}{alldiffs}(alldiffs.obj, error.intervals = "Confidence", 
@@ -61,11 +64,13 @@
              \code{overall}. The \code{meanLSD.type} also determines, in conjunction with 
              \code{avsed.tolerance}, which LSD will be usedin calculating \code{error.intervals} and, hence, 
              is used for plots. }
-\item{LSDby}{A \code{\link{character}} (vector) of factor names, being the names of the 
-             \code{\link{factor}s} for each of whose levels combinations a mean LSD, 
-             minLSD and max LSD is stored in the \code{LSD} component of the 
-             \code{\link{alldiffs.object}} object when \code{meanLSD.type} is \code{factor.combinatons}.}
- \item{\dots}{further arguments passed to \code{\link{allDifferences.data.frame}}.}
+\item{LSDby}{A \code{\link{character}} (vector) of variables names, being the names of the 
+             \code{\link{factor}s} or \code{\link{numeric}s} in the \code{classify} for each 
+             combination of which a mean LSD, minLSD and max LSD is stored in the \code{LSD} 
+             component of the \code{\link{alldiffs.object}} when \code{meanLSD.type} is 
+             \code{factor.combinatons}.}
+ \item{\dots}{pass \code{transform.power}, \code{offset} and \code{scale} as required - for
+              further information see \code{\link{predictPlus.asreml}}.}
 }
 \value{An \code{\link{alldiffs.object}} with components 
        \code{predictions}, \code{vcov}, \code{differences}, \code{p.differences} 

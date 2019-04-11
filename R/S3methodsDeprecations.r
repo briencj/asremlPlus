@@ -22,7 +22,7 @@ variofaces <- function(asreml.obj, ...) UseMethod("variofaces")
 linTransform <- function(alldiffs.obj, ...) UseMethod("linTransform")
 recalcLSD <- function(alldiffs.obj, ...) UseMethod("recalcLSD")
 redoErrorIntervals <- function(alldiffs.obj, ...) UseMethod("redoErrorIntervals")
-reorderClassify <- function(alldiffs.obj, ...) UseMethod("reorderClassify")
+renewClassify <- function(alldiffs.obj, ...) UseMethod("renewClassify")
 
 setvarianceterms <- function(call, ...) UseMethod("setvarianceterms")
 
@@ -123,6 +123,16 @@ reml.lrt <- function(...)
 
 reml.lrt.asreml <- function(...)
 { .Deprecated(new = "REMLRT.asreml", package = "asremlPlus")
+  invisible()
+}
+
+reorderClassify  <- function(...)
+{ .Deprecated(new = "renewClassify.alldiffs", package = "asremlPlus")
+  invisible()
+}
+
+reorderClassify.alldiffs  <- function(...)
+{ .Deprecated(new = "renewClassify.alldiffs", package = "asremlPlus")
   invisible()
 }
 

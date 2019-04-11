@@ -183,8 +183,8 @@
 \code{\link{redoErrorIntervals.alldiffs}} 
        \tab Adds or replaces the error intervals stored in the \cr
        \tab prediction component of an \code{\link{alldiffs.object}}. \cr
-\code{\link{reorderClassify.alldiffs}}
-       \tab Reorders the components in an \code{\link{alldiffs.object}} \cr 
+\code{\link{renewClassify.alldiffs}}
+       \tab Renews the components in an \code{\link{alldiffs.object}} \cr 
        \tab according to a new classify. \cr
 \code{\link{sort.alldiffs}}
        \tab Sorts the components in an \code{\link{alldiffs.object}} \cr 
