@@ -1530,7 +1530,7 @@ redoErrorIntervals.alldiffs <- function(alldiffs.obj, error.intervals = "Confide
 }
 
 "addBacktransforms.alldiffs" <- function(alldiffs.obj, transform.power = 1, 
-                                         offset = 0, scale = 1)
+                                         offset = 0, scale = 1, ...)
 {  
   #Add backtransforms if there has been a transformation
   if (nrow(alldiffs.obj$predictions) > 0 && (transform.power != 1 || offset != 0 || scale != 1))

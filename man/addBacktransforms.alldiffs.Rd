@@ -1,35 +1,31 @@
-\name{recalcLSD.alldiffs}
-\alias{recalcLSD.alldiffs}
-\alias{recalcLSD}
-\title{Adds or recalculates the LSD component of an \code{\link{alldiffs.object}}.}
-\description{Given an \code{\link{alldiffs.object}}, adds or recalculate its LSD component.
+\name{addBacktransforms.alldiffs}
+\alias{addBacktransforms.alldiffs}
+\alias{addBacktransforms}
+\title{Adds or recalculates the backtransforms component of an \code{\link{alldiffs.object}}.}
+\description{Given an \code{\link{alldiffs.object}}, adds or recalculate its \code{backtransforms} component.
 }
 \usage{
-\method{recalcLSD}{alldiffs}(alldiffs.obj, meanLSD.type = "overall", LSDby = NULL, 
-          alpha = 0.05, ...)}
+\method{addBacktransforms}{alldiffs}(alldiffs.obj, transform.power = 1, 
+                  offset = 0, scale = 1, ...)}
 \arguments{
 \item{alldiffs.obj}{An \code{\link{alldiffs.object}}.}
-\item{meanLSD.type}{A \code{\link{character}} string determining whether the mean LSD stored is 
-             (i) the \code{overall} mean, based on the square root of the mean of the variances of 
-             all pairwise variances, (ii) the mean for each \code{factor.combination} of the 
-             \code{\link{factor}s} specified by \code{LSDby}, which is based on the square root of 
-             the mean of the variances for all pairwise differences for each factor combination, or 
-             (iii) the \code{per.prediction} mean, based, for each prediction, 
-             on the square root of the mean of the variances for all pairwise differences 
-             involving that prediction. It also 
-             determines, in conjunction with \code{avsed.tolerance}, which LSD will be used
-             in calculating \code{error.intervals} and, hence, is used for plots.}
-\item{LSDby}{A \code{\link{character}} (vector) of variables names, being the names of the 
-             \code{\link{factor}s} or \code{\link{numeric}s} in the \code{classify} for each 
-             combination of which a mean LSD, minLSD and max LSD is stored in the \code{LSD} 
-             component of the \code{\link{alldiffs.object}} when \code{meanLSD.type} is 
-             \code{factor.combinatons}.}
-\item{alpha}{The significance level for an LSD to compare a pair of predictions.}
-\item{\dots}{further arguments passed to \code{\link{allDifferences.data.frame}}.}
+ \item{transform.power}{A \code{\link{numeric}} specifying the power of a transformation, if 
+              one has been applied to the response variable. Unless it is equal 
+              to 1, the default, back-transforms of the predictions will be 
+              obtained and presented in tables or graphs as appropriate. 
+              The back-transformation raises the predictions to the power equal 
+              to the reciprocal of \code{transform.power}, unless it equals 0 in 
+              which case the exponential of the predictions is taken.} 
+ \item{offset}{A \code{\link{numeric}} that has been added to each value of the 
+               response after any scaling and before applying any power transformation.}
+ \item{scale}{A \code{\link{numeric}} by which each value of the response has been multiplied 
+               before adding any offset and applying any power transformation.}
+ \item{\dots}{Provision for passsing arguments to functions called internally - 
+            not used at present.}
 }
 \value{An \code{\link{alldiffs.object}} with components 
-       \code{predictions}, \code{vcov}, \code{differences}, \code{p.differences} 
-       \code{sed}, \code{LSD} and, if present in \code{alldiffs.obj}, \code{backtransforms}.}
+       \code{predictions}, \code{vcov}, \code{differences}, \code{p.differences}, 
+       \code{sed}, \code{LSD} and \code{backtransforms}.}
 
 
 \author{Chris Brien}
@@ -45,7 +41,7 @@ data(WaterRunoff.dat)
 
 \dontrun{
 asreml.options(keep.order = TRUE) #required for asreml-R4 only
-current.asr <- asreml(fixed = pH ~ Benches + (Sources * (Type + Species)), 
+current.asr <- asreml(fixed = log.Turbidity ~ Benches + (Sources * (Type + Species)), 
                       random = ~ Benches:MainPlots,
                       keep.order=TRUE, data= WaterRunoff.dat)
 current.asrt <- as.asrtests(current.asr, NULL, NULL)
@@ -60,7 +56,7 @@ TS.diffs <- predictPlus(classify = "Sources:Type",
 if (requireNamespace("lmerTest", quietly = TRUE) & 
     requireNamespace("emmeans", quietly = TRUE))
 {
-  m1.lmer <- lmerTest::lmer(pH ~ Benches + (Sources * (Type + Species)) + 
+  m1.lmer <- lmerTest::lmer(log.Turbidity ~ Benches + (Sources * (Type + Species)) + 
                               (1|Benches:MainPlots),
                             data=na.omit(WaterRunoff.dat))
   TS.emm <- emmeans::emmeans(m1.lmer, specs = ~ Sources:Species)
@@ -82,8 +78,7 @@ if (requireNamespace("lmerTest", quietly = TRUE) &
 if (exists("TS.diffs"))
 {
   ##Recalculate the LSD values for predictions obtained using asreml or lmerTest  
-  TS.diffs <- recalcLSD.alldiffs(TS.diffs, meanLSD.type = "factor.combinations", 
-                                 LSDby = "Sources")
+  TS.diffs <- addBacktransforms.alldiffs(TS.diffs, transform.power = 0)
 }
 }
 \keyword{asreml}

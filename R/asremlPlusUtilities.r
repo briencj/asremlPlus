@@ -290,7 +290,8 @@ addtoTestSummary <- function(test.summary, terms, DF = 1, denDF = NA, p = NA,
 {
   if (!is.data.frame(wald.tab))
     wald.tab <- wald.tab$Wald
-  class(wald.tab) <- c("wald.tab", "data.frame")
+  if (!is.null(wald.tab))
+    class(wald.tab) <- c("wald.tab", "data.frame")
   return(wald.tab)  
 }
 

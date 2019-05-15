@@ -150,6 +150,9 @@
 \cr
 (vi) Prediction production and presentation \cr\cr
 
+\code{\link{addBacktransforms.alldiffs}}
+       \tab Adds or recalculates the backtransforms component of an \cr 
+       \tab \code{\link{alldiffs.object}}. \cr
 \code{\link{allDifferences.data.frame}}
        \tab Using supplied predictions and standard errors of pairwise \cr
        \tab differences or the variance matrix of predictions, forms \cr

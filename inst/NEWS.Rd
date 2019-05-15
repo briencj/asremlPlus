@@ -1,5 +1,17 @@
 \name{news}
 \title{News for Package asremlPlus}
+\section{asremlPlus Version 4.1-26 (2019-05-12)}{
+  \itemize{
+    \item{Rebuild for R 3.6.0.}
+    }
+}
+\section{asremlPlus Version 4.1-25 (2019-04-18)}{
+  \itemize{
+    \item{Fix a bug in changeTerms.asrtests that reset the \code{residual} model to the default when changing  fixed or random terms.}
+    \item{Check for \code{NULL} \code{wald.tab} when setting its \code{class} prior to storing it in an \code{asrtests.object}.}
+    \item{Add function addBacktransforms.alldiffs.}
+    }
+}
 \section{asremlPlus Version 4.1-24 (2019-04-11)}{
   \itemize{
     \item{Allow numerics, in addition to factors, in \code{LSDby} argument of predictPlus.}

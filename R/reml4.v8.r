@@ -986,7 +986,7 @@ setOldClass("asrtests")
   {
     if (asr4)
     {
-      if (!is.null(languageEl(asreml.obj$call, which = "residal")))
+      if (!is.null(languageEl(asreml.obj$call, which = "residual")))
         res.form <- " ~ . "
       else
         res.form <- NULL

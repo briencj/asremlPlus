@@ -692,3 +692,35 @@ test_that("linear.transform_WaterRunoff_asreml3", {
                                   save$lRGR_sm_32_42$backtransforms[1, c(2,4:5)]) < 1e-04))
 })
 
+test_that("addBacktransforms_WaterRunoff_asreml3", {
+  skip_if_not_installed("asreml")
+  skip_on_cran()
+  library(asreml, lib.loc = asr3.lib)
+  library(asremlPlus)
+  library(dae)
+  data(WaterRunoff.dat)
+  
+  ##Use asreml to get predictions and associated statistics
+  
+  asreml.options(keep.order = TRUE) #required for asreml-R4 only
+  current.asr <- asreml(fixed = log.Turbidity ~ Benches + (Sources * (Type + Species)), 
+                        random = ~ Benches:MainPlots,
+                        keep.order=TRUE, data= WaterRunoff.dat)
+  current.asrt <- as.asrtests(current.asr, NULL, NULL)
+  TS.diffs <- predictPlus(classify = "Sources:Type", 
+                          asreml.obj = current.asr, 
+                          wald.tab = current.asrt$wald.tab, 
+                          present = c("Sources", "Type", "Species"))
+  
+  ## Plot p-values for predictions obtained using asreml3
+  if (exists("TS.diffs"))
+  {
+    ##Add the backtransforms component for predictions obtained using asreml or lmerTest  
+    TS.diffs <- addBacktransforms.alldiffs(TS.diffs, transform.power = 0)
+    testthat::expect_false(is.null(TS.diffs$backtransforms))
+    testthat::expect_true(all(abs(exp(TS.diffs$predictions$predicted.value)-
+                                    TS.diffs$backtransforms$backtransformed.predictions) < 1e-06))
+    testthat::expect_true(all(abs(exp(TS.diffs$predictions$upper.Confidence.limit)-
+                                    TS.diffs$backtransforms$upper.Confidence.limit) < 1e-06))
+  }
+})

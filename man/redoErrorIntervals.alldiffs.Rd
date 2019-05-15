@@ -74,7 +74,7 @@
 }
 \value{An \code{\link{alldiffs.object}} with components 
        \code{predictions}, \code{vcov}, \code{differences}, \code{p.differences} 
-       \code{sed}, and \code{LSD}. 
+       \code{sed}, \code{LSD} and, if present in \code{alldiffs.obj}, \code{backtransforms}. 
 
            If \code{error.intervals} is not \code{"none"}, then the 
            \code{predictions} component and, if present, the 

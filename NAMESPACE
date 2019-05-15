@@ -1,4 +1,6 @@
-export(addrm.terms.asreml,
+export(addBacktransforms,
+       addBacktransforms.alldiffs,
+       addrm.terms.asreml,
        addrm.terms.asrtests,
        allDifferences,
        allDifferences.data.frame,
@@ -116,6 +118,7 @@ importFrom("utils", "data", sessionInfo, "tail")
 importFrom("foreach", "foreach", "%do%", "%dopar%")
 importFrom("parallel", "makeCluster", "stopCluster", "detectCores", "nextRNGStream")
 importFrom("doParallel", "registerDoParallel")
+S3method(addBacktransforms, alldiffs)
 S3method(allDifferences, data.frame)
 S3method(bootREMLRT, asreml) 
 S3method(changeTerms, asrtests) 
