@@ -936,7 +936,7 @@ recalcLSD.alldiffs <- function(alldiffs.obj, meanLSD.type = "overall", LSDby = N
 sliceLSDs <- function(alldiffs.obj, by, t.value, alpha = 0.05, tolerance = 1E-04)
 {
   classify <- attr(alldiffs.obj, which = "classify")
-  if (!all(grepl(by, classify, fixed = TRUE)))
+  if (!all(unlist(lapply(by, grepl, x = classify, fixed = TRUE))))
     stop("One of the elements of LSDby is not in the classify")
   
   sed <- alldiffs.obj$sed
@@ -983,13 +983,25 @@ sliceLSDs <- function(alldiffs.obj, by, t.value, alpha = 0.05, tolerance = 1E-04
                    function(lev, sed, t.value)
                    {
                      krows <- lev == fac.comb
-                     ksed <- sed[krows, krows]
-                     stats <- LSDstats(ksed, t.value)
+                     if (length(fac.comb[krows]) == 1)
+                     {
+                       warning(paste("LSD calculated for a single prediction",
+                                     "- applies to two independent predictions with the same standard error"))
+                       stats <- rep(t.value * sqrt(2) * 
+                                       alldiffs.obj$predictions$standard.error[krows] /2,
+                                     3)
+                       names(stats) <- c("minLSD", "meanLSD", "maxLSD")
+                     } else
+                     {
+                       ksed <- sed[krows, krows]
+                       stats <- LSDstats(ksed, t.value)
+                     }
                      return(stats)
                    }, sed = sed, t.value = t.value)
     if (!is.null(LSDs))
     {
-      LSDs <- as.data.frame(do.call(rbind, LSDs))
+      LSDs <- cbind(levs,
+                    as.data.frame(do.call(rbind, LSDs)))
       rownames(LSDs) <- levs
     }
   }  
@@ -1073,25 +1085,48 @@ redoErrorIntervals.alldiffs <- function(alldiffs.obj, error.intervals = "Confide
       overall.meanLSD <- overall.LSDs["meanLSD"]
       nLSD <- length(alldiffs.obj$LSD$meanLSD)
       sed.range <- abs(alldiffs.obj$LSD$minLSD - alldiffs.obj$LSD$maxLSD) /  alldiffs.obj$LSD$meanLSD
-      if (!is.na(avsed.tolerance) & overall.sed.range <= avsed.tolerance) #always plot overall LSD
-      {
-        alldiffs.obj$predictions <- within(alldiffs.obj$predictions, 
-                                           { 
-                                             lower.halfLeastSignificant.limit <- 
-                                               alldiffs.obj$predictions[["predicted.value"]] - 
-                                               0.5 * overall.meanLSD
-                                             upper.halfLeastSignificant.limit <- 
-                                               alldiffs.obj$predictions[["predicted.value"]] + 
-                                               0.5 * overall.meanLSD
-                                           })
-      } else #process for each meanLSD.type option
+      # if (!is.na(avsed.tolerance) & overall.sed.range <= avsed.tolerance) #always plot overall LSD
+      # {
+      #   alldiffs.obj$predictions <- within(alldiffs.obj$predictions, 
+      #                                      { 
+      #                                        lower.halfLeastSignificant.limit <- 
+      #                                          alldiffs.obj$predictions[["predicted.value"]] - 
+      #                                          0.5 * overall.meanLSD
+      #                                        upper.halfLeastSignificant.limit <- 
+      #                                          alldiffs.obj$predictions[["predicted.value"]] + 
+      #                                          0.5 * overall.meanLSD
+      #                                      })
+      # } else #process for each meanLSD.type option
+      # {
+      #   if (avLSD == "overall")
+      #   {
+      #     if (nLSD != 1)
+      #       stop("There is not just one LSD for meanLSD.type overall")
+      #     warning("The avsed.tolerance is exceeded - reverting to confidence intervals")
+      #     revert = TRUE
+      #   } else
+      #process for each meanLSD.type option
       {
         if (avLSD == "overall")
         {
-          if (nLSD != 1)
-            stop("There is not just one LSD for meanLSD.type overall")
-          warning("The avsed.tolerance is exceeded - reverting to confidence intervals")
-          revert = TRUE
+          if (!is.na(avsed.tolerance) & overall.sed.range <= avsed.tolerance)
+          {
+            if (nLSD != 1)
+              stop("There is not just one LSD for meanLSD.type overall")
+            alldiffs.obj$predictions <- within(alldiffs.obj$predictions,
+                                               {
+                                                 lower.halfLeastSignificant.limit <-
+                                                   alldiffs.obj$predictions[["predicted.value"]] -
+                                                   0.5 * overall.meanLSD
+                                                 upper.halfLeastSignificant.limit <-
+                                                   alldiffs.obj$predictions[["predicted.value"]] +
+                                                   0.5 * overall.meanLSD
+                                               })
+          } else
+          {              
+            warning("The avsed.tolerance is exceeded - reverting to confidence intervals")
+            revert = TRUE
+          } 
         } else
         {
           if (avLSD == "factor.combinations")

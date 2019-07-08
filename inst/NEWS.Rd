@@ -1,5 +1,24 @@
 \name{news}
 \title{News for Package asremlPlus}
+\section{asremlPlus Version 4.1-29 (2019-07-08)}{
+  \itemize{
+    \item{Allow for calculation of notional LSDs when LSDs for a single observation are specified.}
+    \item{Removed restriction that overall LSD is always used when the range of the SEDs divided by the average of the SEDs is less than the \code{avsed.tolerance}.}
+    \item{A bug in detecting valid wald.tab objects was fixed.}
+    }
+}
+\section{asremlPlus Version 4.1-28 (2019-07-04)}{
+  \itemize{
+    \item{Modify testranfix.asrtests, as.asrtests, recalcWaldTab.asrtests and chooseModel.asrtests to allow for p-values based on a conditional Wald F-statistic is one is present in the \code{wald.tab}.}
+    \item{Allow for 6-column \code{wald.tab} such as is obtained for \code{ssType} set to \code{"conditional"}.}
+    }
+}
+\section{asremlPlus Version 4.1-27 (2019-06-01)}{
+  \itemize{
+    \item{Revise Wheat vignette to use qqplotr for Normal Probability Plots.}
+    \item{Revise test for tilde (~) in formula supplied to changeTerms so that only a leading tilde causes an error.}
+    }
+}
 \section{asremlPlus Version 4.1-26 (2019-05-12)}{
   \itemize{
     \item{Rebuild for R 3.6.0.}

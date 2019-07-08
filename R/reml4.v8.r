@@ -31,6 +31,21 @@
   return(isasr)
 }
 
+"validWaldTab" <- function(object)
+{
+  asr4 <- isASRemlVersionLoaded(4, notloaded.fault = FALSE)
+  iswald <- TRUE 
+  if (!is.null(object) && (!is.data.frame(object) || all(ncol(object) != c(4,6))))
+  {
+    iswald[1] <- FALSE
+    iswald <- c(iswald, 
+                "wald.tab should be a 4- or 6-column data.frame -- perhaps extract Wald component from list")
+  }
+  if (length(iswald) > 1)
+    iswald[1] <- "Error(s) in validWaldTab(object) : "
+  return(iswald)
+}
+
 "asrtests" <- function(asreml.obj, wald.tab = NULL, test.summary = NULL, 
                        denDF = "numeric", ...)
 {
@@ -57,8 +72,10 @@
      stop("test.summary in an asrtests object should be a data.frame with 5 columns")
   if (!is.null(wald.tab))
   {  
-    if (!is.data.frame(wald.tab) || ncol(wald.tab) != 4)
-      stop("wald.tab should be a 4-column data.frame -- perhaps extract Wald component from list")
+    #Check that have a valid wald.tab object
+    validwald <- validWaldTab(wald.tab)  
+    if (is.character(validwald))
+      stop(validwald)
   }
   else #form wald.tab
   { 
@@ -283,9 +300,13 @@ setOldClass("asrtests")
   if (nrow(wald.tab) == 0)
     warning("Wald.tab is empty - probably the calculations have failed")
   else
+  {
     #Calc Pr
-    wald.tab$Pr <- 1 - pf(wald.tab$F.inc, wald.tab$Df, wald.tab$denDF)
-  
+    if ("F.con" %in% colnames(wald.tab))
+      wald.tab$Pr <- 1 - pf(wald.tab$F.con, wald.tab$Df, wald.tab$denDF)
+    else
+      wald.tab$Pr <- 1 - pf(wald.tab$F.inc, wald.tab$Df, wald.tab$denDF)
+  }
   return(wald.tab)
 }
 
@@ -940,8 +961,8 @@ setOldClass("asrtests")
   all.terms <- c(dropFixed, addFixed, dropRandom, addRandom, newResidual)
   if (all(is.null(all.terms)))
     stop("In analysing ", kresp, ", must supply terms to be removed/added")
-  if (any(grepl("~", all.terms, fixed = TRUE)))
-    stop("In analysing ", kresp, ", a tilde (~) has been included with the terms")
+  if (any(substr(trimws(all.terms), 1, 1) == "~"))
+    stop("In analysing ", kresp, ", a leading tilde (~) has been included")
   if (!is.character(all.terms))
     stop("In analysing ", kresp, ", must supply terms as character")
 
@@ -1175,9 +1196,9 @@ setOldClass("asrtests")
   #See if in fixed model
   { 
     if (asr4)
-      termno <- findterm(term, rownames(asreml.obj$aov))
+      termno <- findterm(term, rownames(wald.tab))
     else
-      termno <- findterm(term, rownames(asreml.obj$aovTbl))
+      termno <- findterm(term, rownames(wald.tab))
     #Term is not in either model
     if (termno == 0)
       #Term is not in either model
@@ -1188,12 +1209,14 @@ setOldClass("asrtests")
     { 
       wald.tab <- asreml::wald.asreml(asreml.obj, denDF = denDF, trace = trace, ...)
       wald.tab <- chkWald(wald.tab)
+      termno <- findterm(term, rownames(wald.tab)) #in case order has changed
       options <- c("none", "residual", "maximum", "supplied")
       opt <- options[check.arg.values(dDF.na, options)]
       if (opt == "supplied" & is.null(dDF.values))
             stop('Need to set dDF.values because have set dDF.na = \"supplied\"')
       #Compute p-value
-      p <- wald.tab[termno, 4]
+      p <- wald.tab[termno, 
+                    colnames(wald.tab)[grepl("Pr", colnames(wald.tab), fixed = TRUE)]]
       ndf <- wald.tab$Df[termno]
       den.df <- NA
       if ("denDF" %in% colnames(wald.tab) & !is.na(wald.tab$denDF[termno]))
@@ -1222,7 +1245,12 @@ setOldClass("asrtests")
       #Calc F, if necessary, and p
       if (!is.na(den.df))
       { if ("denDF" %in% colnames(wald.tab))
+      {
+        if ("F.con" %in% colnames(wald.tab))
+          test.stat <- wald.tab$F.con[termno]
+        else
           test.stat <- wald.tab$F.inc[termno]
+      }
         else
           test.stat <- wald.tab$'Wald statistic'[termno]/ndf
         p <- 1 - pf(test.stat, ndf, den.df)
@@ -1507,12 +1535,11 @@ setOldClass("asrtests")
     test.summary <- temp.asrt$test.summary
   }
   
-  
-  results <- asrtests(asreml.obj = asreml.obj, 
-                      wald.tab = wald.tab, 
-                      test.summary = test.summary,
-                      denDF = denDF, dDF.na = dDF.na, 
-                      dDF.values = dDF.values, trace = trace, ...)
+  results <- as.asrtests(asreml.obj = asreml.obj, 
+                         wald.tab = wald.tab, 
+                         test.summary = test.summary,
+                         denDF = denDF, dDF.na = dDF.na, 
+                         dDF.values = dDF.values, trace = trace, ...)
   invisible(results)
 }
 
@@ -2199,8 +2226,10 @@ setOldClass("asrtests")
   if ("vcov" %in% names(tempcall))
     stop("Use Vmatrix to request that the vcov matrix be saved")
 
-  if (!is.null(wald.tab) & (!is.data.frame(wald.tab) || ncol(wald.tab) != 4))
-    stop("wald.tab should be a 4-column data.frame -- perhaps extract Wald component from list")
+  #Check that have a valid wald.tab object
+  validwald <- validWaldTab(wald.tab)  
+  if (is.character(validwald))
+    stop(validwald)
   if (!is.null(x.pred.values) && !is.null(x.plot.values))
     if (length(x.pred.values) != length(x.plot.values))
     {
@@ -2984,8 +3013,9 @@ setOldClass("asrtests")
   if ("vcov" %in% names(tempcall))
     stop("Use Vmatrix to request that the vcov matrix be saved")
   
-  if (!is.null(wald.tab) & (!is.data.frame(wald.tab) || ncol(wald.tab) != 4))
-    stop("wald.tab should be a 4-column data.frame -- perhaps extract Wald component from list")
+  validwald <- validWaldTab(wald.tab)  
+  if (is.character(validwald))
+    stop(validwald)
   if (!is.null(x.pred.values) && !is.null(x.plot.values))
     if (length(x.pred.values) != length(x.plot.values))
     {

@@ -94,4 +94,19 @@ test_that("Wheat_asreml4", {
   testthat::expect_equal(Var.diffs$backtransforms, NULL)
   testthat::expect_equal(as.character(Var.diffs$predictions$Variety[[1]]),"10")
   testthat::expect_silent(plotPvalues(Var.diffs))
+  
+  #Test for single-value LSDs
+  diffs <- predictPlus(classify = "Variety", 
+                           asreml.obj=current.asr, 
+                           error.intervals="halfLeast",
+                           meanLSD.type = "fact", LSDby = "Variety",
+                           wald.tab=current.asrt$wald.tab,
+                           tables = "predictions", 
+                           sortFactor = "Variety")
+  testthat::expect_equal(nrow(diffs$LSD), 25)
+  testthat::expect_true("lower.halfLeastSignificant.limit" %in% names(diffs$predictions))
+  testthat::expect_true(all((diffs$predictions$upper.halfLeastSignificant.limit - 
+                               diffs$predictions$lower.halfLeastSignificant.limit - 
+                               diffs$LSD$meanLSD[as.numfac(diffs$predictions$Variety)]) < 1e-05))
+  diffs$predictions$upper.halfLeastSignificant.limit - diffs$predictions$lower.halfLeastSignificant.limit
 })

@@ -147,8 +147,7 @@
              If \code{meanLSD.type} is set to \code{overall}, the \code{avsed.tolerance} is not 
              \code{NA} and the range of the SEDs divided by the average of the SEDs exceeds 
              \code{avsed.tolerance} then the \code{error.intervals} calculations and the plotting 
-             will revert to confidence intervals. Also, half LSDs cannot be used for 
-             backtansformed values and so confidence intervals will be used instead.}
+             will revert to confidence intervals.}
 \item{avsed.tolerance}{A \code{\link{numeric}} giving the value of the SED range, the range of the SEDs 
              divided by the square root of the mean of the variances of all or a subset of the 
              pairwise differences, that is considered reasonable in calculating 
@@ -169,14 +168,17 @@
              is not exceeded for any prediction then the half LSDs are used in \code{error.intervals} 
              and plots; otherwise, \code{error.intervals} and plotting revert to confidence intervals.
              }}
-\item{meanLSD.type}{A \code{\link{character}} string determining whether the mean LSD stored is 
+ \item{meanLSD.type}{A \code{\link{character}} string determining whether the mean LSD stored is 
              (i) the \code{overall} mean, based on the square root of the mean of the variances of 
              all pairwise variances, (ii) the mean for each \code{factor.combination} of the 
              \code{\link{factor}s} specified by \code{LSDby}, which is based on the square root of 
-             the mean of the variances for all pairwise differences for each factor combination, or 
+             the mean of the variances for all pairwise differences for each factor combination, unless 
+             there is only one predction for a \code{factor.combination}, when notional LSDs are 
+             calculated that are based on the standard error of the prediction multiplied by the square 
+              root of two, or 
              (iii) the \code{per.prediction} mean, based, for each prediction, 
-             on the square root of the mean of the variances for all pairwise differences 
-             involving that prediction. It also 
+             on the square root of the mean of the variances for all pairwise differences involving 
+             that prediction. It also 
              determines, in conjunction with \code{avsed.tolerance}, which LSD will be used
              in calculating \code{error.intervals} and, hence, is used for plots.}
 \item{LSDby}{A \code{\link{character}} (vector) of variables names, being the names of the 

@@ -28,8 +28,7 @@
              If \code{meanLSD.type} is set to \code{overall}, the \code{avsed.tolerance} is not 
              \code{NA} and the range of the SEDs divided by the average of the SEDs exceeds 
              \code{avsed.tolerance} then the \code{error.intervals} calculations and the plotting 
-             will revert to confidence intervals. Also, half LSDs cannot be used for 
-             backtansformed values and so confidence intervals will be used instead.}
+             will revert to confidence intervals.}
 \item{alpha}{The significance level for an LSD to compare a pair of predictions.}
 \item{avsed.tolerance}{A \code{\link{numeric}} giving the value of the SED range, the range of the SEDs 
              divided by the square root of the mean of the variances of all or a subset of the 

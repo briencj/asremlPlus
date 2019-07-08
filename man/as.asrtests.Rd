@@ -22,7 +22,7 @@ asrtests(asreml.obj, wald.tab = NULL, test.summary = NULL,
 \arguments{
  \item{asreml.obj}{an \code{asreml} object for a fitted model.}
  \item{wald.tab}{A \code{data.frame} containing a pseudo-anova table for 
-       the fixed terms produced by \code{wald.asreml}; it should have 4 columns.
+       the fixed terms produced by \code{wald.asreml}; it should have 4 or 6 columns.
        Sometimes \code{wald.asreml} returns a \code{data.frame} and at other 
        times a \code{list}. For example, it may return a \code{list} when 
        \code{denDF} is used. In this case, the \code{Wald} component of the 

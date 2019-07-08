@@ -290,6 +290,12 @@ addtoTestSummary <- function(test.summary, terms, DF = 1, denDF = NA, p = NA,
 {
   if (!is.data.frame(wald.tab))
     wald.tab <- wald.tab$Wald
+  
+  #Check that have a valid wald.tab object
+  validwald <- validWaldTab(wald.tab)  
+  if (is.character(validwald))
+    stop(validwald)
+  
   if (!is.null(wald.tab))
     class(wald.tab) <- c("wald.tab", "data.frame")
   return(wald.tab)  

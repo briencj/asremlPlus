@@ -9,14 +9,17 @@
           alpha = 0.05, ...)}
 \arguments{
 \item{alldiffs.obj}{An \code{\link{alldiffs.object}}.}
-\item{meanLSD.type}{A \code{\link{character}} string determining whether the mean LSD stored is 
+ \item{meanLSD.type}{A \code{\link{character}} string determining whether the mean LSD stored is 
              (i) the \code{overall} mean, based on the square root of the mean of the variances of 
              all pairwise variances, (ii) the mean for each \code{factor.combination} of the 
              \code{\link{factor}s} specified by \code{LSDby}, which is based on the square root of 
-             the mean of the variances for all pairwise differences for each factor combination, or 
+             the mean of the variances for all pairwise differences for each factor combination, unless 
+             there is only one predction for a \code{factor.combination}, when notional LSDs are 
+             calculated that are based on the standard error of the prediction multiplied by the square 
+              root of two, or 
              (iii) the \code{per.prediction} mean, based, for each prediction, 
-             on the square root of the mean of the variances for all pairwise differences 
-             involving that prediction. It also 
+             on the square root of the mean of the variances for all pairwise differences involving 
+             that prediction. It also 
              determines, in conjunction with \code{avsed.tolerance}, which LSD will be used
              in calculating \code{error.intervals} and, hence, is used for plots.}
 \item{LSDby}{A \code{\link{character}} (vector) of variables names, being the names of the 

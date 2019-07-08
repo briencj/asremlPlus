@@ -83,17 +83,24 @@
                     the square root of the mean of the variances of pairwise differences. 
                     If \code{factor.combination} was specified for \code{meanLSD.type} when the 
                     LSDs were being calculated, then \code{LSD} contains an LSD for each 
-                    \code{factor.combination} of the \code{\link{factor}s} specified by \code{LSDby}; 
-                    each LSD is the square root of the mean of the variances for all 
-                    pairwise differences for each factor combination. 
+                    \code{factor.combination} of the \code{\link{factor}s} specified by \code{LSDby}.  
+                    Each LSD is calculated from the square root of the mean of the variances for all 
+                    pairwise differences for each factor combination, unless there is only one predicted 
+                    value for each \code{factor.combination}, when it is based on the standard error of 
+                    the prediction multiplied by the square root of two. 
                     If \code{LSD} is not \code{NULL} then the overall mean LSD will be added as 
                     an attribute named \code{meanLSD} of the \code{\link{alldiffs.object}}, as will 
-                    the values of \code{meanLSD.type} and \code{LSDby}.}
+                    the values of \code{meanLSD.type} and \code{LSDby}. The LSD for a single prediction 
+                    assumes that any predictions to be compared are independent; this is not the case if 
+                    residual errors are correlated.}
  \item{meanLSD.type}{A \code{\link{character}} string determining whether the mean LSD stored is 
              (i) the \code{overall} mean, based on the square root of the mean of the variances of 
              all pairwise variances, (ii) the mean for each \code{factor.combination} of the 
              \code{\link{factor}s} specified by \code{LSDby}, which is based on the square root of 
-             the mean of the variances for all pairwise differences for each factor combination, or 
+             the mean of the variances for all pairwise differences for each factor combination, unless 
+             there is only one prediction for a \code{factor.combination}, when notional LSDs are 
+             calculated that are based on the standard error of the prediction multiplied by the square 
+              root of two, or 
              (iii) the \code{per.prediction} mean, based, for each prediction, 
              on the square root of the mean of the variances for all pairwise differences involving 
              that prediction. If \code{LSD} is not \code{NULL} then \code{meanLSD.type} will be added 

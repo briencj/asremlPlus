@@ -14,6 +14,14 @@ test_that("choose.model.asrtests_asreml3", {
                         random = ~Benches:MainPlots:SubPlots:spl(xDay), 
                         data = WaterRunoff.dat, keep.order = TRUE)
   current.asrt <- as.asrtests(current.asr, NULL, NULL)
+ 
+  #some tests for validWaldTab
+  testthat::expect_error(test.wald <- as.asrtests(current.asr, 
+                                                  wald.tab = WaterRunoff.dat))
+  asrt.wald <- testranfix(current.asrt, term = "Sources:Species", ssType = "conditional")
+  testthat::expect_equal(ncol(asrt.wald$wald.tab), 6)
+  testthat::expect_true("F.con" %in% colnames(asrt.wald$wald.tab))
+  
   terms.treat <- c("Sources", "Type", "Species", 
                    "Sources:Type", "Sources:Species")
   terms <- sapply(terms.treat, 

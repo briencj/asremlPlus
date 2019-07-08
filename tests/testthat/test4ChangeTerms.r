@@ -44,21 +44,21 @@ test_that("Wheatchange_asreml4", {
                               addRandom = "spl(vRow)", dropRandom = "units", 
                               checkboundaryonly = TRUE)
   testthat::expect_equal(sum(chk.changes(current.asrt$test.summary)), 2)
-  testthat::expect_equal(nrow(summary(current.asrt$asreml.obj)$varcomp), 4)
+  testthat::expect_equal(nrow(summary(current.asrt$asreml.obj)$varcomp), 6)
   testthat::expect_equal(nrow(current.asrt$wald.tab), 4)
   
   # Drop all fixed terms
   current.asrt <- changeTerms(current.asrt, dropFixed = "Rep + Variety + vRow", 
                               checkboundaryonly = TRUE)
   testthat::expect_equal(sum(chk.changes(current.asrt$test.summary)), 1)
-  testthat::expect_equal(nrow(summary(current.asrt$asreml.obj)$varcomp), 4)
+  testthat::expect_equal(nrow(summary(current.asrt$asreml.obj)$varcomp), 6)
   testthat::expect_equal(nrow(current.asrt$wald.tab), 1)
 
   # Add back fixed terms
   current.asrt <- changeTerms(current.asrt, addFixed = "Rep + Variety + vRow", 
                               checkboundaryonly = TRUE)
   testthat::expect_equal(sum(chk.changes(current.asrt$test.summary)), 1)
-  testthat::expect_equal(nrow(summary(current.asrt$asreml.obj)$varcomp), 4)
+  testthat::expect_equal(nrow(summary(current.asrt$asreml.obj)$varcomp), 6)
   testthat::expect_equal(nrow(current.asrt$wald.tab), 4)
   
   # Restart with residual, remove it and then return it

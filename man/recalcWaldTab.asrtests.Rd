@@ -7,7 +7,8 @@
   F.inc values were not calculated, this function allows the user to specify how 
   approximate denDF values are to be obtained. This is done through the \code{dDF.na} and 
   \code{dDF.values} arguments. Note that if denDF values are available in the Wald table then 
-  only those that are \code{NA} will be replaced. It is noted that, as of asreml version 4, 
+  only those that are \code{NA} will be replaced. The P values are recalculated using F.con, 
+   if present in the \code{wald.tab}, otherwise F.inc is used. It is noted that, as of asreml version 4, 
   \code{wald.asreml} has a \code{kenadj} argument.}
 \usage{
 \method{recalcWaldTab}{asrtests}(asrtests.obj, recalc.wald = FALSE,
@@ -48,7 +49,7 @@
               functions are invoked; if FALSE then no output is displayed.}
  \item{\dots}{further arguments passed to \code{asreml} and to \code{wald.asreml}.}
 }
-\value{A \code{wald.tab}: a 4-column \code{data.frame} containing a 
+\value{A \code{wald.tab}: a 4- or 6-column \code{data.frame} containing a 
                pseudo-anova table for the fixed terms produced by \code{wald.asreml}.
 }
 

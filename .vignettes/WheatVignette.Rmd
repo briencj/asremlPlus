@@ -9,7 +9,7 @@ output:
 ```{r setup, include=TRUE}
 library(asreml, quietly=TRUE)
 library(asremlPlus)
-suppressMessages(library(QTLRel, quietly=TRUE))
+suppressMessages(library(qqplotr, quietly=TRUE))
 options(width = 100)
 ```
 
@@ -161,12 +161,14 @@ The variofaces are the lag 1 plots of the sample semivariogram with simulated co
 
 ### Plot normal quantile plot
 
-The plot is obtained using the `qqPlot` function from the  `QTLRel` function (Cheng, 2018).
+The plot is obtained using the `ggplot` function with extensions available from the `qqplotr` package (Cheng, 2018).
 
 ```{r Nplot}
-with(Wheat.dat, qqPlot(y = res, 
-                       xlab = "Theoretical Quantiles", ylab = "Sample Quantiles", 
-                       main="Normal probability plot"))
+ggplot(data = Wheat.dat, mapping = aes(sample = res)) +
+  stat_qq_band(bandType = "ts") + stat_qq_line() + stat_qq_point() +
+  labs(x = "Theoretical Quantiles", y = "Sample Quantiles",
+       title = "Normal probability plot") +
+  theme(plot.title = element_text(size = 12, face = "bold")) + theme_bw()
 ```
 
 ## Get Variety predictions and all pairwise prediction differences and p-values

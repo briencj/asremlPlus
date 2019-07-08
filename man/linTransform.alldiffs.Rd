@@ -97,8 +97,7 @@
              If \code{meanLSD.type} is set to \code{overall}, the \code{avsed.tolerance} is not 
              \code{NA} and the range of the SEDs divided by the average of the SEDs exceeds 
              \code{avsed.tolerance} then the \code{error.intervals} calculations and the plotting 
-             will revert to confidence intervals. Also, half LSDs cannot be used for 
-             backtansformed values and so confidence intervals will be used instead.}
+             will revert to confidence intervals.}
 \item{avsed.tolerance}{A \code{\link{numeric}} giving the value of the SED range, the range of the SEDs 
              divided by the square root of the mean of the variances of all or a subset of the 
              pairwise differences, that is considered reasonable in calculating 
@@ -126,7 +125,9 @@
              the mean of the variances for all pairwise differences for each factor combination, or 
              (iii) the \code{per.prediction} mean, based, for each prediction, 
              on the square root of the mean of the variances for all pairwise differences 
-             involving that prediction. It also 
+             involving that prediction, unless there is only one prediction for a 
+             \code{factor.combination}, when notional LSDs are calculated that are based on the 
+             standard error of the prediction multiplied by the square root of two. It also 
              determines, in conjunction with \code{avsed.tolerance}, which LSD will be used
              in calculating \code{error.intervals} and, hence, is used for plots.}
 \item{LSDby}{A \code{\link{character}} (vector) of variables names, being the names of the 

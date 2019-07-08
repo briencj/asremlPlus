@@ -10,13 +10,21 @@ test_that("choose.model.asrtests_asreml4", {
   library(asremlPlus)
   print(packageVersion("asreml"))
   data(WaterRunoff.dat)
-  asreml.options(keep.order = TRUE)
+  asreml::asreml.options(keep.order = TRUE)
   current.asr <- do.call("asreml",
                          args = list(fixed = log.Turbidity ~ Benches +
                                        (Sources * (Type + Species)) * Date,
                                      random = ~Benches:MainPlots:SubPlots:spl(xDay),
                                      data = quote(WaterRunoff.dat)))
   current.asrt <- as.asrtests(current.asr, NULL, NULL)
+  
+  #some tests for validWaldTab
+  testthat::expect_error(test.wald <- as.asrtests(current.asr, 
+                                                  wald.tab = WaterRunoff.dat))
+  asrt.wald <- testranfix(current.asrt, term = "Sources:Species", ssType = "conditional")
+  testthat::expect_equal(ncol(asrt.wald$wald.tab), 6)
+  testthat::expect_true("F.con" %in% colnames(asrt.wald$wald.tab))
+  
   terms.treat <- c("Sources", "Type", "Species", 
                    "Sources:Type", "Sources:Species")
   terms <- sapply(terms.treat, 
@@ -45,7 +53,7 @@ test_that("spl.asrtests_asreml4", {
   library(asremlPlus)
   print(packageVersion("asreml"))
   data(WaterRunoff.dat)
-  asreml.options(keep.order = TRUE)
+  asreml::asreml.options(keep.order = TRUE)
   current.asr <- do.call("asreml", 
                          args = list(fixed = log.Turbidity ~ Benches + 
                                        (Sources * (Type + Species)) * Date, 
@@ -93,7 +101,7 @@ test_that("reparamSigDevn.asrtests_asreml4", {
   library(asreml)
   library(asremlPlus)
   data(WaterRunoff.dat)
-  asreml.options(keep.order = TRUE)
+  asreml::asreml.options(keep.order = TRUE)
   current.asr <- asreml(fixed = log.Turbidity ~ Benches + Sources + Type + Species + 
                           Sources:Type + Sources:Species + Sources:Species:xDay + 
                           Sources:Species:Date, 
