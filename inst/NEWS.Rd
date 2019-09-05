@@ -1,5 +1,10 @@
 \name{news}
 \title{News for Package asremlPlus}
+\section{asremlPlus Version 4.1-30 (2019-09-05)}{
+  \itemize{
+    \item{Implement a check that asreml has returned sed and/or vcov when requested.}
+    }
+}
 \section{asremlPlus Version 4.1-29 (2019-07-08)}{
   \itemize{
     \item{Allow for calculation of notional LSDs when LSDs for a single observation are specified.}

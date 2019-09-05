@@ -2166,6 +2166,9 @@ setOldClass("asrtests")
     pred <- predict(asreml.obj, classify=classify, levels=levels, 
                     sed = FALSE, vcov = TRUE, 
                     trace = trace, ...)
+    if (!("vcov" %in% names(pred)))
+      stop(paste0("predict.asreml has not returned the variance matrix of the predictions as requested\n",
+                  "(possibly no estimable predicted values)"))
     vc <- as.matrix(pred$vcov)
     n <- nrow(vc)
     dvcov <- diag(vc)
@@ -2174,9 +2177,16 @@ setOldClass("asrtests")
     pred$sed <- sqrt(pred$sed)
     diag(pred$sed) <- NA_real_
   } else
+  {
     pred <- predict(asreml.obj, classify=classify, levels=levels, 
                     sed = sed, vcov = vcov, 
                     trace = trace, ...)
+    stop(paste0("predict.asreml has not returned the variance matrix of the predictions as requested\n",
+                "(possibly no estimable predicted values)"))
+  }
+  if (sed && !("sed" %in% names(pred)))
+    stop(paste0("predict.asreml has not returned the sed component of the predictions as requested\n",
+                "(possibly no estimable predicted values)"))
   class(pred$pvals) <- c("predictions.frame", class(pred$pvals))
   return(pred)
 }

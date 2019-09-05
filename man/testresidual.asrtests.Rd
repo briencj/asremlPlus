@@ -32,7 +32,7 @@
                 (iii) \code{test.summary}.}
  \item{terms}{A model for the \code{residual} argument in \code{asreml-R4} 
              (the \code{rcov} formula in older versions of \code{asreml}), stored 
-             as a \code{character}.}
+             as a \code{character}. To remove the model, enter \code{"-(.)"}.}
  \item{label}{A character string to use as the label in \code{test.summary} and 
               which indicates what is being tested.}
  \item{simpler}{A logical indicating whether the new model to be fitted is 

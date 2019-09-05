@@ -227,6 +227,39 @@ test_that("predictPresent.asreml4", {
   
   })
 
+
+cat("#### Test for error when no predictions.asreml4\n")
+test_that("noPredictions.asreml4", {
+  skip_if_not_installed("asreml")
+  skip_on_cran()
+  library(asreml)
+  library(asremlPlus)
+  data(gw.dat)
+  current.asr <- do.call(asreml, 
+                         args=list(fixed = y ~ Species*Substrate*Irrigation,
+                                   random = ~ Row + Column,
+                                   keep.order=TRUE, data = gw.dat, 
+                                   maxiter=50, workspace = 1e09, stepsize = 0.0001))
+  current.asrt <- asrtests(current.asr, NULL, NULL)
+  current.asrt <- rmboundary(current.asrt)
+  testthat::expect_error(diffs <- predictPresent(current.asrt$asreml.obj,
+                                                 terms = "Irrigation",
+                                                 error.intervals = "Conf", 
+                                                 wald.tab = current.asrt$wald.tab,
+                                                 tables = "none")[[1]], 
+                         regexp = "predict.asreml has not returned the variance matrix of the predictions as requested",
+                         fixed = TRUE)
+  
+  testthat::expect_error(diffs <- predictPresent(current.asrt$asreml.obj,
+                                                 terms = "Irrigation",
+                                                 linear.transformation = ~ Irrigation,
+                                                 error.intervals = "Conf", 
+                                                 wald.tab = current.asrt$wald.tab,
+                                                 tables = "none")[[1]], 
+                         regexp = "predict.asreml has not returned the variance matrix of the predictions as requested",
+                         fixed = TRUE)
+})
+
 cat("#### Test for plotPvalues.asreml4\n")
 test_that("plotPvalues.asreml4", {
   skip_if_not_installed("asreml")
