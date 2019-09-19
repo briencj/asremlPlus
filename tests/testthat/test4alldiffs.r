@@ -458,6 +458,58 @@ test_that("facCombine.alldiffs4", {
   wald.tab <-  current.asrt$wald.tab
   den.df <- wald.tab[match("Host:Cadavers:Ladybird", rownames(wald.tab)), "denDF"]
   testthat::expect_equal(den.df,60)
+  
+  ## Use lme4 and emmmeans to get predictions and associated statistics
+  if (requireNamespace("lmerTest", quietly = TRUE) & 
+      requireNamespace("emmeans", quietly = TRUE))
+  {
+    m1.lmer <- lmerTest::lmer(logitP ~ Host*Cadavers*Ladybird + (1|Run),
+                              data=Ladybird.dat)
+    HCL.emm <- emmeans::emmeans(m1.lmer, specs = ~ Host:Cadavers:Ladybird)
+    HCL.preds <- summary(HCL.emm)
+    den.df <- min(HCL.preds$df)
+    ## Modify HCL.preds to be compatible with a predictions.frame
+    names(HCL.preds)[match(c("emmean", "SE", "lower.CL", "upper.CL"), 
+                           names(HCL.preds))] <- c("predicted.value", 
+                                                   "standard.error", 
+                                                   "lower.Confidence.limit",
+                                                   "upper.Confidence.limit")
+    HCL.preds$est.status <- "Estimable"
+    HCL.preds$est.status[is.na(HCL.preds$predicted.value)] <- "Aliased"
+    HCL.vcov <- vcov(HCL.emm)
+    HCL.sed <- NULL
+  }
+  
+  ## Form an all.diffs object with predictions obtained with either asreml or lmerTest
+  HCL.diffs <- as.alldiffs(predictions = HCL.preds, classify = "Host:Cadavers:Ladybird", 
+                           sed = HCL.sed, vcov = HCL.vcov, tdf = den.df)
+  
+  ## check the class and validity of the alldiffs object
+  is.alldiffs(HCL.diffs)
+  validAlldiffs(HCL.diffs)
+  testthat::expect_equal(nrow(HCL.diffs$predictions),12)
+  testthat::expect_equal(ncol(HCL.diffs$predictions),9)
+  
+  ## Combine Cadavers and Ladybird
+  Comb.diffs <- facCombine(HCL.diffs, factors = c("Cadavers","Ladybird"))
+  
+  ## check the validity of Comb.diffs
+  validAlldiffs(Comb.diffs)
+  testthat::expect_equal(nrow(Comb.diffs$predictions),12)
+  testthat::expect_equal(ncol(Comb.diffs$predictions),8)
+  testthat::expect_true(all(c("Host", "Cadavers_Ladybird", "predicted.value") %in% 
+                              names(Comb.diffs$predictions)))
+  
+  ## Recode Ladybird
+  HCL.diffs <- facRecode(HCL.diffs, factor = "Ladybird", newlevels = c("none", "present"))
+  testthat::expect_true(validAlldiffs(HCL.diffs))
+  testthat::expect_true(all(levels(HCL.diffs$predictions$Ladybird) == c("none", "present")))
+  
+  ## Rename Cadavers
+  HCL.diffs <- facRename(HCL.diffs, factor.names = "Cadavers", newnames = "Cadaver.nos")
+  testthat::expect_true(validAlldiffs(HCL.diffs))
+  testthat::expect_true("Cadaver.nos" %in% names(HCL.diffs$predictions))
+  
 })
 
 

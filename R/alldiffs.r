@@ -599,6 +599,95 @@ facCombine.alldiffs <- function(object, factors, order="standard", combine.level
   return(object)
 }
 
+facRecode.alldiffs <- function(object, factor, newlevels,  ...)
+{
+  #Check that a valid object of class alldiffs
+  validalldifs <- validAlldiffs(object)  
+  if (is.character(validalldifs))
+    stop(validalldifs)
+  fac <- factor
+  if (any(!(fac %in% names(object$predictions))))
+    stop("Some factors are not in the predictions component of object")
+  if (length(fac) != 1)
+    stop("Only one factor at a time")
+  object$predictions[fac] <- fac.recode(object$predictions[[fac]], newlevels = newlevels, ...)
+  
+  if (!is.null(object$backtransforms))
+  {
+    object$backtransforms[fac] <- object$predictions[fac]
+  }
+  
+  classify <- attr(object, which = "classify")
+  if (is.null(classify))
+    stop("The alldiffs object does not have the classify attribute set")
+  response <- attr(object, which = "response")
+  pred.labs <- makePredictionLabels(object$predictions, classify, response)
+  pred.lev <- pred.labs$pred.lev
+  #Set meanLSD attribute of predictions component
+  predictions <- object$predictions
+  if (is.null(object$LSD))
+    attr(predictions, which = "meanLSD") <- NA
+  else
+    attr(predictions, which = "meanLSD") <- object$LSD$meanLSD
+  object$predictions <- predictions
+  
+  if (!is.null(object$vcov))
+  {
+    colnames(object$vcov) <- rownames(object$vcov) <- pred.lev
+  }
+  if (!is.null(object$differences))
+  {
+    colnames(object$differences) <- rownames(object$differences) <- pred.lev
+  }
+  if (!is.null(object$p.differences))
+  {
+    colnames(object$p.differences) <- rownames(object$p.differences) <- pred.lev
+  }
+  if (!is.null(object$sed))
+  {
+    colnames(object$sed) <- rownames(object$sed) <- pred.lev
+  }
+  return(object)
+}
+
+facRename.alldiffs <- function(object, factor.names, newnames,  ...)
+{
+  #Check that a valid object of class alldiffs
+  validalldifs <- validAlldiffs(object)  
+  if (is.character(validalldifs))
+    stop(validalldifs)
+  if (any(!(factor.names %in% names(object$predictions))))
+    stop("Some factors are not in the predictions component of object")
+  if (length(factor.names) != length(newnames))
+    stop("The number of factor.names and newnames must be the same")
+  names(object$predictions)[match(factor.names, 
+                                  names(object$predictions))] <- newnames
+  
+  if (!is.null(object$backtransforms))
+  {
+    names(backtransforms$predictions)[match(newnames, 
+                                            names(object$backtransforms))] <- newnames
+  }
+  
+  classify <- attr(object, which = "classify")
+  if (is.null(classify))
+    stop("The alldiffs object does not have the classify attribute set")
+  class.facs <- fac.getinTerm(classify, rmfunction = TRUE)
+  class.facs[match(factor.names, class.facs)] <- newnames
+  classify <- fac.formTerm(class.facs)
+  attr(object, which = "classify") <- classify
+  response <- attr(object, which = "response")
+  #Set meanLSD attribute of predictions component
+  predictions <- object$predictions
+  if (is.null(object$LSD))
+    attr(predictions, which = "meanLSD") <- NA
+  else
+    attr(predictions, which = "meanLSD") <- object$LSD$meanLSD
+  object$predictions <- predictions
+  
+  return(object)
+}
+
 subset.alldiffs <- function(x, subset, rmClassifyVars = NULL, ...)
 {
   #Check that a valid object of class alldiffs

@@ -36,12 +36,11 @@
  \item{...}{Further arguments passed to the \code{\link{factor}} call creating 
             the new \code{\link{factor}}.}
 }
-\value{A \code{\link{factor}} whose \code{levels} are formed form the observed 
-       combinations of the \code{levels} of the individual \code{\link{factor}s}.}
+\value{A modified \code{\link{alldiffs.object}}.}
 \author{Chris Brien}
 \seealso{\code{\link{as.alldiffs}}, \code{\link{allDifferences.data.frame}}, 
          \code{\link{print.alldiffs}}, \code{\link{sort.alldiffs}}, \cr
-         \code{\link{renewClassify.alldiffs}}, \code{fac.combine} in package \pkg{dae}.}
+         \code{\link{renewClassify.alldiffs}}; \code{fac.combine} in package \pkg{dae}.}
 \examples{
   data("Ladybird.dat")
   

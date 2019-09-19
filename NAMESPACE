@@ -23,6 +23,10 @@ export(addBacktransforms,
        estimateV.asreml,
        facCombine,
        facCombine.alldiffs,
+       facRecode,
+       facRecode.alldiffs,
+       facRename,
+       facRename.alldiffs,
        getASRemlVersionLoaded,
        getTestPvalue,
        getTestPvalue.asrtests,
@@ -125,6 +129,8 @@ S3method(changeTerms, asrtests)
 S3method(chooseModel, asrtests) 
 S3method(estimateV, asreml) 
 S3method(facCombine, alldiffs)
+S3method(facRecode, alldiffs)
+S3method(facRename, alldiffs)
 S3method(getTestPvalue, asrtests)
 S3method(infoCriteria, asreml) 
 S3method(linTransform, alldiffs)

@@ -377,8 +377,8 @@ test_that("subset.alldiffs_asreml3", {
   testthat::expect_equal(length(attributes(diffs.subs)),8)
 })
 
-cat("#### Test for facCombine.alldiffs on Ladybird with asreml4\n")
-test_that("facCombine.alldiffs4", {
+cat("#### Test for facCombine.alldiffs on Ladybird with asreml3\n")
+test_that("facCombine.alldiffs3", {
   skip_if_not_installed("asreml")
   skip_on_cran()
   library(asreml, lib.loc = asr3.lib)
@@ -440,14 +440,25 @@ test_that("facCombine.alldiffs4", {
     testthat::expect_equal(ncol(HCL.diffs$predictions),9)
     
     ## Combine Cadavers and Ladybird
-    HCL.diffs <- facCombine(HCL.diffs, factors = c("Cadavers","Ladybird"))
+    Comb.diffs <- facCombine(HCL.diffs, factors = c("Cadavers","Ladybird"))
     
-    ## check the validity of HCL.diffs
-    validAlldiffs(HCL.diffs)
-    testthat::expect_equal(nrow(HCL.diffs$predictions),12)
-    testthat::expect_equal(ncol(HCL.diffs$predictions),8)
+    ## check the validity of Comb.diffs
+    validAlldiffs(Comb.diffs)
+    testthat::expect_equal(nrow(Comb.diffs$predictions),12)
+    testthat::expect_equal(ncol(Comb.diffs$predictions),8)
     testthat::expect_true(all(c("Host", "Cadavers_Ladybird", "predicted.value") %in% 
-                                names(HCL.diffs$predictions)))
+                                names(Comb.diffs$predictions)))
+    
+    ## Recode Ladybird
+    HCL.diffs <- facRecode(HCL.diffs, factor = "Ladybird", newlevels = c("none", "present"))
+    testthat::expect_true(validAlldiffs(HCL.diffs))
+    testthat::expect_true(all(levels(HCL.diffs$predictions$Ladybird) == c("none", "present")))
+    
+    ## Rename Cadavers
+    HCL.diffs <- facRename(HCL.diffs, factor.names = "Cadavers", newnames = "Cadaver.nos")
+    testthat::expect_true(validAlldiffs(HCL.diffs))
+    testthat::expect_true("Cadaver.nos" %in% names(HCL.diffs$predictions))
+    
   }
   
 })

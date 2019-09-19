@@ -29,6 +29,8 @@ setvarianceterms <- function(call, ...) UseMethod("setvarianceterms")
 
 allDifferences <- function(predictions, ...) UseMethod("allDifferences")
 facCombine <- function(object, ...) UseMethod("facCombine")
+facRecode <- function(object, ...) UseMethod("facRecode")
+facRename <- function(object, ...) UseMethod("facRename")
 plotPvalues <- function(object, ...) UseMethod("plotPvalues")
 plotVariofaces <- function(data, ...) UseMethod("plotVariofaces")
 plotPredictions <- function(data, ...) UseMethod("plotPredictions")

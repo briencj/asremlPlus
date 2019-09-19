@@ -1,5 +1,10 @@
 \name{news}
 \title{News for Package asremlPlus}
+\section{asremlPlus Version 4.1-31 (2019-09-19)}{
+  \itemize{
+    \item{Add new functions facRecode.alldiffs and facRename.alldiffs.}
+    }
+}
 \section{asremlPlus Version 4.1-30 (2019-09-05)}{
   \itemize{
     \item{Implement a check that asreml has returned sed and/or vcov when requested.}

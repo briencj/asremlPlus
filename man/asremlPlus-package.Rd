@@ -44,6 +44,12 @@
 \code{\link{facCombine.alldiffs}}
       \tab Combines several factors into one in the components of \cr
       \tab an \code{\link{alldiffs.object}}.  \cr
+\code{\link{facRecode.alldiffs}}
+      \tab Recodes factor levels using values in a vector. The values in the \cr 
+      \tab vector do not have to be unique.    \cr
+\code{\link{facRename.alldiffs}}
+      \tab Renames \code{\link{factor}}s in the \code{prediction} component of \cr
+      \tab an \code{\link{alldiffs.object}}.    \cr
 \code{\link{is.alldiffs}}
       \tab A single-line function that tests whether an object is \cr 
       \tab of class alldiffs.   \cr
