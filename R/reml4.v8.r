@@ -2181,8 +2181,9 @@ setOldClass("asrtests")
     pred <- predict(asreml.obj, classify=classify, levels=levels, 
                     sed = sed, vcov = vcov, 
                     trace = trace, ...)
-    stop(paste0("predict.asreml has not returned the variance matrix of the predictions as requested\n",
-                "(possibly no estimable predicted values)"))
+    if (vcov && !("vcov" %in% names(pred)))
+      stop(paste0("predict.asreml has not returned the variance matrix of the predictions as requested\n",
+                  "(possibly no estimable predicted values)"))
   }
   if (sed && !("sed" %in% names(pred)))
     stop(paste0("predict.asreml has not returned the sed component of the predictions as requested\n",

@@ -1,5 +1,10 @@
 \name{news}
 \title{News for Package asremlPlus}
+\section{asremlPlus Version 4.1-32 (2019-09-30)}{
+  \itemize{
+    \item{Fix bug in check for predict.asreml returning sed and/or vcov when requested.}
+    }
+}
 \section{asremlPlus Version 4.1-31 (2019-09-19)}{
   \itemize{
     \item{Add new functions facRecode.alldiffs and facRename.alldiffs.}
@@ -7,7 +12,7 @@
 }
 \section{asremlPlus Version 4.1-30 (2019-09-05)}{
   \itemize{
-    \item{Implement a check that asreml has returned sed and/or vcov when requested.}
+    \item{Implement a check that predict.asreml has returned sed and/or vcov when requested.}
     }
 }
 \section{asremlPlus Version 4.1-29 (2019-07-08)}{
@@ -19,7 +24,7 @@
 }
 \section{asremlPlus Version 4.1-28 (2019-07-04)}{
   \itemize{
-    \item{Modify testranfix.asrtests, as.asrtests, recalcWaldTab.asrtests and chooseModel.asrtests to allow for p-values based on a conditional Wald F-statistic is one is present in the \code{wald.tab}.}
+    \item{Modify testranfix.asrtests, as.asrtests, recalcWaldTab.asrtests and chooseModel.asrtests to allow for p-values based on a conditional Wald F-statistic if one is present in the \code{wald.tab}.}
     \item{Allow for 6-column \code{wald.tab} such as is obtained for \code{ssType} set to \code{"conditional"}.}
     }
 }
