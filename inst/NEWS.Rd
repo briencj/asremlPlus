@@ -1,5 +1,10 @@
 \name{news}
 \title{News for Package asremlPlus}
+\section{asremlPlus Version 4.1-33 (2019-11-08)}{
+  \itemize{
+    \item{Add \code{printPlot = FALSE} to both plotPvalues.data.frame and plotPvalues.alldiffs. Change return for plotPvalues.data.frame from nothing to the plot produced using ggplot.}
+    }
+}
 \section{asremlPlus Version 4.1-32 (2019-09-30)}{
   \itemize{
     \item{Fix bug in check for predict.asreml returning sed and/or vcov when requested.}

@@ -9,7 +9,7 @@
             gridspacing = 0, show.sig = FALSE, triangles = "both", 
             title = NULL, axis.labels = NULL, 
             colours = RColorBrewer::brewer.pal(3, "Set2"), 
-            ggplotFuncs = NULL, ...)}
+            ggplotFuncs = NULL, printPlot = TRUE, ...)}
 \arguments{
  \item{object}{A \code{data.frame} containing the three columns specified by \code{p}, \code{x} 
              and \code{y}.}
@@ -44,10 +44,12 @@
                 It is created by calling the \code{\link{list}} function with 
                 a \code{\link{ggplot}} function call for each element. 
                 It is passed to \code{ggplot}.}
+ \item{printPlot}{A \code{logical} indicating whether or not the a plot is to be printed. This would 
+                be used when just the returned \code{ggplot} object is required.}
  \item{\dots}{Provision for passsing arguments to functions called internally - 
             not used at present.}
  }
-\value{No values are returned, but a plot is printed.}
+\value{An object of class "\link{ggplot}", which can be plotted using \code{print} or otherwise manipulated.}
 \author{Chris Brien}
 \seealso{\code{\link{plotPvalues.alldiffs}}, \code{\link{allDifferences.data.frame}}, \code{ggplot}}
 \examples{

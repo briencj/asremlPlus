@@ -5,13 +5,14 @@
                                      triangles = "both", 
                                      title = NULL, axis.labels = NULL, 
                                      colours = RColorBrewer::brewer.pal(3, "Set2"), 
-                                     ggplotFuncs = NULL, ...)
+                                     ggplotFuncs = NULL, printPlot = TRUE, ...)
   #Plots a data.frame of p-values that has columns x, y, p
 { 
   if (!all(c(p,x,y) %in% names(object)))
     stop("One or more of the columns p, x and y are not in object")
   options <- c("both", "upper", "lower")
   tri.opt <- options[check.arg.values(triangles, options)]
+  plt <- NULL
   
   if (all(is.na(object[[p]])))
     warning("All p-values are NA for this plot")
@@ -69,13 +70,14 @@
       }
     }
     
-    if (!is.null(ggplotFuncs))
+    if (!is.null(plt) && !is.null(ggplotFuncs))
       for (f in ggplotFuncs)
         plt <- plt + f
     
-    print(plt)
+    if (!is.null(plt) && printPlot)
+      print(plt)
   }
-  invisible()
+  invisible(plt)
 }
 
 "plotPvalues.alldiffs" <- function(object, sections = NULL, 
@@ -84,7 +86,7 @@
                                    triangles = "both", 
                                    title = NULL, axis.labels = TRUE, sep=",", 
                                    colours = RColorBrewer::brewer.pal(3, "Set2"), 
-                                   ggplotFuncs = NULL, 
+                                   ggplotFuncs = NULL, printPlot = TRUE, 
                                    sortFactor = NULL, sortWithinVals = NULL, 
                                    sortOrder = NULL, decreasing = FALSE, 
                                    ...)
@@ -168,13 +170,14 @@
                              gridspacing = gridspacing, show.sig = show.sig, 
                              triangles = triangles, 
                              axis.labels = pairname, colours = colours, 
-                             ggplotFuncs = ggplotFuncs)
+                             printPlot = printPlot, ggplotFuncs = ggplotFuncs)
     else
       plotPvalues.data.frame(object = p, x = "X1", y = "X2",  
                              gridspacing = gridspacing, show.sig = show.sig, 
                              triangles = triangles, 
                              title = title, axis.labels = pairname, 
-                             colours = colours, ggplotFuncs = ggplotFuncs)
+                             colours = colours, printPlot = printPlot, 
+                             ggplotFuncs = ggplotFuncs)
     
   } else #have sections
   { 
@@ -238,14 +241,14 @@
                                title = paste("Plot of p-values for ",
                                              secname," = ",j, sep = ""),
                                axis.labels = pairname, colours = colours, 
-                               ggplotFuncs = ggplotFuncs)
+                               printPlot = printPlot, ggplotFuncs = ggplotFuncs)
       else
         plotPvalues.data.frame(object = psect, x = "X1", y = "X2", 
                                gridspacing = gridspacing, show.sig = show.sig, 
                                triangles = triangles, 
                                title = paste(title," - ", secname," = ", j, sep=""),
                                axis.labels = pairname, colours = colours, 
-                               ggplotFuncs = ggplotFuncs)
+                               printPlot = printPlot, ggplotFuncs = ggplotFuncs)
       
     }  
   }

@@ -2,6 +2,7 @@
 ^\.Rproj\.user$
 ^.tests$
 ^.archive$
+^.bugs$
 ^.vignettes$
 ^CRANlogs$
 ^README.*$

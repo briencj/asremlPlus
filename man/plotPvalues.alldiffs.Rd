@@ -21,9 +21,9 @@
             show.sig = FALSE, triangles = "both", 
             title = NULL, axis.labels = TRUE, sep=",", 
             colours = RColorBrewer::brewer.pal(3, "Set2"), 
-            ggplotFuncs = NULL, sortFactor = NULL, 
-            sortWithinVals = NULL, sortOrder = NULL, 
-            decreasing = FALSE, ...)}
+            ggplotFuncs = NULL, printPlot = TRUE, 
+            sortFactor = NULL, sortWithinVals = NULL, 
+            sortOrder = NULL, decreasing = FALSE, ...)}
 \arguments{
  \item{object}{An \code{\link{alldiffs.object}} with a \code{p.differences} component that is not 
              \code{NULL}.}
@@ -69,6 +69,8 @@
                 It is created by calling the \code{\link{list}} function with 
                 a \code{\link{ggplot}} function call for each element. 
                 It is passed to \code{ggplot} via \code{\link{plotPvalues.data.frame}}.}
+ \item{printPlot}{A \code{logical} indicating whether or not the a plot is to be printed. This would 
+                be used when just the returned \code{data.frame} is required.}
 \item{sortFactor}{A \code{character} containing the name of the 
               \code{factor} that indexes the set of predicted values that determines 
               the sorting of the components of the \code{\link{alldiffs.object}} by 
