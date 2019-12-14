@@ -9,20 +9,24 @@
              components. In addition, if \code{sed} is present, 
              \code{\link{recalcLSD.alldiffs}} is called to recalculate the values in the 
              \code{LSD} component, with any arguments supplied via the \code{\dots} 
-             argument passed ot it.}
-\usage{\method{subset}{alldiffs}(x, subset, rmClassifyVars = NULL, ...)}
+             argument passed ot it.
+
+             The \code{select} argument of \code{subset} is not implemented, but can be 
+             achieved for variables in the \code{classify} using the \code{rmClassifyVars} 
+             argument.}
+\usage{\method{subset}{alldiffs}(x, subset = rep(TRUE, nrow(x$predictions)), 
+       rmClassifyVars = NULL, ...)}
 \arguments{
  \item{x}{An \code{\link{alldiffs.object}}.}
  \item{subset}{A \code{\link{logical}} that detemines rows of the \code{predictions}  
-              component of \code{x} to be included in the subset.}
+              component of \code{x} to be included in the subset. By default allws are 
+              included.}
  \item{rmClassifyVars}{A \code{\link{character}} that contains the names of the 
               variables in the \code{classify} attribute of \code{x} that are to be 
               removed from the predictions \code{data.frame} and the names of the 
               dimensions of the other components of \code{x}. In doing this, 
               the combinations of the remaining \code{classify} variables must 
-              uniquely index the predictions. This will be the case when the 
-              combinations of the \code{rmClassifyVars} have only a single unique 
-              value.}
+              uniquely index the predictions.}
  \item{\dots}{further arguments passed to \code{\link{recalcLSD.alldiffs}}.}
 }
 \value{An \code{\link{alldiffs.object}} with the following components of the supplied 

@@ -11,8 +11,9 @@
              based on a new set of variable names. The latter is particularly useful when 
              \code{\link{linTransform.alldiffs}} has been used with a \code{\link{matrix}} and it 
              is desired to replace the resulting \code{Combination} \code{classify} with a 
-             \code{newclassify} comprised of a more meaningful set of variables that have 
-             replaced \code{Combination} in the \code{predictions} component.}
+             \code{newclassify} comprised of a more meaningful set of variables; first replace 
+             \code{Combination} in the \code{predictions} component with the new set of variables 
+             and then call \code{renewClassify}.}
 \usage{\method{renewClassify}{alldiffs}(alldiffs.obj, newclassify, 
               sortFactor = NULL, sortWithinVals = NULL, 
               sortOrder = NULL, decreasing = FALSE, ...)}

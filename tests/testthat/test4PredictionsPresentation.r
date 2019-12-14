@@ -247,7 +247,7 @@ test_that("noPredictions.asreml4", {
                                                  error.intervals = "Conf", 
                                                  wald.tab = current.asrt$wald.tab,
                                                  tables = "none")[[1]], 
-                         regexp = "predict.asreml has not returned the variance matrix of the predictions as requested",
+                         regexp = "predict.asreml has not returned the sed component for the predictions as requested",
                          fixed = TRUE)
   
   testthat::expect_error(diffs <- predictPresent(current.asrt$asreml.obj,

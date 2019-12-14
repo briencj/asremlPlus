@@ -2186,7 +2186,7 @@ setOldClass("asrtests")
                   "(possibly no estimable predicted values)"))
   }
   if (sed && !("sed" %in% names(pred)))
-    stop(paste0("predict.asreml has not returned the sed component of the predictions as requested\n",
+    stop(paste0("predict.asreml has not returned the sed component for the predictions as requested\n",
                 "(possibly no estimable predicted values)"))
   class(pred$pvals) <- c("predictions.frame", class(pred$pvals))
   return(pred)

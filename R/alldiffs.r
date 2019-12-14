@@ -688,7 +688,8 @@ facRename.alldiffs <- function(object, factor.names, newnames,  ...)
   return(object)
 }
 
-subset.alldiffs <- function(x, subset, rmClassifyVars = NULL, ...)
+subset.alldiffs <- function(x, subset = rep(TRUE, nrow(x$predictions)), 
+                            rmClassifyVars = NULL, ...)
 {
   #Check that a valid object of class alldiffs
   validalldifs <- validAlldiffs(x)  
@@ -757,12 +758,19 @@ subset.alldiffs <- function(x, subset, rmClassifyVars = NULL, ...)
     classify <- x.attr[["classify"]]
     if (is.null(classify))
       stop("The alldiffs object does not have the classify attrtibute set")
-    rmfac <- fac.combine(as.list(x$predictions[rmClassifyVars]))
-    if (length(unique(rmfac)) > 1)
-      stop("The classify variables to be removed have more than one combination in the predictions; \nthe predictions cannot be unambiguosly identified.")
-    class.facs <- fac.getinTerm(classify, rmfunction = TRUE)
-    class.facs <- class.facs[!(class.facs %in% rmClassifyVars)]
-    classify <- fac.formTerm(class.facs)
+    class.vars <- fac.getinTerm(classify, rmfunction = TRUE)
+    if (!(all(rmClassifyVars %in% class.vars)))
+      stop("Not all the rmClassifyVars are in the classify for the alldiffs.object")
+    newclass <- setdiff(class.vars, rmClassifyVars)
+    if (any(table(x$predictions[newclass]) > 1))
+      stop("The classify variables remaining after rmClassifyVars excluded do not uniquely index the predictions")
+    # rmfac <- fac.combine(as.list(x$predictions[rmClassifyVars]))
+    # if (length(unique(rmfac)) > 1)
+    #   stop("The classify variables to be removed have more than one combination in the predictions; \nthe predictions cannot be unambiguosly identified.")
+    # class.facs <- fac.getinTerm(classify, rmfunction = TRUE)
+    # class.facs <- class.facs[!(class.facs %in% rmClassifyVars)]
+    # classify <- fac.formTerm(class.facs)
+    classify <- fac.formTerm(newclass)
     x$predictions <- x$predictions[, -c(match(rmClassifyVars, names(x$predictions)))]
     if (!is.null(x$backtransforms))
     {
@@ -1766,13 +1774,18 @@ redoErrorIntervals.alldiffs <- function(alldiffs.obj, error.intervals = "Confide
                                  sortWithinVals = sortWithinVals,
                                  decreasing = decreasing, ...)
   newattr <- attributes(alldiffs.obj)
-  #Find missing atTributes in new alldiffs.obj and add them back in 
+  #Find missing attributes in new alldiffs.obj and add them back in 
   kattr <- kattr[names(kattr)[!(names(kattr) %in% names(newattr))]]
   if (length(kattr) > 0)
   {
     newattr <- c(newattr,kattr)
     attributes(alldiffs.obj) <- newattr
   }
+  #Check that the newclassify uniquely indexes the predictions
+  newclass.vars <- fac.getinTerm(newattr$classify, rmfunction = TRUE)
+  if (any(table(alldiffs.obj$predictions[newclass.vars]) > 1))
+    stop("The newclassify variables do not uniquely index the predictions")
+ 
   return(alldiffs.obj)
 }
 

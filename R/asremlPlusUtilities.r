@@ -5,7 +5,7 @@
 { 
   kopt <- pmatch(arg.val, options)
   if (any(is.na(kopt)))
-    stop("Value for argument, ",paste(arg.val, collapse = ","), ", is not an allowed option")
+    stop("Value ",paste(arg.val, collapse = ","), " is either not unique or is not an allowed option for its argument")
   if (length(kopt) > 1)
   {
     warning(paste("Only one value allowed for argument where", 
