@@ -1,8 +1,13 @@
 \name{news}
 \title{News for Package asremlPlus}
+\section{asremlPlus Version 4.1-35 (2020-01-11)}{
+  \itemize{
+    \item{Rebuild for CRAN submission.}
+    }
+}
 \section{asremlPlus Version 4.1-34 (2019-12-14)}{
   \itemize{
-    \item{Change default for \code{subset} argument in subset.alldiffs so that the complete set of predictions is returned. Also, change check on the resulting classify so that it check whether the variables in the classify uniquely index the predictions.}
+    \item{Change default for \code{subset} argument in subset.alldiffs so that the complete set of predictions is returned. Also, change check on the resulting classify so that it checks whether the variables in the classify uniquely index the predictions.}
     \item{Include in renewClassify.alldiffs a check that the \code{newclassify} uniquely indexes the predictions.}
     }
 }
