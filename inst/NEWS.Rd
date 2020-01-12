@@ -1,5 +1,10 @@
 \name{news}
 \title{News for Package asremlPlus}
+\section{asremlPlus Version 4.1-36 (2020-01-12)}{
+  \itemize{
+    \item{Correct date in DESCRIPTION for CRAN rsubmission.}
+    }
+}
 \section{asremlPlus Version 4.1-35 (2020-01-11)}{
   \itemize{
     \item{Rebuild for CRAN submission.}
