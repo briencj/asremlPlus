@@ -6,6 +6,8 @@ output:
   pdf_document: default
 ---
 
+This vignette that shows how to use `asremlPlus` (Brien, 2020), in conjunction with `asreml` (Butler et al., 2018), to select the terms to be included in a mixed model, two packages for the `R` Statistical Computing environment (R Core Team, 2020).
+
 ```{r setup, include=TRUE}
 library(asreml, quietly=TRUE)
 library(asremlPlus)
@@ -212,14 +214,20 @@ plotPvalues(Var.diffs)
 
 ## References
 
+Almeida, A., Loy, A. and Heike Hofmann, H. (2017) `qqplotr`: *Quantile-Quantile plot extensions for 'ggplot2'*, Version 0.0.3. <http://cran.r-project.org/package=qqplotr/> or <https://github.com/aloy/qqplotr>.
+
+Brien, C. J. (2020) `asremlPlus`: *Augments ASReml-R in fitting mixed models and packages generally in exploring prediction differences*. Version 4.1-37. <http://cran.r-project.org/package=asremlPlus/> or <http://chris.brien.name/rpackages/>.
+
 Butler, D. G., Cullis, B. R., Gilmour, A. R., Gogel, B. J. and 
             Thompson, R. (2018). *ASReml-R Reference Manual Version 4.* VSN International Ltd, <http://asreml.org>.
-
-Cheng, R. (2018) QTLRel: tools for mapping of quantitative traits of genetically related individuals and calculating identity coefficients from pedigrees. <https://CRAN.R-project.org/package=QTLRel>.
 
 Gilmour, A. R., Thompson, R., & Cullis, B. R. (1995). Average Information REML: 
             An Efficient Algorithm for Variance Parameter Estimation in Linear 
             Mixed Models. *Biometrics*, **51**, 1440--1450. 
+
+R Core Team (2020) \emph{R: A language and environment for statistical
+computing.} Vienna, Austria: R Foundation for Statistical Computing.
+<http://www.r-project.org>.
 
 Snee, R. D. (1981). Graphical Display and Assessment of Means. *Biometrics*, **37**, 835--836. 
 
