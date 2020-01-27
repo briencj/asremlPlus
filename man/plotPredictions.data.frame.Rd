@@ -16,8 +16,9 @@
                 x.num = NULL, x.fac = NULL, nonx.fac.order = NULL,  
                 colour.scheme = "colour", panels = "multiple", 
                 graphics.device = NULL,
-                error.intervals = "Confidence",  titles = NULL, 
-                y.title = NULL, filestem = NULL, ggplotFuncs = NULL, ...)
+                error.intervals = "Confidence", interval.annotate = TRUE,
+                titles = NULL, y.title = NULL, 
+                filestem = NULL, ggplotFuncs = NULL, ...)
 }
 \arguments{
  \item{data}{A \code{\link{predictions.frame}}, or \code{data.frame}, containing the 
@@ -94,6 +95,8 @@
              Possible values are \code{"none"}, \code{"StandardError"}, \code{"Confidence"} 
              and \code{"halfLeastSignificant"}. Here, any option other than \code{"none"} 
              will result in the interval limits contained in \code{data} being plotted. }
+ \item{interval.annotate}{A \code{logical} indicating whether the plot annotation indicating the 
+             type of \code{error.interval} is to be included in the plot.}
  \item{titles}{A \code{list}, each component of which is named for a column in 
                the \code{data.frame} for the \code{asreml.obj} used in making the predictions 
                and contains a \code{character string} giving a title to use 

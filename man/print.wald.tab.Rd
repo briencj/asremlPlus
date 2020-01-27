@@ -1,11 +1,12 @@
 \name{print.wald.tab}
 \alias{print.wald.tab}
-\title{Prints a Wald or pseudoanova table.}
-\description{Prints a \code{wald.tab} with or without title and/or heading.}
+\title{Prints a data.frame containing a Wald or pseudoanova table.}
+\description{Prints a \code{wald.tab} with or without title and/or heading. 
+             The printing of the p-values is limited to 4 digits.}
 \usage{\method{print}{wald.tab}(x, which.wald = c("title", "heading", "table"), 
       colourise = FALSE, ...)}
 \arguments{
- \item{x}{A object that, ideally, is of class \code{wald.tab}.}
+ \item{x}{An object that, ideally, is of class \code{wald.tab}.}
  \item{which.wald}{Which elements of the \code{wald.tab} to print. Possible
              values are some combination of \code{title}, \code{heading}, 
              \code{table} and \code{all}. The \code{heading} is an 
@@ -17,12 +18,11 @@
  \item{\dots}{further arguments passed to \code{print} and \code{print.wald.tab}, 
                   but is only operational when the \code{table} is also printed.}
 }
-\value{No value is returned, but the elements of the list in \code{x} are 
-       printed.}
+\value{No value is returned, but \code{x} is printed as specified in \code{which.wald}.}
 
 
 \author{Chris Brien}
-\seealso{\code{\link{print.asrtests}}, \code{\link{as.asrtests}}, \code{\link{asremlPlus-package}}}
+\seealso{\code{\link{print.test.summary}}, \code{\link{print.asrtests}}, \code{\link{as.asrtests}}, \code{\link{asremlPlus-package}}}
 \examples{\dontrun{
 data(Wheat.dat)
 current.asr <- asreml(yield ~ Rep + WithinColPairs + Variety, 
@@ -32,7 +32,7 @@ current.asr <- asreml(yield ~ Rep + WithinColPairs + Variety,
 current.asrt <- as.asrtests(current.asr, NULL, NULL)
 current.asrt <- rmboundary.asrtests(current.asrt)
 # Test Row autocorrelation
-current.asrt <- testresidual(current.asrt, , "~ Row:ar1(Column)", 
+current.asrt <- testresidual(current.asrt, "~ Row:ar1(Column)", 
                              label="Row autocorrelation", simpler=TRUE)
 print(current.asrt$wald.tab)
 }}

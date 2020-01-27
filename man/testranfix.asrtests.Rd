@@ -31,7 +31,10 @@
  \item{asrtests.obj}{An \code{\link{asrtests.object}} containing the components (i) \code{asreml.obj},
        (ii) \code{wald.tab}, and (iii) \code{test.summary}.}
  \item{term}{A single model term that is valid in \code{asreml}, stored 
-             as a \code{character}.}
+             as a \code{character}. The names of fixed terms must match those in the \code{wald.tab} 
+             component of the \code{\link{asrtests.object}}, while the names of random terms must 
+             match those in the \code{vparameters} component of the \code{asreml.obj} component 
+             in the \code{\link{asrtests.object}}.}
  \item{alpha}{The significance level for the test.}
  \item{allow.unconverged}{A \code{logical} indicating whether to accept a new model 
                       even when it does not converge. If \code{FALSE}, it will be 
@@ -111,7 +114,9 @@
               (i) models are modifed for the supplied \code{terms} and 
               (ii) modifications specified via \code{\dots} are made.}
  \item{set.terms}{A character vector specifying the terms that are to have 
-                  bounds and/or initial values set prior to fitting.}
+               bounds and/or initial values set prior to fitting. 
+               The names must match those in the \code{vparameters} component of the 
+               \code{asreml.obj} component in the \code{\link{asrtests.object}}.}
  \item{ignore.suffices}{A logical vector specifying whether the suffices of the 
                     \code{asreml}-assigned names of the variance terms (i.e. the 
                     information to the right of an "!", other than "R!") is to 

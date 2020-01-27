@@ -27,7 +27,9 @@
               corresponds to \code{devn.fac} and is potentially included in terms 
               in the fitted model.}
  \item{devn.fac}{A character string giving the name of the factor that corresponds to 
-              \code{trend.num} and is included in terms in the fitted model.}
+              \code{trend.num} and is included in terms in the fitted model.
+               The name must match those in the \code{vparameters} component of the 
+               \code{asreml.obj} component in the \code{\link{asrtests.object}}.}
  \item{allow.unconverged}{A \code{logical} indicating whether to accept a new model 
                       even when it does not converge. Initially all changes are made with 
                       \code{allow.unconverged} set to \code{TRUE}. If 

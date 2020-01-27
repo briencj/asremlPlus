@@ -1,0 +1,33 @@
+\name{print.test.summary}
+\alias{print.test.summary}
+\title{Prints a data.frame containing a test.summary.}
+\description{Prints a \code{test.summary} (also a \code{choose.summary}) with or without a title and with p-values limited to 4-digits.}
+\usage{\method{print}{test.summary}(x,  which.print = c("title", "table"), ...)}
+\arguments{
+ \item{x}{A object that, ideally, is of class \code{test.summary}.}
+ \item{which.print}{Which elements of the \code{test.summary} to print. Possible
+             values are some combination of \code{title}, 
+             \code{table} and \code{all}.}
+ \item{\dots}{further arguments passed to \code{print}, 
+                  but is only operational when the \code{table} is also printed.}
+}
+\value{No value is returned, but \code{x} is printed, possibly with a title.}
+
+
+\author{Chris Brien}
+\seealso{\code{\link{print.wald.tab}}, \code{\link{print.asrtests}}, \code{\link{as.asrtests}}, \code{\link{asremlPlus-package}}}
+\examples{\dontrun{
+data(Wheat.dat)
+current.asr <- asreml(yield ~ Rep + WithinColPairs + Variety, 
+                      random = ~ Row + Column + units,
+                      residual = ~ ar1(Row):ar1(Column), 
+                      data=Wheat.dat)
+current.asrt <- as.asrtests(current.asr, NULL, NULL)
+current.asrt <- rmboundary.asrtests(current.asrt)
+# Test Row autocorrelation
+current.asrt <- testresidual(current.asrt, "~ Row:ar1(Column)", 
+                             label="Row autocorrelation", simpler=TRUE)
+print(current.asrt$test.summary)
+}}
+\keyword{asreml}
+\keyword{htest}

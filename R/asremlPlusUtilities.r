@@ -107,6 +107,14 @@
   return(term)
 }
 
+"getTerms.formula" <- function(form)
+{
+  terms <- as.character(update.formula(form, ~.))
+  terms <- stringr::str_trim(unlist(strsplit(terms[length(terms)], 
+                                             split = "+", fixed = TRUE)))
+  return(terms)
+}
+
 "findterm" <- function(term, termlist, rmDescription=TRUE)
   #This function finds the position of a term in an asreml termlist 
   #It strips off stuff to the right of an !, provided it is not to the right of  
@@ -283,6 +291,7 @@ addtoTestSummary <- function(test.summary, terms, DF = 1, denDF = NA, p = NA,
   test.summary <- rbind(test.summary, 
                         data.frame(terms = terms, DF = DF, denDF = denDF, p = p, 
                                    action = action, stringsAsFactors = FALSE))
+  class(test.summary) <- c("test.summary", "data.frame")
   return(test.summary)
 }
 

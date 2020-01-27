@@ -31,7 +31,9 @@
                 containing the componets (i) \code{asreml.obj}, (ii) \code{wald.tab} 
                 (iii) \code{test.summary}.}
  \item{oldterms}{Terms, stored as a \code{character}, that are to be removed from the 
-                 random model using \code{asreml}.}
+                 random model using \code{asreml}. The names of the terms must 
+                 match those in the \code{vparameters} component of the \code{asreml.obj} 
+                 component in the \code{\link{asrtests.object}}.}
  \item{newterms}{Terms, stored as a \code{character}, that are to be added to the 
                  random model using \code{asreml}.}
  \item{simpler}{A logical indicating whether the new model to be fitted. after the
@@ -97,7 +99,9 @@
               \code{newterms}, and (ii) modifications specified via \code{\dots} 
               are made.}
  \item{set.terms}{A character vector specifying the terms that are to have 
-                  bounds and/or initial values set prior to fitting.}
+                  bounds and/or initial values set prior to fitting. 
+                  The names must match those in the \code{vparameters} component 
+                  of the \code{asreml.obj} component in the \code{\link{asrtests.object}}.}
  \item{ignore.suffices}{A logical vector specifying whether the suffices of the 
                     \code{asreml}-assigned names of the variance terms (i.e. the 
                     information to the right of an "!", other than "R!") is to 

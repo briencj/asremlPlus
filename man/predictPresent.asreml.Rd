@@ -32,8 +32,9 @@
                x.pred.values = NULL, x.plot.values = NULL, 
                plots = "predictions", panels = "multiple", 
                graphics.device = NULL, 
-               error.intervals = "Confidence", meanLSD.type = "overall", 
-               LSDby = NULL, avsed.tolerance = 0.25, titles = NULL, 
+               error.intervals = "Confidence", interval.annotate = TRUE,
+               meanLSD.type = "overall", LSDby = NULL, 
+               avsed.tolerance = 0.25, titles = NULL, 
                colour.scheme = "colour", save.plots = FALSE, 
                transform.power = 1, offset = 0, scale = 1, 
                pairwise = TRUE, Vmatrix = FALSE, 
@@ -148,7 +149,9 @@
              \code{NA} and the range of the SEDs divided by the average of the SEDs exceeds 
              \code{avsed.tolerance} then the \code{error.intervals} calculations and the plotting 
              will revert to confidence intervals.}
-\item{avsed.tolerance}{A \code{\link{numeric}} giving the value of the SED range, the range of the SEDs 
+ \item{interval.annotate}{A \code{logical} indicating whether the plot annotation indicating the 
+             type of \code{error.interval} is to be included in the plot.}
+ \item{avsed.tolerance}{A \code{\link{numeric}} giving the value of the SED range, the range of the SEDs 
              divided by the square root of the mean of the variances of all or a subset of the 
              pairwise differences, that is considered reasonable in calculating 
              \code{error.intervals}. It should be a value between 0 and 1. The following rules apply:

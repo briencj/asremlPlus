@@ -65,8 +65,10 @@
       \tab Prints the values in an \code{\link{asrtests.object}}. \cr
 \code{\link{print.predictions.frame}}
       \tab Prints the values in a \code{\link{predictions.frame}}, with or without title and heading. \cr
+\code{\link{print.test.summary}}
+      \tab Prints a data.frame containing a test.summary. \cr
 \code{\link{print.wald.tab}}
-      \tab Prints a Wald or pseudoanova table. \cr
+      \tab Prints a data.frame containing a Wald or pseudoanova table. \cr
 \code{\link{sort.alldiffs}}
       \tab Sorts the components of an \code{\link{alldiffs.object}} according to \cr
       \tab the predicted values associated with a factor. \cr
@@ -108,9 +110,14 @@
 (iv) Model testing \cr\cr
 
 \code{\link{chooseModel.asrtests}}
-       \tab Determines the set of significant terms taking into \cr
-       \tab account hierarchy or marginality relations and records \cr 
-       \tab the tests performed in an \code{\link{asrtests.object}}. \cr
+       \tab Determines and records the set of significant terms using an \cr
+       \tab \code{\link{asrtests.object}}, taking into account the hierarchy \cr 
+       \tab or marginality relations of the terms..\cr
+\code{\link{chooseModel.data.frame}}
+       \tab Determines the set of significant terms from results stored \cr
+       \tab in a \code{data.frame}, taking into account the marginality  \cr 
+       \tab relations of terms and recording the tests used in a \cr
+       \tab \code{data.frame}. \cr
 \code{\link{getTestPvalue.asrtests}}
        \tab Gets the p-value for a test recorded in the test.summary \cr
        \tab data.frame of an \code{\link{asrtests.object}}.  \cr

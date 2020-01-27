@@ -23,7 +23,9 @@
              obtain it from the \code{call} component of an \code{asreml} 
              object  (e.g. \code{call <- asreml.obj$call}).}
  \item{terms}{A character vector specifying the terms 
-              that are to have bounds and/or initial values specified.}
+              that are to have bounds and/or initial values specified.
+               The names must match those in the \code{vparameters} component of the 
+               \code{asreml.obj} component in the \code{\link{asrtests.object}}.}
  \item{ignore.suffices}{A logical vector specifying whether the suffices of the 
                     \code{asreml}-assigned names of the variance terms (i.e. the 
                     information to the right of an "!", other than "R!") is to be ignored in 

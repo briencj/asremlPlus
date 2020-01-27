@@ -1,5 +1,14 @@
 \name{news}
 \title{News for Package asremlPlus}
+\section{asremlPlus Version 4.1-37 (2020-01-27)}{
+  \itemize{
+    \item{Add chooseModel.data.frame function.}
+    \item{Modify linTransform.alldiffs so that submodels involving covariates are possible.}
+    \item{Add print.test.summary function}
+    \item{Split Ladybird vignette into two, one based on asreml and the other on lm, lmerTest and emmeans.}
+    \item{Modified newfit to circumvent problems in the test functions in dealing with terms that include the \code{at} function and modified testranfix to improve its detection of multiple terms.}
+    }
+}
 \section{asremlPlus Version 4.1-36 (2020-01-12)}{
   \itemize{
     \item{Correct date in DESCRIPTION for CRAN rsubmission.}

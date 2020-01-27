@@ -1002,7 +1002,7 @@ recalcLSD.alldiffs <- function(alldiffs.obj, meanLSD.type = "overall", LSDby = N
                                  tdf = attr(alldiffs.obj, which = "tdf"),
                                  meanLSD.type = meanLSD.type, LSDby = LSDby, ...)
   newattr <- attributes(alldiffs.obj)
-  #Find missing atTributes in new alldiffs.obj and add them back in 
+  #Find missing attributes in new alldiffs.obj and add them back in 
   kattr <- kattr[names(kattr)[!(names(kattr) %in% names(newattr))]]
   if (length(kattr) > 0)
   {
@@ -1868,7 +1868,7 @@ redoErrorIntervals.alldiffs <- function(alldiffs.obj, error.intervals = "Confide
       
       #Form projector on predictions for submodel
       suppressWarnings(Q <- pstructure(linear.transformation, grandMean = TRUE, 
-                                       orthogonalize = "eigen", aliasing.print = FALSE, 
+                                       orthogonalize = "eigen", #aliasing.print = FALSE, 
                                        data = alldiffs.obj$predictions)$Q)
       Q.submod <- Q[[1]]
       if (length(Q) > 1)
@@ -1876,12 +1876,44 @@ redoErrorIntervals.alldiffs <- function(alldiffs.obj, error.intervals = "Confide
           Q.submod <- Q.submod + Q[[k]]
       Q.submod <- projector(Q.submod)
       
+      #Process the classify to ensure there is a separate term for covariates
+      vars <- fac.getinTerm(classify, rmfunction = TRUE)
+      facs <- covs <- list()
+      for (var in vars)
+      {
+        if (is.numeric(alldiffs.obj$predictions[[var]]))
+          covs <- c(covs, list(var))
+        else
+          facs <- c(facs, list(var))
+      }
+      if (length(facs) > 0)
+      {
+        full.mod <- fac.formTerm(facs)
+        if (length(covs) > 0)
+        {
+          covs <- paste(unlist(covs), collapse = " + ")
+          full.mod <- paste0(full.mod,"/(",covs,")")
+        }
+      } else #no facs
+      {
+        if (length(covs) == 0)
+          stop("Did not find any factors or covariates in the classify")
+        full.mod <- paste(unlist(covs), collapse = " + ")
+      }
+      full.mod <- as.formula(paste0("~ ", full.mod))
+
       #Check that submodel is a subspace of the classify space
-      Q <- pstructure(as.formula(paste("~", classify, sep = " ")), 
-                      grandMean = TRUE, data = alldiffs.obj$predictions)$Q
-      if (any(abs(Q.submod %*% projector(Q[[1]] + Q[[2]]) - Q.submod) > 1e-08))
-        stop("Model space for", linear.transformation, 
-             " is not a subspace of the space for the classify ", classify)
+      Q <- pstructure(full.mod, grandMean = TRUE, data = alldiffs.obj$predictions)$Q
+      Q.class <- Q[[1]]
+      if (length(Q) > 1)
+        for (k in 2:length(Q))
+          Q.class <- Q.class + Q[[k]]
+      Q.class <- projector(Q.class)
+      
+      if (any(abs(Q.submod %*% Q.class - Q.submod) > 1e-08))
+        stop("Model space for ", linear.transformation, ", with ", degfree(Q.submod), 
+             " DF, is not a subspace of the space for the classify ", classify, 
+             ", with ", degfree(Q.class), " DF.")
       
       #Form predictions projected onto submodel
       lintrans <- alldiffs.obj$predictions

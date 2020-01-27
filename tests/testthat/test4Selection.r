@@ -1,6 +1,79 @@
 #devtools::test("asremlPlus")
 context("model_selection")
 
+cat("#### Test for chooseModel.data.frame with asreml4\n")
+test_that("choose.model.data.frame_asreml4", {
+  skip_if_not_installed("asreml")
+  skip_on_cran()
+  library(dae)
+  library(asreml)
+  library(asremlPlus)
+  print(packageVersion("asreml"))
+  #'## Load data
+  data("Ladybird.dat")
+  
+  #'## ANOVA of logits
+  Ladybird.aov <- aov(logitP ~ Host*Cadavers*Ladybird + Error(Run/Plant), 
+                      data=Ladybird.dat)
+  summary(Ladybird.aov)
+  
+  #'## Mixed model analysis of logits 
+  m <- asreml(logitP ~ Host*Cadavers*Ladybird, 
+              random = ~ Run,
+              residual = ~ Run:Plant,
+              data = Ladybird.dat)
+  testthat::expect_true(all(summary(m)$varcomp$bound == c("B", "P"))) #shows bound Run component
+  
+  #'### Unconstrain Reps to make the analysis equivalent to ANOVA
+  m <- setvarianceterms(m$call, terms = "Run", bounds = "U")
+  summary(m)$varcomp #shows negative Run component
+  testthat::expect_true(m$vparameters["Run"] < 0)
+  
+  #'### Use chooseModel.data.frame
+  wald.tab <- wald(m, denDF = "numeric")$Wald
+  testthat::expect_equal(nrow(wald.tab), 8)
+  
+  #'### Choose marginality-compliant model from wald.tab, obtaining marginality using pstructure
+  Ladybird.pstr <- pstructure(formula = ~ Host*Cadavers*Ladybird, 
+                              data = Ladybird.dat)
+  HCL.marg <- marginality(Ladybird.pstr)
+  testthat::expect_equal(nrow(HCL.marg), 7)
+  sigmod <- chooseModel(wald.tab, terms.marginality = HCL.marg)
+  testthat::expect_true(all(unlist(lapply(sigmod$sig.terms, function(term) term)) == 
+                              c("Cadavers:Ladybird", "Host")))
+  testthat::expect_equal(nrow(sigmod$choose.summary), 5)
+  testthat::expect_true(all(names(sigmod$choose.summary) == c("terms", "DF", "denDF", "p", "action")))
+  
+  #'### Rechoose marginality-compliant model from wald.tab, but omit DF and denDF
+  sigmod <- chooseModel(wald.tab, omit.DF = TRUE, terms.marginality = HCL.marg)
+  testthat::expect_equal(nrow(sigmod$choose.summary), 5)
+  testthat::expect_true(all(names(sigmod$choose.summary) == c("terms", "p", "action")))
+  sigmod <- chooseModel(wald.tab, denDF = NA, terms.marginality = HCL.marg)
+  testthat::expect_equal(nrow(sigmod$choose.summary), 5)
+  testthat::expect_true(all(names(sigmod$choose.summary) == c("terms", "DF", "denDF", "p", "action")))
+
+  #'### Specify the denDF argument in various ways, all of which result in the overwriting of denDF
+  sigmod <- chooseModel(wald.tab, denDF = wald.tab$denDF, terms.marginality = HCL.marg)
+  testthat::expect_equal(nrow(sigmod$choose.summary), 5)
+  testthat::expect_true(all(names(sigmod$choose.summary) == c("terms", "DF", "denDF", "p", "action")))
+  
+  den.df <- wald.tab$denDF
+  sigmod <- chooseModel(wald.tab, denDF = den.df, terms.marginality = HCL.marg)
+  testthat::expect_equal(nrow(sigmod$choose.summary), 5)
+  testthat::expect_true(all(names(sigmod$choose.summary) == c("terms", "DF", "denDF", "p", "action")))
+  
+  sigmod <- chooseModel(wald.tab, denDF = 59, terms.marginality = HCL.marg)
+  testthat::expect_equal(nrow(sigmod$choose.summary), 5)
+  testthat::expect_true(all(names(sigmod$choose.summary) == c("terms", "DF", "denDF", "p", "action")))
+  
+  new.tab <- wald.tab
+  names(new.tab)[match("denDF", names(new.tab))] <- "den.df"
+  sigmod <- chooseModel(wald.tab, denDF = 59, terms.marginality = HCL.marg)
+  testthat::expect_equal(nrow(sigmod$choose.summary), 5)
+  testthat::expect_true(all(names(sigmod$choose.summary) == c("terms", "DF", "denDF", "p", "action")))
+  
+})
+
 cat("#### Test for chooseModel.asrtests with asreml4\n")
 test_that("choose.model.asrtests_asreml4", {
   skip_if_not_installed("asreml")
@@ -44,6 +117,137 @@ test_that("choose.model.asrtests_asreml4", {
   testthat::expect_equal(sig.terms[[2]], "Date:Sources")
 })
 
+cat("#### Test for testing at terms with asreml4\n")
+test_that("at_testing_asreml4", {
+  skip_if_not_installed("asreml")
+  skip_on_cran()
+  library(dae)
+  library(asreml)
+  library(asremlPlus)
+  print(packageVersion("asreml"))
+  #'## Load data
+  data("Exp355.Control.dat")
+  
+  dat <- with(dat, dat[order(Genotype, Salt, NP_AMF, InTreat), ])
+  
+  #Fit model with quotes around AMF_plus 
+  # NB must have quotes for character levels, 
+  # but cannot have in testranfix term because not in wald.tab rownames
+  current.asr <- asreml(fixed = TSP ~ Lane + xPosn + AMF*Genotype*NP + 
+                          at(AMF, "AMF_plus"):per.col + (Genotype*NP):at(AMF, "AMF_plus"):per.col,
+                        random = ~ spl(xPosn) + Position ,
+                        residual = ~ Genotype:idh(NP_AMF):InTreat,
+                        keep.order=TRUE, data = dat, 
+                        maxiter=50, na.action = na.method(x="include"))
+  
+  current.asrt <- asrtests(current.asr, NULL, NULL)
+  current.asrt <- rmboundary(current.asrt)
+  testthat::expect_equal(nrow(current.asrt$wald.tab),14)
+  testthat::expect_equal(nrow(summary(current.asrt$asreml.obj)$varcomp),7)
+  
+  t.asrt <- testranfix(current.asrt, term = "Genotype:NP:at(AMF, AMF_plus):per.col", 
+                       drop.fix.ns = TRUE)
+  t.asrt$wald.tab
+  testthat::expect_equal(nrow(t.asrt$wald.tab), 13)
+  #Change position of at term in testranfix
+  t.asrt <- testranfix(current.asrt, term = "at(AMF, AMF_plus):per.col:Genotype:NP", 
+                       drop.fix.ns = TRUE)
+  t.asrt$wald.tab
+  testthat::expect_equal(nrow(t.asrt$wald.tab), 13)
+  
+  #Fit model with level index of 2
+  current.asr <- asreml(fixed = TSP ~ Lane + xPosn + AMF*Genotype*NP + 
+                          at(AMF, "AMF_plus"):per.col + (Genotype*NP):at(AMF, 2):per.col,
+                        random = ~ spl(xPosn) + Position ,
+                        residual = ~ Genotype:idh(NP_AMF):InTreat,
+                        keep.order=TRUE, data = dat, 
+                        maxiter=50, na.action = na.method(x="include"))
+  
+  current.asrt <- asrtests(current.asr, NULL, NULL)
+  current.asrt <- rmboundary(current.asrt)
+  testthat::expect_equal(nrow(current.asrt$wald.tab),14)
+  testthat::expect_equal(nrow(summary(current.asrt$asreml.obj)$varcomp),7)
+  
+  t.asrt <- testranfix(current.asrt, term = "at(AMF, AMF_plus):per.col:Genotype:NP", 
+                       drop.fix.ns = TRUE)
+  t.asrt$wald.tab
+  testthat::expect_equal(nrow(t.asrt$wald.tab), 13)
+  
+  #Test for a numeric level that is not the same as the levels index (1:no.levels)
+  current.asr <- asreml(fixed = TSP ~ at(Lane, 4) + xPosn + AMF*Genotype*NP + 
+                          at(AMF, "AMF_plus"):per.col + (Genotype*NP):at(AMF, c(2)):per.col,
+                        random = ~ spl(xPosn) + Position ,
+                        residual = ~ Genotype:idh(NP_AMF):InTreat,
+                        keep.order=TRUE, data = dat, 
+                        maxiter=50, na.action = na.method(x="include"))
+  current.asrt <- asrtests(current.asr, NULL, NULL)
+  current.asrt <- rmboundary(current.asrt)
+  current.asrt$wald.tab
+  t.asrt <- testranfix(current.asrt, term = "at(Lane, 8)", 
+                       drop.fix.ns = TRUE)
+  t.asrt$wald.tab
+  testthat::expect_equal(nrow(t.asrt$wald.tab), 13)
+})
+
+
+cat("#### Test for testing MET at terms with asreml4\n")
+test_that("at_multilevel_asreml4", {
+  skip_if_not_installed("asreml")
+  skip_on_cran()
+  library(dae)
+  library(asreml)
+  library(asremlPlus)
+  print(packageVersion("asreml"))
+  #'## Load data
+
+  data(MET)
+  asreml.options(design = TRUE, keep.order=TRUE)
+  #Test at
+  asreml.obj <-asreml(fixed = GY.tha ~  + at(expt, c(1:5)):rep + at(expt, c(1)):vrow + 
+                        at(expt, c(2,3,6,7)):colblocks + 
+                        at(expt, c(1:5,7)):vcol + Genotype*Condition*expt,
+                      random = ~  at(expt, c(1)):dev(vrow) + at(expt, c(2)):spl(vcol) +  
+                        at(expt, c(3,5,7)):dev(vcol) + at(expt, c(7)):units,
+                      data=comb.dat, maxiter = 100, workspace = "1Gb")
+  
+  summary(asreml.obj)$varcomp
+  current.asrt <- asrtests(asreml.obj, NULL, NULL)
+  testthat::expect_equal(nrow(current.asrt$wald.tab), 24)
+  
+  asreml.options(step.size = 0.0001)
+  
+  #Single term in at expresion with the level and drop.fix.ns = TRUE -- works
+  t.asrt <- testranfix(current.asrt, 
+                       term = "at(expt, mtnue10):vrow", 
+                       drop.fix.ns = TRUE,
+                       dDF.na = "residual", update = FALSE)
+  testthat::expect_equal(nrow(t.asrt$wald.tab), 23)
+  
+  
+  #Multiple fixed terms in an at expresion generates an error
+  testthat::expect_error(t.asrt <- testranfix(current.asrt, 
+                                              term = "at(expt, c(1:5)):rep", 
+                                              drop.fix.ns = TRUE,
+                                              dDF.na = "residual", update = FALSE))
+  
+  #Multiple random terms in an at expression  generates an error
+  testthat::expect_error(t.asrt <- testranfix(current.asrt, 
+                                              term = "at(expt, c(3,5,7)):dev(vcol)", 
+                                              drop.ran.ns = TRUE,
+                                              dDF.na = "residual", update = FALSE))
+
+  #Single random term in an at expression - thinks absent
+  t.asrt <- testranfix(current.asrt, 
+                       term = "at(expt, tarlee13):dev(vcol)", 
+                       drop.ran.ns = TRUE,
+                       dDF.na = "residual", update = FALSE)
+  testthat::expect_equal(t.asrt$test.summary$action[1], "Absent")
+  
+  #Test multiple at term with changeTerms
+  t.asrt <- changeTerms(current.asrt, dropFixed = "at(expt, c(1:5)):rep", update = FALSE)
+  testthat::expect_equal(nrow(t.asrt$wald.tab), 19)
+})
+
 cat("#### Test for spline testing with asreml4\n")
 test_that("spl.asrtests_asreml4", {
   skip_if_not_installed("asreml")
@@ -66,7 +270,7 @@ test_that("spl.asrtests_asreml4", {
   current.asrt$test.summary
   
   testthat::expect_equal(nrow(current.asrt$test.summary), 1)
-  testthat::expect_true(abs(current.asrt$test.summary$p - 0.08013755) < 1e-08)
+  testthat::expect_true(abs(current.asrt$test.summary$p - 0.08013755) < 1e-06)
   
   data(Wheat.dat)
   #'## Add cubic trend to Row so that spline is not bound
@@ -82,13 +286,13 @@ test_that("spl.asrtests_asreml4", {
                        random = ~spl(vRow, k=6) + units, 
                        residual = ~ar1(Row):ar1(Column), 
                        data = Wheat.dat, trace = FALSE)
-  testthat::expect_false(abs(summary(asreml.obj)$varcomp$component[1] - 1.316595e-01) > 1e-06)
+  testthat::expect_false(abs(summary(asreml.obj)$varcomp$component[1] - 4.495472e-02) > 1e-06)
   testthat::expect_true(summary(asreml.obj)$varcomp$bound[1] == "B")
   asreml.obj <- asreml(fixed = yield ~ Rep + vRow + Variety, 
                        random = ~spl(vRow) + units, 
                        residual = ~ar1(Row):ar1(Column), 
                        data = Wheat.dat, trace = FALSE)
-  testthat::expect_false(abs(summary(asreml.obj)$varcomp$component[1] - 4.902267e-02) > 1e-06)
+  testthat::expect_false(abs(summary(asreml.obj)$varcomp$component[1] - 8.676175e-03) > 1e-06)
   testthat::expect_true(summary(asreml.obj)$varcomp$bound[1] == "B")
 
 })

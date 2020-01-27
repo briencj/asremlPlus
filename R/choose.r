@@ -1,0 +1,310 @@
+addtoChooseSummary <- function(choose.summary, term, DF = NA, denDF = NA, p = NA, 
+                               action, omit.DF)
+{
+  if (omit.DF)
+    choose.summary <- rbind(choose.summary, 
+                            data.frame(terms = term, 
+                                       p = p, action = action, stringsAsFactors = FALSE))
+  else
+    choose.summary <- rbind(choose.summary, 
+                            data.frame(terms = term, DF = DF, denDF = denDF, 
+                                       p = p, action = action, stringsAsFactors = FALSE))
+  return(choose.summary)
+}
+
+#Function to process a df argument
+"setdf" <- function(object, df, which.df = "DF")
+{
+  attr(object, which = which.df) <- which.df
+  kattr <- attributes(object)
+  
+  #Process DF argument
+  if (length(df) == 1)
+  {
+#    if (is.na(df))
+#      attr(object, which = "omit.df") <- TRUE
+#    else
+#    {
+      if (is.na(df) |is.numeric(df))
+      {
+        if (which.df %in% names(object))
+          object[which.df] <- rep(df, nrow(object))
+        else
+        {
+          kcols <- ncol(object) 
+          object <- cbind(object, rep(df, nrow(object)))
+          names(object)[kcols+1] <- which.df
+        }
+      } else
+      {
+        if (!is.character(df))
+          stop(which.df," must be one of NA, character or numeric")
+        if (!(df %in% names(object)))
+          stop(df, " is not in ", deparse(substitute(object)))
+        attr(object, which = which.df) <- df
+      }
+#    }
+  } else #more than one element
+  {
+    if (all(is.na(df)) | is.numeric(df))
+    {
+      if (length(df) != nrow(object))
+        stop("Length of ", which.df, "must 1 or equal to the number rows in ", deparse(substitute(object)))
+      if (which.df %in% names(object))
+        object[which.df] <- df
+      else
+      {
+        kcols <- ncol(object) 
+        object <- cbind(object, df)
+        names(object)[kcols+1] <- which.df
+      }
+    } else  
+      stop(which.df, " of length > 1 must be numeric")
+  }
+  newattr <- attributes(object)
+  #Find missing atTributes in new alldiffs.obj and add them back in 
+  kattr <- kattr[names(kattr)[!(names(kattr) %in% names(newattr))]]
+  if (length(kattr) > 0)
+  {
+    newattr <- c(newattr,kattr)
+    attributes(object) <- newattr
+  }
+  return(object)
+}
+
+"chooseModel.data.frame" <- function(object, terms = NULL, p.values = "Pr", 
+                                     DF = "Df", denDF = "denDF", omit.DF = FALSE, 
+                                     terms.marginality=NULL, alpha = 0.05, ...)
+  #function to determine the set of significant terms taking into account marginality relations
+  #terms.marginality should be a square matrix of ones and zeroes with row and column names 
+  #   being the names of the terms. The diagonal elements should be one, indicating 
+  #   that a term is marginal to itself. Elements should be one if the row term is 
+  #   marginal to the column term. All other elements should be zero. 
+{ 
+  #check matrix  
+  if (!is.matrix(terms.marginality) || 
+      nrow(terms.marginality) != ncol(terms.marginality))
+  {
+    stop("Must supply a valid marginality matrix")
+  } else
+    if (is.null(rownames(terms.marginality)) || is.null(colnames(terms.marginality)))
+    {
+      stop("terms.marginality must have row and column names that are the terms to be tested")
+    } else
+      if (det(terms.marginality) == 0)
+      {
+        warning("Suspect marginalities of terms not properly specified - check")
+      }
+  #make sure have a terms.marginality matrix with lower triangle all zero
+  terms.marginality <- permute.to.zero.lowertri(terms.marginality)
+  
+  # Get and Check terms supplied
+  if (is.null(terms))
+  {
+    object <- cbind(terms = rownames(object), object)
+    terms <- "terms"
+  }
+  if (!all(rownames(terms.marginality %in% object[terms])))
+    stop("Supplied data.frame does not contain all terms in terms.marginality")
+
+  #Process DF argument
+#  attr(object, which = "omit.df") <- FALSE
+  object <- setdf(object, df = DF, which.df = "DF")
+
+  #Process denDF argument
+  object <- setdf(object, df = denDF, which.df = "denDF")
+  DF <- attr(object, which = "DF")
+  denDF <- attr(object, which = "denDF")
+#  omit.df <- attr(object, which = "omit.df")
+  
+  #perform tests
+  sig.terms <- vector("list", length = 0)
+  noterms <- dim(terms.marginality)[1]
+  if (omit.DF)
+  {
+    choose.summary <- data.frame(matrix(nrow = 0, ncol=3))
+    colnames(choose.summary) <- c("terms", "p", "action")
+  } else
+  {
+    choose.summary <- data.frame(matrix(nrow = 0, ncol=5))
+    colnames(choose.summary) <- c("terms", "DF","denDF","p","action")
+  }
+
+  #Determine the significant terms
+  if (omit.DF)
+  {
+    ndf <- NA; den.df <- NA
+  } 
+  j <- noterms
+  #traverse the columns of terms.marginality
+  while (j > 0)
+  { 
+    #get p-value for term for column j
+    term <- (rownames(terms.marginality))[j]
+    termno <- match(term, object[[terms]])
+   p <- object[p.values][[1]][termno]
+    if (!omit.DF)
+    {
+      ndf <- object[[DF]][termno]
+      den.df <- object[[denDF]][termno]
+    }
+    
+    #if significant, add to sig term list and work out which can be tested next
+    if (!is.na(p)) 
+    { 
+      if (p <= alpha)
+      { 
+        action <- "Significant"
+        sig.terms <- c(sig.terms, term)
+        nonnest <- which(terms.marginality[1:(j-1), j] == 0)
+        noterms <- length(nonnest)
+        if (noterms == 0)
+          j = 0
+        else
+        { 
+          if (noterms == 1)
+          { 
+            nonnest.name <- rownames(terms.marginality)[nonnest]
+            terms.marginality <- terms.marginality[nonnest, nonnest]
+            dim(terms.marginality) <- c(1,1)
+            rownames(terms.marginality) <- nonnest.name
+          }
+          else
+          { 
+            terms.marginality <- terms.marginality[nonnest, nonnest]
+          }
+          j <- noterms
+        }
+      }
+      #if not significant, proceed to previous column
+      else
+      {
+        action <- "Nonsignificant"
+        j <- j - 1
+      }
+      choose.summary <- addtoChooseSummary(choose.summary, term = term, 
+                                           DF = ndf, denDF = den.df, 
+                                           p = p, action = action, omit.DF = omit.DF)
+    }
+    else
+      j <- j - 1
+  }
+  class(choose.summary) <- c("test.summary", "data.frame")
+  invisible(list(choose.summary = choose.summary, sig.terms = sig.terms))  
+}
+
+"chooseModel.asrtests" <- function(object, terms.marginality=NULL, alpha = 0.05, 
+                                   allow.unconverged = TRUE, checkboundaryonly = FALSE, 
+                                   drop.ran.ns=TRUE, positive.zero = FALSE, 
+                                   bound.test.parameters = "none", 
+                                   drop.fix.ns=FALSE, denDF = "numeric",  dDF.na = "none", 
+                                   dDF.values = NULL, trace = FALSE, update = TRUE, 
+                                   set.terms = NULL, ignore.suffices = TRUE, 
+                                   bounds = "P", initial.values = NA, ...)
+  #function to determine the set of significant terms taking into account marginality relations
+  #terms.marginality should be a square matrix of ones and zeroes with row and column names 
+  #   being the names of the terms. The diagonal elements should be one, indicating 
+  #   that a term is marginal to itself. Elements should be one if the row term is 
+  #   marginal to the column term. All other elements should be zero. 
+{ 
+  #Deal with deprecated arguments
+  tempcall <- list(...)
+  if (length(tempcall)) 
+  {
+    if ("constraints" %in% names(tempcall))
+      stop("constraints has been deprecated in chooseModel.asrtests - use bounds")
+    if ("asrtests.obj" %in% names(tempcall))
+      stop("asrtests.obj has been deprecated in chooseModel.asrtests - use object")
+  }
+  
+  asr4 <- isASRemlVersionLoaded(4, notloaded.fault = TRUE)
+  #Check that have a valid object of class asrtests
+  validasrt <- validAsrtests(object)  
+  if (is.character(validasrt))
+    stop(validasrt)
+  
+  #check matrix  
+  if (asr4)
+    kresp <- object$asreml.obj$formulae$fixed[[2]]
+  else
+    kresp <- object$asreml.obj$fixed.formula[[2]]
+  if (!is.matrix(terms.marginality) || 
+      nrow(terms.marginality) != ncol(terms.marginality))
+  {
+    stop("In analysing ",kresp,
+         ", must supply a valid marginality matrix")
+  } else
+    if (is.null(rownames(terms.marginality)) || is.null(colnames(terms.marginality)))
+    {
+      stop("In analysing ",kresp,
+           ", terms.marginality must have row and column names that are the terms to be tested")
+    } else
+      if (det(terms.marginality) == 0)
+      {
+        warning("In analysing ",kresp,
+                ", Suspect marginalities of terms not properly specified - check")
+      }
+  #make sure have a terms.marginality matrix with lower triangle all zero
+  terms.marginality <- permute.to.zero.lowertri(terms.marginality)
+  #perform tests
+  sig.terms <- vector("list", length = 0)
+  noterms <- dim(terms.marginality)[1]
+  current.asrt <- object
+  j <- noterms
+  #traverse the columns of terms.marginality
+  while (j > 0)
+  { 
+    #get p-value for term for column j and, if random, drop if ns and drop.ran.ns=TRUE
+    term <- (rownames(terms.marginality))[j]
+    current.asrt <- testranfix.asrtests(asrtests.obj = current.asrt, term, 
+                                        alpha=alpha, allow.unconverged = allow.unconverged, 
+                                        checkboundaryonly = checkboundaryonly,  
+                                        drop.ran.ns = drop.ran.ns, 
+                                        positive.zero = positive.zero, 
+                                        bound.test.parameters = bound.test.parameters, 
+                                        drop.fix.ns = drop.fix.ns, 
+                                        denDF = denDF, dDF.na = dDF.na, 
+                                        dDF.values = dDF.values, trace = trace, 
+                                        update = update, set.terms = set.terms, 
+                                        ignore.suffices = ignore.suffices, 
+                                        bounds = bounds, 
+                                        initial.values = initial.values, ...)
+    p <- getTestPvalue(current.asrt, label = term)
+    # test.summary <- current.asrt$test.summary
+    # p <- (test.summary[tail(findterm(term, as.character(test.summary$terms)),1), ])$p
+    #if significant, add to sig term list and work out which can be tested next
+    if (!is.na(p)) 
+    { 
+      if (p <= alpha)
+      { 
+        sig.terms <- c(sig.terms, term)
+        nonnest <- which(terms.marginality[1:(j-1), j] == 0)
+        noterms <- length(nonnest)
+        if (noterms == 0)
+          j = 0
+        else
+        { 
+          if (noterms == 1)
+          { 
+            nonnest.name <- rownames(terms.marginality)[nonnest]
+            terms.marginality <- terms.marginality[nonnest, nonnest]
+            dim(terms.marginality) <- c(1,1)
+            rownames(terms.marginality) <- nonnest.name
+          }
+          else
+          { 
+            terms.marginality <- terms.marginality[nonnest, nonnest]
+          }
+          j <- noterms
+        }
+      }
+      #if not significant, proceed to previous column
+      else
+        j <- j - 1
+    }
+    else
+      j <- j - 1
+  }
+  invisible(list(asrtests.obj = current.asrt, sig.terms = sig.terms))  
+}
+

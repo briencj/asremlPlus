@@ -17,6 +17,7 @@ export(addBacktransforms,
        changeTerms.asrtests,
        chooseModel,
        chooseModel.asrtests,
+       chooseModel.data.frame,
        choose.model.asreml,
        choose.model.asrtests,
        estimateV,
@@ -65,6 +66,7 @@ export(addBacktransforms,
        print.alldiffs,
        print.asrtests, 
        print.predictions.frame, 
+       print.test.summary,
        print.wald.tab, 
        recalcLSD, 
        recalcLSD.alldiffs, 
@@ -122,11 +124,13 @@ importFrom("utils", "data", sessionInfo, "tail")
 importFrom("foreach", "foreach", "%do%", "%dopar%")
 importFrom("parallel", "makeCluster", "stopCluster", "detectCores", "nextRNGStream")
 importFrom("doParallel", "registerDoParallel")
+importFrom("stringr", "str_split", "str_trim", "str_sub")
 S3method(addBacktransforms, alldiffs)
 S3method(allDifferences, data.frame)
 S3method(bootREMLRT, asreml) 
 S3method(changeTerms, asrtests) 
 S3method(chooseModel, asrtests) 
+S3method(chooseModel, data.frame) 
 S3method(estimateV, asreml) 
 S3method(facCombine, alldiffs)
 S3method(facRecode, alldiffs)
@@ -144,6 +148,7 @@ S3method(predictPlus, asreml)
 S3method(print, asrtests)
 S3method(print, alldiffs)
 S3method(print, predictions.frame)
+S3method(print, test.summary)
 S3method(print, wald.tab)
 S3method(recalcWaldTab, asrtests)
 S3method(REMLRT, asreml) 

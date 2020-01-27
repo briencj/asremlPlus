@@ -24,13 +24,17 @@
        (ii) \code{wald.tab}, and (iii) \code{test.summary}.}
  \item{dropFixed}{A single \code{character} string in the form of a formula which, 
                after addition of \code{". ~ . -"} and after expansion, specifies the sum 
-               of a set of terms to be dropped from the fixed formula.}
+               of a set of terms to be dropped from the fixed formula. 
+               The names must match those in the \code{wald.tab} component of the 
+               \code{\link{asrtests.object}}.}
  \item{addFixed}{A single \code{character} string in the form of a formula which, 
                after addition of \code{". ~ . +"} and expansion, specifies the sum 
                of a set of terms to be added to the fixed formula.}
  \item{dropRandom}{A single \code{character} string in the form of a formula which, 
                after addition of \code{" ~ . -"} and expansion, specifies the sum 
-               of a set of terms to be dropped from the random formula.}
+               of a set of terms to be dropped from the random formula. 
+               The names must match those in the \code{vparameters} component of the 
+               \code{asreml.obj} component in the \code{\link{asrtests.object}}.}
  \item{addRandom}{A single \code{character} string in the form of a formula which, 
                after addition of \code{" ~ . +"}and expansion, specifies the sum 
                of a set of terms to be added to the random formula.}
@@ -63,7 +67,9 @@
               according to Kenward and Roger (1997) for fixed terms in the dense 
               part of the model.}
  \item{set.terms}{A character vector specifying the terms that are to have 
-                  bounds and/or initial values set prior to fitting.}
+               bounds and/or initial values set prior to fitting.
+               The names must match those in the \code{vparameters} component of the 
+               \code{asreml.obj} component in the \code{\link{asrtests.object}}.}
  \item{ignore.suffices}{A logical vector specifying whether the suffices of the 
                     \code{asreml}-assigned names of the variance terms (i.e. the 
                     information to the right of an "!", other than "R!") is to 

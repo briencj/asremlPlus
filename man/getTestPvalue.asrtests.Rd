@@ -2,8 +2,8 @@
 \alias{getTestPvalue.asrtests}
 \alias{getTestPvalue}
 \title{Gets the p-value for a test recorded in the test.summary data.frame of an \code{\link{asrtests.object}}}
-\description{Matches the \code{label} in the \code{term} column of the supplied 
-  \code{\link{asrtests.object}} and extracts the its p-value. It only matches 
+\description{Matches the \code{label} in the \code{term} column of the \code{test.summary} \code{data.frame} 
+  in the supplied \code{\link{asrtests.object}} and extracts the its p-value. It only matches 
   the first occurence of \code{label}.}
 \usage{
 \method{getTestPvalue}{asrtests}(asrtests.obj, label, ...)}

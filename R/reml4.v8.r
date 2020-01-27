@@ -1,6 +1,6 @@
 "getTestPvalue.asrtests" <- function(asrtests.obj, label, ...)
 {
-  k <- match(label, asrtests.obj$test.summary$terms)
+  k <- tail(findterm(label, as.character(asrtests.obj$test.summary$terms)),1)
   if (is.na(k))
     stop("Label not found in test.summary of supplied asrtests.obj")
   p <- asrtests.obj$test.summary$p
@@ -66,6 +66,7 @@
   { 
     test.summary <- data.frame(matrix(nrow = 0, ncol=5))
     colnames(test.summary) <- c("terms","DF","denDF","p","action")
+    class(test.summary) <- c("test.summary", "data.frame")
   }
   else
    if (!is.data.frame(test.summary) || ncol(test.summary) != 5)
@@ -126,6 +127,22 @@
 }
 
 setOldClass("asrtests")
+
+"print.test.summary" <- function(x,  which.print = c("title", "table"), ...)
+{
+  options <- c("title", "table", "all")
+  opt <- options[unlist(lapply(which.print, check.arg.values, options=options))]
+  
+  #make change to control printing
+  class(x) <- c("test.summary", "data.frame")
+  x$p <- round(x$p, digits=4)
+  
+  if (any(c("title", "all") %in% opt))
+    cat("\n\n####  Table of hypothesis tests performed \n\n")
+  
+  print.data.frame(x, ...)
+  invisible()
+}
 
 "print.wald.tab" <- function(x, which.wald = c("title", "heading", "table"), 
                              colourise = FALSE, ...)
@@ -493,6 +510,142 @@ setOldClass("asrtests")
   invisible(new.reml)
 }
 
+get.atargs <- function(at.term, dd, always.levels = FALSE)
+{
+  kargs <- strsplit(at.term, "at(", fixed = TRUE)[[1]][2]
+  kargs <- substr(kargs, 1, nchar(kargs)-1)
+  kargs <- stringr::str_split(kargs, ",", n = 2)[[1]]
+  obj <- kargs[1]
+  obj.levs <- levels(dd[[obj]])
+  lvls <- stringr::str_trim(kargs[2])
+
+  if (grepl("\"", lvls, fixed = TRUE) | grepl("\'", lvls, fixed = TRUE) |
+      grepl("c(", lvls, fixed = TRUE) | all(!is.na(suppressWarnings(as.numeric(lvls)))))
+    lvls <- eval(parse(text = lvls))
+  if (is.character(lvls))
+    lvls <- stringr::str_trim(lvls)
+
+  if (is.numeric(lvls) & !always.levels)
+  {
+    if (any(is.na(suppressWarnings(as.numeric(obj.levs)))))
+      levs.indx <- lvls
+    else
+    {
+      if (all(as.character(lvls) %in% obj.levs))
+        levs.indx <- which(obj.levs %in% as.character(lvls))
+      else
+        levs.indx <- lvls
+    }
+  } else
+    levs.indx <- which(obj.levs %in% as.character(lvls))
+
+  #Check that levs.indx is legal  
+  if (min(levs.indx) < 0 & max(levs.indx) > length(obj.levs))
+      stop('at has numeric values that are more than the number of levels')
+
+  return(list(obj = obj, lvls = lvls, obj.levs = obj.levs, levs.indx = levs.indx))
+}
+
+#The purpose of this function is to make sure that any new "at" term being changed in a formula update
+# matches that in the model that is being updated.
+#It assumes that the new "at" term has the actual levels, rather than an index 1:no.levels.
+atLevelsMatch <- function(new, old, call)
+{
+  new.ch <- deparse(new)
+  if (grepl("at(", new.ch, fixed = TRUE)) #only process if new involves an at
+  {
+    dd <- eval(languageEl(call, which = "data")) #needed for levels
+    new.split <- strsplit(new.ch, "[-~+*/]")[[1]]
+    at.parts <- stringr::str_trim(new.split[unlist(lapply(new.split, grepl, 
+                                                          pattern = "at", fixed = TRUE))])
+    #old.obj <- terms(old)
+    #Find the sets of factors association with terms in old that involve one or more at functions
+    at.old.terms <- getTerms.formula(old)
+    at.old.terms <- at.old.terms[grepl("at(", at.old.terms, fixed = TRUE)]
+    at.old.terms.vars <- strsplit(at.old.terms, split = ":")
+    at.old.terms.vars <- lapply(at.old.terms.vars, 
+                               function(vars) vars <- vars[!grepl("at(", vars, fixed = TRUE)])
+    names(at.old.terms.vars) <- at.old.terms
+    
+    #Loop over the pieces of new
+    for (piece in at.parts)
+    {
+      term.obj <- terms(as.formula(paste0("~", piece)))
+      #Find the sets of factors association with terms in new that involve one or more at functions
+      at.new.terms <- stringr::str_trim(unlist(strsplit(piece[length(piece)], split = "+", fixed = TRUE)))
+      at.new.terms <- at.new.terms[grepl("at(", at.new.terms, fixed = TRUE)]
+      at.new.terms.vars <- strsplit(at.new.terms, split = ":")
+      at.new.terms.vars <- lapply(at.new.terms.vars, 
+                                  function(vars) vars <- vars[!grepl("at(", vars, fixed = TRUE)])
+      names(at.new.terms.vars) <- at.new.terms
+      
+      #check if any new terms in this piece have the same non-at variables as an old term
+      for (kterm in at.new.terms)
+      {
+        matches <- unlist(lapply(at.old.terms.vars, 
+                                 function(old.term, knew.term, at.new.terms.vars){
+                                   same <- setequal(at.new.terms.vars[[knew.term]], old.term)
+                                 }, knew.term = kterm, at.new.terms.vars))
+        if (any(matches)) #have old term(s) whose non-at vars match kterm; do the at variables match?
+        {
+          matches <- names(at.old.terms.vars)[matches]
+          at.new.term <- fac.getinTerm(kterm)
+          at.new.term <- at.new.term[grepl("at(", at.new.term, fixed = TRUE)]
+          for (kmatch in matches)
+          {
+            at.kmatch <- fac.getinTerm(kmatch)
+            at.kmatch <- at.kmatch[grepl("at(", at.kmatch, fixed = TRUE)]
+            if (at.new.term == at.kmatch) break
+            at.new.args <- get.atargs(at.new.term, dd, always.levels = TRUE)
+            at.kmatch.args <- get.atargs(at.kmatch, dd)
+            if (at.new.args$obj == at.kmatch.args$obj) #if same var try matching levels
+            {
+              if (all(at.new.args$lvls == at.kmatch.args$lvls))
+              {
+                new.ch <- gsub(at.new.term, at.kmatch, new.ch, fixed = TRUE) #now substitute the old at term
+              } else
+              {
+                #Check if kmatch is a set of levels indexes & new at is a set of levels
+                if (is.numeric(at.kmatch.args$lvls) & 
+                    all(as.character(at.new.args$lvls) %in% at.new.args$obj.levs))
+                {
+                  #Check that new at levels are those corresponding to the kmatch levels indexes 
+                  if (setequal(as.character(at.new.args$lvls), 
+                               at.kmatch.args$obj.levs[at.kmatch.args$levs.indx]))
+                    new.ch <- gsub(at.new.term, at.kmatch, new.ch, fixed = TRUE) #now substitute the old at term
+                } else
+                {
+                  # #Check if kmatch is a set of levels & new at is a set of levels indices
+                  # if (all(as.character(at.kmatch.args$lvls) %in% at.kmatch.args$obj.levs) & 
+                  #     is.numeric(at.new.args$lvls))
+                  # {
+                  #   #Check if new at indices correspond to the same levels as kmatch
+                  #   if (setequal(at.new.args$obj.levs[at.new.args$levs.indx], at.kmatch.args$lvls))
+                  #     new.ch <- gsub(at.new.term, at.kmatch, new.ch, fixed = TRUE) #now substitute the old at term
+                  # }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+  new <- as.formula(new.ch)
+  return(new)
+}
+
+"my.update.formula" <- function(old, new, call, keep.order = TRUE, ...) 
+  #function to update a formula
+{ 
+  env <- environment(as.formula(old))
+  new <- atLevelsMatch(new, old, call)
+  tmp <- update.formula(as.formula(old), new)
+  out <- formula(terms.formula(tmp, simplify = TRUE, keep.order = keep.order))
+  environment(out) <- env
+  return(out)
+}
+
 "newfit.asreml" <- function(asreml.obj, fixed., random., sparse., 
                             residual., rcov., update = TRUE, 
                             allow.unconverged = TRUE, keep.order = TRUE, 
@@ -523,15 +676,6 @@ setOldClass("asrtests")
   if (is.character(validasr))
     stop(validasr)
   
-  "my.update.formula" <- function(old, new, keep.order = TRUE, ...) 
-    #function to update a formula
-  { 
-    env <- environment(as.formula(old))
-    tmp <- update.formula(as.formula(old), as.formula(new))
-    out <- formula(terms.formula(tmp, simplify = TRUE, keep.order = keep.order))
-    environment(out) <- env
-    return(out)
-  }
   if (is.null(call <- asreml.obj$call) && 
       is.null(call <- attr(asreml.obj, "call"))) 
     stop("Need an object with call component or attribute")
@@ -556,7 +700,7 @@ setOldClass("asrtests")
   if (!missing(fixed.)) 
     languageEl(call, which = "fixed") <- 
     my.update.formula(as.formula(languageEl(call, which = "fixed")), 
-                      fixed., keep.order = keep.order)
+                      fixed., call = call, keep.order = keep.order)
   if (!missing(random.)) 
   {
     if (is.null(random.))
@@ -566,7 +710,7 @@ setOldClass("asrtests")
       { 
         if (!is.null(languageEl(call, which = "random"))) 
           my.update.formula(as.formula(languageEl(call, which = "random")), 
-                            random., keep.order = keep.order)
+                            random., call = call, keep.order = keep.order)
         else 
           random.
       }
@@ -575,7 +719,7 @@ setOldClass("asrtests")
     languageEl(call, which = "sparse") <- 
     { if (!is.null(languageEl(call, which = "sparse"))) 
       my.update.formula(as.formula(languageEl(call, which = "sparse")), 
-                        sparse., keep.order = keep.order)
+                        sparse., call = call, keep.order = keep.order)
       else 
         sparse.
     }
@@ -591,7 +735,7 @@ setOldClass("asrtests")
         languageEl(call, which = "residual") <- 
         { if (!is.null(languageEl(call, which = "residual"))) 
           my.update.formula(as.formula(languageEl(call, which = "residual")), 
-                            residual., keep.order = keep.order)
+                            residual., call = call, keep.order = keep.order)
           else 
             residual.
         }
@@ -608,7 +752,7 @@ setOldClass("asrtests")
         languageEl(call, which = "rcov") <- 
         { if (!is.null(languageEl(call, which = "rcov"))) 
           my.update.formula(as.formula(languageEl(call, which = "rcov")), 
-                            rcov., keep.order = keep.order)
+                            rcov., call = call, keep.order = keep.order)
           else 
             rcov.
         }
@@ -1187,6 +1331,27 @@ setOldClass("asrtests")
     else
       stop("In analysing ",asrtests.obj$asreml.obj$fixed.formula[[2]],
            ", multiple terms not allowed in testranfix.asrtests")
+  } else
+  {
+    if (grepl("at(", term, fixed = TRUE)) #have an at term
+    {
+      at.facs <- rownames(attr(term.obj, which = "factors"))
+      at.facs <- at.facs[grepl("at(", at.facs, fixed = TRUE)]
+      lvls <- stringr::str_trim(stringr::str_split(at.facs, ", ", n = 2)[[1]])[2]
+      lvls <- substr(lvls, 1, nchar(lvls)-1)
+      if (substr(lvls, 1, 2) == "c(")
+        lvls <- eval(parse(text = lvls))
+      if (length(lvls) > 1)
+      {
+        if (asr4)
+          stop("In analysing ",asrtests.obj$asreml.obj$formulae$fixed[[2]],
+               ", an at term involving multiple levels will result in multiple terms and cannot be tested in testranfix.asrtests")
+        
+        else
+          stop("In analysing ",asrtests.obj$asreml.obj$fixed.formula[[2]],
+               ", an at term involving multiple levels will result in multiple terms and cannot be tested in testranfix.asrtests")
+      }
+    }
   }
 
     #Test whether term is in random model
@@ -1278,12 +1443,12 @@ setOldClass("asrtests")
           { 
             term.form <- as.formula(paste(". ~ . - ",term, sep=""))
             asreml.new.obj <- newfit.asreml(asreml.obj, fixed. = term.form, trace = trace, 
-                                        update = update, 
-                                        allow.unconverged = TRUE,
-                                        set.terms = set.terms, 
-                                        ignore.suffices = ignore.suffices, 
-                                        bounds = bounds, 
-                                        initial.values = initial.values, ...)
+                                            update = update, 
+                                            allow.unconverged = TRUE,
+                                            set.terms = set.terms, 
+                                            ignore.suffices = ignore.suffices, 
+                                            bounds = bounds, 
+                                            initial.values = initial.values, ...)
             if (asreml.new.obj$converge | allow.unconverged)
             {
               action <- "Dropped"
@@ -1944,111 +2109,6 @@ setOldClass("asrtests")
   return(x)
 }
 
-"chooseModel.asrtests" <- function(asrtests.obj, terms.marginality=NULL, alpha = 0.05, 
-                                   allow.unconverged = TRUE, checkboundaryonly = FALSE, 
-                                   drop.ran.ns=TRUE, positive.zero = FALSE, 
-                                   bound.test.parameters = "none", 
-                                   drop.fix.ns=FALSE, denDF = "numeric",  dDF.na = "none", 
-                                   dDF.values = NULL, trace = FALSE, update = TRUE, 
-                                   set.terms = NULL, ignore.suffices = TRUE, 
-                                   bounds = "P", initial.values = NA, ...)
-#function to determine the set of significant terms taking into account marginality relations
-#terms.marginality should be a square matrix of ones and zeroes with row and column names 
-#   being the names of the terms. The diagonal elements should be one, indicating 
-#   that a term is marginal to itself. Elements should be one if the row term is 
-#   marginal to the column term. All other elements should be zero. 
-{ 
-  #Deal with deprecated constraints parameter
-  tempcall <- list(...)
-  if (length(tempcall)) 
-    if ("constraints" %in% names(tempcall))
-      stop("constraints has been deprecated in setvarianceterms.asreml - use bounds")
-  
-  asr4 <- isASRemlVersionLoaded(4, notloaded.fault = TRUE)
-  #Check that have a valid object of class asrtests
-  validasrt <- validAsrtests(asrtests.obj)  
-  if (is.character(validasrt))
-    stop(validasrt)
-  
-  #check matrix  
-  if (asr4)
-    kresp <- asrtests.obj$asreml.obj$formulae$fixed[[2]]
-  else
-    kresp <- asrtests.obj$asreml.obj$fixed.formula[[2]]
-  if (!is.matrix(terms.marginality) || 
-           nrow(terms.marginality) != ncol(terms.marginality))
-  {
-    stop("In analysing ",kresp,
-         ", must supply a valid marginality matrix")
-  } else
-    if (is.null(rownames(terms.marginality)) || is.null(colnames(terms.marginality)))
-    {
-      stop("In analysing ",kresp,
-           ", terms.marginality must have row and column names that are the terms to be tested")
-    } else
-      if (det(terms.marginality) == 0)
-      {
-        warning("In analysing ",kresp,
-                ", Suspect marginalities of terms not properly specified - check")
-      }
-  #make sure have a terms.marginality matrix with lower triangle all zero
-  terms.marginality <- permute.to.zero.lowertri(terms.marginality)
-  #perform tests
-  sig.terms <- vector("list", length = 0)
-  noterms <- dim(terms.marginality)[1]
-  current.asrt <- asrtests.obj
-  j <- noterms
-  #traverse the columns of terms.marginality
-  while (j > 0)
-  { 
-    #get p-value for term for column j and, if random, drop if ns and drop.ran.ns=TRUE
-    term <- (rownames(terms.marginality))[j]
-    current.asrt <- testranfix.asrtests(asrtests.obj = current.asrt, term, 
-                                        alpha=alpha, allow.unconverged = allow.unconverged, 
-                                        checkboundaryonly = checkboundaryonly,  
-                                        drop.ran.ns = drop.ran.ns, 
-                                        positive.zero = positive.zero, 
-                                        bound.test.parameters = bound.test.parameters, 
-                                        drop.fix.ns = drop.fix.ns, 
-                                        denDF = denDF, dDF.na = dDF.na, 
-                                        dDF.values = dDF.values, trace = trace, 
-                                        update = update, set.terms = set.terms, 
-                                        ignore.suffices = ignore.suffices, 
-                                        bounds = bounds, 
-                                        initial.values = initial.values, ...)
-    test.summary <- current.asrt$test.summary
-    p <- (test.summary[tail(findterm(term, as.character(test.summary$terms)),1), ])$p
-    #if significant, add to sig term list and work out which can be tested next
-    if (!is.na(p)) 
-    { if (p <= alpha)
-      { sig.terms <- c(sig.terms, term)
-        nonnest <- which(terms.marginality[1:(j-1), j] == 0)
-        noterms <- length(nonnest)
-        if (noterms == 0)
-          j = 0
-        else
-        { if (noterms == 1)
-          { nonnest.name <- rownames(terms.marginality)[nonnest]
-            terms.marginality <- terms.marginality[nonnest, nonnest]
-            dim(terms.marginality) <- c(1,1)
-            rownames(terms.marginality) <- nonnest.name
-          }
-          else
-          { terms.marginality <- terms.marginality[nonnest, nonnest]
-          }
-          j <- noterms
-        }
-      }
-      #if not significant, proceed to previous column
-      else
-        j <- j - 1
-    }
-    else
-      j <- j - 1
-  }
-  invisible(list(asrtests.obj = current.asrt, sig.terms = sig.terms))  
-}
-
 "reparamSigDevn.asrtests" <- function(asrtests.obj, terms = NULL, 
                                       trend.num = NULL, devn.fac = NULL, 
                                       allow.unconverged = TRUE, checkboundaryonly = FALSE, 
@@ -2524,6 +2584,7 @@ setOldClass("asrtests")
                                          nonx.fac.order = NULL, colour.scheme = "colour", 
                                          panels = "multiple", graphics.device = NULL,
                                          error.intervals = "Confidence", 
+                                         interval.annotate = TRUE, 
                                          titles = NULL, y.title = NULL, 
                                          filestem = NULL, ggplotFuncs = NULL, ...)
 #a function to plot asreml predictions and associated statistics
@@ -2688,13 +2749,16 @@ setOldClass("asrtests")
         else
             pred.plot <- pred.plot + geom_errorbar(aes_string(ymin=ylow, ymax=yupp),   
                                         linetype = "solid", colour = cbPalette[5]) 
-        pred.plot <- pred.plot + 
-                        annotate("text", x=Inf, y=-Inf,  hjust=1, vjust=-0.3, size = 2, 
-                                 label = paste("Error bars are ", labend, sep=""))
-        if (low.parts[2] == "halfLeastSignificant" && !is.na(meanLSD))
-           pred.plot <- pred.plot + 
-                         annotate("text", x=-Inf, y=-Inf,  hjust=-0.01, vjust=-0.3, size = 2, 
-                                 label = paste("mean LSD = ",signif(meanLSD, digits=3)))
+        if (interval.annotate)
+        {
+          pred.plot <- pred.plot + 
+            annotate("text", x=Inf, y=-Inf,  hjust=1, vjust=-0.3, size = 2, 
+                     label = paste("Error bars are ", labend, sep=""))
+          if (low.parts[2] == "halfLeastSignificant" && !is.na(meanLSD))
+            pred.plot <- pred.plot + 
+              annotate("text", x=-Inf, y=-Inf,  hjust=-0.01, vjust=-0.3, size = 2, 
+                       label = paste("mean LSD = ",signif(meanLSD, digits=3)))
+        }
       }
     } else
     if (n.non.x == 2)
@@ -2723,19 +2787,23 @@ setOldClass("asrtests")
         if (nos.lev[2] > 6)
            pred.plot <- pred.plot +
                          theme(strip.text.x = element_text(size = 8))
-        pred.plot <- pred.plot + 
-                        geom_text(data = annot, label = "Error bars are", 
-                                  hjust=1, vjust=-1.3, size = 2) +
-                        geom_text(data = annot, label = labend, 
-                                  hjust=1, vjust=-0.3, size = 2)
-        if (low.parts[2] == "halfLeastSignificant" && !is.na(meanLSD)) 
-        { 
-          annot <- data.frame(-Inf, -Inf, 
-                              factor(non.x.lev[1], levels = non.x.lev))
-          names(annot) <- c(vars[1], y, vars[2])
+        
+        if (interval.annotate)
+        {
           pred.plot <- pred.plot + 
-                        geom_text(data = annot, hjust=-0.01, vjust=-0.3, size = 2, 
-                                 label = paste("mean LSD = ",signif(meanLSD, digits=3)))
+            geom_text(data = annot, label = "Error bars are", 
+                      hjust=1, vjust=-1.3, size = 2) +
+            geom_text(data = annot, label = labend, 
+                      hjust=1, vjust=-0.3, size = 2)
+          if (low.parts[2] == "halfLeastSignificant" && !is.na(meanLSD)) 
+          { 
+            annot <- data.frame(-Inf, -Inf, 
+                                factor(non.x.lev[1], levels = non.x.lev))
+            names(annot) <- c(vars[1], y, vars[2])
+            pred.plot <- pred.plot + 
+              geom_text(data = annot, hjust=-0.01, vjust=-0.3, size = 2, 
+                        label = paste("mean LSD = ",signif(meanLSD, digits=3)))
+          }
         }
       }
     } else
@@ -2768,20 +2836,24 @@ setOldClass("asrtests")
         else
           pred.plot <- pred.plot + geom_errorbar(aes_string(ymin=ylow, ymax=yupp),   
                                         linetype = "solid", colour = cbPalette[5]) 
-        pred.plot <- pred.plot + 
-                        geom_text(data = annot, label = "Error bars are", 
-                                  hjust=1, vjust=-2.1, size = 2) +
-                        geom_text(data = annot, label = labend, 
-                                  hjust=1, vjust=-1.1, size = 2)
-        if (low.parts[2] == "halfLeastSignificant" && !is.na(meanLSD)) 
-        { 
-          annot <- data.frame(-Inf, -Inf, 
-                              factor(non.x.lev1[length(non.x.lev1)], levels = non.x.lev1),
-                              factor(non.x.lev2[1], levels = non.x.lev2))
-          names(annot) <- c(vars[1], y, vars[c(3,2)])
+        
+        if (interval.annotate)
+        {
           pred.plot <- pred.plot + 
-                        geom_text(data = annot, hjust=-0.01, vjust=-1.1, size = 2, 
-                                 label = paste("mean LSD = ",signif(meanLSD, digits=3)))
+            geom_text(data = annot, label = "Error bars are", 
+                      hjust=1, vjust=-2.1, size = 2) +
+            geom_text(data = annot, label = labend, 
+                      hjust=1, vjust=-1.1, size = 2)
+          if (low.parts[2] == "halfLeastSignificant" && !is.na(meanLSD)) 
+          { 
+            annot <- data.frame(-Inf, -Inf, 
+                                factor(non.x.lev1[length(non.x.lev1)], levels = non.x.lev1),
+                                factor(non.x.lev2[1], levels = non.x.lev2))
+            names(annot) <- c(vars[1], y, vars[c(3,2)])
+            pred.plot <- pred.plot + 
+              geom_text(data = annot, hjust=-0.01, vjust=-1.1, size = 2, 
+                        label = paste("mean LSD = ",signif(meanLSD, digits=3)))
+          }
         }
       }
     }
@@ -2830,13 +2902,17 @@ setOldClass("asrtests")
         else
           pred.plot <-  pred.plot + geom_errorbar(aes_string(ymin=ylow, ymax=yupp),  
                                       linetype = "solid", colour = cbPalette[5], width=int.width) 
-        pred.plot <- pred.plot + 
-                       annotate("text", x=Inf, y=-Inf,  hjust=1, vjust=-0.3, size = 2, 
-                                label =  paste("Error bars are ", labend, sep=""))
-       if (low.parts[2] == "halfLeastSignificant" && !is.na(meanLSD)) 
-         pred.plot <- pred.plot + 
-                       annotate("text", x=-Inf, y=-Inf,  hjust=-0.01, vjust=-0.3, size = 2, 
-                               label = paste("mean LSD = ",signif(meanLSD, digits=3)))
+        
+        if (interval.annotate)
+        {
+          pred.plot <- pred.plot + 
+            annotate("text", x=Inf, y=-Inf,  hjust=1, vjust=-0.3, size = 2, 
+                     label =  paste("Error bars are ", labend, sep=""))
+          if (low.parts[2] == "halfLeastSignificant" && !is.na(meanLSD)) 
+            pred.plot <- pred.plot + 
+              annotate("text", x=-Inf, y=-Inf,  hjust=-0.01, vjust=-0.3, size = 2, 
+                       label = paste("mean LSD = ",signif(meanLSD, digits=3)))
+        }
       }
     } else
     if (panel.opt == "single")
@@ -2860,13 +2936,17 @@ setOldClass("asrtests")
         { 
           pred.plot <- pred.plot + 
                          geom_errorbar(aes_string(ymin=ylow, ymax=yupp),   
-                                       linetype = "solid", position = position_dodge(1)) +
-                         annotate("text", x=Inf, y=-Inf,  hjust=1, vjust=-0.3, size = 2, 
-                                  label =  paste("Error bars are ", labend, sep=""))
-          if (low.parts[2] == "halfLeastSignificant" && !is.na(meanLSD)) 
-          { pred.plot <- pred.plot + 
-                           annotate("text", x=-Inf, y=-Inf,  hjust=-0.01, vjust=-0.3, size = 2, 
-                                    label = paste("mean LSD = ",signif(meanLSD, digits=3)))
+                                       linetype = "solid", position = position_dodge(1))
+          if (interval.annotate)
+          {
+            pred.plot <- pred.plot + 
+              annotate("text", x=Inf, y=-Inf,  hjust=1, vjust=-0.3, size = 2, 
+                       label =  paste("Error bars are ", labend, sep=""))
+            if (low.parts[2] == "halfLeastSignificant" && !is.na(meanLSD)) 
+            { pred.plot <- pred.plot + 
+              annotate("text", x=-Inf, y=-Inf,  hjust=-0.01, vjust=-0.3, size = 2, 
+                       label = paste("mean LSD = ",signif(meanLSD, digits=3)))
+            }
           }
         }
       }
@@ -2901,7 +2981,7 @@ setOldClass("asrtests")
                                     hjust=1, vjust=-1.3, size = 2) +
                           geom_text(data = annot, label = labend, 
                                     hjust=1, vjust=-0.3, size = 2)
-          if (low.parts[2] == "halfLeastSignificant" && !is.na(meanLSD)) 
+          if (interval.annotate & low.parts[2] == "halfLeastSignificant" && !is.na(meanLSD)) 
           { annot <- data.frame(-Inf, -Inf, 
                                 factor(non.x.lev[1], levels = non.x.lev))
             names(annot) <- c(x.var, y, non.x.terms)
@@ -2941,19 +3021,23 @@ setOldClass("asrtests")
           else
             pred.plot <- pred.plot + geom_errorbar(aes_string(ymin=ylow, ymax=yupp),   
                                         linetype = "solid", colour = cbPalette[5], width=int.width) 
-          pred.plot <- pred.plot + 
-                          geom_text(data = annot, label = "Error bars are", 
-                                    hjust=1, vjust=-1.3, size = 2) +
-                          geom_text(data = annot, label = labend, 
-                                    hjust=1, vjust=-0.3, size = 2)
-          if (low.parts[2] == "halfLeastSignificant" && !is.na(meanLSD)) 
-          { annot <- data.frame(-Inf, -Inf, 
-                                factor(non.x.lev1[1], levels = non.x.lev1),
-                                factor(non.x.lev2[length(non.x.lev2)], levels = non.x.lev2))
+          
+          if (interval.annotate)
+          {
+            pred.plot <- pred.plot + 
+              geom_text(data = annot, label = "Error bars are", 
+                        hjust=1, vjust=-1.3, size = 2) +
+              geom_text(data = annot, label = labend, 
+                        hjust=1, vjust=-0.3, size = 2)
+            if (low.parts[2] == "halfLeastSignificant" && !is.na(meanLSD)) 
+            { annot <- data.frame(-Inf, -Inf, 
+                                  factor(non.x.lev1[1], levels = non.x.lev1),
+                                  factor(non.x.lev2[length(non.x.lev2)], levels = non.x.lev2))
             names(annot) <- c(x.var, y, non.x.terms)
             pred.plot <- pred.plot + 
-                          geom_text(data = annot, hjust=-0.01, vjust=-0.3, size = 2, 
-                                   label = paste("mean LSD = ",signif(meanLSD, digits=3)))
+              geom_text(data = annot, hjust=-0.01, vjust=-0.3, size = 2, 
+                        label = paste("mean LSD = ",signif(meanLSD, digits=3)))
+            }
           }
         }
       }
@@ -2988,7 +3072,8 @@ setOldClass("asrtests")
                                     x.pred.values = NULL, x.plot.values = NULL, 
                                     plots = "predictions", panels = "multiple", 
                                     graphics.device = NULL, 
-                                    error.intervals = "Confidence", meanLSD.type = "overall", 
+                                    error.intervals = "Confidence", 
+                                    interval.annotate = TRUE, meanLSD.type = "overall", 
                                     LSDby = NULL, avsed.tolerance = 0.25, titles = NULL, 
                                     colour.scheme = "colour", save.plots = FALSE, 
                                     transform.power = 1, offset = 0, scale = 1, 
@@ -3160,6 +3245,7 @@ setOldClass("asrtests")
                         colour.scheme = colour.scheme, 
                         panels = panel.opt, graphics.device = graphics.device,
                         error.intervals = error.intervals,  
+                        interval.annotate = interval.annotate, 
                         titles = titles, y.title = y.title, 
                         filestem = filestem, ggplotFuncs = ggplotFuncs, ...)
       }
@@ -3179,6 +3265,7 @@ setOldClass("asrtests")
                         colour.scheme = colour.scheme,  
                         panels = panel.opt, graphics.device = graphics.device,
                         error.intervals = error.intervals,
+                        interval.annotate = interval.annotate, 
                         titles = titles, y.title = bty.title, 
                         filestem = filestem, ggplotFuncs = ggplotFuncs, ...)
       }

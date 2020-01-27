@@ -47,7 +47,9 @@
               (i) the terms  for boundary variance components are removed 
               from the models and (ii) modifications specified via \code{\dots} are made.}
  \item{set.terms}{A character vector specifying the terms that are to have 
-                  bounds and/or initial values set prior to fitting.}
+                  bounds and/or initial values set prior to fitting.
+               The names must match those in the \code{vparameters} component of the 
+               \code{asreml.obj} component in the \code{\link{asrtests.object}}.}
  \item{ignore.suffices}{A logical vector specifying whether the suffices of the 
                     \code{asreml}-assigned names of the variance terms (i.e. the 
                     information to the right of an "!", other than "R!") is to 

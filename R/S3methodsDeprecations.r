@@ -1,7 +1,7 @@
-#S3 methods
+#S3 method generics
 
 changeTerms <- function(asrtests.obj, ...) UseMethod("changeTerms")
-chooseModel <- function(asrtests.obj, ...) UseMethod("chooseModel")
+chooseModel <- function(object, ...) UseMethod("chooseModel")
 recalcWaldTab <- function(asrtests.obj, ...) UseMethod("recalcWaldTab")
 rmboundary <- function(asrtests.obj, ...) UseMethod("rmboundary")
 reparamSigDevn <- function(asrtests.obj, ...) UseMethod("reparamSigDevn")
