@@ -6,7 +6,7 @@ output:
   pdf_document: default
 ---
 
-This vignette that shows how to use `asremlPlus` (Brien, 2020), in conjunction with `asreml` (Butler et al., 2018), to select the terms to be included in a mixed model, two packages for the `R` Statistical Computing environment (R Core Team, 2020).
+This vignette that shows how to use `asremlPlus` (Brien, 2020), in conjunction with `asreml` (Butler et al., 2018), to select the terms to be included in a mixed model for an experiment that involves spatial variation. Here, `asremlPlus` and `asreml` are packages for the `R` Statistical Computing environment (R Core Team, 2020).
 
 ```{r setup, include=TRUE}
 library(asreml, quietly=TRUE)
