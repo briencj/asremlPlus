@@ -25,17 +25,26 @@ a mixed model using \code{asreml}.
                \code{F.inc}, \code{Pr}; otherwise the columns are \code{Df}, 
                \code{Sum of Sq}, \code{Wald statistic}, and \code{Pr(Chisq)}.
          \item \code{test.summary}: A \code{data.frame} with columns \code{term}, 
-                \code{DF}, \code{denDF}, \code{p} and \code{action}. A row is added to 
-                it for each term 
-                that is dropped, added or tested or a note that several terms have been
-                added or removed. A row contains the name of the term, the 
-                DF, the p-value and the action taken. Possible codes are: 
+                \code{DF}, \code{denDF}, \code{p}, \code{AIC}, \code{BIC} and 
+                \code{action}. Possible codes for \code{action} are: 
                 \code{Dropped}, \code{Retained}, \code{Swapped}, \code{Unswapped},   
                 \code{Significant}, \code{Nonsignificant}, \code{Absent}, \code{Added}, 
                 \code{Removed} and \code{Boundary}. If the changed model did not
                  converge, \code{Unconverged} will be added to the code. 
                  Note that the logical \code{asreml.obj$converge} also
-                reflects whether there is convergence.}}
+                reflects whether there is convergence.
+                
+                A row is added to the \code{test.summary} for each term that is 
+                dropped, added or tested or a note that several terms have been
+                added or removed. When values for the AIC and BIC are included 
+                in the row, then the DF are the number of fixed parameters in the 
+                model and denDF are the numbers of variance parameters. 
+                When \code{\link{changeModelOnIC}} adds a row then the values of the 
+                degrees of freedom and information criteria are differences 
+                between those for the model that is supplied and the model 
+                changed by \code{\link{changeModelOnIC}}.
+                }
+}
 
 \author{Chris Brien}
 \seealso{\code{\link{as.asrtests}}, \code{\link{as.asrtests}}, \code{\link{validAsrtests}}}

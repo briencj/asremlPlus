@@ -53,6 +53,9 @@
                pseudo-anova table for the fixed terms produced by \code{wald.asreml}.
 }
 
+\references{Kenward, M. G., & Roger, J. H. (1997). Small sample inference for fixed effects from restricted maximum likelihood. 
+            \emph{Biometrics}, \bold{53}, 983-997.}
+
 \author{Chris Brien}
 \seealso{\code{\link{as.asrtests}}, \code{\link{testranfix.asrtests}}}
 \examples{\dontrun{

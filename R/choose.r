@@ -2,13 +2,12 @@ addtoChooseSummary <- function(choose.summary, term, DF = NA, denDF = NA, p = NA
                                action, omit.DF)
 {
   if (omit.DF)
-    choose.summary <- rbind(choose.summary, 
-                            data.frame(terms = term, 
-                                       p = p, action = action, stringsAsFactors = FALSE))
+    choose.summary <- addtoTestSummary(test.summary = choose.summary, terms = term, 
+                                       p = p, action = action)
   else
-    choose.summary <- rbind(choose.summary, 
-                            data.frame(terms = term, DF = DF, denDF = denDF, 
-                                       p = p, action = action, stringsAsFactors = FALSE))
+    choose.summary <- addtoTestSummary(test.summary = choose.summary, terms = term, 
+                                       DF = DF, denDF = denDF, 
+                                       p = p, action = action)
   return(choose.summary)
 }
 
@@ -122,12 +121,10 @@ addtoChooseSummary <- function(choose.summary, term, DF = NA, denDF = NA, p = NA
   noterms <- dim(terms.marginality)[1]
   if (omit.DF)
   {
-    choose.summary <- data.frame(matrix(nrow = 0, ncol=3))
-    colnames(choose.summary) <- c("terms", "p", "action")
+    choose.summary <- makeTestSummary(which.cols = c("terms", "p", "action"))
   } else
   {
-    choose.summary <- data.frame(matrix(nrow = 0, ncol=5))
-    colnames(choose.summary) <- c("terms", "DF","denDF","p","action")
+    choose.summary <- makeTestSummary(which.cols = c("terms","DF","denDF","p","action"))
   }
 
   #Determine the significant terms
@@ -308,3 +305,124 @@ addtoChooseSummary <- function(choose.summary, term, DF = NA, denDF = NA, p = NA
   invisible(list(asrtests.obj = current.asrt, sig.terms = sig.terms))  
 }
 
+"changeModelOnIC.asrtests" <- function(asrtests.obj, 
+                                       dropFixed = NULL, addFixed = NULL, 
+                                       dropRandom = NULL,  addRandom = NULL, 
+                                       newResidual = NULL, label = "Changed terms", 
+                                       allow.unconverged = TRUE, checkboundaryonly = FALSE, 
+                                       trace = FALSE, update = TRUE, denDF = "numeric", 
+                                       set.terms = NULL, ignore.suffices = TRUE, 
+                                       bounds = "P", initial.values = NA, 
+                                       which.IC = "AIC", IClikelihood = "REML", 
+                                       fixedDF = NULL, varDF = NULL, tol.diff = 1e-02, 
+                                       bound.exclusions = c("F","B","S","C"),  
+                                       ...)
+  #Uses information criteria to select the best model after comparing that fitted in the asrtests.obj 
+  #and the one obtained after modifying the model using a combination of adding and removing sets of 
+  #terms from one or both of the fixed or random asreml models and replacing the residual model.
+  #The function changeTerms is used to cahnge the model.
+{ 
+  #Check IClikelihood options, because "none" is not allowed here
+  options <- c("REML", "full")
+  ic.lik <- options[check.arg.values(IClikelihood, options)]
+  options <- c("AIC", "BIC", "both")
+  ic.type <- options[check.arg.values(which.IC, options)]
+  
+  #Calculate the IC for the incoming fit
+  old.IC <- infoCriteria(asrtests.obj$asreml.obj, likelihood = ic.lik, 
+                         bound.exclusions = bound.exclusions, 
+                         fixedDF = fixedDF, varDF = varDF, ...)
+  old.IC <- as.vector(old.IC[c("fixedDF", "varDF", "AIC", "BIC")])
+  names(old.IC) <- c("DF", "denDF", "AIC", "BIC")
+  nlines.test <- nrow(asrtests.obj$test.summary)
+  
+  #Use changeTerms to change the model
+  new.asrtests.obj <- changeTerms(asrtests.obj, 
+                                  dropFixed = dropFixed, addFixed = dropFixed, 
+                                  dropRandom = dropRandom,  addRandom = addRandom, 
+                                  newResidual = newResidual, label = label, 
+                                  allow.unconverged = allow.unconverged, 
+                                  checkboundaryonly = checkboundaryonly, 
+                                  trace = trace, update = update, denDF = denDF, 
+                                  set.terms = set.terms, ignore.suffices = ignore.suffices, 
+                                  bounds = bounds, initial.values = initial.values, 
+                                  IClikelihood = IClikelihood, 
+                                  bound.exclusions = bound.exclusions,  
+                                  ...)
+  
+  #Obtain IC for new model, recalculating when fixedDF and varDF have been set
+  if (is.null(varDF) & is.null(fixedDF))
+  {
+    subsumm <- new.asrtests.obj$test.summary
+    subsumm <- subsumm[subsumm$terms == label & subsumm$action != "Boundary", ]
+    if (nrow(subsumm) > 1)
+      subsumm <- tail(subsumm, 1)
+    class(subsumm) <- "data.frame"
+    new.IC <- as.vector(subsumm[c("DF", "denDF", "AIC", "BIC")])
+  } else
+  {
+    new.IC <- infoCriteria(new.asrtests.obj$asreml.obj, likelihood = ic.lik, 
+                           bound.exclusions = bound.exclusions, 
+                           fixedDF = fixedDF, varDF = varDF, ...)
+    new.IC <- as.vector(new.IC[c("fixedDF", "varDF", "AIC", "BIC")])
+    names(new.IC) <- c("DF", "denDF", "AIC", "BIC")
+  }
+
+  #Make the comparison
+  diff.IC <- new.IC - old.IC
+  action <- "Unswapped"
+  if (ic.type == "AIC")
+  {
+    if (diff.IC["AIC"] < -tol.diff)
+    {
+      asrtests.obj <- new.asrtests.obj
+      action <- "Swapped"
+    }
+  } else
+  {
+    if (ic.type == "BIC")
+    {
+      if (diff.IC["BIC"] < -tol.diff)
+      {
+        asrtests.obj <- new.asrtests.obj
+        action <- "Swapped"
+      }
+    } else
+    {
+      if (ic.type == "both")
+      {
+        if (abs(diff.IC["AIC"]) > tol.diff)
+        {
+          if (diff.IC["AIC"] < -tol.diff)
+          {
+            asrtests.obj <- new.asrtests.obj
+            action <- "Swapped"
+          }
+        }
+        else
+        {
+          if (diff.IC["BIC"] < -tol.diff)
+          {
+            asrtests.obj <- new.asrtests.obj
+            action <- "Swapped"
+          }
+        }
+      }
+    }
+  }
+  
+  #Modify action to reflect model selection
+  test.summary <- new.asrtests.obj$test.summary
+  krows <- (nlines.test+1):nrow(test.summary)
+  k <- krows[test.summary$terms[krows] == label & 
+               test.summary$action[krows] != "Boundary"]
+  
+  test.summary[k, "DF"] <- diff.IC["DF"]
+  test.summary[k, "denDF"] <- diff.IC["denDF"]
+  test.summary[k, "AIC"] <- diff.IC["AIC"]
+  test.summary[k, "BIC"] <- diff.IC["BIC"]
+  test.summary[k, "action"] <- action
+  asrtests.obj$test.summary <- test.summary
+
+  return(asrtests.obj)
+}

@@ -239,7 +239,7 @@ test_that("noPredictions.asreml4", {
                          args=list(fixed = y ~ Species*Substrate*Irrigation,
                                    random = ~ Row + Column,
                                    keep.order=TRUE, data = gw.dat, 
-                                   maxiter=50, workspace = 1e09, stepsize = 0.0001))
+                                   maxiter=50, workspace = 1e08, stepsize = 0.0001))
   current.asrt <- asrtests(current.asr, NULL, NULL)
   current.asrt <- rmboundary(current.asrt)
   testthat::expect_error(diffs <- predictPresent(current.asrt$asreml.obj,

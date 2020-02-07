@@ -1,7 +1,7 @@
 #devtools::test("asremlPlus")
 context("model_selection")
 
-cat("#### Test for wheat example with asreml4\n")
+cat("#### Test for wheat76 example with asreml4\n")
 test_that("Wheat_asreml4", {
   skip_if_not_installed("asreml")
   skip_on_cran()
@@ -18,8 +18,8 @@ test_that("Wheat_asreml4", {
                         data=Wheat.dat)
   summary(current.asr)
   info <- infoCriteria(current.asr)
-  testthat::expect_equal(info$DF, 5)
-  testthat::expect_lt(abs(info$AIC - 1346.76), 1e-03)
+  testthat::expect_equal(info$varDF, 5)
+  testthat::expect_lt(abs(info$AIC - 1346.768), 1e-03)
   
   # Load current fit into an asrtests object
   current.asrt <- as.asrtests(current.asr, NULL, NULL)
@@ -55,7 +55,7 @@ test_that("Wheat_asreml4", {
   testthat::expect_equal(nrow(current.asrt$wald.tab), 3)
   testthat::expect_equal(nrow(current.asrt$test.summary), 5)
   info <- infoCriteria(current.asrt$asreml.obj)
-  testthat::expect_equal(info$DF, 5)
+  testthat::expect_equal(info$varDF, 5)
   testthat::expect_lt(abs(info$AIC - 1353.762), 1e-03)
   
   # Get current fitted asreml object

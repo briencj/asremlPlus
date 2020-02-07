@@ -39,7 +39,7 @@
                       the supplied \code{asrtsts} object is returned.}
  \item{checkboundaryonly}{If \code{TRUE} then boundary and singular terms are not removed by 
               \code{\link{rmboundary.asrtests}}; a warning is issued instead.}
- \item{denDF}{Specifies the enthod to use in computing approximate denominator 
+ \item{denDF}{Specifies the method to use in computing approximate denominator 
               degrees of freedom when \code{wald.asreml} is called. Can be \code{none} 
               to suppress the computations, \code{numeric} for numerical methods,
               \code{algebraic} for algebraic methods or \code{default}, the default, 
@@ -90,6 +90,9 @@
 }
 \value{An \code{\link{asrtests.object}} containing the components (i) \code{asreml.obj},
        (ii) \code{wald.tab}, and (iii) \code{test.summary}.}
+
+\references{Kenward, M. G., & Roger, J. H. (1997). Small sample inference for fixed effects from restricted maximum likelihood. 
+            \emph{Biometrics}, \bold{53}, 983-997.}
 
 \author{Chris Brien}
 \seealso{\code{\link{as.asrtests}}, \code{\link{changeTerms.asrtests}}, 

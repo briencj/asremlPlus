@@ -214,25 +214,33 @@ REMLRT.asreml <- function(h0.asreml.obj, h1.asreml.obj,
 	data.frame(REMLRT, DF, p, NBound.h0, NBound.h1)
 }
 
-
-infoCriteria.asreml <- function(asreml.obj, DF = NULL, 
-                                bound.exclusions = c("F","B","S","C"), ...)
+#The code for the full likelihood was adapted from Verbyla (2019) ANZJS, File S1 (doi: 10.1111/anzs.12254) 
+infoCriteria.asreml <- function(object, DF = NULL, 
+                                bound.exclusions = c("F","B","S","C"), 
+                                likelihood = "REML", fixedDF = NULL, varDF = NULL, ...)
 {
   asr4 <- isASRemlVersionLoaded(4, notloaded.fault = TRUE)
   #Check that have a valid object of class asreml
-  validasr <- validAsreml(asreml.obj)  
+  validasr <- validAsreml(object)  
   if (is.character(validasr))
     stop(validasr)
+  
+  #Check likelihood option
+  options <- c("REML", "full")
+  loglik.opt <- options[check.arg.values(likelihood, options)] 
+  
+  if (loglik.opt == "full" & !asr4)
+    stop("The full likelihood option has not been implemented for asreml-R version 3")
   
   #Get bound values
   if (asr4)
   {
-    bound <- asreml::vpc.char(asreml.obj)
+    bound <- asreml::vpc.char(object)
   }
   else
   {
-    bound <- names(asreml.obj$gammas.con)
-    names(bound) <- names(asreml.obj$gammas)
+    bound <- names(object$gammas.con)
+    names(bound) <- names(object$gammas)
   }
   NBound <- NA
   if (asr4)
@@ -256,23 +264,73 @@ infoCriteria.asreml <- function(asreml.obj, DF = NULL,
   }
   NBound <- sum(Bound)
   Bound <- names(bound)[Bound]
-  #Calculate the DF
-  if (is.null(DF))
+  #Calculate the varDF
+  if (is.null(DF) & is.null(varDF))
   {
-    DF <- length(bound)
-    DF <- DF - NBound
+    varDF <- length(bound)
+    varDF <- varDF - NBound
     if (NBound > 0)
       warning(paste("The following bound terms were discounted:\n", 
                     paste(Bound, collapse = ", ")))
   } else
   {
+    if (is.null(varDF))
+      varDF <- DF
     if (NBound > 0)
       warning(paste("The following bound terms were not discounted:\n", 
                     paste(Bound, collapse = ", ")))
   }
-  logREML <- asreml.obj$loglik
+  #If full likelihood, caluclate logdetC and fixedDF
+  if (loglik.opt == "full")
+  {
+    asreml::asreml.options(Cfixed = TRUE, gammaPar=FALSE)
+    if (is.null(object$Cfixed)) 
+      object <- asreml::update.asreml(object, maxit=1)
+    coefF <- summary(object, coef=TRUE)$coef.fixed
+    which.cF <- !is.na(coefF[, "z.ratio"])
+    logdetC <- log(prod(svd(as.matrix(object$Cfixed[which.cF, which.cF]))$d))
+    if (is.null(fixedDF))
+      fixedDF <- sum(which.cF)
+  } else #REML
+  {
+    fixedDF <- 0
+    logdetC <- 0
+  }
+  logREML <- object$loglik
+  loglik <- logREML - logdetC/2
   #calculate AIC and BIC
-	AIC <- -2 * logREML + 2 * DF
-	BIC <- -2 * logREML + DF * log(asreml.obj$nedf)
-	data.frame(DF, NBound, AIC, BIC, logREML)
+	AIC <- -2 * loglik + 2 * (fixedDF + varDF)
+	BIC <- -2 * loglik + (fixedDF + varDF) * log(object$nedf+fixedDF)
+	return(data.frame(fixedDF, varDF, NBound, AIC, BIC, loglik))
 }
+
+
+"infoCriteria.list" <- function(object, bound.exclusions = c("F","B","S","C"), 
+                                likelihood = "REML", fixedDF = NULL, varDF = NULL, ...)
+{
+  asr4 <- isASRemlVersionLoaded(4, notloaded.fault = TRUE)
+  #Check that is a list of asreml objects
+  if (!all(unlist(lapply(object, function(m) "asreml" %in% class(m)))))
+    stop("all elements of the list must be of class asreml")
+  
+  if (!is.null(fixedDF) & length(fixedDF) != 1)
+    stop("Multiple fixedDF has not been implemented")
+  if (!is.null(varDF) & length(varDF) != 1)
+    stop("Multiple fixedDF has not been implemented")
+
+  #Get information criteria
+  if (asr4)
+    asreml::asreml.options(trace = FALSE)
+  ic <- lapply(object, 
+               function(m, bound.exclusions, likelihood, fixedDF, varDF) 
+                 suppressWarnings(suppressMessages(
+                   infoCriteria(m, bound.exclusions = bound.exclusions, 
+                                likelihood = likelihood, fixedDF = fixedDF, varDF = varDF, ...))), 
+               bound.exclusions = bound.exclusions, 
+               likelihood = likelihood, fixedDF = fixedDF, varDF = varDF)
+  ic <- as.data.frame(do.call(rbind, ic))
+  if (!is.null(names(object)))
+    rownames(ic) <- names(object)
+  return(ic)
+}
+

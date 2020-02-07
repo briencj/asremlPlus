@@ -50,6 +50,8 @@
 \code{\link{facRename.alldiffs}}
       \tab Renames \code{\link{factor}}s in the \code{prediction} component of \cr
       \tab an \code{\link{alldiffs.object}}.    \cr
+\code{\link{getFormulae.asreml}}
+      \tab Gets the formulae from an asreml object. \cr
 \code{\link{is.alldiffs}}
       \tab A single-line function that tests whether an object is \cr 
       \tab of class alldiffs.   \cr
@@ -69,6 +71,8 @@
       \tab Prints a data.frame containing a test.summary. \cr
 \code{\link{print.wald.tab}}
       \tab Prints a data.frame containing a Wald or pseudoanova table. \cr
+\code{\link{printFormulae.asreml}}
+      \tab Prints the formulae from an asreml object. \cr
 \code{\link{sort.alldiffs}}
       \tab Sorts the components of an \code{\link{alldiffs.object}} according to \cr
       \tab the predicted values associated with a factor. \cr
@@ -88,6 +92,9 @@
       \tab  Adds and drops the specified sets of terms from one \cr
       \tab or both of the fixed  or random model and/or replaces the \cr
       \tab residual (rcov) model with a new model. \cr
+\code{\link{iterate.asrtests}} 
+      \tab Subject the fitted asreml.obj stored in an asrtests.object \cr
+      \tab  to further iterations of the fitting process. \cr
 \code{\link{newfit.asreml}} 
       \tab  Refits an asreml model with modified model formula \cr
       \tab  using either a call to 'update.asreml' or a direct \cr
@@ -107,8 +114,11 @@
        \tab for terms in the 'random' and 'residual' arguments of an \cr
        \tab 'asreml' call. \cr
 \cr
-(iv) Model testing \cr\cr
+(iv) Model selection \cr\cr
 
+\code{\link{changeModelOnIC.asrtests}}
+       \tab Uses information criteria to decide whether to change an \cr
+       \tab already fitted model. \cr
 \code{\link{chooseModel.asrtests}}
        \tab Determines and records the set of significant terms using an \cr
        \tab \code{\link{asrtests.object}}, taking into account the hierarchy \cr 
@@ -122,7 +132,9 @@
        \tab Gets the p-value for a test recorded in the test.summary \cr
        \tab data.frame of an \code{\link{asrtests.object}}.  \cr
 \code{\link{infoCriteria.asreml}}
-       \tab        Computes AIC and BIC for a model. \cr
+       \tab Computes AIC and BIC for models. \cr
+\code{\link{infoCriteria.list}}
+       \tab Computes AIC and BIC for models. \cr
 \code{\link{recalcWaldTab.asrtests}}
        \tab Recalculates the denDF, F.inc and P values for a table \cr
        \tab of Wald test statistics obtained using 'wald.asreml'. \cr

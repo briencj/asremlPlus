@@ -12,13 +12,20 @@
 
              If there is no \code{wald.tab}, \code{wald.asreml} is called. In all cases, 
              \code{\link{recalcWaldTab}} is called and any changes made as specified by the 
-             the \code{\link{recalcWaldTab}} arguments supplied via \code{\dots}.}
+             the \code{\link{recalcWaldTab}} arguments supplied via \code{\dots}.
+
+             The \code{label} argument can be used to include an entry in \code{test.summary} 
+             for the starting model. If a \code{label} is included, the information criteria 
+             calculated using \code{asreml.obj} can also be added to the \code{test.summary}.
+}
 
 \usage{
 as.asrtests(asreml.obj, wald.tab = NULL, test.summary = NULL, 
-            denDF = "numeric", ...)
+            denDF = "numeric", label = NULL, 
+            IClikelihood = "none", bound.exclusions = c("F","B","S","C"), ...)
 asrtests(asreml.obj, wald.tab = NULL, test.summary = NULL, 
-         denDF = "numeric", ...)}
+         denDF = "numeric", label = NULL, 
+         IClikelihood = "none", bound.exclusions = c("F","B","S","C"), ...)}
 \arguments{
  \item{asreml.obj}{an \code{asreml} object for a fitted model.}
  \item{wald.tab}{A \code{data.frame} containing a pseudo-anova table for 
@@ -31,7 +38,7 @@ asrtests(asreml.obj, wald.tab = NULL, test.summary = NULL,
  \item{test.summary}{A \code{data.frame} with columns \code{term}, 
                 \code{DF}, \code{denDF}, \code{p} and \code{action} containing the 
                 results of previous hypothesis tests.}
- \item{denDF}{Specifies the enthod to use in computing approximate denominator 
+ \item{denDF}{Specifies the method to use in computing approximate denominator 
               degrees of freedom when \code{wald.asreml} is called. Can be \code{none} 
               to suppress the computations, \code{numeric} for numerical methods,
               \code{algebraic} for algebraic methods or \code{default}, the default, 
@@ -39,11 +46,28 @@ asrtests(asreml.obj, wald.tab = NULL, test.summary = NULL,
               on problem size. The denominator degrees of freedom are calculated 
               according to Kenward and Roger (1997) for fixed terms in the dense 
               part of the model.}
+ \item{label}{A \code{character} to use as an entry in the \code{terms} column in 
+              \code{test.summary} to indicate as far as is possible the nature of the 
+              model that has been fitted. The \code{action} column in \code{test.summary} 
+              will be \code{Starting model}.}
+ \item{IClikelihood}{A \code{character} that controls both the occurence and the type 
+                    of likelihood for information criterion in the \code{test.summary} 
+                    of the \code{\link{asrtests.object}}. If \code{none}, none are 
+                    included. Otherwise, if \code{REML}, then the AIC and BIC based 
+                    on the Restricted Maximum Likelihood are included; if \code{full}, 
+                    then the AIC and BIC based on the full likelihood are included. 
+                    (See also \code{\link{infoCriteria.asreml}}.)}
+ \item{bound.exclusions}{A \code{character} specifying the bound (constraint) codes that 
+                    will result in a variance parameter being excluded from the count of 
+                    estimated variance parameters in calculating information criteria. 
+                    If set to \code{NULL} then none will be excluded.}
  \item{\dots}{further arguments passed to \code{wald.asreml} and
             \code{\link{recalcWaldTab}}.}
 }
 \value{An object of S3-class \code{asrtests}.}
 
+\references{Kenward, M. G., & Roger, J. H. (1997). Small sample inference for fixed effects from restricted maximum likelihood. 
+            \emph{Biometrics}, \bold{53}, 983-997.}
 
 \author{Chris Brien}
 \seealso{\code{\link{asremlPlus-package}}, \code{\link{is.alldiffs}}, \code{\link{as.alldiffs}}, 

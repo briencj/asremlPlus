@@ -381,3 +381,148 @@ test_that("reparamSigDevn.asrtests_asreml4", {
   testthat::expect_equal(nrow(current.asrt$test.summary), 6)
   testthat::expect_true(!is.na(k))
 })
+
+
+cat("#### Test for changeModelOnIC with wheat94 using asreml4\n")
+test_that("changeModelOnIC_wheat94_asreml4", {
+  skip_if_not_installed("asreml")
+  skip_on_cran()
+  library(dae)
+  library(asreml)
+  library(asremlPlus)
+  ## use asremlPlus to analyse the wheat (barley) example from section 8.6 of the asreml manual (Butler et al. 2010)
+  data(wheat94.dat)
+  
+  
+  #Start with Maximal model
+  fm.max <- asreml(yield ~ lin(Row) + lin(Col) + Rowcode + Colcode,
+                   random = ~ Variety + Block + Row + spl(Col) + Col + units,
+                   residual = ~ ar1(Col):ar1(Row),
+                   data = wheat94.dat)
+  
+  current.asrt <- as.asrtests(fm.max, NULL, NULL, 
+                              label = "Maximal model", IClikelihood = "full")
+  current.asrt <- iterate(current.asrt)
+  testthat::expect_true(tail(current.asrt$test.summary$action,1) == "Starting model")
+  testthat::expect_equal(current.asrt$test.summary$DF, 7)
+  testthat::expect_equal(current.asrt$test.summary$denDF, 8)
+  testthat::expect_equal(nrow(summary(current.asrt$asreml.obj)$varcomp), 9) #includes bound Block
+  
+  current.asrt <- rmboundary(current.asrt)
+  testthat::expect_equal(nrow(summary(current.asrt$asreml.obj)$varcomp), 
+                         current.asrt$test.summary$denDF[1])
+  
+  #Drop random Row and Col terms
+  current.asrt <- changeModelOnIC(current.asrt, dropRandom = "Row + Col", 
+                                  label = "Drop Row + Col", 
+                                  which.IC = "AIC", IClikelihood = "full")
+  testthat::expect_equal(current.asrt$test.summary$denDF[3], -2)
+  testthat::expect_equal(current.asrt$test.summary$action[current.asrt$test.summary$terms == 
+                                                            "Drop Row + Col"], "Unswapped")
+  
+  #Drop random spl(Col) term
+  current.asrt <- changeModelOnIC(current.asrt, dropRandom = "spl(Col)", 
+                                  label = "Drop spl(Col)", IClikelihood = "full")
+  testthat::expect_equal(current.asrt$test.summary$denDF[4], -2)
+  testthat::expect_equal(current.asrt$test.summary$action[current.asrt$test.summary$terms == 
+                                                            "Drop spl(Col)"], "Unswapped")
+  testthat::expect_true((abs(current.asrt$test.summary$AIC[4]) - 9.6239819) < 1e-05)
+  
+  #Drop random units term
+  current.asrt <- changeModelOnIC(current.asrt, dropRandom = "units", 
+                                  label = "Drop units", IClikelihood = "full")
+  testthat::expect_equal(current.asrt$test.summary$denDF[6], -1)
+  testthat::expect_equal(current.asrt$test.summary$action[current.asrt$test.summary$terms == 
+                                                            "Drop units"], "Unswapped")
+  testthat::expect_true((abs(current.asrt$test.summary$AIC[6]) - 9.5172284) < 1e-05)
+  
+  mod <- printFormulae(current.asrt$asreml.obj)
+  testthat::expect_equal(length(mod), 3)
+  
+  
+  #Use REML likelihood and BIC
+  current.asrt <- as.asrtests(fm.max, NULL, label = "Maximal model", 
+                              IClikelihood = "REML")
+  current.asrt <- iterate(current.asrt)
+  current.asrt <- rmboundary(current.asrt)
+  testthat::expect_equal(nrow(current.asrt$test.summary), 2)
+  
+  #Drop random Row and Col terms
+  current.asrt <- changeModelOnIC(current.asrt, dropRandom = "Row + Col", 
+                                  label = "Drop Row + Col", 
+                                  which.IC = "BIC", IClikelihood = "REML")
+  testthat::expect_equal(current.asrt$test.summary$denDF[3], -2)
+  testthat::expect_equal(current.asrt$test.summary$action[current.asrt$test.summary$terms == 
+                                                            "Drop Row + Col"], "Swapped")
+  
+  #Drop random spl(Col) term
+  current.asrt <- changeModelOnIC(current.asrt, dropRandom = "spl(Col)", 
+                                  label = "Drop spl(Col)", 
+                                  which.IC = "BIC", IClikelihood = "REML")
+  testthat::expect_equal(current.asrt$test.summary$denDF[4], -1)
+  testthat::expect_equal(current.asrt$test.summary$action[current.asrt$test.summary$terms == 
+                                                            "Drop spl(Col)"], "Swapped")
+  testthat::expect_true((abs(current.asrt$test.summary$BIC[4]) - 1.764507) < 1e-02)
+  
+  #Drop random units term
+  current.asrt <- changeModelOnIC(current.asrt, dropRandom = "units", 
+                                  label = "Drop units", 
+                                  which.IC = "BIC", IClikelihood = "REML")
+  testthat::expect_equal(current.asrt$test.summary$denDF[5], -1)
+  testthat::expect_equal(current.asrt$test.summary$action[current.asrt$test.summary$terms == 
+                                                            "Drop units"], "Unswapped")
+  testthat::expect_true((abs(current.asrt$test.summary$AIC[5]) -60.520592) < 1e-02)
+  
+  mod <- printFormulae(current.asrt$asreml.obj)
+  testthat::expect_equal(length(mod), 3)
+  
+})
+
+cat("#### Test for changeModelOnIC example using asreml4\n")
+test_that("changeModelOnIC_Example_asreml4", {
+  skip_if_not_installed("asreml")
+  skip_on_cran()
+  library(dae)
+  library(asreml)
+  library(asremlPlus)
+  ## use asremlPlus to analyse the wheat (barley) example from section 8.6 of the asreml manual (Butler et al. 2010)
+  data(Wheat.dat)
+  
+  #'## Add cubic trend to Row so that spline is not bound
+  current.asr <- asreml(yield ~ Rep + WithinColPairs + Variety, 
+                        random = ~ Row + Column + units,
+                        residual = ~ ar1(Row):ar1(Column), 
+                        data=Wheat.dat)
+  current.asr <- update(current.asr)
+  current.asrt <- as.asrtests(current.asr, NULL, NULL, 
+                              label = "Maximal model", IClikelihood = "full")
+  current.asrt <- rmboundary(current.asrt)
+  testthat::expect_true(current.asrt$asreml.obj$converge)
+  testthat::expect_true(current.asrt$test.summary$action[1] == "Starting model")
+  testthat::expect_equal(current.asrt$test.summary$DF[1], 31)
+  testthat::expect_equal(current.asrt$test.summary$denDF[1], 5)
+  testthat::expect_equal(nrow(summary(current.asrt$asreml.obj)$varcomp), 5)
+  
+  # Drop both Row and Column terms
+  current.asrt <- changeModelOnIC(current.asrt, 
+                                  dropRandom = "Row + Column", label = "Drop Row + Column",
+                                  checkboundaryonly = TRUE,
+                                  which.IC = "AIC", IClikelihood = "full")
+  testthat::expect_true(current.asrt$asreml.obj$converge)
+  testthat::expect_equal(current.asrt$test.summary$denDF[3], -1)
+  
+  # Replace residual with model without Row autocorrelation
+  current.asrt <- changeModelOnIC(current.asrt, 
+                                  newResidual = "Row:ar1(Column)", 
+                                  label="Row autocorrelation",
+                                  IClikelihood = "full")
+  testthat::expect_true(current.asrt$asreml.obj$converge)
+  testthat::expect_equal(current.asrt$test.summary$denDF[4], -2)
+  testthat::expect_true((abs(current.asrt$test.summary$AIC[4]) - 21.708796) < 1e-05)
+  
+  mod <- printFormulae(current.asrt$asreml.obj)
+  testthat::expect_equal(length(mod), 3)
+  testthat::expect_true(grepl("units", mod[2], fixed = TRUE))
+  
+})
+

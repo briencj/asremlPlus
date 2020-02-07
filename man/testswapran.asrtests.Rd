@@ -79,7 +79,7 @@
                     for two models being compared in a REML ratio test using 
                     \code{\link{REMLRT.asreml}}. If \code{NULL} then this is determined from 
                     the information in the \code{asreml} object for the two models.}
- \item{denDF}{Specifies the enthod to use in computing approximate denominator 
+ \item{denDF}{Specifies the method to use in computing approximate denominator 
               degrees of freedom when \code{wald.asreml} is called. Can be \code{none} 
               to suppress the computations, \code{numeric} for numerical methods,
               \code{algebraic} for algebraic methods or \code{default}, the default, 
@@ -140,6 +140,9 @@
        Similarly, the row of \code{test.summary} for the \code{term} will have 
        its name, a p-value set to \code{NA}, and action set to Absent.
 }
+
+\references{Kenward, M. G., & Roger, J. H. (1997). Small sample inference for fixed effects from restricted maximum likelihood. 
+            \emph{Biometrics}, \bold{53}, 983-997.}
 
 \author{Chris Brien}
 \seealso{\code{\link{as.asrtests}}, \code{\link{chooseModel.asrtests}}, 

@@ -2,12 +2,14 @@
 \alias{print.test.summary}
 \title{Prints a data.frame containing a test.summary.}
 \description{Prints a \code{test.summary} (also a \code{choose.summary}) with or without a title and with p-values limited to 4-digits.}
-\usage{\method{print}{test.summary}(x,  which.print = c("title", "table"), ...)}
+\usage{\method{print}{test.summary}(x,  which.print = c("title", "table"), omit.columns = NULL, ...)}
 \arguments{
  \item{x}{A object that, ideally, is of class \code{test.summary}.}
- \item{which.print}{Which elements of the \code{test.summary} to print. Possible
-             values are some combination of \code{title}, 
+ \item{which.print}{A \code{character} specifying the aspects of the \code{test.summary} to print. 
+              Possible values are some combination of \code{title}, 
              \code{table} and \code{all}.}
+ \item{omit.columns}{A \code{character} specifying the columns of the \code{test.summary} table 
+              to be omitted from the print. If \code{NULL}, none are omitted.}
  \item{\dots}{further arguments passed to \code{print}, 
                   but is only operational when the \code{table} is also printed.}
 }

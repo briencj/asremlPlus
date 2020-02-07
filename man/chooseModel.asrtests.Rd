@@ -67,7 +67,7 @@
                       that, under the reduced model, are zero.}
  \item{drop.fix.ns}{A logical indicating whether to drop a fixed  
                    term from the model when it is nonsignificant }
- \item{denDF}{Specifies the enthod to use in computing approximate denominator 
+ \item{denDF}{Specifies the method to use in computing approximate denominator 
               degrees of freedom when \code{wald.asreml} is called. Can be \code{none} 
               to suppress the computations, \code{numeric} for numerical methods,
               \code{algebraic} for algebraic methods or \code{default}, the default, 
@@ -144,6 +144,8 @@
          \item \code{sig.tests}: a \code{character vector} whose elements are the 
                 the significant terms amongst those tested.}
 }
+\references{Kenward, M. G., & Roger, J. H. (1997). Small sample inference for fixed effects from restricted maximum likelihood. 
+            \emph{Biometrics}, \bold{53}, 983-997.}
 
 \author{Chris Brien}
 \seealso{\code{\link{chooseModel}}, \code{\link{chooseModel.data.frame}}, 

@@ -136,6 +136,9 @@
        its name, a p-value set to \code{NA}, and action set to Absent.
 }
 
+\references{Kenward, M. G., & Roger, J. H. (1997). Small sample inference for fixed effects from restricted maximum likelihood. 
+            \emph{Biometrics}, \bold{53}, 983-997.}
+
 \author{Chris Brien}
 \seealso{\code{\link{asremlPlus-package}}, \code{\link{as.asrtests}}, \code{\link{changeTerms.asrtests}}, \cr
          \code{\link{chooseModel.asrtests}}, 

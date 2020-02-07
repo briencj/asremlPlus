@@ -28,5 +28,6 @@ chooseModel(object, ...)
       the p-values stored in the \code{data.frame} in the model selection.
 }
 \author{Chris Brien}
-\seealso{\code{\link{chooseModel.asrtests}}, \code{\link{chooseModel.asrtests}}, \code{\link{testranfix.asrtests}}}
+\seealso{\code{\link{chooseModel.asrtests}}, \code{\link{chooseModel.asrtests}}, 
+         \code{\link{changeModelOnIC.asrtests}}, \code{\link{testranfix.asrtests}}}
 \keyword{htest}

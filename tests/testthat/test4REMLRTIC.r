@@ -59,9 +59,58 @@ test_that("REMLRT_asreml4", {
   info$loglik - m3.asr$loglik
 })
 
+cat("#### Test for wheat76 example with asreml4\n")
+test_that("Wheat_asreml4", {
+  skip_if_not_installed("asreml")
+  skip_on_cran()
+  library(asreml)
+  library(asremlPlus)
+  ## Fit several models to the wheat data and caclulate their ICs
+  data(Wheat.dat)
+  
+  # Fit initial model
+  m.max <- asreml(yield ~ Rep + WithinColPairs + Variety, 
+                  random = ~ Row + Column + units,
+                  residual = ~ ar1(Row):ar1(Column), 
+                  data=Wheat.dat)
 
-cat("#### Test for REMLRT with wheat94 using asreml4\n")
-test_that("REMLRT_wheat94_asreml4", {
+  #Drop term for within Column pairs
+  m1 <- asreml(yield ~ Rep + Variety, 
+               random = ~ Row + Column + units,
+               residual = ~ ar1(Row):ar1(Column), 
+               data=Wheat.dat)
+  
+  #Drop nugget term
+  m2 <- asreml(yield ~ Rep + WithinColPairs + Variety, 
+               random = ~ Row + Column,
+               residual = ~ ar1(Row):ar1(Column), 
+               data=Wheat.dat)
+
+  #Drop Row autocorrelation
+  m3 <- asreml(yield ~ Rep + WithinColPairs + Variety, 
+                  random = ~ Row + Column + units,
+                  residual = ~ Row:ar1(Column), 
+                  data=Wheat.dat)
+
+  #Drop Col autocorrelation
+  m4 <- asreml(yield ~ Rep + WithinColPairs + Variety, 
+               random = ~ Row + Column + units,
+               residual = ~ ar1(Row):Column, 
+               data=Wheat.dat)
+
+  mods.asr <- list(m.max, m1, m2, m3, m4)
+  ic <- infoCriteria(mods.asr, likelihood = "full")
+  testthat::expect_equal(nrow(ic), 5)
+  testthat::expect_true(all(ic$fixedDF == c(31, 30, 31, 31, 31)))
+  testthat::expect_true(all(ic$varDF == c(5, 5, 4, 4, 5)))
+  testthat::expect_true(all(abs(ic$AIC - c(1653.100,1651.294,1654.613,1669.928,1708.997)) < 1e-01))
+  testthat::expect_true(abs(ic$BIC[1] - 1761.483) < 1)
+  testthat::expect_true(abs(ic$loglik[1] - (-790.5502)) < 1e-01)
+
+})
+
+cat("#### Test for IC with wheat94 using asreml4\n")
+test_that("IC_wheat94_asreml4", {
   skip_if_not_installed("asreml")
   skip_on_cran()
   library(dae)

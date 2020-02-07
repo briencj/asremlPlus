@@ -1,38 +1,42 @@
-\name{changeTerms.asrtests}
-\alias{changeTerms.asrtests}
-\alias{changeTerms}
-\title{Adds and drops the specified sets of terms from one or both of the fixed  
-       or random model and/or replaces the residual (rcov) model with a new model.}
-\description{The specified terms are simply added or dropped, without testing, from 
-       either the fixed or random model and/or the residual (rcov) model replaced. 
-       No hypothesis testing is performed, but a check is made for boundary or 
-       singular terms. 
-       
+\name{changeModelOnIC.asrtests}
+\alias{changeModelOnIC.asrtests}
+\alias{changeModelOnIC}
+\title{Uses information criteria to decide whether to change an already fitted model.}
+\description{Uses information criteria to decide whether to change the fitted model 
+       stored in the supplied \code{\link{asrtests.object}} according to the specified 
+       modifications. The function \code{\link{changeTerms}} is 
+       used to change the model. Thus, the model can be modified using a 
+       combination of adding and removing sets of terms from one or both of the fixed 
+       or random models and replacing the residual model.
+
        A row is added to the \code{test.summary} \code{data.frame} of the 
        \code{\link{asrtests.object}} using the supplied \code{label} and stating 
-       which models have been changed. Information criteria can be included in the 
-       row of the \code{test.summary}. Convergence in fitting the model is checked 
-       and a note included in the action if there was not. All components of 
-       the \code{\link{asrtests.object}} are updated.
+       whether or not the new model has been swpped for the supplied model. 
+       Convergence in fitting the model is checked and a note included in the 
+       \code{action} if there was not. All components of the 
+       \code{\link{asrtests.object}} are updated to exhibit the differences 
+       between the suupplied and new model.
 
-       To only change the terms based on the information 
-       criteria use \code{\link{changeModelOnIC.asrtests}}.
-
+       To obtain a list of the information criteria for a set of models use 
+       \code{\link{changeTerms.asrtests}} with \code{IClikelihood} set to 
+       \code{REML} or \code{full}, or use \code{\link{infoCriteria.asreml}}.
 }
 \usage{
-\method{changeTerms}{asrtests}(asrtests.obj, 
-            dropFixed = NULL, addFixed = NULL, 
-            dropRandom = NULL,  addRandom = NULL, 
-            newResidual = NULL, label = "Changed terms", 
-            allow.unconverged = TRUE, checkboundaryonly = FALSE, 
-            trace = FALSE, update = TRUE, denDF = "numeric", 
-            set.terms = NULL, ignore.suffices = TRUE, 
-            bounds = "P", initial.values = NA, 
-            IClikelihood = "none", bound.exclusions = c("F","B","S","C"), 
-            ...)}
+\method{changeModelOnIC}{asrtests}(asrtests.obj, 
+                dropFixed = NULL, addFixed = NULL, 
+                dropRandom = NULL,  addRandom = NULL, 
+                newResidual = NULL, label = "Changed terms", 
+                allow.unconverged = TRUE, checkboundaryonly = FALSE, 
+                trace = FALSE, update = TRUE, denDF = "numeric", 
+                set.terms = NULL, ignore.suffices = TRUE, 
+                bounds = "P", initial.values = NA, 
+                which.IC = "AIC", IClikelihood = "REML", 
+                fixedDF = NULL, varDF = NULL, tol.diff = 1e-02, 
+                bound.exclusions = c("F","B","S","C"), 
+          ...)}
 \arguments{
- \item{asrtests.obj}{An \code{\link{asrtests.object}} containing the components (i) \code{asreml.obj},
-       (ii) \code{wald.tab}, and (iii) \code{test.summary}.}
+ \item{asrtests.obj}{An \code{\link{asrtests.object}} containing the components 
+       (i) \code{asreml.obj},(ii) \code{wald.tab}, and (iii) \code{test.summary}.}
  \item{dropFixed}{A single \code{character} string in the form of a formula which, 
                after addition of \code{". ~ . -"} and after expansion, specifies the sum 
                of a set of terms to be dropped from the fixed formula. 
@@ -78,7 +82,7 @@
               on problem size. The denominator degrees of freedom are calculated 
               according to Kenward and Roger (1997) for fixed terms in the dense 
               part of the model.}
- \item{set.terms}{A character vector specifying the terms that are to have 
+ \item{set.terms}{A \code{character} vector specifying the terms that are to have 
                bounds and/or initial values set prior to fitting.
                The names must match those in the \code{vparameters} component of the 
                \code{asreml.obj} component in the \code{\link{asrtests.object}}.}
@@ -101,6 +105,22 @@
                     applied to all the terms in \code{set.terms}. 
                     If any of the bounds are equal to NA then they are 
                     left unchanged for those terms.}
+ \item{which.IC}{A \code{character} specifying the information criterion to be used in 
+                   selecting the best model. Possible values are \code{AIC}, \code{BIC} 
+                   or \code{both}. For \code{AIC} and \code{BIC}, the values of the 
+                   criterion for supplied model must be exceed by that for changed model 
+                   by at least \code{tol.diff}. For \code{both}, the \code{AIC} is used, 
+                   except when the values of the \code{AIC} are closer than \code{diff.tol}, 
+                   in which case \code{BIC} acts as tiebreaker.}
+ \item{IClikelihood}{A \code{character} specifying whether Restricted Maximum Likelihood 
+                   (\code{REML}) or the full likelihood (\code{full}) are to be used in 
+                   calculating the information criteria.}
+ \item{fixedDF}{A \code{numeric} giving the number of estimated fixed parameters. If
+                    \code{NULL} then this is determined from the information in 
+                    \code{asreml.obj}.}
+ \item{varDF}{A \code{numeric} giving the number of estimated variance parameters. If
+                    \code{NULL} then this is determined from the information in 
+                    \code{asreml.obj}. It replaces the \code{varDF} argument.}
  \item{initial.values}{A character vector specifying the initial values for  
                     the terms specified in \code{terms}. This vector 
                     must be of length one or the same length as \code{terms}. 
@@ -108,13 +128,8 @@
                     applied to all the terms in \code{terms}. 
                     If any of the initial.values are equal to NA then they are 
                     left unchanged for those terms.}
- \item{IClikelihood}{A \code{character} that controls both the occurence and the type 
-                    of likelihood for information criterion in the \code{test.summary} 
-                    of the \code{\link{asrtests.object}}. If \code{none}, none are 
-                    included. Otherwise, if \code{REML}, then the AIC and BIC based 
-                    on the Restricted Maximum Likelihood are included; if \code{full}, 
-                    then the AIC and BIC based on the full likelihood are included. 
-                    (See also \code{\link{infoCriteria.asreml}}.)}
+ \item{tol.diff}{A \code{numeric} giving the tolerance tha needs to be exceeded to say that 
+                 two information criteria can be regarded as being different.}
  \item{bound.exclusions}{A \code{character} specifying the bound (constraint) codes that 
                     will result in a variance parameter being excluded from the count of 
                     estimated variance parameters in calculating the information criteria. 
@@ -123,40 +138,54 @@
            \code{\link{as.asrtests}}.}
 }
 \value{An \code{\link{asrtests.object}} containing the components (i) \code{asreml.obj},
-       (ii) \code{wald.tab}, and (iii) \code{test.summary}.}
+       (ii) \code{wald.tab}, and (iii) \code{test.summary}. The values of the degrees of 
+       freedom and the information criteria are differences between those of the changed 
+       model and those of the model supplied to \code{changeModelOnIC}.}
 
-\references{Kenward, M. G., & Roger, J. H. (1997). Small sample inference for fixed effects from restricted maximum likelihood. 
-            \emph{Biometrics}, \bold{53}, 983-997.}
+\details{For \code{both}, provided that the difference in the \code{AIC} values 
+                   between the two models exceeds \code{tol.diff}, the changed model is 
+                   accepted if the \code{AIC} for the old model exceeds that for changed 
+                   model by at least \code{tol.diff}. Otherwise, the changed model is 
+                   accepted if the \code{AIC} for the old model exceeds that for changed model 
+                   by at least \code{tol.diff}}
 
 \author{Chris Brien}
 
 \seealso{\code{\link{as.asrtests}}, \code{\link{rmboundary.asrtests}}, 
          \code{\link{testranfix.asrtests}}, \code{\link{testresidual.asrtests}}, \cr
          \code{\link{newfit.asreml}}, \code{\link{reparamSigDevn.asrtests}}, 
-         \code{\link{chooseModel.asrtests}}, \cr 
-         \code{\link{changeModelOnIC.asrtests}}, \code{\link{infoCriteria.asreml}}}
+         \code{\link{chooseModel.asrtests}}, \code{\link{changeTerms.asrtests}}, 
+         \code{\link{infoCriteria.asreml}}}
 \examples{\dontrun{
-terms <- "(Date/(Sources * (Type + Species)))"
-current.asrt <- changeTerms(current.asrt, addFixed = terms)
-
-current.asrt <- changeTerms(current.asrt, dropFixed = "A + B", denDF = "algebraic")
 
 data(Wheat.dat)
 current.asr <- asreml(yield ~ Rep + WithinColPairs + Variety, 
                       random = ~ Row + Column + units,
                       residual = ~ ar1(Row):ar1(Column), 
                       data=Wheat.dat)
-current.asrt <- as.asrtests(current.asr, NULL, NULL)
+current.asrt <- as.asrtests(current.asr, NULL, NULL, 
+                            label = "Maximal model")
 current.asrt <- rmboundary(current.asrt)
+
+# Drop both Row and Column terms
+current.asrt <- changeModelOnIC(current.asrt, 
+                                dropRandom = "Row + Column", 
+                                checkboundaryonly = TRUE,
+                                which.IC = "AIC", IClikelihood = "full")
+current.asrt <- iterate(current.asrt)
+                          
 # Add and drop both fixed and random terms
-current.asrt <- changeTerms(current.asrt, 
-                            addFixed = "vRow", dropFixed = "WithinColPairs", 
-                            addRandom = "spl(vRow)", dropRandom = "units", 
-                            checkboundaryonly = TRUE)
+current.asrt <- changeModelOnIC(current.asrt, 
+                                addFixed = "vRow", dropFixed = "WithinColPairs", 
+                                addRandom = "spl(vRow)", dropRandom = "units", 
+                                checkboundaryonly = TRUE,
+                                which.IC = "AIC", IClikelihood = "full")
+                          
 # Replace residual with model without Row autocorrelation
-current.asrt <- changeTerms(current.asrt, 
-                            newResidual = "Row:ar1(Column)", 
-                            label="Row autocorrelation")
+current.asrt <- changeModelOnIC(current.asrt, 
+                                newResidual = "Row:ar1(Column)", 
+                                label="Row autocorrelation",
+                                IClikelihood = "full")
 
 }}
 \keyword{asreml}

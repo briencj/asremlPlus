@@ -1,12 +1,12 @@
 ---
-title: "The wheat example from section 7.6 of the asreml manual (Butler et al. 2018)"
+title: "Using `asremlPlus`, in conjunction with `asreml`, to choose terms to include in a linear mixed model based on hypothesis testing"
 author: "Chris Brien"
 date: "`r format(Sys.time(), '%d %B, %Y')`"
 output: 
   pdf_document: default
 ---
 
-This vignette that shows how to use `asremlPlus` (Brien, 2020), in conjunction with `asreml` (Butler et al., 2018), to select the terms to be included in a mixed model for an experiment that involves spatial variation. Here, `asremlPlus` and `asreml` are packages for the `R` Statistical Computing environment (R Core Team, 2020).
+This vignette shows how to use `asremlPlus` (Brien, 2020), in conjunction with `asreml` (Butler et al., 2018), to employ hypothesis tests to select the terms to be included in a mixed model for an experiment that involves spatial variation. Here, `asremlPlus` and `asreml` are packages for the `R` Statistical Computing environment (R Core Team, 2020).
 
 ```{r setup, include=TRUE}
 library(asreml, quietly=TRUE)
@@ -16,6 +16,8 @@ options(width = 100)
 ```
 
 ## Get data available in asremlPlus
+
+The data are from a 1976 spring wheat experiment and are taken from Gilmour et al. (1995). An analysis is presented in the `asreml` manual by Butler et al. (2018, Section 7.6), although they suggest that it is a barley experiment.
 
 ```{r data, include = TRUE}
 data(Wheat.dat)
@@ -32,7 +34,7 @@ current.asr <- asreml(yield ~ WithinColPairs + Variety,
                       data=Wheat.dat)
 ```
 
-The warning from `asreml` is probably dies to a bound term.
+The warning from `asreml` is probably due to a bound term.
 
 ## Intialize a testing sequence by loading the current fit into an asrtests object
 
@@ -216,7 +218,7 @@ plotPvalues(Var.diffs)
 
 Almeida, A., Loy, A. and Heike Hofmann, H. (2017) `qqplotr`: *Quantile-Quantile plot extensions for 'ggplot2'*, Version 0.0.3. <http://cran.r-project.org/package=qqplotr/> or <https://github.com/aloy/qqplotr>.
 
-Brien, C. J. (2020) `asremlPlus`: *Augments ASReml-R in fitting mixed models and packages generally in exploring prediction differences*. Version 4.1-37. <http://cran.r-project.org/package=asremlPlus/> or <http://chris.brien.name/rpackages/>.
+Brien, C. J. (2020) `asremlPlus`: *Augments ASReml-R in fitting mixed models and packages generally in exploring prediction differences*. Version 4.2-10. <http://cran.r-project.org/package=asremlPlus/> or <http://chris.brien.name/rpackages/>.
 
 Butler, D. G., Cullis, B. R., Gilmour, A. R., Gogel, B. J. and 
             Thompson, R. (2018). *ASReml-R Reference Manual Version 4.* VSN International Ltd, <http://asreml.org>.

@@ -13,6 +13,8 @@ export(addBacktransforms,
        asrtests, 
        bootREMLRT,
        bootREMLRT.asreml,
+       changeModelOnIC,
+       changeModelOnIC.asrtests,
        changeTerms,
        changeTerms.asrtests,
        chooseModel,
@@ -29,15 +31,20 @@ export(addBacktransforms,
        facRename,
        facRename.alldiffs,
        getASRemlVersionLoaded,
+       getFormulae,
+       getFormulae.asreml,
        getTestPvalue,
        getTestPvalue.asrtests,
        infoCriteria,
        infoCriteria.asreml,
+       infoCriteria.list,
        info.crit.asreml,
        info.crit,
        is.alldiffs,
        is.asrtests,
        is.predictions.frame,
+       iterate,
+       iterate.asrtests,
        linTransform, 
        linTransform.alldiffs,
        loadASRemlVersion,
@@ -68,6 +75,8 @@ export(addBacktransforms,
        print.predictions.frame, 
        print.test.summary,
        print.wald.tab, 
+       printFormulae,
+       printFormulae.asreml,
        recalcLSD, 
        recalcLSD.alldiffs, 
        recalcWaldTab,
@@ -120,13 +129,14 @@ importFrom("grDevices", "savePlot")
 importFrom("dplyr", "anti_join")
 importFrom("methods", "languageEl", "languageEl<-", "validObject")
 importFrom("reshape", "melt")
-importFrom("utils", "data", sessionInfo, "tail")
+importFrom("utils", "data", "capture.output", sessionInfo, "tail")
 importFrom("foreach", "foreach", "%do%", "%dopar%")
 importFrom("parallel", "makeCluster", "stopCluster", "detectCores", "nextRNGStream")
 importFrom("doParallel", "registerDoParallel")
 importFrom("stringr", "str_split", "str_trim", "str_sub")
 S3method(addBacktransforms, alldiffs)
 S3method(allDifferences, data.frame)
+S3method(changeModelOnIC, asrtests)
 S3method(bootREMLRT, asreml) 
 S3method(changeTerms, asrtests) 
 S3method(chooseModel, asrtests) 
@@ -135,8 +145,11 @@ S3method(estimateV, asreml)
 S3method(facCombine, alldiffs)
 S3method(facRecode, alldiffs)
 S3method(facRename, alldiffs)
+S3method(getFormulae, asreml)
 S3method(getTestPvalue, asrtests)
 S3method(infoCriteria, asreml) 
+S3method(infoCriteria, list) 
+S3method(iterate, asrtests) 
 S3method(linTransform, alldiffs)
 S3method(newfit, asreml) 
 S3method(plotPredictions, data.frame)
@@ -150,6 +163,7 @@ S3method(print, alldiffs)
 S3method(print, predictions.frame)
 S3method(print, test.summary)
 S3method(print, wald.tab)
+S3method(printFormulae, asreml)
 S3method(recalcWaldTab, asrtests)
 S3method(REMLRT, asreml) 
 S3method(recalcLSD, alldiffs)

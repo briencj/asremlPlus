@@ -1,5 +1,16 @@
 \name{news}
 \title{News for Package asremlPlus}
+\section{asremlPlus Version 4.2-10 (2020-02-10)}{
+  \itemize{
+    \item{This version represents a major revision in that the facilities for employing information criteria (AIC and BIC) have been considerabley expanded. The infoCriteria method has been modified to add the possibility of calculating not only the the information criteria based on the REML likelihood, but those based on the full likelihood instead. There are now two infoCriteria methods, one for \code{asreml} objects and the other for \code{list}s of \code{asreml} objects. An alternative is to use changeTerms.asrtests wiith \code{IClikelihood} set to \code{REML} or \code{full} and the information criteria will be included in the The \code{test.summary} of the \code{asrtest} object. A new function changeModelOnIC has been included to allow model selection to be based on the information criteria, rather than on hypothesis tests. However, the two methods of selecting models can be interweaved.}
+    \item{Add  argument \code{omit.columns} to print.test.summary that allows the specification of columns to be omitted from the printout.}
+    \item{Various modifications to the internal code for the handling of the \code{test.summary} component of an \code{asrtest.object} to allow more flexibility in the make up of \code{test.summary}.}
+    \item{Add function iterate.asrtests to execute additional iterations of the fit stored in an  \code{asreml.obj} within an \code{asrtests} object; the model itself cannot be changed.}
+    \item{Add functions getFormulae.asreml and printFormulae.asreml to extract and print the \code{formula}e stored in the \code{call} of an \code{asreml} object.}
+    \item{Add \code{trace} argument to newfit.asreml and activated it for asreml-R version 4.} 
+    \item{Made R >= 3.5.0 a requirement for asremlPlus.}
+}
+}
 \section{asremlPlus Version 4.1-37 (2020-01-27)}{
   \itemize{
     \item{Add chooseModel.data.frame function.}

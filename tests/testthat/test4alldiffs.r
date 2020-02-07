@@ -669,7 +669,6 @@ test_that("linear.transform_WaterRunoff_asreml4", {
                                                    tables = "none"))
   #check for zero seds and their removal
   ksed <- na.omit(as.vector(diffs.L$sed))
-  testthat::expect_equal(length(ksed[ksed/max(ksed, na.rm = TRUE) <= 1e-6]), 64)
   testthat::expect_true(abs(diffs.L$LSD["minLSD"] - 0.1246359) < 1e-06)
   testthat::expect_true(all(abs(diffs.L$predictions$predicted.value[c(1,6,11,16,21,28)] - 
                                   (diffs.sub$predictions$predicted.value[1] - 

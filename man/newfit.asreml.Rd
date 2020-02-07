@@ -17,7 +17,7 @@
              and \code{set.terms} is not set.}
 \usage{
 \method{newfit}{asreml}(asreml.obj, fixed., random., sparse., 
-       residual., rcov., update = TRUE, 
+       residual., rcov., update = TRUE, trace = FALSE, 
        allow.unconverged = TRUE, keep.order = TRUE, 
        set.terms = NULL, ignore.suffices = TRUE, bounds = "P", 
        initial.values = NA, ...)}
@@ -57,6 +57,9 @@
                call is made to \code{asreml} itself, in which the only 
                changes from the previous call are those specified in the 
                arguments to \code{newfit.asreml}.}
+ \item{trace}{A \code{\link{logical}} that control output from ASReml-R. 
+              If TRUE then partial iteration details are displayed when ASReml-R 
+              functions are invoked; if FALSE then no output is displayed.}
  \item{allow.unconverged}{A \code{logical} indicating whether to accept a new model 
                       even when it does not converge. If \code{FALSE} and the fit does not 
                       converge, the supplied \code{asreml} object is returned.}

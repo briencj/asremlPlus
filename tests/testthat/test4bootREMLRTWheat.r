@@ -27,7 +27,7 @@ test_that("Wheatboot_asreml4", {
                               maxit=100, data=Wheat.dat))
   summary(current.asr)$varcomp
   info <- infoCriteria(current.asr)
-  testthat::expect_equal(info$DF, 5)
+  testthat::expect_equal(info$varDF, 5)
   testthat::expect_lt(abs(info$AIC - 1357.118), 1e-03)
   
   # Load current fit into an asrtests object

@@ -76,6 +76,50 @@
   invisible(vers)
 }
 
+"getFormulae.asreml" <- function(asreml.obj, which = c("fixed", "random", "residual"), 
+                                 expanded = FALSE, ...)
+{
+  #Process which argument
+  which.options <- c("fixed", "random", "residual", "sparse", "all")
+  forms.opt <- which.options[unlist(lapply(which, check.arg.values, options=which.options))]
+  if ("all" %in% forms.opt)
+    forms.opt <- c("fixed", "random", "residual", "sparse")
+  
+  #Get formula(e)
+  mod <- lapply(forms.opt, 
+                function(form, asreml.obj) {asreml.obj$call[[form]]}, 
+                asreml.obj = asreml.obj)
+  names(mod) <- forms.opt
+  
+  #Expand if required
+  if (expanded)
+    mod <- lapply(mod, function(x) update.formula(x, ~., ...))
+  
+  return(mod)
+}
+
+"printFormulae.asreml" <- function(asreml.obj, which = c("fixed", "random", "residual"), 
+                                   expanded = FALSE, ...)
+{
+  mod <- getFormulae.asreml(asreml.obj, which = which, expanded = expanded, ...)
+  mod.ch <- lapply(mod, function(m) capture.output(m)[1])
+  if ("random" %in% names(mod.ch))
+    mod.ch$random <- gsub("~", "~ ", mod.ch$random)
+  if ("residual" %in% names(mod.ch))
+    mod.ch$residual <- gsub("~", "~ ", mod.ch$residual)
+  if ("sparse" %in% names(mod.ch))
+    mod.ch$sparse <- gsub("~", "~ ", mod.ch$sparse)
+  m.ch <- unlist(lapply(names(mod.ch), 
+                        function(mname, mod.ch) 
+                          paste0(mname,": ", mod.ch[[mname]]), mod.ch))
+  
+  cat("\n\n#### Formulae from asreml object\n\n")
+  cat(paste0(m.ch, collapse = "\n"), "\n\n")
+  invisible(m.ch)
+}
+
+
+
 "as.terms.object" <- function(terms = NULL, asreml.obj = NULL, ...)
 { 
   if (is.character(terms))
@@ -285,12 +329,30 @@
   return(Z)
 }
 
-addtoTestSummary <- function(test.summary, terms, DF = 1, denDF = NA, p = NA, 
-                             action = "Boundary")
+"makeTestSummary" <- function(which.cols = c("terms","DF","denDF","p","AIC","BIC","action"))
 {
-  test.summary <- rbind(test.summary, 
-                        data.frame(terms = terms, DF = DF, denDF = denDF, p = p, 
-                                   action = action, stringsAsFactors = FALSE))
+  test.summary <- as.data.frame(matrix(nrow = 0, ncol = length(which.cols)))
+  names(test.summary) <- which.cols
+  class(test.summary) <- c("test.summary", "data.frame")
+  return(test.summary)
+}
+
+"addtoTestSummary" <- function(test.summary, terms, DF = 1, denDF = NA, 
+                               p = NA, AIC = NA, BIC = NA,
+                               action = "Boundary")
+{
+  which.cols <- names(test.summary)
+  new.row <- as.data.frame(matrix(NA, nrow = 1, ncol = ncol(test.summary)))
+  names(new.row) <- which.cols
+  if ("terms" %in% which.cols) new.row$terms <- terms
+  if ("DF" %in% which.cols) new.row$DF <- DF
+  if ("denDF" %in% which.cols) new.row$denDF <- denDF
+  if ("p" %in% which.cols) new.row$p <- p
+  if ("AIC" %in% which.cols) new.row$AIC <- AIC
+  if ("BIC" %in% which.cols) new.row$BIC <- BIC
+  if ("action" %in% which.cols) new.row$action <- action
+  
+  test.summary <- rbind(test.summary, new.row, stringsAsFactors = FALSE)
   class(test.summary) <- c("test.summary", "data.frame")
   return(test.summary)
 }
