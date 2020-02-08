@@ -114,7 +114,7 @@
                           paste0(mname,": ", mod.ch[[mname]]), mod.ch))
   
   cat("\n\n#### Formulae from asreml object\n\n")
-  cat(paste0(m.ch, collapse = "\n"), "\n\n")
+  cat(paste0(m.ch, collapse = "\n"), "\n\n\n")
   invisible(m.ch)
 }
 

@@ -3,8 +3,8 @@
 [![Project Status: Active:  The project has reached a stable, usable state and is being actively developed.](http://www.repostatus.org/badges/latest/active.svg)](http://www.repostatus.org/#active)
 [![minimal R version](https://img.shields.io/badge/R%3E%3D-2.10.0-6666ff.svg)](https://cran.r-project.org/)
 [![CRAN_Status_Badge](http://www.r-pkg.org/badges/version/asremlPlus)](https://cran.r-project.org/package=asremlPlus)
-[![packageversion](https://img.shields.io/badge/Package%20version-4.2--10-orange.svg?style=flat-square)](/commits/master)
-[![Last-changedate](https://img.shields.io/badge/last%20change-2020--02--07-yellowgreen.svg)](/commits/master)
+[![packageversion](https://img.shields.io/badge/Package%20version-4.2--11-orange.svg?style=flat-square)](/commits/master)
+[![Last-changedate](https://img.shields.io/badge/last%20change-2020--02--08-yellowgreen.svg)](/commits/master)
 [![Licence](https://img.shields.io/github/license/mashape/apistatus.svg)](http://choosealicense.com/licenses/mit/)
 [![Downloads](https://cranlogs.r-pkg.org/badges/last-week/asremlPlus)](commits/master)
 
@@ -17,7 +17,7 @@ Versions 4.x-xx of `asremlPlus` are a major revamp of the package and include su
 
 For more information install the package and run the R command `news(package = “asremlPlus”)` or consult the [manual](./vignettes/asremlPlus-manual.pdf). 
 
-An overview can be obtained using `?asremlPlus`. In particular, an example of its use is given towards the bottom of the help information and this is avalable as the [Wheat vignette](./vignettes/Wheat.pdf) that is accesssed using `vignette("Wheat", package = "asremlPlus")`. It that shows how to select the terms to be included in a mixed model for an experiment that involves spatial variation. Two further vignettes show how to use `asremlPlus` for exploring and presenting predictions from a linear mixed model analysis in the context of a three-factor factorial experiment on ladybirds: one vignette [Ladybird asreml vignette](./vignettes/Ladybird.asreml.pdf) uses `asreml` to produce the predictions and is available via `vignette("Ladybird.asreml", package = "asremlPlus")`; the other vignette [Ladybird lm vignette](./vignettes/Ladybird.asreml.pdf) uses `lm` to produce the predictions and is available via `vignette("Ladybird.lm", package = "asremlPlus")`.
+An overview can be obtained using `?asremlPlus`. In particular, an example of its use is given towards the bottom of the help information and this is avalable as the [Wheat.analysis vignette](./vignettes/Wheat.analysis.pdf). It that shows how to select the terms to be included in a mixed model for an experiment that involves spatial variation; it also illustrates diagnostic checking and prediction production and presentation for this example. A second vignette is the [Wheat.infoCriteria vignette](./vignettes/Wheat.infoCriteria.pdf) that illustrates the facilities in `asremlPlus` for producing and using information criteria. Two further vignettes show how to use `asremlPlus` for exploring and presenting predictions from a linear mixed model analysis in the context of a three-factor factorial experiment on ladybirds: one vignette, [Ladybird.asreml vignette](./vignettes/Ladybird.asreml.pdf), uses `asreml` and `asremlPlus` to produce and present  predictions; the other vignette, [Ladybird.lm vignette](./vignettes/Ladybird.asreml.pdf), uses `lm` to produce the predictions and `asremlPlus` to present the predictions. The vignettes can be accessed via `vignette(name, package = "asremlPlus")`, where `name` is one of `"Wheat.analysis"`, `"Wheat.infoCriteria"`, `"Ladybird.asreml"` or `"Ladybird.lm"`.
 
 ## Installing the package
 
@@ -54,7 +54,7 @@ It assists in automating the testing of terms in mixed models when `asreml-R` is
 to fit the models. A history of the fitting of a sequence of models is kept in a data frame. 
 Procedures are available for choosing models that conform to the hierarchy or marginality principle. It can also be used to display, in tables and graphs, predictions obtained from a mixed model using your favourite model fitting functions and to explore differences between predictions. As a general rule functions that are methods for `asreml` and `asrtests` objects require `asreml-R`; on the other hand, functions that are methods for `alldiffs` and `data.frame` objects do not require `asreml-R`.
 
-The use of the package is exemplified in three vignettes: the [Wheat vignette](./vignettes/Wheat.pdf) that is accesssed using `vignette("Wheat", package = "asremlPlus")`, shows how to select the terms to be included in a mixed model;  two further vignettes show how to use `asremlPlus` for exploring and presenting predictions: one vignette [Ladybird asreml vignette](./vignettes/Ladybird.asreml.pdf) uses `asreml` to produce the predictions and is available via `vignette("Ladybird.asreml", package = "asremlPlus")`; the other vignette [Ladybird lm vignette](./vignettes/Ladybird.asreml.pdf) uses `lm` to produce the predictions and is available via `vignette("Ladybird.lm", package = "asremlPlus")`.
+The use of the package is exemplified in four vignettes: [Wheat.analysis vignette](./vignettes/Wheat.analysis.pdf), [Wheat.infoCriteria vignette](./vignettes/Wheat.infoCriteria.pdf), [Ladybird asreml vignette](./vignettes/Ladybird.asreml.pdf) and [Ladybird lm vignette](./vignettes/Ladybird.asreml.pdf). They can be accessed via `vignette(name, package = "asremlPlus")`, where `name` is one of `"Wheat.analysis"`, `"Wheat.infoCriteria"`, `"Ladybird.asreml"` or `"Ladybird.lm"`.
 
 The content falls into the following natural groupings: 
 
@@ -73,6 +73,8 @@ The content falls into the following natural groupings:
 (vii) Response transformation functions, and 
 
 (viii) Miscellaneous functions. 
+
+For a list of the functions for each group, see the help for `asremlPlus-package` or the entry in the manual for `asremlPlus-package`.  
   
 ## What it needs  
   

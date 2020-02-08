@@ -27,10 +27,12 @@ a mixed model using \code{asreml}.
          \item \code{test.summary}: A \code{data.frame} with columns \code{term}, 
                 \code{DF}, \code{denDF}, \code{p}, \code{AIC}, \code{BIC} and 
                 \code{action}. Possible codes for \code{action} are: 
-                \code{Dropped}, \code{Retained}, \code{Swapped}, \code{Unswapped},   
-                \code{Significant}, \code{Nonsignificant}, \code{Absent}, \code{Added}, 
-                \code{Removed} and \code{Boundary}. If the changed model did not
-                 converge, \code{Unconverged} will be added to the code. 
+                \code{Dropped}, \code{Retained}, \code{Swapped}, \code{Unswapped}, 
+                \code{Unchanged}, \code{Significant}, \code{Nonsignificant}, 
+                \code{Absent}, \code{Added}, \code{Removed} and \code{Boundary}. 
+                If the either of the models did not converge, \code{unconverged} 
+                will be added to the code. \code{Unchanged} is used when 
+                \code{allow.unconverged} is \code{FALSE}.
                  Note that the logical \code{asreml.obj$converge} also
                 reflects whether there is convergence.
                 

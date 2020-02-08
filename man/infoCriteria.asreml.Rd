@@ -15,8 +15,10 @@
             likelihood = "REML", fixedDF = NULL, varDF = NULL, ...)
 }
 \arguments{
- \item{object}{An \code{asreml} object resulting from the fitting of 
-               a model using REML or a \code{list} of \code{asreml} objects.}
+ \item{object}{An \code{asreml} object resulting from the fitting of a model using REML 
+               or a \code{list} of \code{asreml} objects. If the components of the 
+               \code{list} are named, then those names will be used as the 
+               \code{rownames} for the returned \code{data.frame}.}
  \item{DF}{A \code{numeric} giving the number of estimated variance parameters. If
                     \code{NULL} then this is determined from the information in 
                     \code{object}. This argument has been replaced by \code{varDF}, 
@@ -43,8 +45,10 @@
  \item{\dots}{Provision for passsing arguments to functions called internally - 
             not used at present.}
 }
-\value{A data frame containing the numbers of estimated fixed and variance parameters, the number of 
-       bound parameters, AIC, BIC and the value of the log-likelihood.}
+\value{A \code{data.frame} containing the numbers of estimated fixed and variance parameters, the 
+       number of bound parameters, AIC, BIC and the value of the log-likelihood. If \code{object} 
+       is a \code{list} and its components are named, then those names will be used to set the 
+       \code{rownames} of the \code{data.frame}.}
 \details{The variance degrees of freedom (varDF) are the number of number of variance parameters that 
          have been estimated, excluding those whose estimates have a code for \code{bound} 
          specified in \code{bound.exclusions}. If \code{varDF} is not \code{NULL}, the supplied value 

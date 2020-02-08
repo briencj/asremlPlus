@@ -212,7 +212,7 @@ setOldClass("asrtests")
   {
     cat("\n\n####  Sequence of model investigations \n\n")
     if (any(c("AIC", "BIC") %in% names(x)))
-      cat("(For AIC and BIC, DF and denDF are the numbers of fixed and variance parameters)\n\n")
+      cat("(For AIC and BIC, DF and denDF relate to the numbers of fixed and variance parameters)\n\n")
   }
 
   print.data.frame(x, ...)
@@ -961,6 +961,47 @@ atLevelsMatch <- function(new, old, call)
     asreml::asreml.options(trace = TRUE)
   
   invisible(asreml.new.obj)
+}
+
+"iterate.asrtests" <- function(asrtests.obj, denDF = "numeric", trace = FALSE, ...)
+{
+  asr4 <- isASRemlVersionLoaded(4, notloaded.fault = TRUE)
+  if (!trace)
+    asreml::asreml.options(trace = trace)
+  
+  #Check that have a valid asrtests object
+  validasrt <- validAsrtests(asrtests.obj)  
+  if (is.character(validasrt))
+    stop(validasrt)
+  
+  #initialize
+  asreml.obj <- asrtests.obj$asreml.obj
+  wald.tab <- asrtests.obj$wald.tab
+  test.summary <- asrtests.obj$test.summary
+  
+  #Update the asreml.obj
+  asreml.obj <- asreml::update.asreml(asreml.obj)
+  #  call <- asreml.obj$call
+  #  asreml.obj <- eval(call, sys.parent())
+  #If not converged, issue warning
+  if (!asreml.obj$converge)
+    warning(asreml.obj$last.message)
+  
+  #Update wald.tab
+  wald.tab <- asreml::wald.asreml(asreml.obj, denDF = denDF, trace = trace, ...)
+  wald.tab <- chkWald(wald.tab)
+  
+  #Update asrtests.object
+  results <- as.asrtests(asreml.obj = asreml.obj, 
+                         wald.tab = wald.tab, 
+                         test.summary = test.summary,
+                         denDF = denDF, trace = trace, ...)
+  
+  #Reset trace to default on the way out
+  if (asr4)
+    asreml::asreml.options(trace = TRUE)
+  
+  invisible(results)
 }
 
 "rmboundary.asrtests" <- function(asrtests.obj, checkboundaryonly = FALSE, 
@@ -1993,42 +2034,6 @@ atLevelsMatch <- function(new, old, call)
   results <- as.asrtests(asreml.obj = asreml.obj, 
                          wald.tab = wald.tab, 
                          test.summary = test.summary, 
-                         denDF = denDF, trace = trace, ...)
-  invisible(results)
-}
-
-"iterate.asrtests" <- function(asrtests.obj, denDF = "numeric", trace = FALSE, ...)
-{
-  asr4 <- isASRemlVersionLoaded(4, notloaded.fault = TRUE)
-  if (trace)
-    asreml::asreml.options(trace = trace)
-  
-  #Check that have a valid asrtests object
-  validasrt <- validAsrtests(asrtests.obj)  
-  if (is.character(validasrt))
-    stop(validasrt)
-  
-  #initialize
-  asreml.obj <- asrtests.obj$asreml.obj
-  wald.tab <- asrtests.obj$wald.tab
-  test.summary <- asrtests.obj$test.summary
-  
-  #Update the asreml.obj
-  asreml.obj <- asreml::update.asreml(asreml.obj)
-#  call <- asreml.obj$call
-#  asreml.obj <- eval(call, sys.parent())
-  #If not converged, issue warning
-  if (!asreml.obj$converge)
-    warning(asreml.obj$last.message)
-  
-  #Update wald.tab
-  wald.tab <- asreml::wald.asreml(asreml.obj, denDF = denDF, trace = trace, ...)
-  wald.tab <- chkWald(wald.tab)
-  
-  #Update asrtests.object
-  results <- as.asrtests(asreml.obj = asreml.obj, 
-                         wald.tab = wald.tab, 
-                         test.summary = test.summary,
                          denDF = denDF, trace = trace, ...)
   invisible(results)
 }

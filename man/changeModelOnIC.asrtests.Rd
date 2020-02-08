@@ -60,8 +60,10 @@
               \code{test.summary} to indicate as far as is possible the terms that are 
               being manipulated.}
  \item{allow.unconverged}{A \code{logical} indicating whether to accept a new model 
-                      even when it does not converge. If \code{FALSE} and the fit does not 
-                      converge, the supplied \code{asreml} object is returned.}
+              even when it does not converge. If \code{FALSE} and the fit of the new 
+              model does not converge, the supplied \code{asreml} object is returned.  
+              Also, if \code{FALSE} and the fit of the new model has converged, but that 
+              of the old model has not, the new model will be accepted.}
  \item{checkboundaryonly}{If \code{TRUE} then boundary and singular terms are not removed by 
               \code{\link{rmboundary.asrtests}}; a warning is issued instead.}
  \item{trace}{If TRUE then partial iteration details are displayed when ASReml-R 

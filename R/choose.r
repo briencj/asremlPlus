@@ -338,10 +338,10 @@ addtoChooseSummary <- function(choose.summary, term, DF = NA, denDF = NA, p = NA
   
   #Use changeTerms to change the model
   new.asrtests.obj <- changeTerms(asrtests.obj, 
-                                  dropFixed = dropFixed, addFixed = dropFixed, 
+                                  dropFixed = dropFixed, addFixed = addFixed, 
                                   dropRandom = dropRandom,  addRandom = addRandom, 
                                   newResidual = newResidual, label = label, 
-                                  allow.unconverged = allow.unconverged, 
+                                  allow.unconverged = TRUE, 
                                   checkboundaryonly = checkboundaryonly, 
                                   trace = trace, update = update, denDF = denDF, 
                                   set.terms = set.terms, ignore.suffices = ignore.suffices, 
@@ -349,7 +349,7 @@ addtoChooseSummary <- function(choose.summary, term, DF = NA, denDF = NA, p = NA
                                   IClikelihood = IClikelihood, 
                                   bound.exclusions = bound.exclusions,  
                                   ...)
-  
+
   #Obtain IC for new model, recalculating when fixedDF and varDF have been set
   if (is.null(varDF) & is.null(fixedDF))
   {
@@ -368,49 +368,99 @@ addtoChooseSummary <- function(choose.summary, term, DF = NA, denDF = NA, p = NA
     names(new.IC) <- c("DF", "denDF", "AIC", "BIC")
   }
 
-  #Make the comparison
+  #Extract asreml.objects
+  asreml.obj <- asrtests.obj$asreml.obj
+  new.asreml.obj <- new.asrtests.obj$asreml.obj
+  
+  change <- FALSE
   diff.IC <- new.IC - old.IC
-  action <- "Unswapped"
-  if (ic.type == "AIC")
+  #check convergence
+  if (!allow.unconverged && (!asreml.obj$converge | !new.asreml.obj$converge))
   {
-    if (diff.IC["AIC"] < -tol.diff)
+    if (!asreml.obj$converge)
     {
-      asrtests.obj <- new.asrtests.obj
-      action <- "Swapped"
+      if (!new.asreml.obj$converge)
+      {
+        action <- "Unchanged - both unconverged"
+        change <- FALSE
+      } else
+      {
+        action <- "Swappped - old unconverged"
+        change <- TRUE
+      }
+    } else
+    {
+      action <- "Unchanged - new unconverged"
+      change <- FALSE
     }
   } else
   {
-    if (ic.type == "BIC")
+    #Make the comparison
+    action <- "Unswapped"
+    if (ic.type == "AIC")
     {
-      if (diff.IC["BIC"] < -tol.diff)
+      if (diff.IC["AIC"] < -tol.diff)
       {
-        asrtests.obj <- new.asrtests.obj
+        change <- TRUE
         action <- "Swapped"
       }
     } else
     {
-      if (ic.type == "both")
+      if (ic.type == "BIC")
       {
-        if (abs(diff.IC["AIC"]) > tol.diff)
+        if (diff.IC["BIC"] < -tol.diff)
         {
-          if (diff.IC["AIC"] < -tol.diff)
+          change <- TRUE
+          action <- "Swapped"
+        }
+      } else
+      {
+        if (ic.type == "both")
+        {
+          if (abs(diff.IC["AIC"]) > tol.diff)
           {
-            asrtests.obj <- new.asrtests.obj
-            action <- "Swapped"
+            if (diff.IC["AIC"] < -tol.diff)
+            {
+              change <- TRUE
+              action <- "Swapped"
+            }
+          }
+          else
+          {
+            if (diff.IC["BIC"] < -tol.diff)
+            {
+              change <- TRUE
+              action <- "Swapped"
+            }
           }
         }
+      }
+    }
+
+    #check convergence, when it is allowed
+    if (allow.unconverged)
+    {
+      if (!asreml.obj$converge && !new.asreml.obj$converge)
+      {
+        action <- paste(action, " - both unconverged", sep="")
+      } else
+      {
+        if (!asreml.obj$converge)
+          action <- paste(action, " - old unconverged", sep="")
         else
         {
-          if (diff.IC["BIC"] < -tol.diff)
-          {
-            asrtests.obj <- new.asrtests.obj
-            action <- "Swapped"
-          }
+          if (!new.asreml.obj$converge)
+            action <- paste(action, " - new unconverged", sep="")
         }
       }
     }
   }
   
+  #I don't check that removing a boundary term will result in convergence here as is done
+  #in, for example, testresidual.asrtests
+  if (change)
+    asrtests.obj <- new.asrtests.obj
+
   #Modify action to reflect model selection
   test.summary <- new.asrtests.obj$test.summary
   krows <- (nlines.test+1):nrow(test.summary)
