@@ -110,8 +110,9 @@
  \item{which.IC}{A \code{character} specifying the information criterion to be used in 
                    selecting the best model. Possible values are \code{AIC}, \code{BIC} 
                    or \code{both}. For \code{AIC} and \code{BIC}, the values of the 
-                   criterion for supplied model must be exceed by that for changed model 
-                   by at least \code{material.diff}. For \code{both}, the \code{AIC} is used, 
+                   criterion for supplied model must exceed that for changed model 
+                   by at least \code{material.diff} for the changed model to be returned. 
+                   For \code{both}, the \code{AIC} is used, 
                    except when the values of the \code{AIC} are closer than \code{diff.tol}, 
                    in which case \code{BIC} acts as tiebreaker.}
  \item{IClikelihood}{A \code{character} specifying whether Restricted Maximum Likelihood 
@@ -148,7 +149,7 @@
                    between the two models exceeds \code{material.diff}, the changed model is 
                    accepted if the \code{AIC} for the old model exceeds that for changed 
                    model by at least \code{material.diff}. Otherwise, the changed model is 
-                   accepted if the \code{AIC} for the old model exceeds that for changed model 
+                   accepted if the \code{BIC} for the old model exceeds that for changed model 
                    by at least \code{material.diff}}
 
 \author{Chris Brien}
