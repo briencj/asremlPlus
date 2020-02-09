@@ -10,9 +10,9 @@
 \usage{
 \method{infoCriteria}{asreml}(object, DF = NULL, 
             bound.exclusions = c("F","B","S","C"), 
-            likelihood = "REML", fixedDF = NULL, varDF = NULL, ...)
+            IClikelihood = "REML", fixedDF = NULL, varDF = NULL, ...)
 \method{infoCriteria}{list}(object, bound.exclusions = c("F","B","S","C"), 
-            likelihood = "REML", fixedDF = NULL, varDF = NULL, ...)
+            IClikelihood = "REML", fixedDF = NULL, varDF = NULL, ...)
 }
 \arguments{
  \item{object}{An \code{asreml} object resulting from the fitting of a model using REML 
@@ -28,7 +28,7 @@
                     will result in a variance parameter being excluded from the count of 
                     estimated variance parameters. If set to \code{NULL} then none will 
                     be excluded.}
- \item{likelihood}{A \code{character} specifying whether Restricted Maximum Likelihood 
+ \item{IClikelihood}{A \code{character} specifying whether Restricted Maximum Likelihood 
                    (\code{REML}) or the full likelihood (\code{full}) are to be used in 
                    calculating the information criteria.}
  \item{fixedDF}{A \code{numeric} giving the number of estimated fixed parameters. If
@@ -89,7 +89,7 @@
                    random = ~ Row + Column + units,
                    residual = ~ ar1(Row):ar1(Column), 
                    data=Wheat.dat)
-   infoCriteria(m.max.asr, likelihood = "full")
+   infoCriteria(m.max.asr, IClikelihood = "full")
 
    #Drop term for within Column pairs
    m1 <- asreml(yield ~ Rep + Variety, 
@@ -116,7 +116,7 @@
                 data=Wheat.dat)
 
    mods.asr <- list(m.max, m1, m2, m3, m4)
-   infoCriteria(mods.asr, likelihood = "full")
+   infoCriteria(mods.asr, IClikelihood = "full")
 
 }}
 \keyword{htest}

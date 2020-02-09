@@ -1,5 +1,11 @@
 \name{news}
 \title{News for Package asremlPlus}
+\section{asremlPlus Version 4.2-12 (2020-02-09)}{
+  \itemize{
+    \item{Change \code{likelihood} in infoCriteria to \code{IClikelihood} to make it consistent with other functions.}
+    \item{Replace \code{tol.diff} with \code{material.diff} and set the default to 0.5 in changeModelOnIC.}
+    \item{Revise all vignettes.}
+}}
 \section{asremlPlus Version 4.2-11 (2020-02-08)}{
   \itemize{
     \item{Add a new vignette for the use of information criteria with the wheat experiment.}

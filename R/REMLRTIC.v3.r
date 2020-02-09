@@ -217,7 +217,7 @@ REMLRT.asreml <- function(h0.asreml.obj, h1.asreml.obj,
 #The code for the full likelihood was adapted from Verbyla (2019) ANZJS, File S1 (doi: 10.1111/anzs.12254) 
 infoCriteria.asreml <- function(object, DF = NULL, 
                                 bound.exclusions = c("F","B","S","C"), 
-                                likelihood = "REML", fixedDF = NULL, varDF = NULL, ...)
+                                IClikelihood = "REML", fixedDF = NULL, varDF = NULL, ...)
 {
   asr4 <- isASRemlVersionLoaded(4, notloaded.fault = TRUE)
   #Check that have a valid object of class asreml
@@ -225,9 +225,9 @@ infoCriteria.asreml <- function(object, DF = NULL,
   if (is.character(validasr))
     stop(validasr)
   
-  #Check likelihood option
+  #Check IClikelihood option
   options <- c("REML", "full")
-  loglik.opt <- options[check.arg.values(likelihood, options)] 
+  loglik.opt <- options[check.arg.values(IClikelihood, options)] 
   
   if (loglik.opt == "full" & !asr4)
     stop("The full likelihood option has not been implemented for asreml-R version 3")
@@ -306,7 +306,7 @@ infoCriteria.asreml <- function(object, DF = NULL,
 
 
 "infoCriteria.list" <- function(object, bound.exclusions = c("F","B","S","C"), 
-                                likelihood = "REML", fixedDF = NULL, varDF = NULL, ...)
+                                IClikelihood = "REML", fixedDF = NULL, varDF = NULL, ...)
 {
   asr4 <- isASRemlVersionLoaded(4, notloaded.fault = TRUE)
   #Check that is a list of asreml objects
@@ -322,12 +322,12 @@ infoCriteria.asreml <- function(object, DF = NULL,
   if (asr4)
     asreml::asreml.options(trace = FALSE)
   ic <- lapply(object, 
-               function(m, bound.exclusions, likelihood, fixedDF, varDF) 
+               function(m, bound.exclusions, IClikelihood, fixedDF, varDF) 
                  suppressWarnings(suppressMessages(
                    infoCriteria(m, bound.exclusions = bound.exclusions, 
-                                likelihood = likelihood, fixedDF = fixedDF, varDF = varDF, ...))), 
+                                IClikelihood = IClikelihood, fixedDF = fixedDF, varDF = varDF, ...))), 
                bound.exclusions = bound.exclusions, 
-               likelihood = likelihood, fixedDF = fixedDF, varDF = varDF)
+               IClikelihood = IClikelihood, fixedDF = fixedDF, varDF = varDF)
   ic <- as.data.frame(do.call(rbind, ic))
   if (!is.null(names(object)))
     rownames(ic) <- names(object)

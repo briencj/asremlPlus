@@ -49,7 +49,7 @@ test_that("REMLRT_asreml4", {
   testthat::expect_lt(abs(test3$p - 1.603828e-12), 1e-03)
   testthat::expect_equal(test3$DF, 3)
   
-  info <- infoCriteria(m3.asr, likelihood = "full")
+  info <- infoCriteria(m3.asr, IClikelihood = "full")
   testthat::expect_equal(info$fixedDF, 31)
   testthat::expect_equal(info$varDF, 3)
   testthat::expect_lt(abs(info$AIC - 1720.888), 5e-03)
@@ -99,7 +99,7 @@ test_that("Wheat_asreml4", {
                data=Wheat.dat)
 
   mods.asr <- list(m.max, m1, m2, m3, m4)
-  ic <- infoCriteria(mods.asr, likelihood = "full")
+  ic <- infoCriteria(mods.asr, IClikelihood = "full")
   testthat::expect_equal(nrow(ic), 5)
   testthat::expect_true(all(ic$fixedDF == c(31, 30, 31, 31, 31)))
   testthat::expect_true(all(ic$varDF == c(5, 5, 4, 4, 5)))

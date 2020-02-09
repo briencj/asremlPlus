@@ -314,7 +314,7 @@ addtoChooseSummary <- function(choose.summary, term, DF = NA, denDF = NA, p = NA
                                        set.terms = NULL, ignore.suffices = TRUE, 
                                        bounds = "P", initial.values = NA, 
                                        which.IC = "AIC", IClikelihood = "REML", 
-                                       fixedDF = NULL, varDF = NULL, tol.diff = 1e-02, 
+                                       fixedDF = NULL, varDF = NULL, material.diff = 0.5, 
                                        bound.exclusions = c("F","B","S","C"),  
                                        ...)
   #Uses information criteria to select the best model after comparing that fitted in the asrtests.obj 
@@ -329,7 +329,7 @@ addtoChooseSummary <- function(choose.summary, term, DF = NA, denDF = NA, p = NA
   ic.type <- options[check.arg.values(which.IC, options)]
   
   #Calculate the IC for the incoming fit
-  old.IC <- infoCriteria(asrtests.obj$asreml.obj, likelihood = ic.lik, 
+  old.IC <- infoCriteria(asrtests.obj$asreml.obj, IClikelihood = ic.lik, 
                          bound.exclusions = bound.exclusions, 
                          fixedDF = fixedDF, varDF = varDF, ...)
   old.IC <- as.vector(old.IC[c("fixedDF", "varDF", "AIC", "BIC")])
@@ -350,23 +350,12 @@ addtoChooseSummary <- function(choose.summary, term, DF = NA, denDF = NA, p = NA
                                   bound.exclusions = bound.exclusions,  
                                   ...)
 
-  #Obtain IC for new model, recalculating when fixedDF and varDF have been set
-  if (is.null(varDF) & is.null(fixedDF))
-  {
-    subsumm <- new.asrtests.obj$test.summary
-    subsumm <- subsumm[subsumm$terms == label & subsumm$action != "Boundary", ]
-    if (nrow(subsumm) > 1)
-      subsumm <- tail(subsumm, 1)
-    class(subsumm) <- "data.frame"
-    new.IC <- as.vector(subsumm[c("DF", "denDF", "AIC", "BIC")])
-  } else
-  {
-    new.IC <- infoCriteria(new.asrtests.obj$asreml.obj, likelihood = ic.lik, 
-                           bound.exclusions = bound.exclusions, 
-                           fixedDF = fixedDF, varDF = varDF, ...)
-    new.IC <- as.vector(new.IC[c("fixedDF", "varDF", "AIC", "BIC")])
-    names(new.IC) <- c("DF", "denDF", "AIC", "BIC")
-  }
+  #Obtain IC for new model
+  new.IC <- infoCriteria(new.asrtests.obj$asreml.obj, IClikelihood = ic.lik, 
+                         bound.exclusions = bound.exclusions, 
+                         fixedDF = fixedDF, varDF = varDF, ...)
+  new.IC <- as.vector(new.IC[c("fixedDF", "varDF", "AIC", "BIC")])
+  names(new.IC) <- c("DF", "denDF", "AIC", "BIC")
 
   #Extract asreml.objects
   asreml.obj <- asrtests.obj$asreml.obj
@@ -399,7 +388,7 @@ addtoChooseSummary <- function(choose.summary, term, DF = NA, denDF = NA, p = NA
     action <- "Unswapped"
     if (ic.type == "AIC")
     {
-      if (diff.IC["AIC"] < -tol.diff)
+      if (diff.IC["AIC"] < -material.diff)
       {
         change <- TRUE
         action <- "Swapped"
@@ -408,7 +397,7 @@ addtoChooseSummary <- function(choose.summary, term, DF = NA, denDF = NA, p = NA
     {
       if (ic.type == "BIC")
       {
-        if (diff.IC["BIC"] < -tol.diff)
+        if (diff.IC["BIC"] < -material.diff)
         {
           change <- TRUE
           action <- "Swapped"
@@ -417,9 +406,9 @@ addtoChooseSummary <- function(choose.summary, term, DF = NA, denDF = NA, p = NA
       {
         if (ic.type == "both")
         {
-          if (abs(diff.IC["AIC"]) > tol.diff)
+          if (abs(diff.IC["AIC"]) > material.diff)
           {
-            if (diff.IC["AIC"] < -tol.diff)
+            if (diff.IC["AIC"] < -material.diff)
             {
               change <- TRUE
               action <- "Swapped"
@@ -427,7 +416,7 @@ addtoChooseSummary <- function(choose.summary, term, DF = NA, denDF = NA, p = NA
           }
           else
           {
-            if (diff.IC["BIC"] < -tol.diff)
+            if (diff.IC["BIC"] < -material.diff)
             {
               change <- TRUE
               action <- "Swapped"

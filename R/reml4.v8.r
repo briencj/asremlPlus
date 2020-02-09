@@ -114,7 +114,7 @@
   {
     if (ic.lik != "none")
     {
-      ic <- infoCriteria(asreml.obj, likelihood = ic.lik, 
+      ic <- infoCriteria(asreml.obj, IClikelihood = ic.lik, 
                          bound.exclusions = bound.exclusions)
       test.summary <- addtoTestSummary(test.summary, terms = label, 
                                        DF=ic$fixedDF, denDF = ic$varDF, 
@@ -212,7 +212,7 @@ setOldClass("asrtests")
   {
     cat("\n\n####  Sequence of model investigations \n\n")
     if (any(c("AIC", "BIC") %in% names(x)))
-      cat("(For AIC and BIC, DF and denDF relate to the numbers of fixed and variance parameters)\n\n")
+      cat("(For rows with AIC and BIC, DF and denDF relate to fixed and variance parameter numbers)\n\n")
   }
 
   print.data.frame(x, ...)
@@ -1318,7 +1318,7 @@ atLevelsMatch <- function(new, old, call)
   {
     if (ic.lik != "none")
     {
-      ic <- infoCriteria(asreml.obj, likelihood = ic.lik, 
+      ic <- infoCriteria(asreml.obj, IClikelihood = ic.lik, 
                          bound.exclusions = bound.exclusions)
       test.summary <- addtoTestSummary(test.summary, terms = label, 
                                        DF=ic$fixedDF, denDF = ic$varDF, 
@@ -1366,7 +1366,7 @@ atLevelsMatch <- function(new, old, call)
         action <- paste(action, " - old uncoverged", sep="")
       if (ic.lik != "none")
       {
-        ic <- infoCriteria(asreml.obj, likelihood = ic.lik, 
+        ic <- infoCriteria(asreml.obj, IClikelihood = ic.lik, 
                            bound.exclusions = bound.exclusions)
         test.summary <- addtoTestSummary(test.summary, terms = label, 
                                          DF=ic$fixedDF, denDF = ic$varDF, 
@@ -1430,7 +1430,7 @@ atLevelsMatch <- function(new, old, call)
       }
       if (ic.lik != "none")
       {
-        ic <- infoCriteria(asreml.obj, likelihood = ic.lik, 
+        ic <- infoCriteria(asreml.obj, IClikelihood = ic.lik, 
                            bound.exclusions = bound.exclusions)
         test.summary <- addtoTestSummary(test.summary, terms = label, 
                                          DF=ic$fixedDF, denDF = ic$varDF, 
@@ -1438,7 +1438,7 @@ atLevelsMatch <- function(new, old, call)
                                          action = action)
       } else
         test.summary <- addtoTestSummary(test.summary, terms = label, DF=NA, denDF = NA, 
-                                       p = NA, action = action)
+                                         p = NA, action = action)
     }
   }
   results <- as.asrtests(asreml.obj = asreml.obj, 

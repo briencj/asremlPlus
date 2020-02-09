@@ -31,7 +31,7 @@
                 set.terms = NULL, ignore.suffices = TRUE, 
                 bounds = "P", initial.values = NA, 
                 which.IC = "AIC", IClikelihood = "REML", 
-                fixedDF = NULL, varDF = NULL, tol.diff = 1e-02, 
+                fixedDF = NULL, varDF = NULL, material.diff = 0.5, 
                 bound.exclusions = c("F","B","S","C"), 
           ...)}
 \arguments{
@@ -111,7 +111,7 @@
                    selecting the best model. Possible values are \code{AIC}, \code{BIC} 
                    or \code{both}. For \code{AIC} and \code{BIC}, the values of the 
                    criterion for supplied model must be exceed by that for changed model 
-                   by at least \code{tol.diff}. For \code{both}, the \code{AIC} is used, 
+                   by at least \code{material.diff}. For \code{both}, the \code{AIC} is used, 
                    except when the values of the \code{AIC} are closer than \code{diff.tol}, 
                    in which case \code{BIC} acts as tiebreaker.}
  \item{IClikelihood}{A \code{character} specifying whether Restricted Maximum Likelihood 
@@ -130,8 +130,8 @@
                     applied to all the terms in \code{terms}. 
                     If any of the initial.values are equal to NA then they are 
                     left unchanged for those terms.}
- \item{tol.diff}{A \code{numeric} giving the tolerance tha needs to be exceeded to say that 
-                 two information criteria can be regarded as being different.}
+ \item{material.diff}{A \code{numeric} giving the the magnitude of the difference between 
+                 two information criteria that is to be regarded as being materially different.}
  \item{bound.exclusions}{A \code{character} specifying the bound (constraint) codes that 
                     will result in a variance parameter being excluded from the count of 
                     estimated variance parameters in calculating the information criteria. 
@@ -145,11 +145,11 @@
        model and those of the model supplied to \code{changeModelOnIC}.}
 
 \details{For \code{both}, provided that the difference in the \code{AIC} values 
-                   between the two models exceeds \code{tol.diff}, the changed model is 
+                   between the two models exceeds \code{material.diff}, the changed model is 
                    accepted if the \code{AIC} for the old model exceeds that for changed 
-                   model by at least \code{tol.diff}. Otherwise, the changed model is 
+                   model by at least \code{material.diff}. Otherwise, the changed model is 
                    accepted if the \code{AIC} for the old model exceeds that for changed model 
-                   by at least \code{tol.diff}}
+                   by at least \code{material.diff}}
 
 \author{Chris Brien}
 
