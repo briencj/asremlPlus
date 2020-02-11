@@ -31,7 +31,7 @@
                 set.terms = NULL, ignore.suffices = TRUE, 
                 bounds = "P", initial.values = NA, 
                 which.IC = "AIC", IClikelihood = "REML", 
-                fixedDF = NULL, varDF = NULL, material.diff = 0.5, 
+                fixedDF = NULL, varDF = NULL, 
                 bound.exclusions = c("F","B","S","C"), 
           ...)}
 \arguments{
@@ -108,13 +108,9 @@
                     If any of the bounds are equal to NA then they are 
                     left unchanged for those terms.}
  \item{which.IC}{A \code{character} specifying the information criterion to be used in 
-                   selecting the best model. Possible values are \code{AIC}, \code{BIC} 
-                   or \code{both}. For \code{AIC} and \code{BIC}, the values of the 
-                   criterion for supplied model must exceed that for changed model 
-                   by at least \code{material.diff} for the changed model to be returned. 
-                   For \code{both}, the \code{AIC} is used, 
-                   except when the values of the \code{AIC} are closer than \code{diff.tol}, 
-                   in which case \code{BIC} acts as tiebreaker.}
+                   selecting the best model. Possible values are \code{AIC} and 
+                   \code{BIC}. The values of the criterion for supplied model must 
+                   exceed that for changed model for the changed model to be returned.}
  \item{IClikelihood}{A \code{character} specifying whether Restricted Maximum Likelihood 
                    (\code{REML}) or the full likelihood (\code{full}) are to be used in 
                    calculating the information criteria.}
@@ -131,8 +127,6 @@
                     applied to all the terms in \code{terms}. 
                     If any of the initial.values are equal to NA then they are 
                     left unchanged for those terms.}
- \item{material.diff}{A \code{numeric} giving the the magnitude of the difference between 
-                 two information criteria that is to be regarded as being materially different.}
  \item{bound.exclusions}{A \code{character} specifying the bound (constraint) codes that 
                     will result in a variance parameter being excluded from the count of 
                     estimated variance parameters in calculating the information criteria. 
@@ -145,12 +139,6 @@
        freedom and the information criteria are differences between those of the changed 
        model and those of the model supplied to \code{changeModelOnIC}.}
 
-\details{For \code{both}, provided that the difference in the \code{AIC} values 
-                   between the two models exceeds \code{material.diff}, the changed model is 
-                   accepted if the \code{AIC} for the old model exceeds that for changed 
-                   model by at least \code{material.diff}. Otherwise, the changed model is 
-                   accepted if the \code{BIC} for the old model exceeds that for changed model 
-                   by at least \code{material.diff}}
 
 \author{Chris Brien}
 

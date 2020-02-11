@@ -314,7 +314,7 @@ addtoChooseSummary <- function(choose.summary, term, DF = NA, denDF = NA, p = NA
                                        set.terms = NULL, ignore.suffices = TRUE, 
                                        bounds = "P", initial.values = NA, 
                                        which.IC = "AIC", IClikelihood = "REML", 
-                                       fixedDF = NULL, varDF = NULL, material.diff = 0.5, 
+                                       fixedDF = NULL, varDF = NULL, #material.diff = NA, 
                                        bound.exclusions = c("F","B","S","C"),  
                                        ...)
   #Uses information criteria to select the best model after comparing that fitted in the asrtests.obj 
@@ -325,7 +325,7 @@ addtoChooseSummary <- function(choose.summary, term, DF = NA, denDF = NA, p = NA
   #Check IClikelihood options, because "none" is not allowed here
   options <- c("REML", "full")
   ic.lik <- options[check.arg.values(IClikelihood, options)]
-  options <- c("AIC", "BIC", "both")
+  options <- c("AIC", "BIC") #, "both")
   ic.type <- options[check.arg.values(which.IC, options)]
   
   #Calculate the IC for the incoming fit
@@ -386,44 +386,11 @@ addtoChooseSummary <- function(choose.summary, term, DF = NA, denDF = NA, p = NA
   {
     #Make the comparison
     action <- "Unswapped"
-    if (ic.type == "AIC")
+    if ((ic.type == "AIC" & diff.IC["AIC"] < 0) || 
+        (ic.type == "BIC" & diff.IC["BIC"] < 0))
     {
-      if (diff.IC["AIC"] < -material.diff)
-      {
-        change <- TRUE
-        action <- "Swapped"
-      }
-    } else
-    {
-      if (ic.type == "BIC")
-      {
-        if (diff.IC["BIC"] < -material.diff)
-        {
-          change <- TRUE
-          action <- "Swapped"
-        }
-      } else
-      {
-        if (ic.type == "both")
-        {
-          if (abs(diff.IC["AIC"]) > material.diff)
-          {
-            if (diff.IC["AIC"] < -material.diff)
-            {
-              change <- TRUE
-              action <- "Swapped"
-            }
-          }
-          else
-          {
-            if (diff.IC["BIC"] < -material.diff)
-            {
-              change <- TRUE
-              action <- "Swapped"
-            }
-          }
-        }
-      }
+      change <- TRUE
+      action <- "Swapped"
     }
 
     #check convergence, when it is allowed

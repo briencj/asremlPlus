@@ -1,5 +1,9 @@
 \name{news}
 \title{News for Package asremlPlus}
+\section{asremlPlus Version 4.2-13 (2020-02-11)}{
+  \itemize{
+    \item{Removed the \code{material.diff} argument and the \code{both} option from the \code{which.IC} argument of changeModelOnIC.}
+}}
 \section{asremlPlus Version 4.2-12 (2020-02-09)}{
   \itemize{
     \item{Change \code{likelihood} in infoCriteria to \code{IClikelihood} to make it consistent with other functions.}

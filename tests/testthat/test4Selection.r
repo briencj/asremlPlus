@@ -497,7 +497,7 @@ test_that("changeModelOnIC_Example_asreml4", {
   current.asrt <- as.asrtests(current.asr, NULL, NULL, 
                               label = "Maximal model", IClikelihood = "full")
   current.asrt <- rmboundary(current.asrt)
-  testthat::expect_true(!current.asrt$asreml.obj$converge)
+  testthat::expect_true(current.asrt$asreml.obj$converge)
   testthat::expect_true(current.asrt$test.summary$action[1] == "Starting model")
   testthat::expect_equal(current.asrt$test.summary$DF[1], 31)
   testthat::expect_equal(current.asrt$test.summary$denDF[1], 5)
