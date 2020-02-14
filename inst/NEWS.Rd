@@ -1,5 +1,9 @@
 \name{news}
 \title{News for Package asremlPlus}
+\section{asremlPlus Version 4.2-14 (2020-02-14)}{
+  \itemize{
+    \item{Fix bug in processing a formula that includes an \code{at} function.}
+}}
 \section{asremlPlus Version 4.2-13 (2020-02-11)}{
   \itemize{
     \item{Removed the \code{material.diff} argument and the \code{both} option from the \code{which.IC} argument of changeModelOnIC.}

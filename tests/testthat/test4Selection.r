@@ -390,7 +390,7 @@ test_that("changeModelOnIC_wheat94_asreml4", {
   library(dae)
   library(asreml)
   library(asremlPlus)
-  ## use asremlPlus to analyse the wheat (barley) example from section 8.6 of the asreml manual (Butler et al. 2010)
+  ## use asremlPlus to analyse the 1994 wheat example from Gilmour et al. (1995)
   data(wheat94.dat)
   
   

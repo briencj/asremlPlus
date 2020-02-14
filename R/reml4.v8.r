@@ -624,10 +624,11 @@ get.atargs <- function(at.term, dd, always.levels = FALSE)
 atLevelsMatch <- function(new, old, call)
 {
   new.ch <- deparse(new)
+  new.ch <- paste0(new.ch, collapse = "")
   if (grepl("at(", new.ch, fixed = TRUE)) #only process if new involves an at
   {
     dd <- eval(languageEl(call, which = "data")) #needed for levels
-    new.split <- strsplit(new.ch, "[-~+*/]")[[1]]
+    new.split <- unlist(strsplit(new.ch, "[-~+*/]"))
     at.parts <- stringr::str_trim(new.split[unlist(lapply(new.split, grepl, 
                                                           pattern = "at", fixed = TRUE))])
     #old.obj <- terms(old)
