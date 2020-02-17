@@ -19,45 +19,52 @@ test_that("Wheat_asreml3", {
                         data=Wheat.dat)
   summary(current.asr)
   info <- infoCriteria(current.asr)
-  testthat::expect_equal(info$DF, 5)
+  testthat::expect_equal(info$varDF, 5)
   testthat::expect_lt(abs(info$AIC - 1346.76), 1e-02)
   
-  # Load current fit into an asrtests object
-  current.asrt <- as.asrtests(current.asr, NULL, NULL)
+  # Load current fit into an asrtests object 
+  # (Have to use REML because full likelihood not implemented for ASReml-R v3)
+  current.asrt <- as.asrtests(current.asr, NULL, NULL, 
+                              label = "Maximal model", IClikelihood = "REML")
+  testthat::expect_lt(abs(current.asrt$test.summary$AIC - 1346.766), 0.10)
   
   # Check for and remove any boundary terms
-  current.asrt <- rmboundary(current.asrt)
+  current.asrt <- rmboundary(current.asrt, IClikelihood = "REML")
   
   #Check term for within Column pairs
-  current.asrt <- testranfix(current.asrt, "WithinColPairs", drop.fix.ns=TRUE)
+  current.asrt <- testranfix(current.asrt, term = "WithinColPairs", 
+                             drop.fix.ns=TRUE, IClikelihood = "REML")
   
   # Test nugget term
-  current.asrt <- testranfix(current.asrt, "units", positive=TRUE)
+  current.asrt <- testranfix(current.asrt, "units", positive=TRUE, IClikelihood = "REML")
   
   # Test Row autocorrelation
   current.asrt <- testresidual(current.asrt, "~ Row:ar1(Column)", 
-                               label="Row autocorrelation", simpler=TRUE)
+                               label="Row autocorrelation", simpler=TRUE, 
+                               IClikelihood = "REML")
   
   # Test Col autocorrelation (depends on whether Row autocorrelation retained)
-  k <- match("Row autocorrelation", current.asrt$test.summary$terms)
-  p <- current.asrt$test.summary$p
-  { if (p[k] <= 0.05)
+  p <- getTestPvalue(current.asrt, label = "Row autocorrelation")
+  testthat::expect_true((abs(p - 2.314881e-06) < 1e-05))
+  { if (p <= 0.05)
     current.asrt <- testresidual(current.asrt, "~ ar1(Row):Column", 
                                  label="Col autocorrelation", simpler=TRUE,
-                                 update=FALSE)
+                                 IClikelihood = "REML", update=FALSE)
     else
       current.asrt <- testresidual(current.asrt, "~ Row:Column", 
                                    label="Col autocorrelation", simpler=TRUE,
-                                   update=FALSE)
+                                   IClikelihood = "REML", update=FALSE)
   }
   print(current.asrt)
   testthat::expect_equal(length(current.asrt), 3)
   testthat::expect_equal(nrow(current.asrt$wald.tab), 3)
-  testthat::expect_equal(nrow(current.asrt$test.summary), 5)
+  testthat::expect_equal(nrow(current.asrt$test.summary), 6)
+  testthat::expect_lt(abs(current.asrt$test.summary$AIC[6] - 1353.762), 0.10)
+  testthat::expect_lt(abs(current.asrt$test.summary$BIC[6] - 1367.700), 0.10)
   info <- infoCriteria(current.asrt$asreml.obj)
-  testthat::expect_equal(info$DF, 5)
+  testthat::expect_equal(info$varDF, 5)
   testthat::expect_lt(abs(info$AIC - 1353.762), 1e-03)
-  
+
   # Get current fitted asreml object
   current.asr <- current.asrt$asreml.obj
   current.asr <- update(current.asr, aom=TRUE)
@@ -108,5 +115,20 @@ test_that("Wheat_asreml3", {
   testthat::expect_equal(Var.diffs$backtransforms, NULL)
   testthat::expect_equal(as.character(Var.diffs$predictions$Variety[[1]]),"10")
   testthat::expect_silent(plotPvalues(Var.diffs))
+
+  #Test for single-value LSDs
+  diffs <- predictPlus(classify = "Variety", 
+                           asreml.obj=current.asr, 
+                           error.intervals="halfLeast",
+                           meanLSD.type = "fact", LSDby = "Variety",
+                           wald.tab=current.asrt$wald.tab,
+                           tables = "predictions", 
+                           sortFactor = "Variety")
+  testthat::expect_equal(nrow(diffs$LSD), 25)
+  testthat::expect_true("lower.halfLeastSignificant.limit" %in% names(diffs$predictions))
+  testthat::expect_true(all((diffs$predictions$upper.halfLeastSignificant.limit - 
+                               diffs$predictions$lower.halfLeastSignificant.limit - 
+                               diffs$LSD$meanLSD[as.numfac(diffs$predictions$Variety)]) < 1e-05))
+  diffs$predictions$upper.halfLeastSignificant.limit - diffs$predictions$lower.halfLeastSignificant.limit
 })
 

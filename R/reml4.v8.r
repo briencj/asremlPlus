@@ -99,6 +99,7 @@
   #Check IClikelihood options
   options <- c("none", "REML", "full")
   ic.lik <- options[check.arg.values(IClikelihood, options)]
+  ic.NA <- data.frame(AIC = NA, BIC = NA)
   
   #Process test.summary and label arguments
   if (is.null(test.summary))
@@ -113,16 +114,14 @@
   if (!is.null(label))
   {
     if (ic.lik != "none")
-    {
       ic <- infoCriteria(asreml.obj, IClikelihood = ic.lik, 
                          bound.exclusions = bound.exclusions)
-      test.summary <- addtoTestSummary(test.summary, terms = label, 
-                                       DF=ic$fixedDF, denDF = ic$varDF, 
-                                       p = NA, AIC = ic$AIC, BIC = ic$BIC, 
-                                       action = "Starting model")
-    } else
-      test.summary <- addtoTestSummary(test.summary, terms = label, DF = NA, 
-                                       action = "Starting model")
+    else
+      ic <- ic.NA
+    test.summary <- addtoTestSummary(test.summary, terms = label, 
+                                     DF=ic$fixedDF, denDF = ic$varDF, p = NA, 
+                                     AIC = ic$AIC, BIC = ic$BIC, 
+                                     action = "Starting model")
   }
 
   #Deal with wald.tab
@@ -212,7 +211,7 @@ setOldClass("asrtests")
   {
     cat("\n\n####  Sequence of model investigations \n\n")
     if (any(c("AIC", "BIC") %in% names(x)))
-      cat("(For rows with AIC and BIC, DF and denDF relate to fixed and variance parameter numbers)\n\n")
+      cat("(If a row has NA for p but not denDF, DF and denDF relate to fixed and variance parameter numbers)\n\n")
   }
 
   print.data.frame(x, ...)
@@ -246,11 +245,15 @@ setOldClass("asrtests")
   {
     if (any(c("heading", "all") %in% opt) && !is.null(asr4) && asr4)
     {
-      asr.col <- asreml::asreml.options()$colourise
-      if (xor(colourise,asr.col))
-        asreml::asreml.options(colourise = colourise)
-      print(x, ...)
-      asreml::asreml.options(colourise = asr.col)
+      if (asr4)
+      {
+        asr.col <- asreml::asreml.options()$colourise
+        if (xor(colourise,asr.col))
+          asreml::asreml.options(colourise = colourise)
+        print(x, ...)
+        asreml::asreml.options(colourise = asr.col)
+      } else
+        print(x, ...)
     } else
     {
       if (any(c("heading", "all") %in% opt))
@@ -624,7 +627,7 @@ get.atargs <- function(at.term, dd, always.levels = FALSE)
 atLevelsMatch <- function(new, old, call)
 {
   new.ch <- deparse(new)
-  new.ch <- paste0(new.ch, collapse = "")
+  new.ch <- paste0(stringr::str_trim(new.ch, side = "left"), collapse = "")
   if (grepl("at(", new.ch, fixed = TRUE)) #only process if new involves an at
   {
     dd <- eval(languageEl(call, which = "data")) #needed for levels
@@ -745,7 +748,7 @@ atLevelsMatch <- function(new, old, call)
   
   #For asr4, need to set trace using asreml.options in here and as.asrtests
   asr4 <- isASRemlVersionLoaded(4, notloaded.fault = TRUE)
-  if (!trace)
+  if (asr4 & !trace)
     asreml::asreml.options(trace = trace)
   
   #Check that have a valid object of class asreml
@@ -967,7 +970,7 @@ atLevelsMatch <- function(new, old, call)
 "iterate.asrtests" <- function(asrtests.obj, denDF = "numeric", trace = FALSE, ...)
 {
   asr4 <- isASRemlVersionLoaded(4, notloaded.fault = TRUE)
-  if (!trace)
+  if (asr4 & !trace)
     asreml::asreml.options(trace = trace)
   
   #Check that have a valid asrtests object
@@ -1006,7 +1009,7 @@ atLevelsMatch <- function(new, old, call)
 }
 
 "rmboundary.asrtests" <- function(asrtests.obj, checkboundaryonly = FALSE, 
-                                  trace = FALSE, update = TRUE, 
+                                  IClikelihood = "none", trace = FALSE, update = TRUE, 
                                   set.terms = NULL, ignore.suffices = TRUE, 
                                   bounds = "P", initial.values = NA, ...)
 #Removes any boundary or singular terms from the fit stored in asreml.obj, 
@@ -1026,6 +1029,11 @@ atLevelsMatch <- function(new, old, call)
   if (is.character(validasrt))
     stop(validasrt)
   
+  #Check IClikelihood options
+  options <- c("none", "REML", "full")
+  ic.lik <- options[check.arg.values(IClikelihood, options)]
+  ic.NA <- data.frame(AIC = NA, BIC = NA)
+
   #check input arguments
   if (asr4)
     kresp <- asrtests.obj$asreml.obj$formulae$fixed[[2]]
@@ -1156,7 +1164,15 @@ atLevelsMatch <- function(new, old, call)
       }
     }
     #Remove chosen term
-    test.summary <- addtoTestSummary(test.summary, terms = term, DF = 1, denDF = NA, p = NA, 
+    if (ic.lik != "none")
+      ic <- infoCriteria(asreml.obj, IClikelihood = ic.lik)
+    #if want to include bound.exclusions then have to make it an arg of rmboundary.asrtests
+    #, bound.exclusions = bound.exclusions) 
+    else
+      ic <- ic.NA
+    test.summary <- addtoTestSummary(test.summary, terms = term, 
+                                     DF = 1, denDF = NA, p = NA, 
+                                     AIC = ic$AIC, BIC = ic$BIC, 
                                      action = "Boundary")
     mod.ran <- as.formula(paste("~ . - ", term, sep=""))
     asreml.obj <- newfit.asreml(asreml.obj, random. = mod.ran, trace = trace, 
@@ -1226,6 +1242,7 @@ atLevelsMatch <- function(new, old, call)
   #Check IClikelihood options
   options <- c("none", "REML", "full")
   ic.lik <- options[check.arg.values(IClikelihood, options)]
+  ic.NA <- data.frame(fixedDF = NA, varDF = NA, AIC = NA, BIC = NA)
   
   #check input arguments
   if (asr4)
@@ -1318,16 +1335,14 @@ atLevelsMatch <- function(new, old, call)
   if (action == "No changes")
   {
     if (ic.lik != "none")
-    {
       ic <- infoCriteria(asreml.obj, IClikelihood = ic.lik, 
                          bound.exclusions = bound.exclusions)
-      test.summary <- addtoTestSummary(test.summary, terms = label, 
-                                       DF=ic$fixedDF, denDF = ic$varDF, 
-                                       p = NA, AIC = ic$AIC, BIC = ic$BIC, 
-                                       action = action)
-    } else
-      test.summary <- addtoTestSummary(test.summary, terms = label, DF=NA, denDF = NA, 
-                                       p = NA, action = action)
+    else
+      ic <- ic.NA
+    test.summary <- addtoTestSummary(test.summary, terms = label, 
+                                     DF=ic$fixedDF, denDF = ic$varDF, 
+                                     p = NA, AIC = ic$AIC, BIC = ic$BIC, 
+                                     action = action)
   } else
   {
     if (asr4)
@@ -1379,6 +1394,7 @@ atLevelsMatch <- function(new, old, call)
       #Check for boundary terms
       temp.asrt <- rmboundary.asrtests(as.asrtests(asreml.obj, wald.tab, test.summary), 
                                        checkboundaryonly = checkboundaryonly, 
+                                       IClikelihood = IClikelihood, 
                                        trace = trace, update = update, 
                                        set.terms = set.terms, 
                                        ignore.suffices = ignore.suffices, 
@@ -1403,6 +1419,7 @@ atLevelsMatch <- function(new, old, call)
       #Check if get convergence with any boundary terms removed
       temp.asrt <- rmboundary.asrtests(as.asrtests(asreml.new.obj, wald.tab, test.summary), 
                                        checkboundaryonly = checkboundaryonly, 
+                                       IClikelihood = IClikelihood, 
                                        trace = trace, update = update, 
                                        set.terms = set.terms, 
                                        ignore.suffices = ignore.suffices, 
@@ -1430,16 +1447,14 @@ atLevelsMatch <- function(new, old, call)
         action <- "Unchanged - new unconverged"
       }
       if (ic.lik != "none")
-      {
         ic <- infoCriteria(asreml.obj, IClikelihood = ic.lik, 
                            bound.exclusions = bound.exclusions)
-        test.summary <- addtoTestSummary(test.summary, terms = label, 
-                                         DF=ic$fixedDF, denDF = ic$varDF, 
-                                         p = NA, AIC = ic$AIC, BIC = ic$BIC, 
-                                         action = action)
-      } else
-        test.summary <- addtoTestSummary(test.summary, terms = label, DF=NA, denDF = NA, 
-                                         p = NA, action = action)
+      else
+        ic <- ic.NA
+      test.summary <- addtoTestSummary(test.summary, terms = label, 
+                                       DF=ic$fixedDF, denDF = ic$varDF, 
+                                       p = NA, AIC = ic$AIC, BIC = ic$BIC, 
+                                       action = action)
     }
   }
   results <- as.asrtests(asreml.obj = asreml.obj, 
@@ -1455,7 +1470,8 @@ atLevelsMatch <- function(new, old, call)
                                   bound.test.parameters = "none", 
                                   bound.exclusions = c("F","B","S","C"), REMLDF = NULL, 
                                   drop.fix.ns = FALSE, denDF="numeric", dDF.na = "none", 
-                                  dDF.values = NULL, trace = FALSE, update = TRUE, 
+                                  dDF.values = NULL, IClikelihood = "none", 
+                                  trace = FALSE, update = TRUE, 
                                   set.terms = NULL, ignore.suffices = TRUE, 
                                   bounds = "P", initial.values = NA, ...)
 #function to test for a single term, using a REMLRT for a random term or based 
@@ -1473,6 +1489,11 @@ atLevelsMatch <- function(new, old, call)
   if (is.character(validasrt))
     stop(validasrt)
 
+  #Check IClikelihood options
+  options <- c("none", "REML", "full")
+  ic.lik <- options[check.arg.values(IClikelihood, options)]
+  ic.NA <- data.frame(AIC = NA, BIC = NA)
+  
   #Initialize
   asreml.obj <- asrtests.obj$asreml.obj
   wald.tab <- asrtests.obj$wald.tab
@@ -1483,10 +1504,10 @@ atLevelsMatch <- function(new, old, call)
   if (length(labels(term.obj)) != 1)
   {
     if (asr4)
-      stop("In analysing ",asrtests.obj$asreml.obj$formulae$fixed[[2]],
+      stop("In analysing ",asreml.obj$formulae$fixed[[2]],
            ", multiple terms not allowed in testranfix.asrtests")
     else
-      stop("In analysing ",asrtests.obj$asreml.obj$fixed.formula[[2]],
+      stop("In analysing ",asreml.obj$fixed.formula[[2]],
            ", multiple terms not allowed in testranfix.asrtests")
   } else
   {
@@ -1501,11 +1522,11 @@ atLevelsMatch <- function(new, old, call)
       if (length(lvls) > 1)
       {
         if (asr4)
-          stop("In analysing ",asrtests.obj$asreml.obj$formulae$fixed[[2]],
+          stop("In analysing ",asreml.obj$formulae$fixed[[2]],
                ", an at term involving multiple levels will result in multiple terms and cannot be tested in testranfix.asrtests")
         
         else
-          stop("In analysing ",asrtests.obj$asreml.obj$fixed.formula[[2]],
+          stop("In analysing ",asreml.obj$fixed.formula[[2]],
                ", an at term involving multiple levels will result in multiple terms and cannot be tested in testranfix.asrtests")
       }
     }
@@ -1523,10 +1544,18 @@ atLevelsMatch <- function(new, old, call)
       termno <- findterm(term, rownames(wald.tab))
     #Term is not in either model
     if (termno == 0)
+    {
       #Term is not in either model
-      test.summary <- addtoTestSummary(test.summary, terms = term, DF = NA, denDF = NA, 
-                                       p = NA, action = "Absent")
-    else
+      if (ic.lik != "none")
+        ic <- infoCriteria(asreml.obj, IClikelihood = ic.lik, 
+                           bound.exclusions = bound.exclusions)[c("AIC","BIC")]
+      else
+        ic <- ic.NA
+      test.summary <- addtoTestSummary(test.summary, terms = term, 
+                                       DF=ic$fixedDF, denDF = ic$varDF, p = NA, 
+                                       AIC = ic$AIC, BIC = ic$BIC, 
+                                       action = "Absent")
+    } else
     #Have a fixed term
     { 
       wald.tab <- asreml::wald.asreml(asreml.obj, denDF = denDF, trace = trace, ...)
@@ -1581,19 +1610,42 @@ atLevelsMatch <- function(new, old, call)
       #Add record for test to test.summary and, if drop.fix.ns is TRUE, remove term
       if (is.na(p))
       {
+        if (ic.lik != "none")
+          ic <- infoCriteria(asreml.obj, IClikelihood = ic.lik, 
+                             bound.exclusions = bound.exclusions)
+        else
+          ic <- ic.NA
         test.summary <- addtoTestSummary(test.summary, terms = rownames(wald.tab)[termno], 
-                                         DF = ndf, denDF = NA, p = p, action = NA)
-        
+                                         DF = ndf, denDF = NA, p = p, 
+                                         AIC = ic$AIC, BIC = ic$BIC, 
+                                         action = "Absent")
       } else
       {
         if (p <= alpha)
         {
           if (drop.fix.ns)
+          {
+            if (ic.lik != "none")
+              ic <- infoCriteria(asreml.obj, IClikelihood = ic.lik, 
+                                 bound.exclusions = bound.exclusions)
+            else
+              ic <- ic.NA
             test.summary <- addtoTestSummary(test.summary, terms = rownames(wald.tab)[termno], 
-                                             DF = ndf, denDF = den.df, p = p, action = "Retained")
-          else
+                                             DF = ndf, denDF = den.df, p = p, 
+                                             AIC = ic$AIC, BIC = ic$BIC, 
+                                             action = "Retained")
+          } else
+          {
+            if (ic.lik != "none")
+              ic <- infoCriteria(asreml.obj, IClikelihood = ic.lik, 
+                                 bound.exclusions = bound.exclusions)
+            else
+              ic <- ic.NA
             test.summary <- addtoTestSummary(test.summary, terms = rownames(wald.tab)[termno], 
-                                             DF = ndf, denDF = den.df, p = p, action = "Significant")
+                                             DF = ndf, denDF = den.df, p = p, 
+                                             AIC = ic$AIC, BIC = ic$BIC, 
+                                             action = "Significant")
+          }
         } else
         {
           if (drop.fix.ns)
@@ -1616,14 +1668,21 @@ atLevelsMatch <- function(new, old, call)
               wald.tab <- chkWald(wald.tab)
               if (!asreml.obj$converge)
                 action <- paste(action, " - unconverged", sep="")
+              if (ic.lik != "none")
+                ic <- infoCriteria(asreml.obj, IClikelihood = ic.lik, 
+                                   bound.exclusions = bound.exclusions)
+              else
+                ic <- ic.NA
               test.summary <- addtoTestSummary(test.summary, terms = term, 
-                                               DF = ndf, denDF = den.df, 
-                                               p = p, action = action)
-              
+                                               DF = ndf, denDF = den.df, p = p, 
+                                               AIC = ic$AIC, BIC = ic$BIC, 
+                                               action = action)
+
               #Check for boundary terms
               temp.asrt <- rmboundary.asrtests(as.asrtests(asreml.obj, wald.tab, 
                                                            test.summary), 
                                                checkboundaryonly = checkboundaryonly, 
+                                               IClikelihood = IClikelihood, 
                                                trace = trace, update = update, 
                                                set.terms = set.terms, 
                                                ignore.suffices = ignore.suffices, 
@@ -1646,6 +1705,7 @@ atLevelsMatch <- function(new, old, call)
               temp.asrt <- rmboundary.asrtests(as.asrtests(asreml.new.obj, wald.tab, 
                                                            test.summary), 
                                                checkboundaryonly = checkboundaryonly, 
+                                               IClikelihood = IClikelihood, 
                                                trace = trace, update = update, 
                                                set.terms = set.terms, 
                                                ignore.suffices = ignore.suffices, 
@@ -1670,15 +1730,27 @@ atLevelsMatch <- function(new, old, call)
                 p <- NA
                 action = "Unchanged - unconverged"
               }
+              if (ic.lik != "none")
+                ic <- infoCriteria(asreml.obj, IClikelihood = ic.lik, 
+                                   bound.exclusions = bound.exclusions)
+              else
+                ic <- ic.NA
               test.summary <- addtoTestSummary(test.summary, terms = term, 
-                                               DF = ndf, denDF = den.df, 
-                                               p = p, action = action)
+                                               DF = ndf, denDF = den.df, p = p, 
+                                               AIC = ic$AIC, BIC = ic$BIC, 
+                                               action = action)
             }
           } else
           {
+            if (ic.lik != "none")
+              ic <- infoCriteria(asreml.obj, IClikelihood = ic.lik, 
+                                 bound.exclusions = bound.exclusions)
+            else
+              ic <- ic.NA
             test.summary <- addtoTestSummary(test.summary, terms = rownames(wald.tab)[termno], 
-                                             DF = ndf, denDF = den.df, 
-                                             p = p, action = "Nonsignificant")
+                                             DF = ndf, denDF = den.df, p = p, 
+                                             AIC = ic$AIC, BIC = ic$BIC, 
+                                             action = "Nonsignificant")
           }
         }
       }
@@ -1746,6 +1818,7 @@ atLevelsMatch <- function(new, old, call)
         temp.asrt <- rmboundary.asrtests(as.asrtests(asreml.new.obj, wald.tab, 
                                                      test.summary), 
                                          checkboundaryonly = checkboundaryonly, 
+                                         IClikelihood = IClikelihood, 
                                          trace = trace, update = update, 
                                          set.terms = set.terms, 
                                          ignore.suffices = ignore.suffices, 
@@ -1833,13 +1906,21 @@ atLevelsMatch <- function(new, old, call)
     }
       
     #Update summary
-    test.summary <- addtoTestSummary(test.summary, terms = term, DF=test$DF, denDF = NA, 
-                                     p = p, action = action)
+    if (ic.lik != "none")
+      ic <- infoCriteria(asreml.obj, IClikelihood = ic.lik, 
+                         bound.exclusions = bound.exclusions)
+    else
+      ic <- ic.NA
+    test.summary <- addtoTestSummary(test.summary, terms = term, 
+                                     DF=test$DF, denDF = NA, p = p, 
+                                     AIC = ic$AIC, BIC = ic$BIC, 
+                                     action = action)
 
     #Check for boundary terms
     temp.asrt <- rmboundary.asrtests(as.asrtests(asreml.obj, wald.tab, test.summary), 
                                      checkboundaryonly = checkboundaryonly, 
                                      trace = trace, update = update, 
+                                     IClikelihood = IClikelihood, 
                                      set.terms = set.terms, 
                                      ignore.suffices = ignore.suffices, 
                                      bounds = bounds, 
@@ -1871,7 +1952,8 @@ atLevelsMatch <- function(new, old, call)
                                    checkboundaryonly = FALSE, 
                                    positive.zero = FALSE, bound.test.parameters = "none", 
                                    bound.exclusions = c("F","B","S","C"), REMLDF = NULL, 
-                                   denDF="numeric", trace = FALSE, update = TRUE, 
+                                   denDF="numeric", IClikelihood = "none", 
+                                   trace = FALSE, update = TRUE, 
                                    set.terms = NULL, ignore.suffices = TRUE, 
                                    bounds = "P", initial.values = NA, ...)
   #function to test difference between current random model and one in which oldterms are dropped 
@@ -1888,6 +1970,11 @@ atLevelsMatch <- function(new, old, call)
   validasrt <- validAsrtests(asrtests.obj)  
   if (is.character(validasrt))
     stop(validasrt)
+  
+  #Check IClikelihood options
+  options <- c("none", "REML", "full")
+  ic.lik <- options[check.arg.values(IClikelihood, options)]
+  ic.NA <- data.frame(AIC = NA, BIC = NA)
   
   asreml.obj <- asrtests.obj$asreml.obj
   wald.tab <- asrtests.obj$wald.tab
@@ -2003,8 +2090,15 @@ atLevelsMatch <- function(new, old, call)
       }
     }
   }
-  test.summary <- addtoTestSummary(test.summary, terms = label, DF=test$DF, denDF = NA, 
-                                   p = p, action = action)
+  if (ic.lik != "none")
+    ic <- infoCriteria(asreml.obj, IClikelihood = ic.lik, 
+                       bound.exclusions = bound.exclusions)
+  else
+    ic <- ic.NA
+  test.summary <- addtoTestSummary(test.summary, terms = label, 
+                                   DF=test$DF, denDF = NA, p = p, 
+                                   AIC = ic$AIC, BIC = ic$BIC, 
+                                   action = action)
   
   #Update results
   if (change)
@@ -2012,6 +2106,7 @@ atLevelsMatch <- function(new, old, call)
     #Check for boundary terms
     temp.asrt <- rmboundary.asrtests(as.asrtests(asreml.new.obj, wald.tab, test.summary), 
                                      checkboundaryonly = checkboundaryonly, 
+                                     IClikelihood = IClikelihood, 
                                      trace = trace, update = update, 
                                      set.terms = set.terms, 
                                      ignore.suffices = ignore.suffices, 
@@ -2044,7 +2139,8 @@ atLevelsMatch <- function(new, old, call)
                                     allow.unconverged = TRUE, checkboundaryonly = FALSE, 
                                     positive.zero = FALSE, bound.test.parameters = "none", 
                                     bound.exclusions = c("F","B","S","C"), REMLDF = NULL, 
-                                    denDF="numeric", update = TRUE, trace = FALSE, 
+                                    denDF="numeric", IClikelihood = "none", 
+                                    update = TRUE, trace = FALSE, 
                                     set.terms = NULL, ignore.suffices = TRUE, 
                                     bounds = "P", initial.values = NA, ...)
 #Fits new residual formula and tests whether the change is significant
@@ -2060,6 +2156,11 @@ atLevelsMatch <- function(new, old, call)
   validasrt <- validAsrtests(asrtests.obj)  
   if (is.character(validasrt))
     stop(validasrt)
+  
+  #Check IClikelihood options
+  options <- c("none", "REML", "full")
+  ic.lik <- options[check.arg.values(IClikelihood, options)]
+  ic.NA <- data.frame(AIC = NA, BIC = NA)
   
   #check input arguments
   if (asr4)
@@ -2181,8 +2282,15 @@ atLevelsMatch <- function(new, old, call)
       }
     }
   }
-  test.summary <- addtoTestSummary(test.summary, terms = label, DF=test$DF, denDF = NA, 
-                                   p = p, action = action)
+  if (ic.lik != "none")
+    ic <- infoCriteria(asreml.obj, IClikelihood = ic.lik, 
+                       bound.exclusions = bound.exclusions)
+  else
+    ic <- ic.NA
+  test.summary <- addtoTestSummary(test.summary, terms = label, 
+                                   DF=test$DF, denDF = NA, p = p, 
+                                   AIC = ic$AIC, BIC = ic$BIC, 
+                                   action = action)
   
   #Update results
   if (change)
@@ -2190,6 +2298,7 @@ atLevelsMatch <- function(new, old, call)
     #Check for boundary terms
     temp.asrt <- rmboundary.asrtests(as.asrtests(asreml.new.obj, wald.tab, test.summary), 
                                      checkboundaryonly = checkboundaryonly, 
+                                     IClikelihood = IClikelihood, 
                                      trace = trace, update = update, 
                                      set.terms = set.terms, 
                                      ignore.suffices = ignore.suffices, 
@@ -2268,7 +2377,8 @@ atLevelsMatch <- function(new, old, call)
 "reparamSigDevn.asrtests" <- function(asrtests.obj, terms = NULL, 
                                       trend.num = NULL, devn.fac = NULL, 
                                       allow.unconverged = TRUE, checkboundaryonly = FALSE, 
-                                      denDF = "numeric", trace = FALSE, update = TRUE, 
+                                      denDF = "numeric", IClikelihood = "none", 
+                                      trace = FALSE, update = TRUE, 
                                       set.terms = NULL, ignore.suffices = TRUE, 
                                       bounds = "P", initial.values = NA, ...)
 #reparamterizes a deviations term to a fixed term
@@ -2317,7 +2427,7 @@ atLevelsMatch <- function(new, old, call)
                                                trace = trace, allow.unconverged = TRUE, 
                                                update = update, set.terms = set.terms, 
                                                ignore.suffices = ignore.suffices, 
-                                               bounds = bounds, 
+                                               bounds = bounds, IClikelihood = IClikelihood, 
                                                initial.values = initial.values, ...)
         } else
         {
@@ -2327,7 +2437,7 @@ atLevelsMatch <- function(new, old, call)
                                                trace = trace, allow.unconverged = TRUE, 
                                                update = update, set.terms = set.terms, 
                                                ignore.suffices = ignore.suffices, 
-                                               bounds = bounds, 
+                                               bounds = bounds, IClikelihood = IClikelihood, 
                                                initial.values = initial.values, ...)
           
         }
@@ -2341,6 +2451,7 @@ atLevelsMatch <- function(new, old, call)
       #Check for boundary terms
       temp.asrt <- rmboundary.asrtests(asrtests.obj, 
                                        checkboundaryonly = checkboundaryonly,  
+                                       IClikelihood = IClikelihood, 
                                        trace = trace, update = update, 
                                        set.terms = set.terms, 
                                        ignore.suffices = ignore.suffices, 

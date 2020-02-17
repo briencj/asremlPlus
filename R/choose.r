@@ -197,7 +197,8 @@ addtoChooseSummary <- function(choose.summary, term, DF = NA, denDF = NA, p = NA
                                    drop.fix.ns=FALSE, denDF = "numeric",  dDF.na = "none", 
                                    dDF.values = NULL, trace = FALSE, update = TRUE, 
                                    set.terms = NULL, ignore.suffices = TRUE, 
-                                   bounds = "P", initial.values = NA, ...)
+                                   bounds = "P", initial.values = NA, 
+                                   IClikelihood = "none", ...)
   #function to determine the set of significant terms taking into account marginality relations
   #terms.marginality should be a square matrix of ones and zeroes with row and column names 
   #   being the names of the terms. The diagonal elements should be one, indicating 
@@ -264,7 +265,7 @@ addtoChooseSummary <- function(choose.summary, term, DF = NA, denDF = NA, p = NA
                                         dDF.values = dDF.values, trace = trace, 
                                         update = update, set.terms = set.terms, 
                                         ignore.suffices = ignore.suffices, 
-                                        bounds = bounds, 
+                                        bounds = bounds, IClikelihood = IClikelihood, 
                                         initial.values = initial.values, ...)
     p <- getTestPvalue(current.asrt, label = term)
     # test.summary <- current.asrt$test.summary

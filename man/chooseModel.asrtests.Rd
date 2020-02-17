@@ -23,7 +23,8 @@
             drop.fix.ns=FALSE, denDF = "numeric",  dDF.na = "none", 
             dDF.values = NULL, trace = FALSE, update = TRUE, 
             set.terms = NULL, ignore.suffices = TRUE, 
-            bounds = "P", initial.values = NA, ...)
+            bounds = "P", initial.values = NA, 
+            IClikelihood = "none", ...)
 }
 \arguments{
  \item{object}{an \code{\link{asrtests.object}} containing the components (i) \code{asreml.obj},
@@ -133,6 +134,13 @@
                     applied to all the terms in \code{terms}. 
                     If any of the initial.values are equal to NA then they are 
                     left unchanged for those terms.}
+ \item{IClikelihood}{A \code{character} that controls both the occurence and the type 
+                    of likelihood for information criterion in the \code{test.summary} 
+                    of the \code{\link{asrtests.object}}. If \code{none}, none are 
+                    included. Otherwise, if \code{REML}, then the AIC and BIC based 
+                    on the Restricted Maximum Likelihood are included; if \code{full}, 
+                    then the AIC and BIC based on the full likelihood are included. 
+                    (See also \code{\link{infoCriteria.asreml}}.)}
  \item{\dots}{further arguments passed to \code{asreml}, \code{wald.asreml} and
                    \code{\link{as.asrtests}} via \code{\link{testranfix.asrtests}}.}
 }

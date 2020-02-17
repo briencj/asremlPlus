@@ -28,7 +28,7 @@
   which cannot be removed, are reported in warning messages.}
 \usage{
 \method{rmboundary}{asrtests}(asrtests.obj, checkboundaryonly = FALSE, 
-           trace = FALSE, update = TRUE,
+           IClikelihood = "none", trace = FALSE, update = TRUE,
            set.terms = NULL, ignore.suffices = TRUE, 
            bounds = "P", initial.values = NA, ...)}
 \arguments{
@@ -36,6 +36,13 @@
        (ii) \code{wald.tab}, and (iii) \code{test.summary}.}
  \item{checkboundaryonly}{If \code{TRUE} then boundary and singular terms are not removed by 
               \code{\link{rmboundary.asrtests}}; a warning is issued instead.}
+ \item{IClikelihood}{A \code{character} that controls both the occurence and the type 
+                    of likelihood for information criterion in the \code{test.summary} 
+                    of the \code{\link{asrtests.object}}. If \code{none}, none are 
+                    included. Otherwise, if \code{REML}, then the AIC and BIC based 
+                    on the Restricted Maximum Likelihood are included; if \code{full}, 
+                    then the AIC and BIC based on the full likelihood are included. 
+                    (See also \code{\link{infoCriteria.asreml}}.)}
  \item{trace}{If \code{TRUE} then partial iteration details are displayed when ASReml-R 
               functions are invoked; if FALSE then no output is displayed.}
  \item{update}{If \code{TRUE} then \code{update.asreml} is called to fit the model with 

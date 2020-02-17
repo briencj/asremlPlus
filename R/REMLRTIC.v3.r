@@ -283,12 +283,23 @@ infoCriteria.asreml <- function(object, DF = NULL,
   #If full likelihood, caluclate logdetC and fixedDF
   if (loglik.opt == "full")
   {
-    asreml::asreml.options(Cfixed = TRUE, gammaPar=FALSE)
-    if (is.null(object$Cfixed)) 
-      object <- asreml::update.asreml(object, maxit=1)
-    coefF <- summary(object, coef=TRUE)$coef.fixed
-    which.cF <- !is.na(coefF[, "z.ratio"])
-    logdetC <- log(prod(svd(as.matrix(object$Cfixed[which.cF, which.cF]))$d))
+     if (asr4)
+     {
+      asreml::asreml.options(Cfixed = TRUE, gammaPar=FALSE)
+      if (is.null(object$Cfixed)) 
+        object <- asreml::update.asreml(object, maxit=1)
+      coefF <- summary(object, coef=TRUE)$coef.fixed
+      which.cF <- !is.na(coefF[, "z.ratio"])
+      logdetC <- log(prod(svd(as.matrix(object$Cfixed[which.cF, which.cF]))$d))
+     } else #asr3
+     {
+       if (is.null(object$Cfixed)) 
+         object <- asreml::update.asreml(object, maxit=1, Cfixed = TRUE)
+       coefF <- summary(object, all=TRUE)$coef.fixed
+       which.cF <- !is.na(coefF[, "z ratio"])
+       #object$Cfixed is not a matrix and so this does not work 
+       logdetC <- log(prod(svd(as.matrix(object$Cfixed[which.cF, which.cF]))$d))
+     }
     if (is.null(fixedDF))
       fixedDF <- sum(which.cF)
   } else #REML

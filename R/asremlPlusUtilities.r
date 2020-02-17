@@ -79,11 +79,15 @@
 "getFormulae.asreml" <- function(asreml.obj, which = c("fixed", "random", "residual"), 
                                  expanded = FALSE, ...)
 {
+  asr4 <- isASRemlVersionLoaded(4, notloaded.fault = TRUE)
+
   #Process which argument
   which.options <- c("fixed", "random", "residual", "sparse", "all")
   forms.opt <- which.options[unlist(lapply(which, check.arg.values, options=which.options))]
   if ("all" %in% forms.opt)
     forms.opt <- c("fixed", "random", "residual", "sparse")
+  if (!asr4)
+    forms.opt <- gsub("residual", "rcov", forms.opt, fixed = TRUE)
   
   #Get formula(e)
   mod <- lapply(forms.opt, 
@@ -101,12 +105,30 @@
 "printFormulae.asreml" <- function(asreml.obj, which = c("fixed", "random", "residual"), 
                                    expanded = FALSE, ...)
 {
+  asr4 <- isASRemlVersionLoaded(4, notloaded.fault = TRUE)
   mod <- getFormulae.asreml(asreml.obj, which = which, expanded = expanded, ...)
-  mod.ch <- lapply(mod, function(m) capture.output(m)[1])
+  mod.ch <- lapply(mod, 
+                   function(m) 
+                   {
+                     m <- capture.output(m) 
+                     m <- m[-length(m)]
+                     if (length(m > 1))
+                     {
+                       m <- unlist(lapply(m, function(m) m <- stringr::str_trim(m, side = "left")))
+                       m <- paste0(m, collapse = "")
+                     }
+                   })
   if ("random" %in% names(mod.ch))
     mod.ch$random <- gsub("~", "~ ", mod.ch$random)
-  if ("residual" %in% names(mod.ch))
-    mod.ch$residual <- gsub("~", "~ ", mod.ch$residual)
+  if (asr4)
+  {
+    if ("residual" %in% names(mod.ch))
+      mod.ch$residual <- gsub("~", "~ ", mod.ch$residual)
+  } else
+  {
+    if ("rcov" %in% names(mod.ch))
+      mod.ch$rcov <- gsub("~", "~ ", mod.ch$rcov)
+  }
   if ("sparse" %in% names(mod.ch))
     mod.ch$sparse <- gsub("~", "~ ", mod.ch$sparse)
   m.ch <- unlist(lapply(names(mod.ch), 

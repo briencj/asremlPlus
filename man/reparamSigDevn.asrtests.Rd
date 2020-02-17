@@ -15,7 +15,8 @@
 \method{reparamSigDevn}{asrtests}(asrtests.obj,terms = NULL, 
                trend.num = NULL, devn.fac = NULL, 
                allow.unconverged = TRUE, checkboundaryonly = FALSE, 
-               denDF = "numeric", trace = FALSE, update = TRUE, 
+               denDF = "numeric", IClikelihood = "none", 
+               trace = FALSE, update = TRUE, 
                set.terms = NULL, ignore.suffices = TRUE,
                bounds = "P", initial.values = NA,...)
 }
@@ -47,9 +48,16 @@
               on problem size. The denominator degrees of freedom are calculated 
               according to Kenward and Roger (1997) for fixed terms in the dense 
               part of the model.}
+ \item{IClikelihood}{A \code{character} that controls both the occurence and the type 
+                    of likelihood for information criterion in the \code{test.summary} 
+                    of the \code{\link{asrtests.object}}. If \code{none}, none are 
+                    included. Otherwise, if \code{REML}, then the AIC and BIC based 
+                    on the Restricted Maximum Likelihood are included; if \code{full}, 
+                    then the AIC and BIC based on the full likelihood are included. 
+                    (See also \code{\link{infoCriteria.asreml}}.)}
  \item{trace}{If TRUE then partial iteration details are displayed when ASReml-R 
               functions are invoked; if FALSE then no output is displayed.}
-\item{update}{If \code{TRUE }then \code{update.asreml} is called in removing and 
+ \item{update}{If \code{TRUE }then \code{update.asreml} is called in removing and 
               adding terms to the model. In doing this the arguments \code{R.param} 
               and \code{G.param} are set to those in the \code{asreml} object stored 
               in the supplied \code{asrtests.obj} so that the values from the previous 

@@ -45,8 +45,8 @@
  \item{\dots}{Provision for passsing arguments to functions called internally - 
             not used at present.}
 }
-\value{A \code{data.frame} containing the numbers of estimated fixed and variance parameters, the 
-       number of bound parameters, AIC, BIC and the value of the log-likelihood. If \code{object} 
+\value{A \code{data.frame} containing the numbers of estimated fixed (fixedDF) and variance (varDF) parameters, the 
+       number of bound parameters (NBound), AIC, BIC and the value of the log-likelihood (loglik). If \code{object} 
        is a \code{list} and its components are named, then those names will be used to set the 
        \code{rownames} of the \code{data.frame}.}
 \details{The variance degrees of freedom (varDF) are the number of number of variance parameters that 

@@ -24,7 +24,8 @@
            bound.test.parameters = "none", 
            bound.exclusions = c("F","B","S","C"), REMLDF = NULL, 
            drop.fix.ns = FALSE, denDF="numeric", dDF.na = "none", 
-           dDF.values = NULL, trace = FALSE, update = TRUE,
+           dDF.values = NULL, IClikelihood = "none", 
+           trace = FALSE, update = TRUE,
            set.terms = NULL, ignore.suffices = TRUE, 
            bounds = "P", initial.values = NA, ...)}
 \arguments{
@@ -103,6 +104,13 @@
               Its values will be used when \code{denDF} in a test for a fixed effect
               is \code{NA}. This vector must be the same length as the number of 
               fixed terms, including (Intercept) whose value could be \code{NA}.}
+ \item{IClikelihood}{A \code{character} that controls both the occurence and the type 
+                    of likelihood for information criterion in the \code{test.summary} 
+                    of the \code{\link{asrtests.object}}. If \code{none}, none are 
+                    included. Otherwise, if \code{REML}, then the AIC and BIC based 
+                    on the Restricted Maximum Likelihood are included; if \code{full}, 
+                    then the AIC and BIC based on the full likelihood are included. 
+                    (See also \code{\link{infoCriteria.asreml}}.)}
  \item{trace}{If TRUE then partial iteration details are displayed when ASReml-R 
               functions are invoked; if FALSE then no output is displayed.}
  \item{update}{If \code{TRUE} then \code{update.asreml} is called to fit the model 

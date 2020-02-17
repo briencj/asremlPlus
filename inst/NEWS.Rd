@@ -1,5 +1,11 @@
 \name{news}
 \title{News for Package asremlPlus}
+\section{asremlPlus Version 4.2-15 (2020-02-17)}{
+  \itemize{
+    \item{Added the \code{IClikelihood} argument to chooseModel.asrtests, reparamSigDevn.asrtests, rmboundary.asrtests, testranfix.asrtests, testresidual.asrtests, and testswapran.asrtests.}
+    \item{Fix bug in printFormulae when the formula is long.}
+    \item{Various bug fixes associated with asreml-R version 3.}
+}}
 \section{asremlPlus Version 4.2-14 (2020-02-14)}{
   \itemize{
     \item{Fix bug in processing a formula that includes an \code{at} function.}

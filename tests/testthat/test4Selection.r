@@ -198,10 +198,11 @@ test_that("at_multilevel_asreml4", {
   library(asreml)
   library(asremlPlus)
   print(packageVersion("asreml"))
-  #'## Load data
 
+  #'## Load data
   data(MET)
   asreml.options(design = TRUE, keep.order=TRUE)
+
   #Test at
   asreml.obj <-asreml(fixed = GY.tha ~  + at(expt, c(1:5)):rep + at(expt, c(1)):vrow + 
                         at(expt, c(2,3,6,7)):colblocks + 
@@ -248,6 +249,73 @@ test_that("at_multilevel_asreml4", {
   testthat::expect_equal(nrow(t.asrt$wald.tab), 19)
 })
 
+
+cat("#### Test for at terms in testswapran with asreml4\n")
+test_that("at_testswapran_asreml4", {
+  skip_if_not_installed("asreml")
+  skip_on_cran()
+  library(dae)
+  library(asreml)
+  library(asremlPlus)
+  print(packageVersion("asreml"))
+  #'## Load data
+  data(longit.dat)
+  
+  asreml.options(fail = "soft", upsd = TRUE, pxem = 1, step.size = 0.1, ai.sing = TRUE)
+  current.asr <- do.call(asreml, 
+                         args=list(fixed = Area ~ Block + Treatments + Treatments:xDAP,
+                                   random = ~ Block:Cart + at(Treatments):spl(xDAP, k = 10) + Treatments:DAP + 
+                                     Block:Cart:spl(xDAP) + Block:Cart:xDAP,
+                                   residual = ~ Block:Cart:ar1h(DAP),
+                                   keep.order=TRUE, data = longit.dat, maxiter=100))
+  
+  #'## Function to deal with bound variances - set to 1e-04
+  fixBoundResidualVariances <-function(current.asr)
+  {
+    repeat
+    {
+      current.call <- current.asr$call
+      vpR <- grepl("Block:Cart:DAP!DAP", 
+                   names(current.asr$vparameters.con), fixed = TRUE)
+      vpR <- current.asr$vparameters.con[vpR]
+      (terms <- names(vpR[vpR == 7]))
+      if (length(terms) == 0 || length(sum(vpR == 4)) > 5) break
+      current.asr <- setvarianceterms(current.call, terms = terms, 
+                                      bounds = "F", initial.values = 0.0001,
+                                      ignore.suffices = FALSE)
+    }
+    invisible(current.asr)
+  }
+  current.asr <- fixBoundResidualVariances(current.asr)
+  testthat::expect_true(all(table(summary(current.asr)$varcomp$bound) ==  c(2,46,1)))
+  
+  #'## Load starting model into an asrtests object
+  current.asrt <- as.asrtests(current.asr, NULL, NULL, label = "Selected variance model")
+  testthat::expect_true(current.asrt$asreml.obj$converge)
+  
+  #'### Test for Treatments:DAP deviations terms
+  current.asrt <- testranfix(current.asrt, term = "Treatments:DAP",
+                             positive.zero = TRUE)
+  testthat::expect_equal(current.asrt$test.summary$action[2], "Dropped")
+  testthat::expect_true(all(table(summary(current.asrt$asreml.obj)$varcomp$bound) ==  c(2,45,1)))
+  
+  #'### Test for different curvatures in splines
+  current.asrt <- testswapran(current.asrt, oldterms = "at(Treatments):spl(xDAP, k = 10)",
+                              newterms = "at(AMF):Zn:spl(xDAP, k = 10)",
+                              simpler = TRUE,
+                              label = "Heterogeneous Treatment splines")
+  testthat::expect_true(getTestPvalue(current.asrt, label = "Heterogeneous Treatment splines") < 0.05)
+  testthat::expect_true(names(current.asrt$asreml.obj$vparameters[1]) == 
+                          "at(Treatments, -,0):spl(xDAP, k = 10)")
+  testthat::expect_true(names(current.asrt$asreml.obj$vparameters[5]) == 
+                          "at(Treatments, +,0):spl(xDAP, k = 10)")
+  testthat::expect_true(all(abs(current.asrt$asreml.obj$vparameters[1:8] - 
+                                  c(233.152932, 502.667930, 74.955973, 
+                                    2.540186, 42.003197, 61.206138, 
+                                    32.367734, 36.902978)) < 1e-02))
+})
+
+
 cat("#### Test for spline testing with asreml4\n")
 test_that("spl.asrtests_asreml4", {
   skip_if_not_installed("asreml")
@@ -286,16 +354,15 @@ test_that("spl.asrtests_asreml4", {
                        random = ~spl(vRow, k=6) + units, 
                        residual = ~ar1(Row):ar1(Column), 
                        data = Wheat.dat, trace = FALSE)
-  testthat::expect_false(abs(summary(asreml.obj)$varcomp$component[1] - 4.495472e-02) > 1e-06)
   testthat::expect_true(summary(asreml.obj)$varcomp$bound[1] == "B")
   asreml.obj <- asreml(fixed = yield ~ Rep + vRow + Variety, 
                        random = ~spl(vRow) + units, 
                        residual = ~ar1(Row):ar1(Column), 
                        data = Wheat.dat, trace = FALSE)
-  testthat::expect_false(abs(summary(asreml.obj)$varcomp$component[1] - 8.676175e-03) > 1e-06)
   testthat::expect_true(summary(asreml.obj)$varcomp$bound[1] == "B")
 
 })
+
 
 cat("#### Test for reparamSigDevn.asrtests with asreml4\n")
 test_that("reparamSigDevn.asrtests_asreml4", {
@@ -478,6 +545,7 @@ test_that("changeModelOnIC_wheat94_asreml4", {
   
 })
 
+
 cat("#### Test for changeModelOnIC example using asreml4\n")
 test_that("changeModelOnIC_Example_asreml4", {
   skip_if_not_installed("asreml")
@@ -497,7 +565,7 @@ test_that("changeModelOnIC_Example_asreml4", {
   current.asrt <- as.asrtests(current.asr, NULL, NULL, 
                               label = "Maximal model", IClikelihood = "full")
   current.asrt <- rmboundary(current.asrt)
-  testthat::expect_true(current.asrt$asreml.obj$converge)
+  testthat::expect_false(current.asrt$asreml.obj$converge)
   testthat::expect_true(current.asrt$test.summary$action[1] == "Starting model")
   testthat::expect_equal(current.asrt$test.summary$DF[1], 31)
   testthat::expect_equal(current.asrt$test.summary$denDF[1], 5)

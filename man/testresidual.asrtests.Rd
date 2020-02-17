@@ -23,7 +23,8 @@
              checkboundaryonly = FALSE, positive.zero = FALSE, 
              bound.test.parameters = "none", 
              bound.exclusions = c("F","B","S","C"), REMLDF = NULL, 
-             denDF="numeric", update = TRUE, trace = FALSE,
+             denDF="numeric", IClikelihood = "none", 
+             update = TRUE, trace = FALSE,
              set.terms = NULL, ignore.suffices = TRUE, 
              bounds = "P", initial.values = NA, ...)}
 \arguments{
@@ -83,6 +84,13 @@
               on problem size. The denominator degrees of freedom are calculated 
               according to Kenward and Roger (1997) for fixed terms in the dense 
               part of the model.}
+ \item{IClikelihood}{A \code{character} that controls both the occurence and the type 
+                    of likelihood for information criterion in the \code{test.summary} 
+                    of the \code{\link{asrtests.object}}. If \code{none}, none are 
+                    included. Otherwise, if \code{REML}, then the AIC and BIC based 
+                    on the Restricted Maximum Likelihood are included; if \code{full}, 
+                    then the AIC and BIC based on the full likelihood are included. 
+                    (See also \code{\link{infoCriteria.asreml}}.)}
  \item{update}{If \code{TRUE }then \code{update.asreml} is called to fit the model with 
               the \code{residual} (\code{rcov}) model supplied in \code{terms}. 
               In doing this the arguments 

@@ -2,8 +2,8 @@
 context("prediction_presentation3")
 asr3.lib <- "D:\\Analyses\\R oldpkg" 
 
-cat("#### Test for Intercept prediction on Oats with asreml4\n")
-test_that("predict_Intercept4", {
+cat("#### Test for Intercept prediction on Oats with asreml3\n")
+test_that("predict_Intercept3", {
   skip_if_not_installed("asreml")
   skip_on_cran()
   library(asreml, lib.loc = asr3.lib)
@@ -155,28 +155,28 @@ test_that("predictPresent_asreml3", {
                         data = WaterRunoff.dat, keep.order = TRUE)
   current.asrt <- as.asrtests(current.asr, NULL, NULL)
   #Example that fails because Date has levels that are not numeric in nature
-  testthat::expect_error(diff.list <- predictPresent.asreml(asreml.obj = current.asrt$asreml.obj, 
-                                                            terms = "Date:Sources:Species", 
-                                                            wald.tab = current.asrt$wald.tab, 
-                                                            x.fac = "Date", 
-                                                            plots = "predictions", 
-                                                            error.intervals = "StandardError", 
-                                                            titles = titles, 
-                                                            transform.power = 0, 
-                                                            present = c("Type","Species","Sources"), 
-                                                            tables = "differences", 
-                                                            level.length = 6))
+  testthat::expect_error(diff.list <- predictPresent(asreml.obj = current.asrt$asreml.obj, 
+                                                     terms = "Date:Sources:Species", 
+                                                     wald.tab = current.asrt$wald.tab, 
+                                                     x.fac = "Date", 
+                                                     plots = "predictions", 
+                                                     error.intervals = "StandardError", 
+                                                     titles = titles, 
+                                                     transform.power = 0, 
+                                                     present = c("Type","Species","Sources"), 
+                                                     tables = "differences", 
+                                                     level.length = 6))
   #Example that does not produce predictons because has Date but not xDay
-  testthat::expect_output(diff.list <- predictPresent.asreml(asreml.obj = current.asrt$asreml.obj, 
-                                                             terms = "Date:Sources:Species", 
-                                                             wald.tab = current.asrt$wald.tab, 
-                                                             plots = "predictions", 
-                                                             error.intervals = "StandardError", 
-                                                             titles = titles, 
-                                                             transform.power = 0, 
-                                                             present = c("Type","Species","Sources"), 
-                                                             tables = "differences", 
-                                                             level.length = 6), 
+  testthat::expect_output(diff.list <- predictPresent(asreml.obj = current.asrt$asreml.obj, 
+                                                      terms = "Date:Sources:Species", 
+                                                      wald.tab = current.asrt$wald.tab, 
+                                                      plots = "predictions", 
+                                                      error.intervals = "StandardError", 
+                                                      titles = titles, 
+                                                      transform.power = 0, 
+                                                      present = c("Type","Species","Sources"), 
+                                                      tables = "differences", 
+                                                      level.length = 6), 
                           regexp="All pairwise differences between predicted values")
   testthat::expect_equal(length(diff.list), 1)
   testthat::expect_equal(nrow(diff.list[[1]]$predictions), 0)
@@ -204,6 +204,27 @@ test_that("predictPresent_asreml3", {
                                      level.length = 6)
   testthat::expect_equal(length(diff.list), 1)
   testthat::expect_match(names(diff.list), "Date.Sources.Species.xDay")
+
+  # test that backtransforms have halfLSD intervals
+  diff.list <- predictPresent.asreml(asreml.obj = current.asrt$asreml.obj, 
+                                     terms = "Date:Sources:Species:xDay",
+                                     x.num = "xDay", x.fac = "Date", 
+                                     parallel = TRUE, levels = levs, 
+                                     wald.tab = current.asrt$wald.tab, 
+                                     plots = "backtransforms", 
+                                     error.intervals = "halfLeast", 
+                                     avsed.tolerance = 1,
+                                     titles = titles, 
+                                     transform.power = 0, 
+                                     present = c("Type","Species","Sources"), 
+                                     tables = "none", 
+                                     level.length = 6)
+  testthat::expect_equal(length(diff.list), 1)
+  testthat::expect_match(names(diff.list), "Date.Sources.Species.xDay")
+  testthat::expect_true(all(c("upper.halfLeastSignificant.limit", 
+                              "lower.halfLeastSignificant.limit") %in% 
+                              names(diff.list$Date.Sources.Species.xDay$backtransforms)))
+
 })
 
 cat("#### Test for plotPvalues.asreml3\n")
@@ -231,9 +252,10 @@ test_that("plotPvalues_asreml3", {
                 X2 <- factor(X2, levels=levels(X1))
               })
   names(p)[match("value", names(p))] <- "p"
-  plotPvalues(p, x = "X1", y = "X2", gridspacing = rep(c(3,4), c(4,2)), 
-              show.sig = TRUE)
-  
+  testthat::expect_silent(plotPvalues(p, x = "X1", y = "X2", 
+                                      gridspacing = rep(c(3,4), c(4,2)), 
+                                      show.sig = TRUE))
+
   #Plot with sections
   pdata <- plotPvalues(diffs, sections = "Sources", show.sig = TRUE)
   testthat::expect_equal(nrow(pdata), 400)
@@ -315,10 +337,10 @@ test_that("factor.combinations_asreml3", {
   LeafSucculence.diff <- readRDS("./data/LeafSucculence.diff")
   LeafSucculence.diff <- LeafSucculence.diff[[1]]
   
-  LeafSucculence.diff <- recalcLSD.alldiffs(LeafSucculence.diff, meanLSD.type = "factor.combinations", 
-                                            LSDby = "Species")
-  testthat::expect_warning(LeafSucculence.diff <- redoErrorIntervals.alldiffs(LeafSucculence.diff, 
-                                                                             error.intervals = "half"))
+  LeafSucculence.diff <- recalcLSD(LeafSucculence.diff, meanLSD.type = "factor.combinations", 
+                                   LSDby = "Species")
+  testthat::expect_warning(LeafSucculence.diff <- redoErrorIntervals(LeafSucculence.diff, 
+                                                                     error.intervals = "half"))
   testthat::expect_equal(nrow(LeafSucculence.diff$LSD), 3)
   testthat::expect_equal(ncol(LeafSucculence.diff$LSD), 3)
   testthat::expect_true(all(c("P1","P2","P3") %in% rownames(LeafSucculence.diff$LSD)))
@@ -347,11 +369,12 @@ test_that("recalcLSD.alldiffs_asreml3", {
                               present = c("Type","Species","Sources"))
   testthat::expect_is(diffs, "alldiffs")
   
-  diffs <- redoErrorIntervals.alldiffs(diffs, error.intervals = "halfLeastSignificant")
-  testthat::expect_false("upper.halfLeastSignificant.limit" %in% names(diffs$predictions))
   diffs <- recalcLSD.alldiffs(diffs, meanLSD.type = "factor.combinations", LSDby = "Sources")
   testthat::expect_equal(nrow(diffs$LSD), 6)
   testthat::expect_equal(ncol(diffs$LSD), 3)
+  testthat::expect_warning(diffs <- redoErrorIntervals(diffs, 
+                                                       error.intervals = "halfLeastSignificant"))
+  testthat::expect_false("upper.halfLeastSignificant.limit" %in% names(diffs$predictions))
   
 })
 
@@ -400,9 +423,19 @@ test_that("LSDby3", {
   testthat::expect_equal(nrow(wald.tab), 8)
   diffs <- predictPlus(m1, classify = "Nozzle:Pressure:Speed", 
                        #linear.transformation = ~(Nozzle + Pressure):Speed,
-                       error.intervals = "half", meanLSD.type = "factor",
+                       wald.tab = wald.tab,
+                       tables = "none")
+  diffs.LSD <- recalcLSD(diffs, meanLSD.type = "factor",
+                         LSDby = c("Speed","Pressure"))
+  testthat::expect_equal(nrow(diffs.LSD$LSD), 9)
+  testthat::expect_true(abs(diffs.LSD$LSD$minLSD[1]- 11.92550) < 1e-05)
+  testthat::expect_true(all(abs(diffs.LSD$LSD$minLSD- diffs.LSD$LSD$maxLSD) < 1e-05))
+  diffs.LSD <- redoErrorIntervals(diffs.LSD, error.intervals = "half")
+  testthat::expect_true("upper.halfLeastSignificant.limit" %in% names(diffs.LSD$predictions))
+  diffs <- redoErrorIntervals(diffs, error.intervals = "half", meanLSD.type = "factor",
                        LSDby = c("Speed","Pressure"), wald.tab = wald.tab,
                        tables = "none")
+  testthat::expect_true("upper.halfLeastSignificant.limit" %in% names(diffs$predictions))
   testthat::expect_equal(nrow(diffs$LSD), 9)
   testthat::expect_true(abs(diffs$LSD$minLSD[1]- 11.92550) < 1e-05)
   testthat::expect_true(all(abs(diffs$LSD$minLSD- diffs$LSD$maxLSD) < 1e-05))

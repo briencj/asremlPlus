@@ -54,9 +54,7 @@ test_that("REMLRT_asreml4", {
   testthat::expect_equal(info$varDF, 3)
   testthat::expect_lt(abs(info$AIC - 1720.888), 5e-03)
   testthat::expect_lt(abs(info$BIC - 1823.25), 5e-03)
-  testthat::expect_lt(abs(info$BIC - 1823.25), 5e-03)
   testthat::expect_lt(abs(info$loglik - m3.asr$loglik), 130)
-  info$loglik - m3.asr$loglik
 })
 
 cat("#### Test for wheat76 example with asreml4\n")
