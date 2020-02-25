@@ -156,6 +156,7 @@
 \seealso{\code{\link{as.asrtests}}, \code{\link{chooseModel.asrtests}}, 
          \code{\link{REMLRT.asreml}}, \code{\link{rmboundary.asrtests}}, \cr
          \code{\link{newfit.asreml}}, \code{\link{testresidual.asrtests}}, 
+         \code{\link{changeModelOnIC.asrtests}}, \cr 
          \code{\link{changeTerms.asrtests}}, \code{\link{reparamSigDevn.asrtests}}}
 \examples{\dontrun{
 current.asrt <- testswapran(current.asrt, oldterms = "str(~ Cart/xDays, ~us(2):id(184))",

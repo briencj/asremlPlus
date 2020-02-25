@@ -1,5 +1,11 @@
 \name{news}
 \title{News for Package asremlPlus}
+\section{asremlPlus Version 4.2-16 (2020-02-25
+)}{
+  \itemize{
+    \item{Revisions to the manual.}
+    \item{Fix bug in forming test.summary.}
+}}
 \section{asremlPlus Version 4.2-15 (2020-02-17)}{
   \itemize{
     \item{Added the \code{IClikelihood} argument to chooseModel.asrtests, reparamSigDevn.asrtests, rmboundary.asrtests, testranfix.asrtests, testresidual.asrtests, and testswapran.asrtests.}

@@ -160,7 +160,8 @@
          \code{\link{as.asrtests}}, \code{\link{testranfix.asrtests}}, \cr
          \code{\link{testresidual.asrtests}}, \code{\link{REMLRT.asreml}}, 
          \code{\link{rmboundary.asrtests}}, \code{\link{newfit.asreml}}, \cr
-         \code{\link{changeTerms.asrtests}}, \code{\link{reparamSigDevn.asrtests}}}
+         \code{\link{changeModelOnIC.asrtests}}, \code{\link{changeTerms.asrtests}}, 
+         \code{\link{reparamSigDevn.asrtests}}}
 \examples{\dontrun{
 data(WaterRunoff.dat)
 asreml.options(keep.order = TRUE) #required for asreml-R4 only

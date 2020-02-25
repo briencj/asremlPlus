@@ -99,7 +99,7 @@
   #Check IClikelihood options
   options <- c("none", "REML", "full")
   ic.lik <- options[check.arg.values(IClikelihood, options)]
-  ic.NA <- data.frame(AIC = NA, BIC = NA)
+  ic.NA <- data.frame(fixedDF = NA, varDF = NA, AIC = NA, BIC = NA)
   
   #Process test.summary and label arguments
   if (is.null(test.summary))
@@ -1492,7 +1492,7 @@ atLevelsMatch <- function(new, old, call)
   #Check IClikelihood options
   options <- c("none", "REML", "full")
   ic.lik <- options[check.arg.values(IClikelihood, options)]
-  ic.NA <- data.frame(AIC = NA, BIC = NA)
+  ic.NA <- data.frame(fixedDF = NA, varDF = NA, AIC = NA, BIC = NA)
   
   #Initialize
   asreml.obj <- asrtests.obj$asreml.obj
@@ -1548,7 +1548,7 @@ atLevelsMatch <- function(new, old, call)
       #Term is not in either model
       if (ic.lik != "none")
         ic <- infoCriteria(asreml.obj, IClikelihood = ic.lik, 
-                           bound.exclusions = bound.exclusions)[c("AIC","BIC")]
+                           bound.exclusions = bound.exclusions)
       else
         ic <- ic.NA
       test.summary <- addtoTestSummary(test.summary, terms = term, 

@@ -152,8 +152,8 @@
          \code{\link{chooseModel.asrtests}}, 
          \code{\link{REMLRT.asreml}}, \code{\link{rmboundary.asrtests}}, \cr
          \code{\link{newfit.asreml}}, \code{\link{testswapran.asrtests}}, 
-         \code{\link{changeTerms.asrtests}}, \cr
-         \code{\link{reparamSigDevn.asrtests}}}
+         \code{\link{changeModelOnIC.asrtests}}, \cr
+         \code{\link{changeTerms.asrtests}}, \code{\link{reparamSigDevn.asrtests}}}
 \examples{\dontrun{
 data(Wheat.dat)
 current.asr <- asreml(yield ~ Rep + WithinColPairs + Variety, 
