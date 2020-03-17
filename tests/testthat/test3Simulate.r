@@ -60,7 +60,7 @@ test_that("simulate_asreml3", {
   testthat::expect_equal(ncol(faces$face1), 5)
   testthat::expect_equal(nrow(faces$face2), 15)
   testthat::expect_equal(ncol(faces$face2), 5)
-  plot.asrVariogram(variogram(current.asr))
+  plot.asrVariogram(variogram.asreml(current.asr))
   
 })
 

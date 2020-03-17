@@ -706,8 +706,8 @@ atLevelsMatch <- function(new, old, call)
         }
       }
     }
+    new <- as.formula(new.ch)
   }
-  new <- as.formula(new.ch)
   return(new)
 }
 

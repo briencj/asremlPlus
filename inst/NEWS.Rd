@@ -1,5 +1,15 @@
 \name{news}
 \title{News for Package asremlPlus}
+\section{asremlPlus Version 4.2-18 (2020-03-16
+)}{
+  \itemize{
+    \item{Increment version number for resubmission to CRAN.}
+}}
+\section{asremlPlus Version 4.2-17 (2020-03-16
+)}{
+  \itemize{
+    \item{Fix bug in changeTerms when both \code{addFixed} and \code{dropFixed} are \code{NULL}.}
+}}
 \section{asremlPlus Version 4.2-16 (2020-02-25
 )}{
   \itemize{

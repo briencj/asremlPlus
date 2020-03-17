@@ -31,7 +31,7 @@ test_that("choose.model.data.frame_asreml3", {
   testthat::expect_true(m$gammas["Run!Run.var"] < 0)
   
   #'### Use chooseModel.data.frame
-  wald.tab <- wald(m, denDF = "numeric")$Wald
+  wald.tab <- wald.asreml(m, denDF = "numeric")$Wald
   testthat::expect_equal(nrow(wald.tab), 8)
   
   #'### Choose marginality-compliant model from wald.tab, obtaining marginality using pstructure

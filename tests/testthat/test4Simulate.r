@@ -59,6 +59,6 @@ test_that("simulate_asreml4", {
   testthat::expect_equal(ncol(faces$face1), 5)
   testthat::expect_equal(nrow(faces$face2), 15)
   testthat::expect_equal(ncol(faces$face2), 5)
-  plot.varioGram(varioGram(current.asr))
+  plot.varioGram(varioGram.asreml(current.asr))
 
 })

@@ -454,7 +454,7 @@ test_that("LSDby4", {
                             residual = ~idh(SpeedPress):WSpeedPress,
                             data = Fac3Syrup.dat))
   testthat::expect_true(abs(summary(m1)$varcomp$component[2] - 27.5) < 1e-05)
-  wald.tab <- wald(m1, denDF = "numeric")$Wald
+  wald.tab <- wald.asreml(m1, denDF = "numeric")$Wald
   testthat::expect_equal(nrow(wald.tab), 8)
   diffs <- predictPlus(m1, classify = "Nozzle:Pressure:Speed", 
                        #linear.transformation = ~(Nozzle + Pressure):Speed,

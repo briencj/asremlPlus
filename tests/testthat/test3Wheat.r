@@ -91,7 +91,7 @@ test_that("Wheat_asreml3", {
   #Produce variogram and variogram faces plot (Stefanaova et al, 2009)
   if (requireNamespace("lattice"))
   {
-    plot.asrVariogram(variogram(current.asr))
+    plot.asrVariogram(variogram.asreml(current.asr))
   }
   faces <- variofaces(current.asr, V=V, maxiter=50, units="addtores")
   testthat::expect_equal(nrow(faces$face1), 10)
