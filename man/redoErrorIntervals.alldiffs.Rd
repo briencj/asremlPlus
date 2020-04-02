@@ -109,7 +109,7 @@ current.asrt <- as.asrtests(current.asr, NULL, NULL)
 TS.diffs <- predictPlus(classify = "Sources:Type", 
                         asreml.obj = current.asr, 
                         wald.tab = current.asrt$wald.tab, 
-                       present = c("Sources", "Type", "Species"))
+                        present = c("Sources", "Type", "Species"))
 }
 
 ## Use lmeTest and emmmeans to get predictions and associated statistics

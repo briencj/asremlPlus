@@ -319,7 +319,10 @@ setOldClass("asrtests")
   asreml.obj <- asrtests.obj$asreml.obj
   #Call wald.asreml if recalc.wald is TRUE
   if (recalc.wald)
+  {
     wald.tab <- asreml::wald.asreml(asreml.obj, denDF = denDF, trace = FALSE, ...)
+    wald.tab <- chkWald(wald.tab)  
+  }
   else #extract wald.tab from the asrtests object
     wald.tab <- asrtests.obj$wald.tab
   nofixed <- dim(wald.tab)[1]
@@ -332,72 +335,78 @@ setOldClass("asrtests")
     if (length(dDF.values) != nofixed)
       stop("Number of  dDF.values must be the same as the number of terms in wald.tab")
   den.df <- NA
-  if (!("denDF" %in% colnames(wald.tab))) #no denDF
-  { 
-    wald.tab <- wald.tab[1:(nofixed-1), c(1,3,4)] #Remove Residual line
-    wald.tab$F.inc <- wald.tab$'Wald statistic'/wald.tab$Df
-    hd[1] <- "Conservative Wald F tests for fixed effects \n"
-    attr(wald.tab, which = "heading") <- hd
-    
-    #Get denDF
-    if (opt == "supplied")
-    { wald.tab$denDF <- dDF.values
-      warning("Supplied dDF.values used for denDF")
-    }
-    else
-      if (opt == "maximum" | opt == "residual") 
-      { 
-        wald.tab$denDF <- asreml.obj$nedf
-        warning("Residual df used for denDF")
-      }
-  }
-  else #have denom. df
-  { 
-    den.df.na <- is.na(wald.tab$denDF)
-    if (any(den.df.na)) #some denDf are NA and so need to use approximate DF
+  if (is.null(wald.tab) || nrow(wald.tab) == 0)
+  {
+    wald.tab <- as.data.frame(matrix(nrow = 0, ncol = 4))
+    names(wald.tab) <- c("Df" , "denDF","F.inc","Pr")
+    warning("Wald.tab is empty - probably the calculations have failed")
+  } else
+  {
+    if (!("denDF" %in% colnames(wald.tab))) #no denDF
     { 
+      #Get denDF
       if (opt == "supplied")
-      { 
-        wald.tab$denDF[den.df.na] <- dDF.values[den.df.na]
-        warning("At least some supplied dDF.values used for denDF")
+      { wald.tab$denDF <- dDF.values
+      warning("Supplied dDF.values used for denDF")
       }
       else
-      { 
-        if (opt == "maximum") 
+        if (opt == "maximum" | opt == "residual") 
         { 
-          if (!all(den.df.na))
-          { 
-            den.df <- max(wald.tab$denDF[-1], na.rm=TRUE) 
-            warning("Maximum denDF used for some terms")
-          }
-          else
-          { 
-            den.df <- asreml.obj$nedf
-            warning("Residual df used for denDF for at least some terms")
-          }
+          wald.tab$denDF <- asreml.obj$nedf
+          warning("Residual df used for denDF")
+        }
+    }
+    else #have denom. df
+    { 
+      den.df.na <- is.na(wald.tab$denDF)
+      if (any(den.df.na)) #some denDf are NA and so need to use approximate DF
+      { 
+        if (opt == "supplied")
+        { 
+          wald.tab$denDF[den.df.na] <- dDF.values[den.df.na]
+          warning("At least some supplied dDF.values used for denDF")
         }
         else
         { 
-          if (opt == "residual")
+          if (opt == "maximum") 
           { 
-            den.df <- asreml.obj$nedf
-            warning("Residual df used for denDF for at least some terms")
+            if (!all(den.df.na))
+            { 
+              den.df <- max(wald.tab$denDF[-1], na.rm=TRUE) 
+              warning("Maximum denDF used for some terms")
+            }
+            else
+            { 
+              den.df <- asreml.obj$nedf
+              warning("Residual df used for denDF for at least some terms")
+            }
           }
+          else
+          { 
+            if (opt == "residual")
+            { 
+              den.df <- asreml.obj$nedf
+              warning("Residual df used for denDF for at least some terms")
+            }
+          }
+          wald.tab$denDF[den.df.na] <- den.df
         }
-        wald.tab$denDF[den.df.na] <- den.df
       }
     }
-  }
-  attr(wald.tab, which = "heading") <- hd
-  if (nrow(wald.tab) == 0)
-    warning("Wald.tab is empty - probably the calculations have failed")
-  else
-  {
-    #Calc Pr
-    if ("F.con" %in% colnames(wald.tab))
-      wald.tab$Pr <- 1 - pf(wald.tab$F.con, wald.tab$Df, wald.tab$denDF)
+    attr(wald.tab, which = "heading") <- hd
+    if (nrow(wald.tab) == 0)
+      warning("Wald.tab is empty - probably the calculations have failed")
     else
-      wald.tab$Pr <- 1 - pf(wald.tab$F.inc, wald.tab$Df, wald.tab$denDF)
+    {
+      #Calc Pr
+      if ("denDF" %in% colnames(wald.tab))
+      {
+        if ("F.con" %in% colnames(wald.tab))
+          wald.tab$Pr <- 1 - pf(wald.tab$F.con, wald.tab$Df, wald.tab$denDF)
+        else
+          wald.tab$Pr <- 1 - pf(wald.tab$F.inc, wald.tab$Df, wald.tab$denDF)
+      }
+    }
   }
   return(wald.tab)
 }
@@ -1209,7 +1218,7 @@ atLevelsMatch <- function(new, old, call)
             change,"%")
   results <- as.asrtests(asreml.obj = asreml.obj, 
                       wald.tab = asrtests.obj$wald.tab, 
-                      test.summary = test.summary)
+                      test.summary = test.summary, ...)
   invisible(results)
 }
 
@@ -1368,7 +1377,6 @@ atLevelsMatch <- function(new, old, call)
                                             ignore.suffices = ignore.suffices, 
                                             bounds = bounds, 
                                             initial.values = initial.values, ...))
-      
     }
     
     #Update results, checking for convergence
@@ -1392,7 +1400,7 @@ atLevelsMatch <- function(new, old, call)
         test.summary <- addtoTestSummary(test.summary, terms = label, DF=NA, denDF = NA, 
                                          p = NA, action = action)
       #Check for boundary terms
-      temp.asrt <- rmboundary.asrtests(as.asrtests(asreml.obj, wald.tab, test.summary), 
+      temp.asrt <- rmboundary.asrtests(as.asrtests(asreml.obj, wald.tab, test.summary, ...), 
                                        checkboundaryonly = checkboundaryonly, 
                                        IClikelihood = IClikelihood, 
                                        trace = trace, update = update, 
@@ -1417,7 +1425,7 @@ atLevelsMatch <- function(new, old, call)
     } else #unconverged and not allowed
     {
       #Check if get convergence with any boundary terms removed
-      temp.asrt <- rmboundary.asrtests(as.asrtests(asreml.new.obj, wald.tab, test.summary), 
+      temp.asrt <- rmboundary.asrtests(as.asrtests(asreml.new.obj, wald.tab, test.summary, ...), 
                                        checkboundaryonly = checkboundaryonly, 
                                        IClikelihood = IClikelihood, 
                                        trace = trace, update = update, 
@@ -1680,7 +1688,7 @@ atLevelsMatch <- function(new, old, call)
 
               #Check for boundary terms
               temp.asrt <- rmboundary.asrtests(as.asrtests(asreml.obj, wald.tab, 
-                                                           test.summary), 
+                                                           test.summary, ...), 
                                                checkboundaryonly = checkboundaryonly, 
                                                IClikelihood = IClikelihood, 
                                                trace = trace, update = update, 
@@ -1703,7 +1711,7 @@ atLevelsMatch <- function(new, old, call)
             {
               #Check for boundary terms
               temp.asrt <- rmboundary.asrtests(as.asrtests(asreml.new.obj, wald.tab, 
-                                                           test.summary), 
+                                                           test.summary, ...), 
                                                checkboundaryonly = checkboundaryonly, 
                                                IClikelihood = IClikelihood, 
                                                trace = trace, update = update, 
@@ -1816,7 +1824,7 @@ atLevelsMatch <- function(new, old, call)
       {
         #If new model not converged then see if removing boundary terms will result in convergence
         temp.asrt <- rmboundary.asrtests(as.asrtests(asreml.new.obj, wald.tab, 
-                                                     test.summary), 
+                                                     test.summary, ...), 
                                          checkboundaryonly = checkboundaryonly, 
                                          IClikelihood = IClikelihood, 
                                          trace = trace, update = update, 
@@ -1917,7 +1925,8 @@ atLevelsMatch <- function(new, old, call)
                                      action = action)
 
     #Check for boundary terms
-    temp.asrt <- rmboundary.asrtests(as.asrtests(asreml.obj, wald.tab, test.summary), 
+    temp.asrt <- rmboundary.asrtests(as.asrtests(asreml.obj, wald.tab, 
+                                                 test.summary, ...), 
                                      checkboundaryonly = checkboundaryonly, 
                                      trace = trace, update = update, 
                                      IClikelihood = IClikelihood, 
@@ -2104,7 +2113,8 @@ atLevelsMatch <- function(new, old, call)
   if (change)
   { 
     #Check for boundary terms
-    temp.asrt <- rmboundary.asrtests(as.asrtests(asreml.new.obj, wald.tab, test.summary), 
+    temp.asrt <- rmboundary.asrtests(as.asrtests(asreml.new.obj, wald.tab, 
+                                                 test.summary, ...), 
                                      checkboundaryonly = checkboundaryonly, 
                                      IClikelihood = IClikelihood, 
                                      trace = trace, update = update, 

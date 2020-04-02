@@ -381,16 +381,31 @@
 
 "chkWald" <- function(wald.tab)
 {
-  if (!is.data.frame(wald.tab))
-    wald.tab <- wald.tab$Wald
-  
-  #Check that have a valid wald.tab object
-  validwald <- validWaldTab(wald.tab)  
-  if (is.character(validwald))
-    stop(validwald)
+  if (!is.null(wald.tab)) 
+  {
+     if (is.list(wald.tab))
+      wald.tab <- wald.tab$Wald
+     else
+       if (is.matrix(wald.tab))
+       {
+         hd <- attr(wald.tab, which = "heading")
+         wald.tab <- as.data.frame(wald.tab, stringsAsFactors = FALSE)
+         nofixed <- dim(wald.tab)[1]
+         wald.tab <- wald.tab[1:(nofixed-1), c(1,3,4)] #Remove Residual line
+         wald.tab$F.inc <- wald.tab$'Wald statistic'/wald.tab$Df
+         hd[1] <- "Conservative Wald F tests for fixed effects \n"
+         attr(wald.tab, which = "heading") <- hd
+       }
+    
+    #Check that have a valid wald.tab object
+    validwald <- validWaldTab(wald.tab)  
+    if (is.character(validwald))
+      stop(validwald)
+  }
   
   if (!is.null(wald.tab))
     class(wald.tab) <- c("wald.tab", "data.frame")
+
   return(wald.tab)  
 }
 

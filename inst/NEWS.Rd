@@ -1,5 +1,13 @@
 \name{news}
 \title{News for Package asremlPlus}
+\section{asremlPlus Version 4.2-19 (2020-04-02
+)}{
+  \itemize{
+    \item{Change the Maintainer email address.}
+    \item{Add ellipsis to as.asrtests call within an rmboundary.asrtests call so that arguments in the calling routine are passed through.}
+    \item{Add a trap in recalcWaldTab.asrtests for a \code{NULL} \code{wald.tab} before dealing with \code{denDF} so that recalcWaldTab.asrtests throws a warning rather than an error.}
+    \item{Modify recalcWaldTab.asrtests to deal with a Wald table that has Chi-square instead of F statistics (this happens when \code{denDF = "none"}.)}
+}}
 \section{asremlPlus Version 4.2-18 (2020-03-16
 )}{
   \itemize{
