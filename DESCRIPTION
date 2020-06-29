@@ -1,6 +1,6 @@
 Package: asremlPlus
-Version: 4.2-19
-Date: 2020-04-02
+Version: 4.2-20
+Date: 2020-06-29
 Title: Augments 'ASReml-R' in Fitting Mixed Models and Packages Generally in Exploring Prediction Differences
 Authors@R: person("Chris","Brien", role = c("aut","cre"),
          comment = c(ORCID = "0000-0003-0581-1817"),

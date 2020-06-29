@@ -1,25 +1,25 @@
 \name{news}
 \title{News for Package asremlPlus}
-\section{asremlPlus Version 4.2-19 (2020-04-02
-)}{
+\section{asremlPlus Version 4.2-20 (2020-06-29)}{
+  \itemize{
+    \item{Fix bug in getFormulae.asreml and printFormulae.asreml that occurs when formula(e) have been supplied to asreml in an object.}
+}}
+\section{asremlPlus Version 4.2-19 (2020-04-02)}{
   \itemize{
     \item{Change the Maintainer email address.}
     \item{Add ellipsis to as.asrtests call within an rmboundary.asrtests call so that arguments in the calling routine are passed through.}
     \item{Add a trap in recalcWaldTab.asrtests for a \code{NULL} \code{wald.tab} before dealing with \code{denDF} so that recalcWaldTab.asrtests throws a warning rather than an error.}
     \item{Modify recalcWaldTab.asrtests to deal with a Wald table that has Chi-square instead of F statistics (this happens when \code{denDF = "none"}.)}
 }}
-\section{asremlPlus Version 4.2-18 (2020-03-16
-)}{
+\section{asremlPlus Version 4.2-18 (2020-03-16)}{
   \itemize{
     \item{Increment version number for resubmission to CRAN.}
 }}
-\section{asremlPlus Version 4.2-17 (2020-03-16
-)}{
+\section{asremlPlus Version 4.2-17 (2020-03-16)}{
   \itemize{
     \item{Fix bug in changeTerms when both \code{addFixed} and \code{dropFixed} are \code{NULL}.}
 }}
-\section{asremlPlus Version 4.2-16 (2020-02-25
-)}{
+\section{asremlPlus Version 4.2-16 (2020-02-25)}{
   \itemize{
     \item{Revisions to the manual.}
     \item{Fix bug in forming test.summary.}

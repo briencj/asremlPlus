@@ -252,31 +252,55 @@ test_that("IC_wheat94_asreml3", {
   current.asrt <- testranfix(current.asrt, term = "units", alpha = 0.20)
   testthat::expect_equal(nrow(current.asrt$test.summary), 10)
   
-  #Print fitted model
-  mod <- getFormulae(current.asrt$asreml.obj, which = "all")
-  testthat::expect_equal(length(mod), 4)
-  testthat::expect_equal(names(mod)[3], "rcov")
-  testthat::expect_true(is.null(mod$sparse))
-  mod <- printFormulae(current.asrt$asreml.obj, which = "all")
-  testthat::expect_equal(length(mod), 4)
-  mod <- printFormulae(current.asrt$asreml.obj, expanded = TRUE)
-  testthat::expect_equal(length(mod), 3)
-  mod <- printFormulae(current.asrt$asreml.obj, which = c("fixed", "random"))
-  testthat::expect_equal(length(mod), 2)
-  mod <- printFormulae(current.asrt$asreml.obj, which = "fixed")
-  testthat::expect_equal(length(mod), 1)
-  
-  #Test for getFormulae
-  asreml.obj <- asreml(yield ~ lin(Row) + lin(Col),
-                       sparse = ~ Rowcode + Colcode,
-                       random = ~ Variety + Block + Row + spl(Col) + Col + units,
-                       rcov = ~ ar1(Col):ar1(Row),
-                       data = wheat94.dat)
-  mod <- getFormulae(asreml.obj, which = "all")
-  testthat::expect_equal(length(mod), 4)
-  testthat::expect_equal(names(mod)[3], "rcov")
-  testthat::expect_true(!is.null(mod$sparse))
-  
 })
 
 
+cat("#### Test for getFormulae with wheat94 using asreml4\n")
+test_that("Formulae_wheat94_asreml3", {
+  skip_if_not_installed("asreml")
+  skip_on_cran()
+  library(dae)
+  library(asremlPlus)
+  loadASRemlVersion(3, lib.loc = asr3.lib)
+  ## use asremlPlus to analyse the wheat (barley) example from section 8.6 of the asreml manual (Butler et al. 2010)
+  data(wheat94.dat)
+  
+  fm.max <- asreml(yield ~ lin(Row) + lin(Col) + Rowcode + Colcode,
+                   random = ~ Variety + Block + Row + spl(Col) + Col + units,
+                   rcov = ~ ar1(Col):ar1(Row),
+                   data = wheat94.dat)
+  
+  mod <- getFormulae(fm.max, which = "all")
+  testthat::expect_true(all(unlist(lapply(mod, function(form) is.null(form) | 
+                                            inherits(form, what = "formula")))))
+  testthat::expect_true(all(names(mod) == c("fixed", "random", "rcov", "sparse")))
+  
+  #Print fitted model
+  testthat::expect_equal(length(mod), 4)
+  testthat::expect_true(is.null(mod$sparse))
+  
+  p <- printFormulae(fm.max, which = "all")
+  testthat::expect_true(all(nchar(p) > 11))
+  testthat::expect_equal(length(p), 4)
+  p <- printFormulae(fm.max, expanded = TRUE)
+  testthat::expect_equal(length(p), 3)
+  p <- printFormulae(fm.max, which = c("fixed", "random"))
+  testthat::expect_equal(length(p), 2)
+  p <- printFormulae(fm.max, which = "fixed")
+  testthat::expect_equal(length(p), 1)
+  
+  #Test when have formulae are in a character or list
+  fix.mod <- mod$fixed
+  fm.max <- asreml(fixed = fix.mod,
+                   random = mod$random,
+                   rcov = mod$rcov,
+                   data = wheat94.dat)
+  mod <- getFormulae(fm.max, which = "all")
+  testthat::expect_true(all(unlist(lapply(mod, function(form) is.null(form) | 
+                                            inherits(form, what = "formula")))))
+  testthat::expect_equal(length(mod), 4)
+  testthat::expect_true(is.null(mod$sparse))
+  p <- printFormulae(fm.max, which = "all")
+  testthat::expect_true(all(nchar(p) > 11))
+  
+})

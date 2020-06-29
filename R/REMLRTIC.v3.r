@@ -65,14 +65,14 @@ REMLRT.asreml <- function(h0.asreml.obj, h1.asreml.obj,
                           positive.zero = FALSE, bound.test.parameters = "none", 
                           DF = NULL, bound.exclusions = c("F","B","S","C"), ...)
 {
-#asreml codes:
-#  B - fixed at a boundary (!GP)
-#  F - fixed by user
-#  ? - liable to change from P to B    
-#  P - positive definite
-#  C - Constrained by user (!VCC)      
-#  U - unbounded
-#  S - Singular Information matrix
+#asreml codes (vparameters.con code):
+  # (1) P - positive definite
+  # (2) ? - liable to change from P to B    
+  # (3) U - unbounded
+  # (4) F - fixed by user
+  # (5) C - Constrained by user (!VCC)      
+  # (6) S - Singular Information matrix
+  # (7) B - fixed at a boundary (!GP)
 
   #Deal with deprecated constraints parameter
   tempcall <- list(...)

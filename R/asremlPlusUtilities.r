@@ -91,14 +91,24 @@
   
   #Get formula(e)
   mod <- lapply(forms.opt, 
-                function(form, asreml.obj) {asreml.obj$call[[form]]}, 
+                function(form, asreml.obj) 
+                {
+                  mod <- asreml.obj$call[[form]]
+                  #eva;uate mod in the frame of the function call that led to here 
+                  mod <- eval(mod, envir = parent.frame(sys.nframe()-1)) 
+                  return(mod)
+                }, 
                 asreml.obj = asreml.obj)
   names(mod) <- forms.opt
   
   #Expand if required
   if (expanded)
-    mod <- lapply(mod, function(x) update.formula(x, ~., ...))
-  
+    mod <- lapply(mod, 
+                  function(x) 
+                  {  
+                    if (!is.null(x)) x <- update.formula(x, ~., ...) 
+                    else x <- x
+                  })
   return(mod)
 }
 
@@ -110,13 +120,14 @@
   mod.ch <- lapply(mod, 
                    function(m) 
                    {
-                     m <- capture.output(m) 
-                     m <- m[-length(m)]
-                     if (length(m > 1))
+                     m <- capture.output(m)
+#                     m <- m[-length(m)]
+                     if (length(m) > 1)
                      {
                        m <- unlist(lapply(m, function(m) m <- stringr::str_trim(m, side = "left")))
                        m <- paste0(m, collapse = "")
                      }
+                     return(m)
                    })
   if ("random" %in% names(mod.ch))
     mod.ch$random <- gsub("~", "~ ", mod.ch$random)
