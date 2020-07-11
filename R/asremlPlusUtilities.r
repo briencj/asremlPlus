@@ -77,7 +77,7 @@
 }
 
 "getFormulae.asreml" <- function(asreml.obj, which = c("fixed", "random", "residual"), 
-                                 expanded = FALSE, ...)
+                                 expanded = FALSE, envir = parent.frame(), ...)
 {
   asr4 <- isASRemlVersionLoaded(4, notloaded.fault = TRUE)
 
@@ -90,33 +90,33 @@
     forms.opt <- gsub("residual", "rcov", forms.opt, fixed = TRUE)
   
   #Get formula(e)
-  mod <- lapply(forms.opt, 
-                function(form, asreml.obj) 
-                {
-                  mod <- asreml.obj$call[[form]]
-                  #eva;uate mod in the frame of the function call that led to here 
-                  mod <- eval(mod, envir = parent.frame(sys.nframe()-1)) 
-                  return(mod)
-                }, 
-                asreml.obj = asreml.obj)
-  names(mod) <- forms.opt
+  modlist <- lapply(forms.opt, 
+                    function(form, asreml.obj) 
+                    {
+                      modl <- asreml.obj$call[[form]]
+                      #evaluate mod in the frame of the function call that led to here 
+                      modl <- eval(modl, envir = envir) 
+                      return(modl)
+                    }, 
+                    asreml.obj = asreml.obj)
+  names(modlist) <- forms.opt
   
   #Expand if required
   if (expanded)
-    mod <- lapply(mod, 
-                  function(x) 
-                  {  
-                    if (!is.null(x)) x <- update.formula(x, ~., ...) 
-                    else x <- x
-                  })
-  return(mod)
+    modlist <- lapply(modlist, 
+                      function(x) 
+                      {  
+                        if (!is.null(x)) x <- update.formula(x, ~., ...) 
+                        else x <- x
+                      })
+  return(modlist)
 }
 
 "printFormulae.asreml" <- function(asreml.obj, which = c("fixed", "random", "residual"), 
-                                   expanded = FALSE, ...)
+                                   expanded = FALSE, envir = parent.frame(), ...)
 {
   asr4 <- isASRemlVersionLoaded(4, notloaded.fault = TRUE)
-  mod <- getFormulae.asreml(asreml.obj, which = which, expanded = expanded, ...)
+  mod <- getFormulae.asreml(asreml.obj, which = which, expanded = expanded, envir = envir,  ...)
   mod.ch <- lapply(mod, 
                    function(m) 
                    {

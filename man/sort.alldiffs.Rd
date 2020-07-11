@@ -90,7 +90,9 @@
          \code{\link{recalcLSD.alldiffs}},  \cr
          \code{\link{predictPlus.asreml}}, \code{\link{predictPresent.asreml}}}
 \examples{
+##Halve WaterRunoff data to reduce time to execute
 data(WaterRunoff.dat)
+tmp <- subset(WaterRunoff.dat, Date == "05-18")
 
 ##Use asreml to get predictions and associated statistics
 
@@ -98,7 +100,7 @@ data(WaterRunoff.dat)
 #Analyse pH  
 m1.asr <- asreml(fixed = pH ~ Benches + (Sources * (Type + Species)), 
                  random = ~ Benches:MainPlots,
-                 keep.order=TRUE, data= WaterRunoff.dat)
+                 keep.order=TRUE, data= tmp)
 current.asrt <- as.asrtests(m1.asr, NULL, NULL)
 current.asrt <- as.asrtests(m1.asr)
 current.asrt <- rmboundary(current.asrt)
@@ -117,7 +119,7 @@ sort.order <- attr(TS.diffs.sort, which = "sortOrder")
 #Analyse Turbidity
 m2.asr <- asreml(fixed = Turbidity ~ Benches + (Sources * (Type + Species)), 
                  random = ~ Benches:MainPlots,
-                 keep.order=TRUE, data= WaterRunoff.dat)
+                 keep.order=TRUE, data= tmp)
 current.asrt <- as.asrtests(m2.asr)
 #Use pH sort.order to sort Turbidity alldiffs object
 diffs2.sort <- predictPlus(m2.asr, classify = "Sources:Type", 
@@ -135,7 +137,7 @@ if (requireNamespace("lmerTest", quietly = TRUE) &
   #Analyse pH
   m1.lmer <- lmerTest::lmer(pH ~ Benches + (Sources * (Type + Species)) + 
                               (1|Benches:MainPlots),
-                            data=na.omit(WaterRunoff.dat))
+                            data=na.omit(tmp))
   TS.emm <- emmeans::emmeans(m1.lmer, specs = ~ Sources:Type)
   TS.preds <- summary(TS.emm)
   den.df <- min(TS.preds$df, na.rm = TRUE)
@@ -159,7 +161,7 @@ if (requireNamespace("lmerTest", quietly = TRUE) &
   #Analyse Turbidity
   m2.lmer <- lmerTest::lmer(Turbidity ~ Benches + (Sources * (Type + Species)) + 
                               (1|Benches:MainPlots),
-                            data=na.omit(WaterRunoff.dat))
+                            data=na.omit(tmp))
   TS.emm <- emmeans::emmeans(m2.lmer, specs = ~ Sources:Type)
   TS.preds <- summary(TS.emm)
   den.df <- min(TS.preds$df, na.rm = TRUE)

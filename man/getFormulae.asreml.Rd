@@ -5,7 +5,7 @@
 \description{Gets the \code{\link{formula}}e nominated in the \code{which} argument from the \code{call} stored in an \code{asreml} object.}
 \usage{
 \method{getFormulae}{asreml}(asreml.obj, which = c("fixed", "random", "residual"), 
-            expanded = FALSE, ...)
+            expanded = FALSE, envir = parent.frame(), ...)
 }
 \arguments{
  \item{asreml.obj}{An \code{asreml} object resulting from the fitting of 
@@ -18,6 +18,9 @@
               \code{NULL}.}
  \item{expanded}{A \code{logical} indicating whether terms are to be expanded to the 
                  sum of a set of individual terms.}
+ \item{envir}{The environment in which the \code{\link{formula}}(e) are to be evaluated. 
+              May also be \code{NULL}, a \code{list}, a \code{data.frame}, a \code{pairlist} 
+              or an integer as specified to \code{sys.call}.}
  \item{\dots}{Arguments passed on to \code{update.formula} and ultimately to 
               \code{terms.formula}.}
 }

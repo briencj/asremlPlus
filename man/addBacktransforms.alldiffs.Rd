@@ -35,7 +35,10 @@
          \code{\link{plotPredictions.data.frame}}, \cr 
          \code{\link{predictPlus.asreml}}, \code{\link{predictPresent.asreml}}}
 \examples{
+\donttest{
+##Halve WaterRunoff data to reduce time to execute
 data(WaterRunoff.dat)
+tmp <- subset(WaterRunoff.dat, Date == "05-18")
 
 ##Use asreml to get predictions and associated statistics
 
@@ -43,22 +46,22 @@ data(WaterRunoff.dat)
 asreml.options(keep.order = TRUE) #required for asreml-R4 only
 current.asr <- asreml(fixed = log.Turbidity ~ Benches + (Sources * (Type + Species)), 
                       random = ~ Benches:MainPlots,
-                      keep.order=TRUE, data= WaterRunoff.dat)
+                      keep.order=TRUE, data= tmp)
 current.asrt <- as.asrtests(current.asr, NULL, NULL)
 TS.diffs <- predictPlus(classify = "Sources:Type", 
                         asreml.obj = current.asr, 
                         wald.tab = current.asrt$wald.tab, 
-                       present = c("Sources", "Type", "Species"))
+                        present = c("Sources", "Type", "Species"))
 }
 
-## Use lmeTest and emmmeans to get predictions and associated statistics
+##Use lmeTest and emmmeans to get predictions and associated statistics
 
-if (requireNamespace("lmerTest", quietly = TRUE) & 
+if (requireNamespace("lmerTest", quietly = TRUE) && 
     requireNamespace("emmeans", quietly = TRUE))
 {
   m1.lmer <- lmerTest::lmer(log.Turbidity ~ Benches + (Sources * (Type + Species)) + 
                               (1|Benches:MainPlots),
-                            data=na.omit(WaterRunoff.dat))
+                            data=tmp)
   TS.emm <- emmeans::emmeans(m1.lmer, specs = ~ Sources:Species)
   TS.preds <- summary(TS.emm)
   den.df <- min(TS.preds$df, na.rm = TRUE)
@@ -74,11 +77,10 @@ if (requireNamespace("lmerTest", quietly = TRUE) &
   validAlldiffs(TS.diffs)
 }  
 
-## Plot p-values for predictions obtained using asreml or lmerTest
+## Recalculate the back-transforms of the predictions obtained using asreml or lmerTest
 if (exists("TS.diffs"))
 {
-  ##Recalculate the LSD values for predictions obtained using asreml or lmerTest  
   TS.diffs <- addBacktransforms.alldiffs(TS.diffs, transform.power = 0)
 }
-}
+}}
 \keyword{asreml}

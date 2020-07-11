@@ -1,5 +1,10 @@
 \name{news}
 \title{News for Package asremlPlus}
+\section{asremlPlus Version 4.2-21 (2020-07-11)}{
+  \itemize{
+    \item{Rebuild the vignettes prior to CRAN submission.}
+    \item{Add \code{envir} argument to getFormulae.asreml and printFormulae.asreml to make them more robust to where the objects in the \code{asreml.obj} have been defined.}
+}}
 \section{asremlPlus Version 4.2-20 (2020-06-29)}{
   \itemize{
     \item{Fix bug in getFormulae.asreml and printFormulae.asreml that occurs when formula(e) have been supplied to asreml in an object.}

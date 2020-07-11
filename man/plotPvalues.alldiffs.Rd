@@ -115,7 +115,9 @@
 \seealso{\code{\link{plotPvalues.data.frame}}, \code{\link{allDifferences.data.frame}}, 
          \code{\link{sort.alldiffs}}, \code{\link{subset.alldiffs}}, \code{ggplot}}
 \examples{
+##Halve WaterRunoff data to reduce time to execute
 data(WaterRunoff.dat)
+tmp <- subset(WaterRunoff.dat, Date == "05-18")
 
 ##Use asreml to get predictions and associated statistics
 
@@ -123,7 +125,7 @@ data(WaterRunoff.dat)
 asreml.options(keep.order = TRUE) #required for asreml-R4 only
 current.asr <- asreml(fixed = pH ~ Benches + (Sources * (Type + Species)), 
                       random = ~ Benches:MainPlots,
-                      keep.order=TRUE, data= WaterRunoff.dat))
+                      keep.order=TRUE, data= tmp))
 current.asrt <- as.asrtests(current.asr, NULL, NULL)
 SS.diffs <- predictPlus.asreml(classify = "Sources:Type", 
                                asreml.obj = current.asr, tables = "none", 
@@ -138,7 +140,7 @@ if (requireNamespace("lmerTest", quietly = TRUE) &
 {
   m1.lmer <- lmerTest::lmer(pH ~ Benches + (Sources * (Type + Species)) + 
                               (1|Benches:MainPlots),
-                            data=na.omit(WaterRunoff.dat))
+                            data=na.omit(tmp))
   TS.emm <- emmeans::emmeans(m1.lmer, specs = ~ Sources:Species)
   TS.preds <- summary(TS.emm)
   den.df <- min(TS.preds$df, na.rm = TRUE)
@@ -158,7 +160,9 @@ if (requireNamespace("lmerTest", quietly = TRUE) &
 if (exists("TS.diffs"))
 {
   plotPvalues(TS.diffs, gridspacing = rep(c(3,4), c(4,2)), show.sig = TRUE)
+\donttest{
   plotPvalues(TS.diffs, sections = "Sources", show.sig = TRUE, axis.labels = TRUE)
+}  
 }
 }
 \keyword{hplot}
