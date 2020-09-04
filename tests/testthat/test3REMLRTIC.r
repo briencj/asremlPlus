@@ -270,7 +270,7 @@ test_that("Formulae_wheat94_asreml3", {
                    rcov = ~ ar1(Col):ar1(Row),
                    data = wheat94.dat)
   
-  mod <- getFormulae(fm.max, which = "all")
+  mod <- getFormulae(fm.max, which = "all", envir = sys.frame(sys.nframe()))
   testthat::expect_true(all(unlist(lapply(mod, function(form) is.null(form) | 
                                             inherits(form, what = "formula")))))
   testthat::expect_true(all(names(mod) == c("fixed", "random", "rcov", "sparse")))
@@ -295,7 +295,7 @@ test_that("Formulae_wheat94_asreml3", {
                    random = mod$random,
                    rcov = mod$rcov,
                    data = wheat94.dat)
-  mod <- getFormulae(fm.max, which = "all", envir = mod())
+  mod <- getFormulae(fm.max, which = "all", envir = sys.frame(sys.nframe()))
   testthat::expect_true(all(unlist(lapply(mod, function(form) is.null(form) | 
                                             inherits(form, what = "formula")))))
   testthat::expect_equal(length(mod), 4)

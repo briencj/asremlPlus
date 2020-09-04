@@ -27,7 +27,7 @@
                      "version of asreml currently loaded"))
   }
   if (length(isasr) > 1)
-    isasr[1] <- "Error(s) in validAlldiffs(object) : "
+    isasr[1] <- "Error(s) in validAsreml(object) : "
   return(isasr)
 }
 

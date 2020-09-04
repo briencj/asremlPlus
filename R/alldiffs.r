@@ -404,6 +404,7 @@ setOldClass("alldiffs")
     if (!is.null(x$LSD))
     { 
       sed.range <- abs(x$LSD$minLSD - x$LSD$maxLSD) / x$LSD$meanLSD
+      sed.range[is.nan(sed.range)] <- 0
       if (length(x$LSD$meanLSD > 1))
       {
         cat("\n\nLSD values \n\n")
@@ -1012,15 +1013,17 @@ recalcLSD.alldiffs <- function(alldiffs.obj, meanLSD.type = "overall", LSDby = N
   return(alldiffs.obj)
 }
 
-"LSDstats" <- function(sed, t.value)
+"LSDstats" <- function(sed, t.value, zero.tolerance = 1e-10)
 {
-  tolerance <- 1E-012
+  zero.tolerance <- zero.tolerance
   ksed <- as.vector(sed)
   ksed <- na.omit(ksed *ksed)
   max.ksed <- max(ksed)
   #Retain only nonzero variances
-  if (max.ksed > tolerance && sum(ksed/max.ksed > tolerance) > 0)
-    ksed <- ksed[ksed/max.ksed > tolerance]
+  if (max.ksed > zero.tolerance && sum(ksed/max.ksed > zero.tolerance) > 0)
+    ksed <- ksed[ksed/max.ksed > zero.tolerance]
+  else if (max.ksed < zero.tolerance)
+    ksed <- 0
   minLSD <- t.value * sqrt(min(ksed))
   maxLSD <- t.value * sqrt(max(ksed))
   meanLSD <- t.value * sqrt(mean(ksed))
@@ -1029,8 +1032,9 @@ recalcLSD.alldiffs <- function(alldiffs.obj, meanLSD.type = "overall", LSDby = N
   return(stats)
 }
 
+
 #Function to calculate the LSDs for combinations of the levels of the by factor(s)
-sliceLSDs <- function(alldiffs.obj, by, t.value, alpha = 0.05, tolerance = 1E-04)
+sliceLSDs <- function(alldiffs.obj, by, t.value, alpha = 0.05, zero.tolerance = 1E-04)
 {
   classify <- attr(alldiffs.obj, which = "classify")
   if (!all(unlist(lapply(by, grepl, x = classify, fixed = TRUE))))
@@ -1182,6 +1186,7 @@ redoErrorIntervals.alldiffs <- function(alldiffs.obj, error.intervals = "Confide
       overall.meanLSD <- overall.LSDs["meanLSD"]
       nLSD <- length(alldiffs.obj$LSD$meanLSD)
       sed.range <- abs(alldiffs.obj$LSD$minLSD - alldiffs.obj$LSD$maxLSD) /  alldiffs.obj$LSD$meanLSD
+      sed.range[is.nan(sed.range)] <- 0
       # if (!is.na(avsed.tolerance) & overall.sed.range <= avsed.tolerance) #always plot overall LSD
       # {
       #   alldiffs.obj$predictions <- within(alldiffs.obj$predictions, 
@@ -1590,7 +1595,7 @@ redoErrorIntervals.alldiffs <- function(alldiffs.obj, error.intervals = "Confide
     }
     
     #Set meanLSD attribute of predictions
-    tolerance <- 1E-12
+    zero.tolerance <- 1e-12
     if (pairwise && (nrow(alldiffs.obj$predictions) != 1))
     { 
       #calculate LSDs, if not present
@@ -1610,7 +1615,7 @@ redoErrorIntervals.alldiffs <- function(alldiffs.obj, error.intervals = "Confide
             if (is.null(LSDby))
               stop("Need to specify factors using LSDby for meanLSD.typ = factor.combinations")
             LSDs <- sliceLSDs(alldiffs.obj, by = LSDby, t.value = t.value, alpha = alpha, 
-                              tolerance = tolerance)
+                              zero.tolerance = zero.tolerance)
             meanLSD <- LSDs$meanLSD
             names(meanLSD) <- rownames(LSDs)
             minLSD <- LSDs$minLSD
@@ -1619,11 +1624,11 @@ redoErrorIntervals.alldiffs <- function(alldiffs.obj, error.intervals = "Confide
             names(maxLSD) <- rownames(LSDs)
           } else #per.prediction
           {
-            tolerance = 1E-04
+            zero.tolerance = 1E-04
             max.var <- max(alldiffs.obj$sed*alldiffs.obj$sed, na.rm = TRUE)
-            if (max.var > tolerance || 
-                sum(alldiffs.obj$sed*alldiffs.obj$sed/max.var < tolerance) > 0)
-              alldiffs.obj$sed[alldiffs.obj$sed*alldiffs.obj$sed/max.var < tolerance] <- NA
+            if (max.var > zero.tolerance || 
+                sum(alldiffs.obj$sed*alldiffs.obj$sed/max.var < zero.tolerance) > 0)
+              alldiffs.obj$sed[alldiffs.obj$sed*alldiffs.obj$sed/max.var < zero.tolerance] <- NA
             meanLSD <- t.value * sqrt(apply(alldiffs.obj$sed*alldiffs.obj$sed, 
                                             FUN = mean, MARGIN = 1, na.rm = TRUE))
             maxLSD <- t.value * apply(alldiffs.obj$sed, FUN = max, MARGIN = 1, na.rm = TRUE)

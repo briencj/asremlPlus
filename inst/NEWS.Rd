@@ -1,5 +1,9 @@
 \name{news}
 \title{News for Package asremlPlus}
+\section{asremlPlus Version 4.2-22 (2020-09-04)}{
+  \itemize{
+    \item{Modify code for calculating LSDs so that all zero LSDs are allowed; this is needed when kinear transformation have resulted in predictions that are equal.}
+}}
 \section{asremlPlus Version 4.2-21 (2020-07-11)}{
   \itemize{
     \item{Rebuild the vignettes prior to CRAN submission.}
