@@ -94,6 +94,8 @@
              Least Significant Difference (LSD) being added and subtracted to the 
              predictions, the LSD being calculated using the square root of the mean of the 
              variances of all or a subset of pairwise differences between the predictions. 
+             If the LSD is zero, as can happen when predictions are constrained to be equal,
+             then the limits of the error intervals are set to \code{NA}. 
              If \code{meanLSD.type} is set to \code{overall}, the \code{avsed.tolerance} is not 
              \code{NA} and the range of the SEDs divided by the average of the SEDs exceeds 
              \code{avsed.tolerance} then the \code{error.intervals} calculations and the plotting 

@@ -1183,6 +1183,8 @@ redoErrorIntervals.alldiffs <- function(alldiffs.obj, error.intervals = "Confide
       overall.LSDs <- LSDstats(alldiffs.obj$sed, t.value = t.value)
       overall.sed.range <- abs(overall.LSDs["maxLSD"] - overall.LSDs["minLSD"]) / 
                                         overall.LSDs["meanLSD"]
+      if (is.nan(overall.sed.range))
+        overall.sed.range <- 0
       overall.meanLSD <- overall.LSDs["meanLSD"]
       nLSD <- length(alldiffs.obj$LSD$meanLSD)
       sed.range <- abs(alldiffs.obj$LSD$minLSD - alldiffs.obj$LSD$maxLSD) /  alldiffs.obj$LSD$meanLSD
@@ -1217,12 +1219,19 @@ redoErrorIntervals.alldiffs <- function(alldiffs.obj, error.intervals = "Confide
               stop("There is not just one LSD for meanLSD.type overall")
             alldiffs.obj$predictions <- within(alldiffs.obj$predictions,
                                                {
-                                                 lower.halfLeastSignificant.limit <-
-                                                   alldiffs.obj$predictions[["predicted.value"]] -
-                                                   0.5 * overall.meanLSD
-                                                 upper.halfLeastSignificant.limit <-
-                                                   alldiffs.obj$predictions[["predicted.value"]] +
-                                                   0.5 * overall.meanLSD
+                                                 if (overall.meanLSD == 0)
+                                                 {
+                                                   lower.halfLeastSignificant.limit <- NA
+                                                   upper.halfLeastSignificant.limit <- NA
+                                                 } else
+                                                 {
+                                                   lower.halfLeastSignificant.limit <-
+                                                     alldiffs.obj$predictions[["predicted.value"]] -
+                                                     0.5 * overall.meanLSD
+                                                   upper.halfLeastSignificant.limit <-
+                                                     alldiffs.obj$predictions[["predicted.value"]] +
+                                                     0.5 * overall.meanLSD
+                                                 }
                                                })
           } else
           {              
@@ -1298,6 +1307,12 @@ redoErrorIntervals.alldiffs <- function(alldiffs.obj, error.intervals = "Confide
                                   preds[["predicted.value"]] - 0.5 * preds$meanLSD
                                 upper.halfLeastSignificant.limit <- 
                                   preds[["predicted.value"]] + 0.5 * preds$meanLSD
+                                if (any(preds$meanLSD == 0))
+                                {
+                                  lower.halfLeastSignificant.limit[preds$meanLSD == 0] <- NA
+                                  upper.halfLeastSignificant.limit[preds$meanLSD == 0] <- NA
+                                } 
+                                  
                               })
               alldiffs.obj$predictions <- preds[, -match("meanLSD", names(preds))]
               attr(alldiffs.obj$predictions, which = "heading") <- preds.attr$heading
