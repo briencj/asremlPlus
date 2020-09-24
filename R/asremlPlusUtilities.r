@@ -120,6 +120,7 @@
   mod.ch <- lapply(mod, 
                    function(m) 
                    {
+                     attributes(m) <- NULL
                      m <- capture.output(m)
 #                     m <- m[-length(m)]
                      if (length(m) > 1)

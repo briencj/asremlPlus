@@ -1,5 +1,11 @@
 \name{news}
 \title{News for Package asremlPlus}
+\section{asremlPlus Version 4.2-24 (2020-09-24)}{
+  \itemize{
+    \item{Include a \code{key} option in the \code{which} that produces \code{vparametersummary} rather than the full \code{asremlsummary}.}
+    \item{Remove attributes from formuale when executing printFormulae.}
+    \item{Add the ChickpeaEnd data set.}
+}}
 \section{asremlPlus Version 4.2-23 (2020-09-07)}{
   \itemize{
     \item{Modify code so that error intervals are set to NA when the LSDs are zero.}

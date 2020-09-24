@@ -281,8 +281,11 @@ setOldClass("asrtests")
   if (is.character(validasrt))
     stop(validasrt)
   
-  options <- c("asremlsummary", "pseudoanova", "wald.tab", "testsummary", "all")
+  options <- c("asremlsummary", "vparametersummary", "pseudoanova", "wald.tab", 
+               "testsummary", "key", "all")
    opt <- options[unlist(lapply(which, check.arg.values, options=options))]
+   if (all(c("key", "all") %in% opt))
+     stop("Can only specify one of key and all for which argument")
    if ("wald.tab" %in% opt)
    {
      opt[match("wald.tab", opt)] <- "pseudoanova"
@@ -290,15 +293,22 @@ setOldClass("asrtests")
    }
    
    #print summary of asreml.obj
-   if ("asremlsummary" %in% opt | "all" %in% opt)
+   if (any(c("asremlsummary", "all") %in% opt))
      print(summary(x$asreml.obj), ...)
    
+   #print vparameter summary of asreml.obj
+   if (any(c("vparametersummary", "key") %in% opt))
+   {
+     cat("\n\n####  Summary of the fitting of the variance parameters\n\n")
+     print(summary(x$asreml.obj)$varcomp, ...)
+   }
+   
    #print wald.tab
-   if ("pseudoanova" %in% opt | "all" %in% opt)
+   if (any(c("pseudoanova", "key", "all") %in% opt))
      print.wald.tab(x$wald.tab, colourise = colourise, ...)
 
    #print test.summary
-   if ("testsummary" %in% opt | "all" %in% opt)
+   if (any(c("testsummary", "key", "all") %in% opt))
      print.test.summary(x$test.summary, which.print = "all", ...)
 
    invisible()

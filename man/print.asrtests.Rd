@@ -8,9 +8,13 @@
 \arguments{
  \item{x}{An \code{\link{asrtests.object}}.}
  \item{which}{Which elements of the \code{\link{asrtests.object}} to print. Possible
-             values are some combination of \code{asremlsummary}, \code{pseudoanova}, 
-             \code{wald.tab}, \code{testsummary} and \code{all}. The option 
-             \code{wald.tab} is a synonym for \code{pseudoanova}.}
+             values are some combination of \code{asremlsummary}, \code{vparametersummary},
+             \code{pseudoanova}, \code{wald.tab}, \code{testsummary} and \code{key} or 
+             \code{all}. The option \code{wald.tab} is a synonym for \code{pseudoanova}. 
+             The options \code{key} and \code{all} are mutually exclusive; \code{key} 
+             includes \code{vparametersummary}, but not the rest of \code{asremlsummary}, while 
+             \code{all} includes the full \code{asremlsummary} that includes the 
+             \code{vparametersummary}.}
  \item{colourise}{A \code{\link{logical}} which, if \code{TRUE}, results in the header 
                   text produced by \code{wald.asreml} being displayed in a different colour, if 
                   supported by the output terminal device. It overrides the \code{TRUE} 
