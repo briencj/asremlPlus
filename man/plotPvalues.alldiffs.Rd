@@ -115,9 +115,9 @@
 \seealso{\code{\link{plotPvalues.data.frame}}, \code{\link{allDifferences.data.frame}}, 
          \code{\link{sort.alldiffs}}, \code{\link{subset.alldiffs}}, \code{ggplot}}
 \examples{
-##Halve WaterRunoff data to reduce time to execute
+##Subset WaterRunoff data to reduce time to execute
 data(WaterRunoff.dat)
-tmp <- subset(WaterRunoff.dat, Date == "05-18")
+tmp <- subset(WaterRunoff.dat, Date == "05-18" & Benches != "3")
 
 ##Use asreml to get predictions and associated statistics
 
@@ -125,9 +125,9 @@ tmp <- subset(WaterRunoff.dat, Date == "05-18")
 asreml.options(keep.order = TRUE) #required for asreml-R4 only
 current.asr <- asreml(fixed = pH ~ Benches + (Sources * (Type + Species)), 
                       random = ~ Benches:MainPlots,
-                      keep.order=TRUE, data= tmp))
+                      keep.order=TRUE, data= tmp)
 current.asrt <- as.asrtests(current.asr, NULL, NULL)
-SS.diffs <- predictPlus.asreml(classify = "Sources:Type", 
+TS.diffs <- predictPlus.asreml(classify = "Sources:Type", 
                                asreml.obj = current.asr, tables = "none", 
                                wald.tab = current.asrt$wald.tab, 
                                present = c("Type","Species","Sources"))
@@ -138,9 +138,9 @@ SS.diffs <- predictPlus.asreml(classify = "Sources:Type",
 if (requireNamespace("lmerTest", quietly = TRUE) & 
     requireNamespace("emmeans", quietly = TRUE))
 {
-  m1.lmer <- lmerTest::lmer(pH ~ Benches + (Sources * (Type + Species)) + 
-                              (1|Benches:MainPlots),
-                            data=na.omit(tmp))
+  m1.lmer <- lmerTest::lmer(pH ~ Benches + Sources * Species + 
+                                   (1|Benches:MainPlots),
+                            data=tmp)
   TS.emm <- emmeans::emmeans(m1.lmer, specs = ~ Sources:Species)
   TS.preds <- summary(TS.emm)
   den.df <- min(TS.preds$df, na.rm = TRUE)

@@ -53,7 +53,9 @@
 \author{Chris Brien}
 \seealso{\code{\link{plotPvalues.alldiffs}}, \code{\link{allDifferences.data.frame}}, \code{ggplot}}
 \examples{
+##Subset WaterRunoff data to reduce time to execute
 data(WaterRunoff.dat)
+tmp <- subset(WaterRunoff.dat, Date == "05-18")
 
 ##Use asreml to get predictions and associated statistics
 
@@ -61,7 +63,7 @@ data(WaterRunoff.dat)
 asreml.options(keep.order = TRUE) #required for asreml-R4 only
 current.asr <- asreml(fixed = pH ~ Benches + (Sources * (Type + Species)), 
                       random = ~ Benches:MainPlots,
-                      keep.order=TRUE, data= WaterRunoff.dat))
+                      keep.order=TRUE, data= tmp))
 current.asrt <- as.asrtests(current.asr, NULL, NULL)
 SS.diffs <- predictPlus.asreml(classify = "Sources:Type", 
                                asreml.obj = current.asr, tables = "none", 
@@ -74,9 +76,9 @@ SS.diffs <- predictPlus.asreml(classify = "Sources:Type",
 if (requireNamespace("lmerTest", quietly = TRUE) & 
     requireNamespace("emmeans", quietly = TRUE))
 {
-  m1.lmer <- lmerTest::lmer(pH ~ Benches + (Sources * (Type + Species)) + 
+  m1.lmer <- lmerTest::lmer(pH ~ Benches + Sources * Species + 
                               (1|Benches:MainPlots),
-                            data=na.omit(WaterRunoff.dat))
+                            data=tmp)
   TS.emm <- emmeans::emmeans(m1.lmer, specs = ~ Sources:Species)
   TS.preds <- summary(TS.emm)
   den.df <- min(TS.preds$df, na.rm = TRUE)

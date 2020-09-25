@@ -71,10 +71,12 @@
                In either case, as well as the values of the linear combinations, 
                their standard errors, pairwise differences and associated statistics 
                are returned in the \code{\link{alldiffs.object}}.}
- \item{wald.tab}{A \code{data frame} containing the pseudo-anova table for the 
-                 fixed terms produced by a call to \code{wald.asreml}. The main 
-                 use of it here is in getting denominator degrees of freedom when
-                 confidence intervals are to be plotted.}
+ \item{wald.tab}{A \code{\link{data.frame}} containing the pseudo-anova table for the 
+               fixed terms produced by a call to \code{wald.asreml}. The main 
+               use of it here is in determinining the degrees of freedom for 
+               calculating confidence or half-LSD \code{error.intervals} and p-values, 
+               the latter to be stored in the \code{p.differences} component of the 
+               \code{alldiffs.object} that is created.}
  \item{dDF.na}{The method to use to obtain approximate denominator degrees of freedom. 
               when the numeric or algebraic methods produce an \code{NA}. Consistent with 
               when no denDF are available, the default is \code{"residual"} and so the residual 

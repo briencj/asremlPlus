@@ -36,9 +36,9 @@
          \code{\link{predictPlus.asreml}}, \code{\link{predictPresent.asreml}}}
 \examples{
 \donttest{
-##Halve WaterRunoff data to reduce time to execute
+##Subset WaterRunoff data to reduce time to execute
 data(WaterRunoff.dat)
-tmp <- subset(WaterRunoff.dat, Date == "05-18")
+tmp <- subset(WaterRunoff.dat, Date == "05-18" & Benches != "3")
 
 ##Use asreml to get predictions and associated statistics
 
