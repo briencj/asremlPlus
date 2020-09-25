@@ -4,7 +4,7 @@
 \description{Prints a \code{summary} of the asreml object, the \code{pseusdanova} and 
              the test.summary \code{data.frame} that are stored in the 
              \code{\link{asrtests.object}}.}
-\usage{\method{print}{asrtests}(x, which = "all", colourise = FALSE, ...)}
+\usage{\method{print}{asrtests}(x, which = "key", colourise = FALSE, ...)}
 \arguments{
  \item{x}{An \code{\link{asrtests.object}}.}
  \item{which}{Which elements of the \code{\link{asrtests.object}} to print. Possible

@@ -272,7 +272,7 @@ setOldClass("asrtests")
   invisible()
 }
 
-"print.asrtests" <- function(x, which = "all", colourise = FALSE, ...)
+"print.asrtests" <- function(x, which = "key", colourise = FALSE, ...)
  { 
   asr4 <- isASRemlVersionLoaded(4, notloaded.fault = TRUE)
 
