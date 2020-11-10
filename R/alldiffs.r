@@ -349,8 +349,15 @@ setOldClass("alldiffs")
     if (any(c("heading", "all") %in% opt) && !is.null(asr4) && asr4)
     {
       asr.col <- asreml::asreml.options()$colourise
-      if (xor(colourise,asr.col))
-        asreml::asreml.options(colourise = colourise)
+      # if (xor(colourise,asr.col))
+      #   asreml::asreml.options(colourise = colourise)
+      if (length(asr.col) == 0)
+      {
+        if (colourise) 
+          asreml::asreml.options(colourise = colourise)
+      } else 
+        if (xor(colourise,asr.col))
+          asreml::asreml.options(colourise = colourise)
       class(x) <- c("asreml.predict", "data.frame")
       print(x, ...)
       asreml::asreml.options(colourise = asr.col)

@@ -248,8 +248,13 @@ setOldClass("asrtests")
       if (asr4)
       {
         asr.col <- asreml::asreml.options()$colourise
-        if (xor(colourise,asr.col))
-          asreml::asreml.options(colourise = colourise)
+        if (length(asr.col) == 0)
+        {
+          if (colourise) 
+            asreml::asreml.options(colourise = colourise)
+        } else 
+          if (xor(colourise,asr.col))
+            asreml::asreml.options(colourise = colourise)
         print(x, ...)
         asreml::asreml.options(colourise = asr.col)
       } else

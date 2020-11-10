@@ -1,5 +1,9 @@
 \name{news}
 \title{News for Package asremlPlus}
+\section{asremlPlus Version 4.2-25 (2020-11-10)}{
+  \itemize{
+    \item{Try to neutralize problem that occurs with \code{colourise} in print.predictions.frame.}
+}}
 \section{asremlPlus Version 4.2-24 (2020-09-25)}{
   \itemize{
     \item{Include a \code{key} option in the \code{which} that produces \code{vparametersummary} rather than the full \code{asremlsummary}.}
@@ -12,7 +16,7 @@
 }}
 \section{asremlPlus Version 4.2-22 (2020-09-04)}{
   \itemize{
-    \item{Modify code for calculating LSDs so that all zero LSDs are allowed; this is needed when linear transformation have resulted in predictions that are equal.}
+    \item{Modify code for calculating LSDs so that all zero LSDs are allowed; this is needed when a linear transformation has resulted in predictions that are equal.}
 }}
 \section{asremlPlus Version 4.2-21 (2020-07-11)}{
   \itemize{
