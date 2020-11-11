@@ -1,8 +1,9 @@
 \name{news}
 \title{News for Package asremlPlus}
-\section{asremlPlus Version 4.2-25 (2020-11-10)}{
+\section{asremlPlus Version 4.2-25 (2020-11-11)}{
   \itemize{
     \item{Try to neutralize problem that occurs with \code{colourise} in print.predictions.frame.}
+    \item{Rebuild for R 4.0.3 nd recompile vignetted for CRAN submission.}
 }}
 \section{asremlPlus Version 4.2-24 (2020-09-25)}{
   \itemize{
