@@ -1,5 +1,9 @@
 \name{news}
 \title{News for Package asremlPlus}
+\section{asremlPlus Version 4.2-26 (2020-11-11)}{
+  \itemize{
+    \item{M<odify URLs for CRAN submission.}
+}}
 \section{asremlPlus Version 4.2-25 (2020-11-11)}{
   \itemize{
     \item{Try to neutralize problem that occurs with \code{colourise} in print.predictions.frame.}

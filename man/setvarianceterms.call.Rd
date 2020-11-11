@@ -69,7 +69,7 @@
 
 \references{Butler, D. G., Cullis, B. R., Gilmour, A. R., Gogel, B. J. and 
             Thompson, R. (2018). \emph{{ASReml-R} Reference Manual Version 4.}  
-            VSN International Ltd, \url{http://asreml.org}.}
+            VSN International Ltd, \url{https://asreml.org/}.}
 
 \author{Chris Brien}
 \seealso{\code{update.asreml}}
