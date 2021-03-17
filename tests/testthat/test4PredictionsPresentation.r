@@ -460,13 +460,20 @@ test_that("LSDby4", {
                        #linear.transformation = ~(Nozzle + Pressure):Speed,
                        wald.tab = wald.tab,
                        tables = "none")
+  testthat::expect_true("upper.Confidence.limit" %in% names(diffs$predictions))
+  
+  #Calculate LSD, but leave as CIs
   diffs.LSD <- recalcLSD(diffs, meanLSD.type = "factor",
                          LSDby = c("Speed","Pressure"))
   testthat::expect_equal(nrow(diffs.LSD$LSD), 9)
   testthat::expect_true(abs(diffs.LSD$LSD$minLSD[1]- 11.92550) < 1e-05)
   testthat::expect_true(all(abs(diffs.LSD$LSD$minLSD- diffs.LSD$LSD$maxLSD) < 1e-05))
-  diffs.LSD <- redoErrorIntervals(diffs.LSD, error.intervals = "half")
-  testthat::expect_true("upper.halfLeastSignificant.limit" %in% names(diffs.LSD$predictions))
+  testthat::expect_true("upper.Confidence.limit" %in% names(diffs$predictions))
+  
+  #Convert from CI to LSI
+  diffs.LSI <- redoErrorIntervals(diffs.LSD, error.intervals = "half")
+  testthat::expect_true("upper.halfLeastSignificant.limit" %in% names(diffs.LSI$predictions))
+  testthat::expect_equal(nrow(diffs.LSI$LSD), 9)
   diffs <- redoErrorIntervals(diffs, error.intervals = "half", meanLSD.type = "factor",
                        LSDby = c("Speed","Pressure"), wald.tab = wald.tab,
                        tables = "none")
@@ -474,4 +481,46 @@ test_that("LSDby4", {
   testthat::expect_equal(nrow(diffs$LSD), 9)
   testthat::expect_true(abs(diffs$LSD$minLSD[1]- 11.92550) < 1e-05)
   testthat::expect_true(all(abs(diffs$LSD$minLSD- diffs$LSD$maxLSD) < 1e-05))
+  
+  #Test changing the LSDby
+  testthat::expect_warning(diff.Press <- 
+                             redoErrorIntervals(diffs, error.intervals = "half", 
+                                                meanLSD.type = "factor",
+                                                LSDby = "Pressure", wald.tab = wald.tab,
+                                                tables = "none"))
+  diff.Press$LSD
+  testthat::expect_equal(nrow(diff.Press$LSD), 3)
+  testthat::expect_true(abs(diff.Press$LSD$minLSD[1]- 11.92550) < 1e-05)
+  testthat::expect_true(abs(diff.Press$LSD$meanLSD[1]- 41.13342) < 1e-05)
+  testthat::expect_true(abs(diff.Press$LSD$maxLSD[1]- 67.62672) < 1e-05)
+  
+  #No meanLSD.type
+  testthat::expect_warning(diff.Press <- 
+                             redoErrorIntervals(diffs, error.intervals = "half", 
+                                                LSDby = "Pressure", wald.tab = wald.tab,
+                                                tables = "none"))
+  testthat::expect_equal(nrow(diff.Press$LSD), 3)
+  testthat::expect_true(abs(diff.Press$LSD$minLSD[1]- 11.92550) < 1e-05)
+  testthat::expect_true(abs(diff.Press$LSD$meanLSD[1]- 41.13342) < 1e-05)
+  testthat::expect_true(abs(diff.Press$LSD$maxLSD[1]- 67.62672) < 1e-05)
+  
+  testthat::expect_warning(diff.all <- 
+                             redoErrorIntervals(diffs, error.intervals = "half", 
+                                                meanLSD.type = "overall",
+                                                LSDby = NULL, wald.tab = wald.tab,
+                                                tables = "none"))
+  testthat::expect_equal(nrow(diff.all$LSD), 1)
+  testthat::expect_true(rownames(diff.all$LSD) == "overall")
+  testthat::expect_true(abs(diff.all$LSD$minLSD[1]- 11.92550) < 1e-05)
+
+  #meanLSD.type = overall only
+  testthat::expect_warning(diff.all <- 
+                             redoErrorIntervals(diffs, error.intervals = "half", 
+                                                meanLSD.type = "overall",
+                                                wald.tab = wald.tab,
+                                                tables = "none"))
+  testthat::expect_equal(nrow(diff.all$LSD), 1)
+  testthat::expect_true(abs(diff.all$LSD$minLSD[1]- 11.92550) < 1e-05)
+  
 })
+

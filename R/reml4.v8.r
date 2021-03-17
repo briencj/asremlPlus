@@ -2842,7 +2842,6 @@ atLevelsMatch <- function(new, old, call)
                                          meanLSD.type = meanLSD.type, LSDby = LSDby,
                                          transform.power = transform.power, 
                                          offset = offset, scale = scale)
- 
   } else
   {
     #Linear transformation required - send transform info to addBacktransforms.alldiffs

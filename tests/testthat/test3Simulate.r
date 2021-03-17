@@ -2,6 +2,37 @@
 context("model_selection3")
 asr3.lib <- "D:\\Analyses\\R oldpkg" 
 
+cat("#### Test for parallel processing with asreml3\n")
+test_that("parallel_asreml3", {
+  skip_if_not_installed("asreml")
+  skip_on_cran()
+  library(dae)
+  library(asremlPlus)
+  library(asreml, lib.loc = asr3.lib)
+  library(parallel)
+  library(foreach)
+  library(doParallel)
+  ### load a data set 
+  data(Wheat.dat)
+  
+  #'## Analyze thechick pea data multiple times using lapply
+  n <- 100
+  
+  ## Testing of parallel processing
+  ### Analyze the chick pea data set n times in parallel
+  (ncores <- parallel::detectCores())
+  (cl <- makeCluster(ncores))
+  registerDoParallel(cl)
+  fits <- foreach (i = 1:n, .packages = c("asreml","asremlPlus"))  %dopar%
+    { 
+      current.asr <- asreml(yield ~ Rep + Variety, 
+                            random = ~ Row + units,
+                            residual = ~ ar1(Row):ar1(Column), 
+                            data=Wheat.dat)
+    }
+  stopCluster(cl)
+})
+
 cat("#### Test for simulate.asreml with asreml3\n")
 test_that("simulate_asreml3", {
   skip_if_not_installed("asreml")

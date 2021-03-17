@@ -1,5 +1,37 @@
 #devtools::test("asremlPlus")
 context("model_selection")
+Sys.setenv("R_TESTS" = "")
+
+cat("#### Test for parallel processing with asreml4\n")
+test_that("parallel_asreml4", {
+  skip_if_not_installed("asreml")
+  skip_on_cran()
+  library(dae)
+  library(asreml)
+  library(asremlPlus)
+  library(parallel)
+  library(foreach)
+  library(doParallel)
+  ### load a data set 
+  data(Wheat.dat)
+  
+  #'## Analyze the chick pea data multiple times using foreach
+  n <- 100
+  
+  ## Testing of parallel processing
+  ### Analyze the chick pea data set n times in parallel
+  (ncores <- parallel::detectCores())
+  (cl <- makeCluster(ncores))
+  registerDoParallel(cl)
+  fits <- foreach (i = 1:n, .packages = c("asreml","asremlPlus"))  %dopar%
+    { 
+      current.asr <- asreml(fixed    = yield ~ Rep + Variety, 
+                            random   = ~ Row + units,
+                            residual = ~ ar1(Row):ar1(Column), 
+                            data = Wheat.dat)
+    }
+  stopCluster(cl)
+})
 
 cat("#### Test for simulate.asreml with asreml4\n")
 test_that("simulate_asreml4", {

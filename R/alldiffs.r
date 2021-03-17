@@ -1034,11 +1034,10 @@ recalcLSD.alldiffs <- function(alldiffs.obj, meanLSD.type = "overall", LSDby = N
   minLSD <- t.value * sqrt(min(ksed))
   maxLSD <- t.value * sqrt(max(ksed))
   meanLSD <- t.value * sqrt(mean(ksed))
-  stats <- cbind(minLSD, meanLSD, maxLSD)
-  names(stats) <- c("minLSD", "meanLSD", "maxLSD")
+#  stats <- cbind(minLSD, meanLSD, maxLSD)
+  stats <- data.frame(minLSD = minLSD, meanLSD = meanLSD, maxLSD = maxLSD)
   return(stats)
 }
-
 
 #Function to calculate the LSDs for combinations of the levels of the by factor(s)
 sliceLSDs <- function(alldiffs.obj, by, t.value, alpha = 0.05, zero.tolerance = 1E-04)
@@ -1180,19 +1179,54 @@ redoErrorIntervals.alldiffs <- function(alldiffs.obj, error.intervals = "Confide
       {
         avLSD <- attr(alldiffs.obj, which = "meanLSD.type")
         if (is.null(avLSD))
+        {
           avLSD <- "overall"
-        LSDby <- attr(alldiffs.obj, which = "LSDby")
+        }
+        if (avLSD == "factor.combinations" && is.null(LSDby))
+        {
+          LSDby <- attr(alldiffs.obj, which = "LSDby")
+          if (is.null(LSDby))
+            stop("meanLSD.type is factor.combinations, but LSDby is not set")
+        }
       }
-      if (is.null(alldiffs.obj$LSD) || avLSD != attr(alldiffs.obj, which = "meanLSD.type"))
+      if (avLSD != "factor.combinations")
+        LSDby <- NULL
+
+      #Determine if no LSD component or the avLSD and LSDby do not match the attributes of alldiff.obj
+      avLSD.diff <- attr(alldiffs.obj, which = "meanLSD.type")
+      LSDby.diff <- attr(alldiffs.obj, which = "LSDby")
+      avLSD.same <- TRUE
+      LSDby.same <- TRUE
+      if (!(is.null(avLSD.diff) & is.null(avLSD)))
+      {
+        if (!is.null(avLSD.diff) & !is.null(avLSD))
+        {
+          avLSD.same <- avLSD.diff == avLSD
+          if (avLSD.same & avLSD == "factor.combinations")
+          {
+            if (is.null(LSDby.diff) & is.null(LSDby))
+              stop("LSDby not set for meanLSD.type set to factor.combinations")
+            else 
+              if (!is.null(LSDby.diff) & !is.null(LSDby))
+              {
+                LSDby.same <- all(LSDby.diff == LSDby)
+              } else
+                LSDby.same <- FALSE
+          }
+        }
+      }
+      #If no LSD component or not match recalcLSDs
+      if (!is.null(alldiffs.obj$LSD) | !avLSD.same | !LSDby.same)
         alldiffs.obj <- recalcLSD(alldiffs.obj, meanLSD.type = avLSD, LSDby = LSDby, 
                                   alpha = alpha, ...)
       #Calculate overall and individual sed ranges and overall mean LSD
       overall.LSDs <- LSDstats(alldiffs.obj$sed, t.value = t.value)
-      overall.sed.range <- abs(overall.LSDs["maxLSD"] - overall.LSDs["minLSD"]) / 
-                                        overall.LSDs["meanLSD"]
+      rownames(overall.LSDs) <- "overall"
+      overall.sed.range <- unlist(abs(overall.LSDs["maxLSD"] - overall.LSDs["minLSD"]) / 
+                                    overall.LSDs["meanLSD"])
       if (is.nan(overall.sed.range))
         overall.sed.range <- 0
-      overall.meanLSD <- overall.LSDs["meanLSD"]
+      overall.meanLSD <- unlist(overall.LSDs["meanLSD"])
       nLSD <- length(alldiffs.obj$LSD$meanLSD)
       sed.range <- abs(alldiffs.obj$LSD$minLSD - alldiffs.obj$LSD$maxLSD) /  alldiffs.obj$LSD$meanLSD
       sed.range[is.nan(sed.range)] <- 0
@@ -1220,10 +1254,11 @@ redoErrorIntervals.alldiffs <- function(alldiffs.obj, error.intervals = "Confide
       {
         if (avLSD == "overall")
         {
+          if (nLSD != 1)
+            stop("There is not just one LSD for meanLSD.type overall")
+          rownames(alldiffs.obj$LSD) <- "overall"
           if (!is.na(avsed.tolerance) & overall.sed.range <= avsed.tolerance)
           {
-            if (nLSD != 1)
-              stop("There is not just one LSD for meanLSD.type overall")
             alldiffs.obj$predictions <- within(alldiffs.obj$predictions,
                                                {
                                                  if (overall.meanLSD == 0)
@@ -1627,6 +1662,7 @@ redoErrorIntervals.alldiffs <- function(alldiffs.obj, error.intervals = "Confide
         if (avLSD == "overall")
         {
           LSDs<- LSDstats(alldiffs.obj$sed, t.value)
+          rownames(LSDs) <- "overall"
           minLSD <- LSDs["minLSD"]
           maxLSD <- LSDs["maxLSD"]
           meanLSD <- LSDs["meanLSD"]

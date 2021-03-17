@@ -1,8 +1,13 @@
 \name{news}
 \title{News for Package asremlPlus}
+\section{asremlPlus Version 4.2-27 (2021-03-13)}{
+  \itemize{
+    \item{Fix bugs in redoErrorIntervals.alldiff concerning whether or not meanLSD.type and LSDby settings result in the LSD component being recalculated.}
+    \item{Add rowname \code{overall} to the LSD component when \code{meanLSD.type} is set to \code{overall}}
+}}
 \section{asremlPlus Version 4.2-26 (2020-11-11)}{
   \itemize{
-    \item{M<odify URLs for CRAN submission.}
+    \item{Modify URLs for CRAN submission.}
 }}
 \section{asremlPlus Version 4.2-25 (2020-11-11)}{
   \itemize{
