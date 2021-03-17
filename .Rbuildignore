@@ -8,3 +8,4 @@
 ^README.*$
 ^LICENSE.md$
 ^LICENSE.html$
+^\tests\testthat\testthat-problems.rds$

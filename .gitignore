@@ -6,3 +6,4 @@
 .bugs
 .vignettes
 .tests
+tests/**/testthat-problems.rds
