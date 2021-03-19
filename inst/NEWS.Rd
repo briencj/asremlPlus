@@ -1,5 +1,27 @@
 \name{news}
 \title{News for Package asremlPlus}
+\section{asremlPlus Version 4.2-32 (2021-03-19)}{
+  \itemize{
+    \item{Rebuild vignerttes.}
+    \item{Modify more links to asreml.}
+}}
+\section{asremlPlus Version 4.2-31 (2021-03-19)}{
+  \itemize{
+    \item{Modify link to asreml.}
+}}
+\section{asremlPlus Version 4.2-30 (2021-03-18)}{
+  \itemize{
+    \item{Revise doi specification in a link to a reference in the manual.}
+    \item{Increment version number for resubmission.}
+}}
+\section{asremlPlus Version 4.2-29 (2021-03-18)}{
+  \itemize{
+    \item{Increment version number for resubmission.}
+}}
+\section{asremlPlus Version 4.2-28 (2021-03-17)}{
+  \itemize{
+    \item{Recompile for CRAN submission.}
+}}
 \section{asremlPlus Version 4.2-27 (2021-03-13)}{
   \itemize{
     \item{Fix bugs in redoErrorIntervals.alldiff concerning whether or not meanLSD.type and LSDby settings result in the LSD component being recalculated.}

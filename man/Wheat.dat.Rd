@@ -20,7 +20,7 @@ The response variable is the grain yield.
 \source{
 Butler, D. G., Cullis, B. R., Gilmour, A. R., Gogel, B. J. and 
             Thompson, R. (2018). \emph{{ASReml-R} Reference Manual Version 4.}  
-            VSN International Ltd, \url{https://asreml.org/}.
+            VSN International Ltd, \url{https://asreml.kb.vsni.co.uk/}.
             
 Gilmour, A. R., et al. (1995) Average Information REML: An efficient algorithm for 
             variance parameter estimation in linear mixed models. \emph{Biometrics}, 
