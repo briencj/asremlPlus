@@ -117,7 +117,11 @@
       ic <- infoCriteria(asreml.obj, IClikelihood = ic.lik, 
                          bound.exclusions = bound.exclusions)
     else
+    {
       ic <- ic.NA
+      ic$varDF <- infoCriteria(asreml.obj, IClikelihood = "REML", 
+                               bound.exclusions = bound.exclusions)$varDF
+    }
     test.summary <- addtoTestSummary(test.summary, terms = label, 
                                      DF=ic$fixedDF, denDF = ic$varDF, p = NA, 
                                      AIC = ic$AIC, BIC = ic$BIC, 
@@ -2239,54 +2243,55 @@ atLevelsMatch <- function(new, old, call)
   
   #check convergence
   if (!allow.unconverged && (!asreml.obj$converge | !asreml.new.obj$converge))
+  {
+    p <- NA
+    if (!asreml.obj$converge)
+    {
+      if (!asreml.new.obj$converge)
       {
-        p <- NA
-        if (!asreml.obj$converge)
-        {
-          if (!asreml.new.obj$converge)
-          {
-            action <- "Unchanged - both unconverged"
-            change <- FALSE
-          } else
-          {
-            action <- "Swappped - old unconverged"
-            change <- TRUE
-          }
-        } else
-        {
-          action <- "Unchanged - new unconverged"
-          change <- FALSE
-        }
+        action <- "Unchanged - both unconverged"
+        change <- FALSE
+      } else
+      {
+        action <- "Swappped - old unconverged"
+        change <- TRUE
+      }
+    } else
+    {
+      action <- "Unchanged - new unconverged"
+      change <- FALSE
+    }
   } else
   {
     #Evaluate the test
-    if (simpler)
-    { 
-      if (test$DF <= 0)
-        p <- NA
-      else
-        p <- test$p
-      if (!is.na(p) & p <= alpha)
-        action <- "Unswapped"
-      else
+    if (test$DF <= 0)
+    {
+      p <- NA
+      action <- "Unswapped"
+    } else
+    {
+      if (simpler)
       { 
-        action = "Swapped"
-        change <- TRUE
-      }
-    }
-    else
-    { 
-      if (test$DF <= 0)
-        p <- NA
-      else
         p <- test$p
-      if (!is.na(p) & p <= alpha)
-      { 
-        action = "Swapped"
-        change <- TRUE
+        if (!is.na(p) & p <= alpha)
+          action <- "Unswapped"
+        else
+        { 
+          action = "Swapped"
+          change <- TRUE
+        }
       }
       else
-        action = "Rejected"
+      { 
+        p <- test$p
+        if (!is.na(p) & p <= alpha)
+        { 
+          action = "Swapped"
+          change <- TRUE
+        }
+        else
+          action = "Rejected"
+      }
     }
     
     #check convergence, when it is allowed

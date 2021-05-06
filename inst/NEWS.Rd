@@ -1,5 +1,10 @@
 \name{news}
 \title{News for Package asremlPlus}
+\section{asremlPlus Version 4.2-33 (2021-05-06)}{
+  \itemize{
+    \item{Modify testresidual to not change the variance model when there is no difference in the variance DF between the models being compared.}
+    \item{In as.asrtests, add variance DF to \code{test.summary} when forming an \code{asrtests} object.}
+}}
 \section{asremlPlus Version 4.2-32 (2021-03-19)}{
   \itemize{
     \item{Rebuild vignerttes.}

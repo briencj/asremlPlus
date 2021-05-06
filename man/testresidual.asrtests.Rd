@@ -15,8 +15,9 @@
        nested. The test is a REML likelihood ratio test that is performed using 
        \code{\link{REMLRT.asreml}}, which is only valid if the models are nested. 
        It compares the newly fitted model with the fit of the model in 
-       \code{asrtest.obj}. A row is added to the \code{test.summary} 
-       \code{data.frame} using the supplied \code{label}.}
+       \code{asrtest.obj}. If the two models have the same number of variance 
+       parameters, then no change is made to the residual. A row is added to the 
+       \code{test.summary} \code{data.frame} using the supplied \code{label}.}
 \usage{
 \method{testresidual}{asrtests}(asrtests.obj, terms=NULL, label = "R model", 
              simpler = FALSE, alpha = 0.05, allow.unconverged = TRUE, 

@@ -15,8 +15,10 @@
              the \code{\link{recalcWaldTab}} arguments supplied via \code{\dots}.
 
              The \code{label} argument can be used to include an entry in \code{test.summary} 
-             for the starting model. If a \code{label} is included, the information criteria 
-             calculated using \code{asreml.obj} can also be added to the \code{test.summary}.
+             for the starting model. If a \code{label} is included, (i) the information criteria 
+             calculated using the \code{asreml.obj} will be added to the \code{test.summary}, if
+             \code{IClikelihood} is not set to \code{none} and (ii) the number of variance 
+             parameters is included in the denDF column, if \code{IClikelihood} is set to \code{none}.
 }
 
 \usage{

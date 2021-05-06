@@ -208,22 +208,31 @@
               the classify term, \code{Bar} or \code{Line} and, if \code{error.intervals} 
               is not \code{"none"}, one of \code{SE}, \code{CI} or \code{LSI}. The 
               file will be saved as a `png' file in the current work directory.}
- \item{transform.power}{A number specifying the power of a transformation, if one 
-              has been applied to the response variable. Unless it is equal to 1, the default, 
-              back-transforms of the predictions will be obtained and presented in tables 
-              or graphs as appropriate. The back-transform will raise the predictions to the 
-              power equal to the reciprocal of \code{transform.power}, unless it equals 0 in 
-              which case the exponential will be taken. Any scaling and offsetting will also be 
-              taken into account in the backtransformation.} 
+ \item{transform.power}{A \code{\link{numeric}} specifying the power of a transformation, if 
+              one has been applied to the response variable. Unless it is equal 
+              to 1, the default, back-transforms of the predictions will be 
+              obtained and stored in the \code{backtransorms} component of the 
+              \code{\link{alldiffs.object}}. The \code{plots} and \code{tables} arguments 
+              control the plotting and output of the \code{predictions} and 
+              \code{backtransforms}. 
+              The back-transformation raises the predictions to the power equal 
+              to the reciprocal of \code{transform.power}, unless it equals 0 in 
+              which case the exponential of the predictions is taken.} 
  \item{offset}{A number that has been added to each value of the response after any scaling 
                and before applying any power transformation. Unless it is equal to 0, the 
-               default, back-transforms of the predictions will be obtained and presented in 
-               tables or graphs as appropriate. The backtransformation will, after 
+               default, back-transforms of the predictions will be obtained and stored in 
+               the \code{backtransorms} component of the \code{\link{alldiffs.object}}. 
+               The \code{plots} and \code{tables} arguments 
+              control the plotting and output of the \code{predictions} and 
+              \code{backtransforms}. The backtransformation will, after 
                backtransforming for any power transformation, subtract the \code{offset}.}
  \item{scale}{A number by which each value of the response has been multiply before adding 
                any offset and applying any power transformation. Unless it is equal to 1, the
-               default, back-transforms of the predictions will be obtained and presented in 
-               tables or graphs as appropriate. The backtransformation will, after backtransforming 
+               default, back-transforms of the predictions will be obtained and stored in 
+               the \code{backtransorms} component of the \code{\link{alldiffs.object}}. 
+               The \code{plots} and \code{tables} arguments 
+              control the plotting and output of the \code{predictions} and 
+              \code{backtransforms}. The backtransformation will, after backtransforming 
                for any power transformation and then subtracting the offset, divide by the \code{scale}.}
  \item{pairwise}{A logical indicating whether all pairise differences of the
                 \code{predictions} and their standard errors and p-values are to be 

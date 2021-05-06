@@ -68,7 +68,8 @@
                 results of evaluating a \code{\link{ggplot}} function. 
                 It is created by calling the \code{\link{list}} function with 
                 a \code{\link{ggplot}} function call for each element. 
-                It is passed to \code{ggplot} via \code{\link{plotPvalues.data.frame}}.}
+                It is passed to \code{ggplot} via \code{\link{plotPvalues.data.frame}} 
+                to be applied in creating the \code{ggplot} object.}
  \item{printPlot}{A \code{logical} indicating whether or not the a plot is to be printed. This would 
                 be used when just the returned \code{data.frame} is required.}
 \item{sortFactor}{A \code{character} containing the name of the 

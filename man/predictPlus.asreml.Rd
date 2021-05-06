@@ -204,8 +204,9 @@
              equal to \code{"halfLeastSignificant"}, they will be stored 
              irrespective of the value of \code{pairwise}.}
 \item{Vmatrix}{A \code{\link{logical}} indicating whether the variance matrix of the 
-             \code{predictions} will be stored as a component of the \code{\link{alldiffs.object}} 
-             that is returned. If \code{linear.transformation} is set, it will 
+             \code{predictions} will be stored as a component of the 
+             \code{\link{alldiffs.object}} that is returned. 
+              If \code{linear.transformation} is set, it will 
              be stored irrespective of the value of \code{Vmatrix}.}
  \item{tables}{A \code{\link{character}} vector containing a combination of 
               \code{none}, 
@@ -218,7 +219,8 @@
  \item{transform.power}{A \code{\link{numeric}} specifying the power of a transformation, if 
               one has been applied to the response variable. Unless it is equal 
               to 1, the default, back-transforms of the predictions will be 
-              obtained and presented in tables or graphs as appropriate. 
+              obtained and stored in the \code{backtransorms} component of the 
+              \code{\link{alldiffs.object}}. 
               The back-transformation raises the predictions to the power equal 
               to the reciprocal of \code{transform.power}, unless it equals 0 in 
               which case the exponential of the predictions is taken.} 
