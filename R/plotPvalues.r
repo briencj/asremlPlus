@@ -3,7 +3,7 @@
 "plotPvalues.data.frame" <- function(object, p = "p",  x, y, 
                                      gridspacing = 0, show.sig = FALSE, 
                                      triangles = "both", 
-                                     title = NULL, axis.labels = NULL, 
+                                     title = NULL, axis.labels = NULL, axis.text.size = 12, 
                                      colours = RColorBrewer::brewer.pal(3, "Set2"), 
                                      ggplotFuncs = NULL, printPlot = TRUE, ...)
   #Plots a data.frame of p-values that has columns x, y, p
@@ -31,8 +31,8 @@
                            limits=c(0,1)) +
       labs(x=axis.labels, y=axis.labels, title=title) + 
       theme_bw() +
-      theme(axis.text.x=element_text(angle=90, hjust=1, vjust=0.5, size=12),
-            axis.text.y=element_text(size=12),
+      theme(axis.text.x=element_text(angle=90, hjust=1, vjust=0.5, size=axis.text.size),
+            axis.text.y=element_text(size=axis.text.size),
             plot.title=element_text(face="bold"),
             panel.grid = element_blank(),
             legend.position = "right", 
@@ -84,8 +84,8 @@
                                    gridspacing = 0, factors.per.grid = 0, 
                                    show.sig = FALSE, 
                                    triangles = "both", 
-                                   title = NULL, axis.labels = TRUE, sep=",", 
-                                   colours = RColorBrewer::brewer.pal(3, "Set2"), 
+                                   title = NULL, axis.labels = TRUE, axis.text.size = 12, 
+                                   sep=",", colours = RColorBrewer::brewer.pal(3, "Set2"), 
                                    ggplotFuncs = NULL, printPlot = TRUE, 
                                    sortFactor = NULL, sortWithinVals = NULL, 
                                    sortOrder = NULL, decreasing = FALSE, 
@@ -170,14 +170,15 @@
                              gridspacing = gridspacing, show.sig = show.sig, 
                              triangles = triangles, 
                              axis.labels = pairname, colours = colours, 
-                             printPlot = printPlot, ggplotFuncs = ggplotFuncs)
+                             printPlot = printPlot, 
+                             axis.text.size = axis.text.size, ggplotFuncs = ggplotFuncs)
     else
       plotPvalues.data.frame(object = p, x = "X1", y = "X2",  
                              gridspacing = gridspacing, show.sig = show.sig, 
                              triangles = triangles, 
                              title = title, axis.labels = pairname, 
                              colours = colours, printPlot = printPlot, 
-                             ggplotFuncs = ggplotFuncs)
+                             axis.text.size = axis.text.size, ggplotFuncs = ggplotFuncs)
     
   } else #have sections
   { 
@@ -241,14 +242,16 @@
                                title = paste("Plot of p-values for ",
                                              secname," = ",j, sep = ""),
                                axis.labels = pairname, colours = colours, 
-                               printPlot = printPlot, ggplotFuncs = ggplotFuncs)
+                               printPlot = printPlot, 
+                               axis.text.size = axis.text.size, ggplotFuncs = ggplotFuncs)
       else
         plotPvalues.data.frame(object = psect, x = "X1", y = "X2", 
                                gridspacing = gridspacing, show.sig = show.sig, 
                                triangles = triangles, 
                                title = paste(title," - ", secname," = ", j, sep=""),
                                axis.labels = pairname, colours = colours, 
-                               printPlot = printPlot, ggplotFuncs = ggplotFuncs)
+                               printPlot = printPlot, 
+                               axis.text.size = axis.text.size, ggplotFuncs = ggplotFuncs)
       
     }  
   }

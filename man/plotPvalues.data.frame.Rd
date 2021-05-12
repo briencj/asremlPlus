@@ -7,7 +7,7 @@
              being compared.}
 \usage{\method{plotPvalues}{data.frame}(object, p = "p", x, y, 
             gridspacing = 0, show.sig = FALSE, triangles = "both", 
-            title = NULL, axis.labels = NULL, 
+            title = NULL, axis.labels = NULL, axis.text.size = 12, 
             colours = RColorBrewer::brewer.pal(3, "Set2"), 
             ggplotFuncs = NULL, printPlot = TRUE, ...)}
 \arguments{
@@ -37,6 +37,8 @@
               to adjust gridlines for the omission of the diagonal.}
  \item{title}{A \code{character} string giving the main title for the plot.}
  \item{axis.labels}{A \code{character} string giving the label to use for both the x- and y-axis.}
+ \item{axis.text.size}{A \code{\link{numeric}} giving the size of the \code{labels} on the axes   
+                  of the \code{heatmap}.}
  \item{colours}{A vector of of colours to be passed to the \code{ggplot} function 
                 \code{scale\_colour\_gradientn}.}
  \item{ggplotFuncs}{A \code{\link{list}}, each element of which contains the 

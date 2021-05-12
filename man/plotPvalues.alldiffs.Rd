@@ -19,8 +19,8 @@
 \method{plotPvalues}{alldiffs}(object, sections = NULL, 
             gridspacing = 0, factors.per.grid = 0, 
             show.sig = FALSE, triangles = "both", 
-            title = NULL, axis.labels = TRUE, sep=",", 
-            colours = RColorBrewer::brewer.pal(3, "Set2"), 
+            title = NULL, axis.labels = TRUE, axis.text.size = 12, 
+            sep=",", colours = RColorBrewer::brewer.pal(3, "Set2"), 
             ggplotFuncs = NULL, printPlot = TRUE, 
             sortFactor = NULL, sortWithinVals = NULL, 
             sortOrder = NULL, decreasing = FALSE, ...)}
@@ -60,10 +60,12 @@
               If TRUE, the label is the comma-separated list of factors whose levels 
               combinations are involved in the prediction differences for which the p-values 
               are calculated.}
- \item{colours}{A vector of of colours to be passed to the \code{ggplot} function 
-                \code{scale\_colour\_gradientn}.}
+ \item{axis.text.size}{A \code{\link{numeric}} giving the size of the \code{labels} on the axes   
+                  of the \code{heatmap}.}
  \item{sep}{A \code{character} giving the characters separating the levels of different 
                factors in the row and column names of the \code{p.differences} component. }
+ \item{colours}{A vector of of colours to be passed to the \code{ggplot} function 
+                \code{scale\_colour\_gradientn}.}
  \item{ggplotFuncs}{A \code{\link{list}}, each element of which contains the 
                 results of evaluating a \code{\link{ggplot}} function. 
                 It is created by calling the \code{\link{list}} function with 

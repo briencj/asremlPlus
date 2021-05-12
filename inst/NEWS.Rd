@@ -1,5 +1,9 @@
 \name{news}
 \title{News for Package asremlPlus}
+\section{asremlPlus Version 4.2-34 (2021-05-12)}{
+  \itemize{
+    \item{Add argument \code{axis.text.size} to plotPvalues.data.frame and plotPvalues.alldiffs.}
+}}
 \section{asremlPlus Version 4.2-33 (2021-05-06)}{
   \itemize{
     \item{Modify testresidual to not change the variance model when there is no difference in the variance DF between the models being compared.}
