@@ -6,7 +6,7 @@
              two factors whose levels specify, for each p-value, which factor levels are 
              being compared.}
 \usage{\method{plotPvalues}{data.frame}(object, p = "p", x, y, 
-            gridspacing = 0, show.sig = FALSE, triangles = "both", 
+            gridspacing = 0, show.sig = FALSE, alpha = 0.10, triangles = "both", 
             title = NULL, axis.labels = NULL, axis.text.size = 12, 
             colours = RColorBrewer::brewer.pal(3, "Set2"), 
             ggplotFuncs = NULL, printPlot = TRUE, ...)}
@@ -31,7 +31,10 @@
              `***' indicates that \eqn{p \leq 0.001}{p <= 0.001}, 
              `**' that \eqn{ 0.001 < p \leq 0.01}{0.001 < p <= 0.01}, 
              `*' that \eqn{ 0.01 < p \leq 0.05}{0.01 < p <= 0.05}
-             `.' that \eqn{ 0.05 < p \leq 0.10}{0.05 < p <= 0.10}.}
+             `.' that \eqn{ 0.05 < p \leq 0.10}{0.05 < p <= 0.10}. The last is only 
+             included for \code{alpha} = 0.10.}
+ \item{alpha}{A \code{\link{numeric}} giving the significance level for testing 
+             pairwise differences; must be 0.05 or 0.10.}
  \item{triangles}{A \code{character} indicating whether the plot should include the 
              \code{lower}, \code{upper} or \code{both} traingle(s). Here it is only used 
               to adjust gridlines for the omission of the diagonal.}

@@ -100,6 +100,7 @@ test_that("Wheat_asreml4", {
   testthat::expect_equal(Var.diffs$backtransforms, NULL)
   testthat::expect_equal(as.character(Var.diffs$predictions$Variety[[1]]),"10")
   testthat::expect_silent(plotPvalues(Var.diffs))
+  testthat::expect_silent(plotPvalues(Var.diffs, show.sig = TRUE, alpha = 0.05))
   
   #Test for single-value LSDs
   diffs <- predictPlus(classify = "Variety", 

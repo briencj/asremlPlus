@@ -22,7 +22,7 @@
 \author{Chris Brien}
 \seealso{\code{\link{as.alldiffs}}, \code{\link{allDifferences.data.frame}}, 
          \code{\link{print.alldiffs}}, \code{\link{sort.alldiffs}}, \cr
-         \code{\link{facCombine.alldiffs}}, \code{\link{facRecode.alldiffs}}, 
+         \code{\link{facCombine.alldiffs}}, \code{\link{facRecast.alldiffs}}, 
          \code{\link{renewClassify.alldiffs}}; 
          \code{fac.recode} in package \pkg{dae}.}
 \examples{
@@ -65,8 +65,9 @@
   if (exists("HCL.preds"))
   {
     ## Form an all.diffs object
-    HCL.diffs <- as.alldiffs(predictions = HCL.preds, classify = "Host:Cadavers:Ladybird", 
-                             sed = HCL.sed, vcov = HCL.vcov, tdf = den.df)
+    HCL.diffs <- allDifferences(predictions = HCL.preds, 
+                                classify = "Host:Cadavers:Ladybird", 
+                                sed = HCL.sed, vcov = HCL.vcov, tdf = den.df)
     
     ## Check the class and validity of the alldiffs object
     is.alldiffs(HCL.diffs)

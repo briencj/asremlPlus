@@ -173,7 +173,7 @@ test_that("sort.alldiffs4", {
                       sortWithinVals = list(A = "N3", B = "D4"),
                       decreasing = TRUE)
   testthat::expect_is(diffs1.sort, "alldiffs")
-  testthat::expect_equal(as.character(diffs1.sort$predictions$Genotype[2]),"Wyalkatchem")
+  testthat::expect_equal(as.character(attr(diffs1.sort, which = "sortOrder")[2]),"Wyalkatchem")
   testthat::expect_equal(length(attr(diffs1.sort, which = "sortOrder")), 10)
   #Check plot
   testthat::expect_silent(plotPredictions(data = diffs1.sort$predictions, 
@@ -240,7 +240,7 @@ test_that("sort.alldiffsWater4", {
   testthat::expect_equal(length(m2.asr$vparameters),2)
   current.asrt <- as.asrtests(m2.asr)
   diffs2.sort <- predictPlus(m2.asr, classify = "Sources:Type", 
-                             pairwise = FALSE, error.intervals = "Stand", 
+                             pairwise = FALSE, Vmatrix = TRUE, error.intervals = "Stand", 
                              tables = "none", present = c("Type","Species","Sources"),
                              sortFactor = "Sources", 
                              sortOrder = sort.order)
@@ -524,8 +524,8 @@ test_that("facCombine.alldiffs4", {
   }
   
   ## Form an all.diffs object with predictions obtained with either asreml or lmerTest
-  HCL.diffs <- as.alldiffs(predictions = HCL.preds, classify = "Host:Cadavers:Ladybird", 
-                           sed = HCL.sed, vcov = HCL.vcov, tdf = den.df)
+  HCL.diffs <- allDifferences(predictions = HCL.preds, classify = "Host:Cadavers:Ladybird", 
+                              sed = HCL.sed, vcov = HCL.vcov, tdf = den.df)
   
   ## check the class and validity of the alldiffs object
   is.alldiffs(HCL.diffs)
@@ -544,14 +544,26 @@ test_that("facCombine.alldiffs4", {
                               names(Comb.diffs$predictions)))
   
   ## Recode Ladybird
-  HCL.diffs <- facRecode(HCL.diffs, factor = "Ladybird", newlevels = c("none", "present"))
-  testthat::expect_true(validAlldiffs(HCL.diffs))
-  testthat::expect_true(all(levels(HCL.diffs$predictions$Ladybird) == c("none", "present")))
+  HCL.recode.diffs <- facRecode(HCL.diffs, factor = "Ladybird", newlevels = c("none", "present"))
+  testthat::expect_true(validAlldiffs(HCL.recode.diffs))
+  testthat::expect_true(all(levels(HCL.recode.diffs$predictions$Ladybird) == c("none", "present")))
   
   ## Rename Cadavers
-  HCL.diffs <- facRename(HCL.diffs, factor.names = "Cadavers", newnames = "Cadaver.nos")
-  testthat::expect_true(validAlldiffs(HCL.diffs))
-  testthat::expect_true("Cadaver.nos" %in% names(HCL.diffs$predictions))
+  HCL.recode.diffs <- facRename(HCL.recode.diffs, factor.names = "Cadavers", newnames = "Cadaver.nos")
+  testthat::expect_true(validAlldiffs(HCL.recode.diffs))
+  testthat::expect_true("Cadaver.nos" %in% names(HCL.recode.diffs$predictions))
+  
+  ## Recast Ladybird
+  HCL.recast.diffs <- facRecast(HCL.diffs, factor = "Ladybird", newlabels = c("none", "present"))
+  testthat::expect_true(validAlldiffs(HCL.recast.diffs))
+  testthat::expect_true(all(levels(HCL.recast.diffs$predictions$Ladybird) == c("none", "present")))
+  HCL.recast.diffs <- facRecast.alldiffs(HCL.recast.diffs, factor = "Host", newlevels = c("trefoil", "bean"))
+  testthat::expect_true(validAlldiffs(HCL.recast.diffs))
+  testthat::expect_true(all(levels(HCL.recast.diffs$predictions$Host) == c("trefoil", "bean")))
+  HCL.recast.diffs <- facRecast(HCL.recast.diffs, factor = "Ladybird", newlevels = c("present", "none"), 
+                                newlabels = c("yes","no"))
+  testthat::expect_true(validAlldiffs(HCL.recast.diffs))
+  testthat::expect_true(all(levels(HCL.recast.diffs$predictions$Ladybird) == c("yes", "no")))
   
 })
 

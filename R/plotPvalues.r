@@ -1,7 +1,7 @@
 #'### Functions to plot p-values for a set of pairwise differences
 #+
 "plotPvalues.data.frame" <- function(object, p = "p",  x, y, 
-                                     gridspacing = 0, show.sig = FALSE, 
+                                     gridspacing = 0, show.sig = FALSE, alpha = 0.10,
                                      triangles = "both", 
                                      title = NULL, axis.labels = NULL, axis.text.size = 12, 
                                      colours = RColorBrewer::brewer.pal(3, "Set2"), 
@@ -12,6 +12,8 @@
     stop("One or more of the columns p, x and y are not in object")
   options <- c("both", "upper", "lower")
   tri.opt <- options[check.arg.values(triangles, options)]
+  if (!(alpha %in% c(0.05, 0.10)))
+    stop("alpha must be either 0.05 or 0.10")
   plt <- NULL
   
   if (all(is.na(object[[p]])))
@@ -41,11 +43,14 @@
       guides(fill=guide_colourbar(title = "p", nbin=50))
     if (show.sig)
     { 
-      object$sig <- ifelse(object[p] > 0.1, "",
-                           ifelse(object[p] > 0.05, ".",
+      object$sig <- ifelse(object[p] > alpha, "",
+#                           ifelse(object[p] > 0.05, ".",
                                   ifelse(object[p] > 0.01, "*",
                                          ifelse(object[p] > 0.001, "**",
-                                                "***"))))
+                                                "***")))#)
+      if (alpha == 0.1)
+        if (any(object[p] <= alpha & object[p] > 0.05))
+          object$sig[(object[p] <= alpha & object[p] > 0.05)] <- "."
       plt <- plt + geom_text(data=object, aes_string(label="sig"), size=3)
     }
     
@@ -82,7 +87,7 @@
 
 "plotPvalues.alldiffs" <- function(object, sections = NULL, 
                                    gridspacing = 0, factors.per.grid = 0, 
-                                   show.sig = FALSE, 
+                                   show.sig = FALSE, alpha = 0.10, 
                                    triangles = "both", 
                                    title = NULL, axis.labels = TRUE, axis.text.size = 12, 
                                    sep=",", colours = RColorBrewer::brewer.pal(3, "Set2"), 
@@ -167,14 +172,14 @@
                                    factors.per.grid = factors.per.grid)
     if (is.null(title))
       plotPvalues.data.frame(object = p, x = "X1", y = "X2", 
-                             gridspacing = gridspacing, show.sig = show.sig, 
+                             gridspacing = gridspacing, show.sig = show.sig, alpha = alpha, 
                              triangles = triangles, 
                              axis.labels = pairname, colours = colours, 
                              printPlot = printPlot, 
                              axis.text.size = axis.text.size, ggplotFuncs = ggplotFuncs)
     else
       plotPvalues.data.frame(object = p, x = "X1", y = "X2",  
-                             gridspacing = gridspacing, show.sig = show.sig, 
+                             gridspacing = gridspacing, show.sig = show.sig, alpha = alpha, 
                              triangles = triangles, 
                              title = title, axis.labels = pairname, 
                              colours = colours, printPlot = printPlot, 
@@ -237,7 +242,7 @@
       }
       if (is.null(title))
         plotPvalues.data.frame(object = psect, x = "X1", y = "X2", 
-                               gridspacing = gridspacing, show.sig = show.sig, 
+                               gridspacing = gridspacing, show.sig = show.sig, alpha = alpha, 
                                triangles = triangles, 
                                title = paste("Plot of p-values for ",
                                              secname," = ",j, sep = ""),
@@ -246,7 +251,7 @@
                                axis.text.size = axis.text.size, ggplotFuncs = ggplotFuncs)
       else
         plotPvalues.data.frame(object = psect, x = "X1", y = "X2", 
-                               gridspacing = gridspacing, show.sig = show.sig, 
+                               gridspacing = gridspacing, show.sig = show.sig, alpha = alpha, 
                                triangles = triangles, 
                                title = paste(title," - ", secname," = ", j, sep=""),
                                axis.labels = pairname, colours = colours, 

@@ -1,5 +1,11 @@
 \name{news}
 \title{News for Package asremlPlus}
+\section{asremlPlus Version 4.2-35 (2021-05-16)}{
+  \itemize{
+  \item{Add new function facRecast.alldiffs that supercedes facRecode.alldiffs.}
+  \item{Revise sort.alldiffs to use facRecast.alldiffs to reorder the alldiffs components. This fixed a bug when not all levels of the \code{saortFactor} are present in the subset on which the sort is based.}
+  \item{Add argument \code{alpha} to plotPvalues.data.frame and plotPvalues.alldiffs.}
+}}
 \section{asremlPlus Version 4.2-34 (2021-05-12)}{
   \itemize{
     \item{Add argument \code{axis.text.size} to plotPvalues.data.frame and plotPvalues.alldiffs.}

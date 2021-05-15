@@ -77,8 +77,9 @@ test_that("sort.alldiffs4", {
   diffs1.sort <- sort(diffs, sortFactor = "Genotype", 
                       sortWithinVals = list(A = "N3", B = "D4"),
                       decreasing = TRUE)
+  diffs1.sort <- renewClassify(diffs1.sort, newclassify = "A:B:Genotype")
   testthat::expect_is(diffs1.sort, "alldiffs")
-  testthat::expect_equal(as.character(diffs1.sort$predictions$Genotype[2]),"Wyalkatchem")
+  testthat::expect_equal(as.character(attr(diffs1.sort, which = "sortOrder")[2]),"Wyalkatchem")
   testthat::expect_equal(length(attr(diffs1.sort, which = "sortOrder")), 10)
   #Check plot
   testthat::expect_silent(plotPredictions(data = diffs1.sort$predictions, 

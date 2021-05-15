@@ -26,6 +26,8 @@ export(addBacktransforms,
        estimateV.asreml,
        facCombine,
        facCombine.alldiffs,
+       facRecast,
+       facRecast.alldiffs,
        facRecode,
        facRecode.alldiffs,
        facRename,
@@ -143,6 +145,7 @@ S3method(chooseModel, asrtests)
 S3method(chooseModel, data.frame) 
 S3method(estimateV, asreml) 
 S3method(facCombine, alldiffs)
+S3method(facRecast, alldiffs)
 S3method(facRecode, alldiffs)
 S3method(facRename, alldiffs)
 S3method(getFormulae, asreml)

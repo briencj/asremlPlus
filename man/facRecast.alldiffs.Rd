@@ -1,24 +1,25 @@
-\name{facRecode.alldiffs}
-\alias{facRecode.alldiffs}
-\alias{facRecode}
-\title{Recodes factor levels using values in a vector. The values in the vector do not 
-       have to be unique.}
-\description{Recodes the levels and values of a \code{\link{factor}}, in the \code{prediction} 
-             component of an \code{\link{alldiffs.object}} using each value in the 
-             \code{newlevels} vector to replace the 
-             corresponding value in the vector of \code{levels} of the factor. The matching 
-             changes are made to the other components of the \code{\link{alldiffs.object}}. 
-             The levels of the \code{factors} are recoded using \code{fac.recode} 
-             from the \code{dae} package.
-
-             The functionality of this function has been superceded by \code{\link{facRecast.alldiffs}}.}
-\usage{\method{facRecode}{alldiffs}(object, factor, newlevels,  ...)}
+\name{facRecast.alldiffs}
+\alias{facRecast.alldiffs}
+\alias{facRecast}
+\title{Reorders and/or revises the factor levels using the order of old levels in \code{newlevels} and the new labels for the levels given in \code{newlabels}. The values in \code{newlevels} must be unique.}
+\description{Reorders and revises the levels and labels of a \code{\link{factor}}, in the \code{prediction} 
+             component of an \code{\link{alldiffs.object}}. The values in the 
+             \code{newlevels} vector should be the same as the levels in the existing \code{\link{factor}}, 
+             but the order can be changed. To revise the levels, specify the new levels in the 
+             \code{newlabels} vector and these will replace the corresponding value in the 
+             \code{newlevels} vector. The matching 
+             changes are made to the other components of the \code{\link{alldiffs.object}}.}
+\usage{\method{facRecast}{alldiffs}(object, factor, newlevels = NULL, newlabels, ...)}
 \arguments{
  \item{object}{An \code{\link{alldiffs.object}}.}
  \item{factor}{A \code{\link{character}} containing the name of a \code{\link{factor}} 
-   in the \code{prediction} component of \code{object} whose levels are to be recoded.}
+   in the \code{prediction} component of \code{object} whose levels and labels are to be recast.}
  \item{newlevels}{A \code{\link{vector}} of length \code{levels(factor)} containing 
-                  values to use in the recoding.}
+                  the old levels in the new order for the factor being created. 
+                  If \code{newlevels} is \code{NULL}, then the current levels of \code{levels(factor)} 
+                  are used.}
+ \item{newlabels}{A \code{\link{vector}} of length \code{levels(factor)} containing 
+                  values to use in the revision.}
  \item{...}{Further arguments passed to the \code{\link{factor}} call creating the new 
             \code{\link{factor}}.}
 }
@@ -26,7 +27,7 @@
 \author{Chris Brien}
 \seealso{\code{\link{as.alldiffs}}, \code{\link{allDifferences.data.frame}}, 
          \code{\link{print.alldiffs}}, \code{\link{sort.alldiffs}}, \cr
-         \code{\link{facRecast.alldiffs}}, \code{\link{facCombine.alldiffs}}, \code{\link{facRename.alldiffs}}, 
+         \code{\link{facRecode.alldiffs}}, \code{\link{facCombine.alldiffs}}, \code{\link{facRename.alldiffs}}, 
          \code{\link{renewClassify.alldiffs}}; 
          \code{fac.recode} in package \pkg{dae}.}
 \examples{
@@ -76,9 +77,15 @@
     is.alldiffs(HCL.diffs)
     validAlldiffs(HCL.diffs)
 
-    ## Recode Ladybird
-    HCL.diffs <- facRecode(HCL.diffs, factor = "Ladybird", newlevels = c("none", "present"))
-    
+    ## Recast the Ladybird and Host factors
+    HCL.diffs <- facRecast(HCL.diffs, factor = "Ladybird", 
+                           newlabels = c("none", "present"))
+    HCL.diffs <- facRecast(HCL.diffs, factor = "Ladybird", 
+                           newlevels = c("present", "none"), 
+                           newlabels = c("yes","no"))
+    HCL.diffs <- facRecast.alldiffs(HCL.diffs, factor = "Host", 
+                                    newlevels = c("trefoil", "bean"))
+
     ## Check the validity of HCL.diffs
     validAlldiffs(HCL.diffs)
   }
