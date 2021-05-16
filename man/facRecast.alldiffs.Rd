@@ -1,22 +1,22 @@
 \name{facRecast.alldiffs}
 \alias{facRecast.alldiffs}
 \alias{facRecast}
-\title{Reorders and/or revises the factor levels using the order of old levels in \code{newlevels} and the new labels for the levels given in \code{newlabels}. The values in \code{newlevels} must be unique.}
+\title{Reorders and/or revises the factor levels using the order of old levels in \code{levels.order} and the new labels for the levels given in \code{newlabels}. The values in \code{levels.order} must be unique.}
 \description{Reorders and revises the levels and labels of a \code{\link{factor}}, in the \code{prediction} 
              component of an \code{\link{alldiffs.object}}. The values in the 
-             \code{newlevels} vector should be the same as the levels in the existing \code{\link{factor}}, 
+             \code{levels.order} vector should be the same as the levels in the existing \code{\link{factor}}, 
              but the order can be changed. To revise the levels, specify the new levels in the 
              \code{newlabels} vector and these will replace the corresponding value in the 
-             \code{newlevels} vector. The matching 
+             \code{levels.order} vector. The matching 
              changes are made to the other components of the \code{\link{alldiffs.object}}.}
-\usage{\method{facRecast}{alldiffs}(object, factor, newlevels = NULL, newlabels, ...)}
+\usage{\method{facRecast}{alldiffs}(object, factor, levels.order = NULL, newlabels = NULL, ...)}
 \arguments{
  \item{object}{An \code{\link{alldiffs.object}}.}
  \item{factor}{A \code{\link{character}} containing the name of a \code{\link{factor}} 
    in the \code{prediction} component of \code{object} whose levels and labels are to be recast.}
- \item{newlevels}{A \code{\link{vector}} of length \code{levels(factor)} containing 
+ \item{levels.order}{A \code{\link{vector}} of length \code{levels(factor)} containing 
                   the old levels in the new order for the factor being created. 
-                  If \code{newlevels} is \code{NULL}, then the current levels of \code{levels(factor)} 
+                  If \code{levels.order} is \code{NULL}, then the current levels of \code{levels(factor)} 
                   are used.}
  \item{newlabels}{A \code{\link{vector}} of length \code{levels(factor)} containing 
                   values to use in the revision.}
@@ -27,7 +27,7 @@
 \author{Chris Brien}
 \seealso{\code{\link{as.alldiffs}}, \code{\link{allDifferences.data.frame}}, 
          \code{\link{print.alldiffs}}, \code{\link{sort.alldiffs}}, \cr
-         \code{\link{facRecode.alldiffs}}, \code{\link{facCombine.alldiffs}}, \code{\link{facRename.alldiffs}}, 
+         \code{\link{facCombine.alldiffs}}, \code{\link{facRename.alldiffs}}, 
          \code{\link{renewClassify.alldiffs}}; 
          \code{fac.recode} in package \pkg{dae}.}
 \examples{
@@ -81,10 +81,10 @@
     HCL.diffs <- facRecast(HCL.diffs, factor = "Ladybird", 
                            newlabels = c("none", "present"))
     HCL.diffs <- facRecast(HCL.diffs, factor = "Ladybird", 
-                           newlevels = c("present", "none"), 
+                           levels.order = c("present", "none"), 
                            newlabels = c("yes","no"))
     HCL.diffs <- facRecast.alldiffs(HCL.diffs, factor = "Host", 
-                                    newlevels = c("trefoil", "bean"))
+                                    levels.order = c("trefoil", "bean"))
 
     ## Check the validity of HCL.diffs
     validAlldiffs(HCL.diffs)

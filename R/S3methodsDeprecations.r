@@ -34,7 +34,6 @@ setvarianceterms <- function(call, ...) UseMethod("setvarianceterms")
 allDifferences <- function(predictions, ...) UseMethod("allDifferences")
 facCombine <- function(object, ...) UseMethod("facCombine")
 facRecast <- function(object, ...) UseMethod("facRecast")
-facRecode <- function(object, ...) UseMethod("facRecode")
 facRename <- function(object, ...) UseMethod("facRename")
 plotPvalues <- function(object, ...) UseMethod("plotPvalues")
 plotVariofaces <- function(data, ...) UseMethod("plotVariofaces")
@@ -64,6 +63,17 @@ choose.model.asreml <- function(...)
 
 choose.model.asrtests <- function(...)
 { .Deprecated(new = "chooseModel.asrtests", package = "asremlPlus")
+  invisible()
+}
+
+
+facRecode <- function(...)
+{ .Deprecated(new = "facRecast.alldiffs", package = "asremlPlus")
+  invisible()
+}
+
+facRecode.alldiffs <- function(...)
+{ .Deprecated(new = "facRecast.alldiffs", package = "asremlPlus")
   invisible()
 }
 

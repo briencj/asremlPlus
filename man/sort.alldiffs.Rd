@@ -14,10 +14,9 @@
              If there is only one variable in the \code{classify} then all components are sorted 
              according to the order of the complete set of predictions.
 
-             Note that reordering the \code{classify} variables in the \code{\link{alldiffs.object}} 
-             and changing the order of the rows and columns of the components so 
-             that they are in standard order for the new variable order can be achieved using 
-             either \code{\link{renewClassify.alldiffs}} or \code{\link{allDifferences.data.frame}}.}
+             Note that \code{\link{renewClassify.alldiffs}} is called after sorting to ensure that 
+             the order of the rows and columns of the components is in standard order for the new 
+             variable order.}
 \usage{\method{sort}{alldiffs}(x, decreasing = FALSE, classify = NULL, 
      sortFactor = NULL, sortWithinVals = NULL, sortOrder = NULL, ...)}
 \arguments{

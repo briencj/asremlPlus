@@ -607,7 +607,7 @@ facCombine.alldiffs <- function(object, factors, order="standard", combine.level
   return(object)
 }
 
-facRecast.alldiffs <- function(object, factor, newlevels = NULL, newlabels, ...)
+facRecast.alldiffs <- function(object, factor, levels.order = NULL, newlabels = NULL, ...)
 {
   #Check that a valid object of class alldiffs
   validalldifs <- validAlldiffs(object)  
@@ -618,13 +618,20 @@ facRecast.alldiffs <- function(object, factor, newlevels = NULL, newlabels, ...)
     stop("Some factors are not in the predictions component of object")
   if (length(fac) != 1)
     stop("Only one factor at a time")
-  if (length(unique(newlevels))< length(newlevels))
-    stop("The set of newlevels must be unique")
+  oldlevs <- levels(object$predictions[[fac]])
+  if (is.null(levels.order))
+    levels.order <- levels(object$predictions[[fac]])
+  if (!all(oldlevs %in% levels.order) | length(unique(levels.order)) < length(levels.order))
+    stop("The set of levels.order must be unique and contain all the levels in the factor being recast")
+  if (!is.null(newlabels))
+    if (length(newlabels) != length(oldlevs) | length(unique(newlabels)) < length(newlabels))
+      stop("The newlabels must be a set of unique values equal in length to the number of levels in the factor being recast")
   
   #Recast the factor
-  if (is.null(newlevels))
-    newlevels <- levels(object$predictions[[fac]])
-  object$predictions[fac] <- factor(object$predictions[[fac]], levels = newlevels, 
+  if (is.null(newlabels))
+    object$predictions[fac] <- factor(object$predictions[[fac]], levels = levels.order, ...)
+  else
+    object$predictions[fac] <- factor(object$predictions[[fac]], levels = levels.order, 
                                       labels = newlabels, ...)
   
   #revise the alldiffs component
@@ -663,59 +670,7 @@ facRecast.alldiffs <- function(object, factor, newlevels = NULL, newlabels, ...)
   {
     colnames(object$sed) <- rownames(object$sed) <- pred.lev
   }
-  if (!is.null(newlevels))
-    object <- renewClassify(object, newclassify = attr(object, which = "classify"))
-  return(object)
-}
-
-facRecode.alldiffs <- function(object, factor, newlevels,  ...)
-{
-  #Check that a valid object of class alldiffs
-  validalldifs <- validAlldiffs(object)  
-  if (is.character(validalldifs))
-    stop(validalldifs)
-  fac <- factor
-  if (any(!(fac %in% names(object$predictions))))
-    stop("Some factors are not in the predictions component of object")
-  if (length(fac) != 1)
-    stop("Only one factor at a time")
-  object$predictions[fac] <- fac.recode(object$predictions[[fac]], newlevels = newlevels, ...)
-  
-  if (!is.null(object$backtransforms))
-  {
-    object$backtransforms[fac] <- object$predictions[fac]
-  }
-  
-  classify <- attr(object, which = "classify")
-  if (is.null(classify))
-    stop("The alldiffs object does not have the classify attribute set")
-  response <- attr(object, which = "response")
-  pred.labs <- makePredictionLabels(object$predictions, classify, response)
-  pred.lev <- pred.labs$pred.lev
-  #Set meanLSD attribute of predictions component
-  predictions <- object$predictions
-  if (is.null(object$LSD))
-    attr(predictions, which = "meanLSD") <- NA
-  else
-    attr(predictions, which = "meanLSD") <- object$LSD$meanLSD
-  object$predictions <- predictions
-  
-  if (!is.null(object$vcov))
-  {
-    colnames(object$vcov) <- rownames(object$vcov) <- pred.lev
-  }
-  if (!is.null(object$differences))
-  {
-    colnames(object$differences) <- rownames(object$differences) <- pred.lev
-  }
-  if (!is.null(object$p.differences))
-  {
-    colnames(object$p.differences) <- rownames(object$p.differences) <- pred.lev
-  }
-  if (!is.null(object$sed))
-  {
-    colnames(object$sed) <- rownames(object$sed) <- pred.lev
-  }
+  object <- renewClassify(object, newclassify = attr(object, which = "classify"))
   return(object)
 }
 
@@ -1002,60 +957,8 @@ sort.alldiffs <- function(x, decreasing = FALSE, classify = NULL,
   #Get the order for the full set of predictions
   # - this work for unequal replication of sortFactor
   newlevs <-  val.ord[val.ord$Ord, sortFactor]
-  x <- facRecast(x, sortFactor, newlevels = newlevs)
+  x <- facRecast(x, sortFactor, levels.order = newlevs)
 
-  #   tmp <- x$predictions[c(other.vars, sortFactor)]
-  #   rownames(tmp) <- as.character(1:nrow(tmp))
-  #   tmp <- tmp[do.call(order,tmp),]
-  #   reord <- as.numeric(rownames(tmp))
-  #   tmp <- suppressMessages(plyr::join(tmp, val.ord))
-  #   tmp <- split(tmp, as.list(tmp[other.vars]))
-  #   tmp <- lapply(tmp, 
-  #                 function(d)
-  #                 { d$Ord <- c(1:nrow(d))[order(order(d$Ord))]; return(d)})
-  #   tmp <- do.call(rbind, tmp)
-  #   starts <- reshape::melt(table(tmp[c(other.vars)]))
-  #   if (length(other.vars) == 1)
-  #     names(starts)[1] <- other.vars
-  #   names(starts)[match("value", names(starts))] <- "start"
-  #   starts$start <- c(0,cumsum(starts$start[1:(nrow(starts)-1)]))
-  #   tmp <- suppressMessages(plyr::join(tmp, starts))
-  #   tmp$Ord <- with(tmp, reord[Ord + start])
-  #   if (any(is.na(tmp[sortFactor])))
-  #     warning("The order for some predicted values could not be determined.\n",
-  #             "Make sure that all values of sortFactor occur for the subset defined by sortWithinVals.")
-  # }
-  # 
-  # #Order the components that are present
-  # if (is.factor(x$predictions[[sortFactor]]))
-  # {
-  #   newlevs <- as.character(levels(x$predictions[[sortFactor]]))[val.ord$Ord]
-  #   x$predictions[sortFactor] <- factor(x$predictions[[sortFactor]], 
-  #                                       levels = newlevs)
-  #   if (!is.null(x$backtransforms))
-  #     x$backtransforms[sortFactor] <- factor(x$backtransforms[[sortFactor]], 
-  #                                            levels = newlevs)
-  # }
-  # x$predictions <- x$predictions[tmp$Ord,]
-  # #Set meanLSD attribute of predictions component
-  # predictions <- x$predictions
-  # if (is.null(x$LSD))
-  #   attr(predictions, which = "meanLSD") <- NA
-  # else
-  #   attr(predictions, which = "meanLSD") <- x$LSD$meanLSD
-  # x$predictions <- predictions
-  # 
-  # if (!is.null(x$vcov))
-  #   x$vcov <- x$vcov[tmp$Ord, tmp$Ord]
-  # if (!is.null(x$backtransforms))
-  #   x$backtransforms <- x$backtransforms[tmp$Ord,]
-  # if (!is.null(x$differences))
-  #   x$differences <- x$differences[tmp$Ord, tmp$Ord]
-  # if (!is.null(x$p.differences))
-  #   x$p.differences <- x$p.differences[tmp$Ord, tmp$Ord]
-  # if (!is.null(x$sed))
-  #   x$sed <- x$sed[tmp$Ord, tmp$Ord]
-  
   #Set attributes
 #  if (is.null(sortFactor)) sortFactor <- NA
   attr(x, which = "sortFactor") <- sortFactor

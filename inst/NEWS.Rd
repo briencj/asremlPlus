@@ -1,5 +1,10 @@
 \name{news}
 \title{News for Package asremlPlus}
+\section{asremlPlus Version 4.2-36 (2021-05-16)}{
+  \itemize{
+  \item{Remove facRecode.alldiffs.}
+  \item{Tidy up function facRecast.alldiffs.}
+}}
 \section{asremlPlus Version 4.2-35 (2021-05-16)}{
   \itemize{
   \item{Add new function facRecast.alldiffs that supercedes facRecode.alldiffs.}

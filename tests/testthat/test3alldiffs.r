@@ -558,17 +558,22 @@ test_that("facCombine.alldiffs3", {
   testthat::expect_true(all(c("Host", "Cadavers_Ladybird", "predicted.value") %in% 
                               names(Comb.diffs$predictions)))
     
-  ## Recode Ladybird
-  HCL.diffs <- facRecode(HCL.diffs, factor = "Ladybird", newlevels = c("none", "present"))
-  testthat::expect_true(validAlldiffs(HCL.diffs))
-  testthat::expect_true(all(levels(HCL.diffs$predictions$Ladybird) == c("none", "present")))
- 
   ## Rename Cadavers
-  HCL.diffs <- facRename(HCL.diffs, factor.names = "Cadavers", newnames = "Cadaver.nos")
-  testthat::expect_true(validAlldiffs(HCL.diffs))
-  testthat::expect_true("Cadaver.nos" %in% names(HCL.diffs$predictions))
+  HCL.rename.diffs <- facRename(HCL.diffs, factor.names = "Cadavers", newnames = "Cadaver.nos")
+  testthat::expect_true(validAlldiffs(HCL.rename.diffs))
+  testthat::expect_true("Cadaver.nos" %in% names(HCL.rename.diffs$predictions))
   
-  
+  ## Recast Ladybird
+  HCL.recast.diffs <- facRecast(HCL.diffs, factor = "Ladybird", newlabels = c("none", "present"))
+  testthat::expect_true(validAlldiffs(HCL.recast.diffs))
+  testthat::expect_true(all(levels(HCL.recast.diffs$predictions$Ladybird) == c("none", "present")))
+  HCL.recast.diffs <- facRecast.alldiffs(HCL.recast.diffs, factor = "Host", levels.order = c("trefoil", "bean"))
+  testthat::expect_true(validAlldiffs(HCL.recast.diffs))
+  testthat::expect_true(all(levels(HCL.recast.diffs$predictions$Host) == c("trefoil", "bean")))
+  HCL.recast.diffs <- facRecast(HCL.recast.diffs, factor = "Ladybird", levels.order = c("present", "none"), 
+                                newlabels = c("yes","no"))
+  testthat::expect_true(validAlldiffs(HCL.recast.diffs))
+  testthat::expect_true(all(levels(HCL.recast.diffs$predictions$Ladybird) == c("yes", "no")))
   
 })
 

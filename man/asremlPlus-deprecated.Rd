@@ -5,6 +5,8 @@
 \alias{alldiffs}
 \alias{choose.model.asreml}
 \alias{choose.model.asrtests}
+\alias{facRecode}
+\alias{facRecode.alldiffs}
 \alias{info.crit}
 \alias{info.crit.asreml}
 \alias{newrcov.asrtests}
@@ -34,6 +36,7 @@
          \item addrm.terms.asreml and addrm.terms.asrtests -> \code{\link{changeTerms.asrtests}}, 
          \item alldiffs -> \code{\link{as.alldiffs}}, 
          \item choose.model.asreml and choose.model.asrtests -> \code{\link{chooseModel.asrtests}}, 
+         \item facRecode and facRecode.alldiffs -> \code{\link{facRecast.alldiffs}},
          \item info.crit and info.crit.asreml -> \code{\link{infoCriteria.asreml}}, 
          \item newrcov.asrtests -> \code{\link{changeTerms.asrtests}}, 
          \item plotvariofaces.asreml -> \code{\link{plotVariofaces.data.frame}}, 
@@ -56,6 +59,8 @@ addrm.terms.asrtests(...)
 alldiffs(...)
 choose.model.asreml(...)
 choose.model.asrtests(...)
+facRecode(...)
+facRecode.alldiffs(...)
 info.crit(...)
 info.crit.asreml(...)
 newrcov.asrtests(...)

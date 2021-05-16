@@ -46,10 +46,7 @@
       \tab an \code{\link{alldiffs.object}}.  \cr
 \code{\link{facRecast.alldiffs}}
       \tab Reorders and/or revises the factor levels using the order of old levels \cr
-      \tab in \code{newlevels} and the new labels for the levels given in \code{newlabels}. \cr
-\code{\link{facRecode.alldiffs}}
-      \tab Recodes factor levels using values in a vector. The values in the \cr 
-      \tab vector do not have to be unique.    \cr
+      \tab in \code{levels.order} and the new labels for the levels given in \code{newlabels}. \cr
 \code{\link{facRename.alldiffs}}
       \tab Renames \code{\link{factor}}s in the \code{prediction} component of \cr
       \tab an \code{\link{alldiffs.object}}.    \cr
