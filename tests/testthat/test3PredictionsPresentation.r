@@ -246,10 +246,12 @@ test_that("plotPvalues_asreml3", {
                               present = c("Type","Species","Sources"))
   testthat::expect_is(diffs, "alldiffs")
   
-  p <- within(reshape::melt(diffs$p.differences), 
+  p <- diffs$p.differences
+  rownames(p) <- colnames(p) <- NULL
+  p <- within(reshape::melt(p), 
               { 
-                X1 <- factor(X1, levels=dimnames(diffs$p.differences)[[1]])
-                X2 <- factor(X2, levels=levels(X1))
+                X1 <- factor(X1, labels=dimnames(diffs$p.differences)[[1]])
+                X2 <- factor(X2, labels=levels(X1))
               })
   names(p)[match("value", names(p))] <- "p"
   testthat::expect_silent(plotPvalues(p, x = "X1", y = "X2", 

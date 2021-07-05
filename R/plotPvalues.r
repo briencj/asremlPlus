@@ -92,8 +92,8 @@
                                    title = NULL, axis.labels = TRUE, axis.text.size = 12, 
                                    sep=",", colours = RColorBrewer::brewer.pal(3, "Set2"), 
                                    ggplotFuncs = NULL, printPlot = TRUE, 
-                                   sortFactor = NULL, sortWithinVals = NULL, 
-                                   sortOrder = NULL, decreasing = FALSE, 
+                                   sortFactor = NULL, sortParallelToCombo = NULL, 
+                                   sortNestingFactor = NULL, sortOrder = NULL, decreasing = FALSE, 
                                    ...)
   #Plots a matrix of p-values or, when  predictions are for combinations of two 
   #factors, produces a plot for each levels combination of  nominated section factors 
@@ -116,7 +116,8 @@
   #Sort alldiffs components, if required
   if (!is.null(sortFactor))
     object <- sort(object, decreasing = decreasing, sortFactor = sortFactor, 
-         sortWithinVals = sortWithinVals, sortOrder = sortOrder)
+         sortParallelToCombo = sortParallelToCombo, sortNestingFactor = sortNestingFactor, 
+         sortOrder = sortOrder)
   
   classify <- attr(object, which = "classify")
   #Get differences and convert to a data.frame
@@ -127,14 +128,15 @@
     if (tri.opt == "lower")
       object$p.differences[upper.tri(object$p.differences)] <- NA
   }
-  p <- within(reshape::melt(object$p.differences), 
+  p <- object$p.differences
+  rownames(p) <- colnames(p) <- NULL #needed because reshape::melt throws a warning re type.convert
+  p <- within(reshape::melt(p), 
               { 
-                X1 <- factor(X1, levels=dimnames(object$p.differences)[[1]])
-                X2 <- factor(X2, levels=levels(X1))
+                X1 <- factor(X1, labels=dimnames(object$p.differences)[[1]])
+                X2 <- factor(X2, labels=levels(X1))
               })
   names(p)[match("value", names(p))] <- "p"
-#  names(p)[c(1,2)] <- paste(classify, c(".1",".2"), sep = "")
-  
+
   #prepare for plotting
   n <- nrow(p)
   facs <- fac.getinTerm(classify)
@@ -184,7 +186,6 @@
                              title = title, axis.labels = pairname, 
                              colours = colours, printPlot = printPlot, 
                              axis.text.size = axis.text.size, ggplotFuncs = ggplotFuncs)
-    
   } else #have sections
   { 
     #Prepare for sectioning
@@ -205,7 +206,7 @@
                                         }, 
                                         facs.levs = facs.levs, 
                                         predictions = object$predictions
-                                        ))
+                                        ), stringsAsFactors = FALSE)
       names(facs.levs) <- facs
       p$sections <- fac.combine(facs.levs[sections], combine.levels = TRUE)
       p[p.fac] <- fac.combine(facs.levs[pairdiffs], combine.levels = TRUE)

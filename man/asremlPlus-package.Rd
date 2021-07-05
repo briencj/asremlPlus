@@ -186,6 +186,9 @@
 \code{\link{linTransform.alldiffs}} 
        \tab Calculates a linear transformation of the \cr
        \tab predictions stored in an \code{\link{alldiffs.object}}. \cr
+\code{\link{pairdiffsTransform.alldiffs}} 
+       \tab Calculates the differences between nominated pairs of \cr 
+       \tab predictions stored in an \code{\link{alldiffs.object}} \cr
 \code{\link{plotPredictions.data.frame}}
        \tab Plots the predictions for a term, possibly with \cr
        \tab error bars. \cr
@@ -205,6 +208,9 @@
 \code{\link{predictPresent.asreml}}
        \tab Forms the predictions for each of one or more terms \cr
        \tab and presents them in tables and/or graphs. \cr
+\code{\link{ratioTransform.alldiffs}} 
+       \tab Calculates the ratios of noinated pairs of predictions \cr 
+       \tab stored in an \code{\link{alldiffs.object}}.   \cr
 \code{\link{recalcLSD.alldiffs}} 
        \tab Adds or recalculates the LSD component of an \cr 
        \tab \code{\link{alldiffs.object}}.                           \cr
@@ -220,7 +226,10 @@
 \code{\link{subset.alldiffs}}
        \tab Subsets the components in an \code{\link{alldiffs.object}} according \cr 
        \tab to the supplied condition. \cr
-\cr
+\code{\link{sort.predictions.frame}}
+       \tab Sorts a \code{\link{predictions.frame}} according to the \cr
+       \tab predicted values. associated with a factor.\cr
+
 (vii) Response transformation \cr\cr
 
 \code{\link{angular}}

@@ -11,7 +11,7 @@
 
        A row is added to the \code{test.summary} \code{data.frame} of the 
        \code{\link{asrtests.object}} using the supplied \code{label} and stating 
-       whether or not the new model has been swpped for the supplied model. 
+       whether or not the new model has been swapped for the supplied model. 
        Convergence in fitting the model is checked and a note included in the 
        \code{action} if there was not. All components of the 
        \code{\link{asrtests.object}} are updated to exhibit the differences 

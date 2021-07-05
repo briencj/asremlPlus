@@ -1,11 +1,22 @@
 "getTestPvalue.asrtests" <- function(asrtests.obj, label, ...)
 {
   k <- tail(findterm(label, as.character(asrtests.obj$test.summary$terms)),1)
-  if (is.na(k))
+  if (k == 0)
     stop("Label not found in test.summary of supplied asrtests.obj")
   p <- asrtests.obj$test.summary$p
   return(p[k])
 }
+
+"getTestEntry.asrtests" <- function(asrtests.obj, label, ...)
+{
+  k <- tail(findterm(label, as.character(asrtests.obj$test.summary$terms)),1)
+  if (k == 0)
+    stop("Label not found in test.summary of supplied asrtests.obj")
+  entry <- asrtests.obj$test.summary[k,]
+  class(entry) <- "data.frame"
+  return(entry)
+}
+
 
 "validAsreml" <- function(object)
 {
@@ -2570,8 +2581,8 @@ atLevelsMatch <- function(new, old, call)
                                  tables = "all", level.length = NA, 
                                  transform.power = 1, offset = 0, scale = 1, 
                                  inestimable.rm = TRUE, 
-                                 sortFactor = NULL, sortWithinVals = NULL, 
-                                 sortOrder = NULL, decreasing = FALSE, 
+                                 sortFactor = NULL, sortParallelToCombo = NULL, 
+                                 sortNestingFactor = NULL, sortOrder = NULL, decreasing = FALSE, 
                                  wald.tab = NULL, alpha = 0.05, 
                                  dDF.na = "residual", dDF.values = NULL, trace = FALSE, ...)
   #a function to get asreml predictions when there a parallel vector and factor are involved
@@ -2866,7 +2877,8 @@ atLevelsMatch <- function(new, old, call)
   #Sort alldiffs components, if required
   if (!is.null(sortFactor))
     diffs <- sort(diffs, decreasing = decreasing, sortFactor = sortFactor, 
-                  sortWithinVals = sortWithinVals, sortOrder = sortOrder)
+                  sortParallelToCombo = sortParallelToCombo, 
+                  sortNestingFactor = sortNestingFactor, sortOrder = sortOrder)
   
   #Outut tables according to table.opt and save alldiff object for current term
   if (!("none" %in% table.opt))
@@ -3376,9 +3388,10 @@ atLevelsMatch <- function(new, old, call)
                                     pairwise = TRUE, Vmatrix = FALSE, 
                                     tables = "all", level.length = NA, 
                                     alpha = 0.05, inestimable.rm = TRUE,
-                                    sortFactor = NULL, sortWithinVals = NULL, 
-                                    sortOrder = NULL, decreasing = FALSE, 
-                                    trace = FALSE, ggplotFuncs = NULL, ...)
+                                    sortFactor = NULL, sortParallelToCombo = NULL, 
+                                    sortNestingFactor = NULL, sortOrder = NULL, 
+                                    decreasing = FALSE, trace = FALSE, 
+                                    ggplotFuncs = NULL, ...)
 #This function forms the predictions for each significant term.
 #It then presents either a table or a graph based on the predicted values 
 # - the decision is based on whether x.fac or x.num is in the term. 
@@ -3476,7 +3489,8 @@ atLevelsMatch <- function(new, old, call)
                                   offset = offset, scale = scale, 
                                   inestimable.rm = inestimable.rm, 
                                   sortFactor = sortFactor, 
-                                  sortWithinVals = sortWithinVals, 
+                                  sortParallelToCombo = sortParallelToCombo, 
+                                  sortNestingFactor = sortNestingFactor, 
                                   sortOrder = sortOrder, 
                                   decreasing = decreasing, 
                                   wald.tab = wald.tab, dDF.na = dDF.na, 
@@ -3502,7 +3516,8 @@ atLevelsMatch <- function(new, old, call)
                                   offset = offset, scale = scale, 
                                   inestimable.rm = inestimable.rm, 
                                   sortFactor = sortFactor, 
-                                  sortWithinVals = sortWithinVals, 
+                                  sortParallelToCombo = sortParallelToCombo, 
+                                  sortNestingFactor = sortNestingFactor, 
                                   sortOrder = sortOrder, 
                                   decreasing = decreasing, 
                                   wald.tab = wald.tab, dDF.na = dDF.na, 

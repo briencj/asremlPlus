@@ -1,8 +1,19 @@
 \name{news}
 \title{News for Package asremlPlus}
+\section{asremlPlus Version 4.3-10 (2021-07-5)}{
+  \itemize{
+  \item{Fix bug in facRecast that meant that the argument \code{levels.order} was being ignored.}
+  \item{Fix a bug in facRecast where only the predictions component was appropriately re-ordered.}
+  \item{Add new functions ratioTransform.alldiffs and pairdiffsTransform.}
+  \item{Add new method to sort for a \code{predictions.frame}: function sort.predictions.frame.}
+  \item{Change the argument \code{sortWithinVals} to \code{sortParallelToCombo} in sort.alldiffs.}
+  \item{Add the new argument \code{sortNestinFactor} to sort.alldiffs.}
+  \item{Add new function getTestEntry.asrtests.}
+  \item{Fix bug in infoCriteria.asreml that resulted in values of \code{Inf} for the \code{full} likelihood.}
+}}
 \section{asremlPlus Version 4.2-36 (2021-05-16)}{
   \itemize{
-  \item{Deprecate facRecode.alldiffs.}
+  \item{Deprecate facRecode.alldiffs because it only make sense to redo the current levels or labels.}
   \item{Tidy up function facRecast.alldiffs.}
 }}
 \section{asremlPlus Version 4.2-35 (2021-05-16)}{
@@ -54,7 +65,7 @@
 \section{asremlPlus Version 4.2-25 (2020-11-11)}{
   \itemize{
     \item{Try to neutralize problem that occurs with \code{colourise} in print.predictions.frame.}
-    \item{Rebuild for R 4.0.3 nd recompile vignetted for CRAN submission.}
+    \item{Rebuild for R 4.0.3 and recompile vignettes for CRAN submission.}
 }}
 \section{asremlPlus Version 4.2-24 (2020-09-25)}{
   \itemize{

@@ -280,7 +280,7 @@ infoCriteria.asreml <- function(object, DF = NULL,
       warning(paste("The following bound terms were not discounted:\n", 
                     paste(Bound, collapse = ", ")))
   }
-  #If full likelihood, caluclate logdetC and fixedDF
+  #If full likelihood, calculate logdetC and fixedDF
   if (loglik.opt == "full")
   {
      if (asr4)
@@ -290,7 +290,8 @@ infoCriteria.asreml <- function(object, DF = NULL,
         object <- asreml::update.asreml(object, maxit=1)
       coefF <- summary(object, coef=TRUE)$coef.fixed
       which.cF <- !is.na(coefF[, "z.ratio"])
-      logdetC <- log(prod(svd(as.matrix(object$Cfixed[which.cF, which.cF]))$d))
+#      logdetC <- log(prod(svd(as.matrix(object$Cfixed[which.cF, which.cF]))$d))
+      logdetC <- sum(log(svd(as.matrix(object$Cfixed[which.cF, which.cF]))$d))
      } else #asr3
      {
        if (is.null(object$Cfixed)) 
@@ -298,7 +299,8 @@ infoCriteria.asreml <- function(object, DF = NULL,
        coefF <- summary(object, all=TRUE)$coef.fixed
        which.cF <- !is.na(coefF[, "z ratio"])
        #object$Cfixed is not a matrix and so this does not work 
-       logdetC <- log(prod(svd(as.matrix(object$Cfixed[which.cF, which.cF]))$d))
+#       logdetC <- log(prod(svd(as.matrix(object$Cfixed[which.cF, which.cF]))$d))
+       logdetC <- sum(log(svd(as.matrix(object$Cfixed[which.cF, which.cF]))$d))
      }
     if (is.null(fixedDF))
       fixedDF <- sum(which.cF)

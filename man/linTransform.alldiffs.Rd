@@ -217,13 +217,13 @@
              \code{orthogonalize} to \code{"eigenmethods"}.
 }
 \author{Chris Brien}
-\seealso{\code{\link{predictPlus.asreml}}, \code{\link{as.alldiffs}}, \code{\link{print.alldiffs}}, 
-         \code{\link{sort.alldiffs}},  
-         \code{\link{subset.alldiffs}}, \cr 
-         \code{\link{allDifferences.data.frame}}, 
-         \code{\link{redoErrorIntervals.alldiffs}},  \code{\link{recalcLSD.alldiffs}},  \cr
-         \code{\link{predictPresent.asreml}}, 
-         \code{\link{plotPredictions.data.frame}}, \code{as.Date}, \code{predict.asreml}}
+\seealso{\code{\link{linTransform}}, \code{\link{predictPlus.asreml}}, \code{\link{as.alldiffs}}, 
+         \code{\link{print.alldiffs}}, \code{\link{sort.alldiffs}},  \cr
+         \code{\link{subset.alldiffs}}, \code{\link{allDifferences.data.frame}}, 
+         \code{\link{redoErrorIntervals.alldiffs}},  \cr 
+         \code{\link{recalcLSD.alldiffs}},  \code{\link{predictPresent.asreml}}, 
+         \code{\link{plotPredictions.data.frame}}, \cr 
+         \code{as.Date}, \code{predict.asreml}}
 \examples{
 data(WaterRunoff.dat)
 

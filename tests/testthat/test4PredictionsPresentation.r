@@ -46,7 +46,7 @@ test_that("predictPlus.asreml4", {
   testthat::expect_warning(current.asr <- asreml(fixed = pH ~ Benches + (Sources * (Type + Species)), 
                                                  random = ~ Benches:MainPlots,
                                                  data= WaterRunoff.dat))
-  testthat::expect_output(current.asrt <- as.asrtests(current.asr, NULL, NULL))
+  testthat::expect_silent(current.asrt <- as.asrtests(current.asr, NULL, NULL))
   testthat::expect_silent(diffs <- predictPlus(classify = "Sources:Type", 
                                                asreml.obj = current.asr, tables = "none", 
                                                wald.tab = current.asrt$wald.tab, 
@@ -281,10 +281,12 @@ test_that("plotPvalues.asreml4", {
                               present = c("Type","Species","Sources"))
   testthat::expect_is(diffs, "alldiffs")
   
-  p <- within(reshape::melt(diffs$p.differences), 
+  p <- diffs$p.differences
+  rownames(p) <- colnames(p) <- NULL
+  p <- within(reshape::melt(p), 
               { 
-                X1 <- factor(X1, levels=dimnames(diffs$p.differences)[[1]])
-                X2 <- factor(X2, levels=levels(X1))
+                X1 <- factor(X1, labels=dimnames(diffs$p.differences)[[1]])
+                X2 <- factor(X2, labels=levels(X1))
               })
   names(p)[match("value", names(p))] <- "p"
   testthat::expect_silent(plotPvalues(p, x = "X1", y = "X2", 
@@ -336,7 +338,6 @@ test_that("plotPvalues.asreml4", {
   library(asreml)
   library(asremlPlus)
   library(dae)
-  library(reshape)
   LeafSucculence.diff <- readRDS("./data/LeafSucculence.diff")
   LeafSucculence.diff <- LeafSucculence.diff[[1]]
   
@@ -367,7 +368,6 @@ test_that("factor.combinations.asreml4", {
   library(asreml)
   library(asremlPlus)
   library(dae)
-  library(reshape)
   LeafSucculence.diff <- readRDS("./data/LeafSucculence.diff")
   LeafSucculence.diff <- LeafSucculence.diff[[1]]
   
@@ -391,7 +391,6 @@ test_that("recalcLSD.alldiffs4", {
   library(asreml)
   library(asremlPlus)
   library(dae)
-  library(reshape)
   data(WaterRunoff.dat)
   asreml.options(keep.order = TRUE) #required for asreml4 only
   testthat::expect_output(current.asr <- asreml(fixed = pH ~ Benches + (Sources * (Type + Species)), 

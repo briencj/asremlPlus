@@ -168,9 +168,9 @@ test_that("sort.alldiffs4", {
   testthat::expect_equal(attr(diffs.sort, which = "sortOrder"),
                          attr(diffs2.sort, which = "sortOrder"))
   
-  #Test sort.alldiffs with sortWithinVals and increasing order
+  #Test sort.alldiffs with sortParallelToCombo and increasing order
   diffs1.sort <- sort(diffs, sortFactor = "Genotype", 
-                      sortWithinVals = list(A = "N3", B = "D4"),
+                      sortParallelToCombo = list(A = "N3", B = "D4"),
                       decreasing = TRUE)
   testthat::expect_is(diffs1.sort, "alldiffs")
   testthat::expect_equal(as.character(attr(diffs1.sort, which = "sortOrder")[2]),"Wyalkatchem")
@@ -223,7 +223,7 @@ test_that("sort.alldiffsWater4", {
   testthat::expect_true(abs(TS.diffs.reord$predictions$predicted.value[2] - 7.646389) < 1e-06)
   
   #Test sort.alldiffs and save order for use with other response variables
-  TS.diffs.sort <- sort(TS.diffs, sortFactor = "Sources", sortWithinVals = list(Type = "Control"))
+  TS.diffs.sort <- sort(TS.diffs, sortFactor = "Sources", sortParallelToCombo = list(Type = "Control"))
   sort.order <- attr(TS.diffs.sort, which = "sortOrder")
   testthat::expect_is(TS.diffs.sort, "alldiffs")
   testthat::expect_true(validAlldiffs(TS.diffs.sort))
@@ -548,21 +548,57 @@ test_that("facCombine.alldiffs4", {
   testthat::expect_true(validAlldiffs(HCL.rename.diffs))
   testthat::expect_true("Cadaver.nos" %in% names(HCL.rename.diffs$predictions))
   
+})
+
+cat("#### Test for facRecast.alldiffs on Ladybird with asreml4\n")
+test_that("facRecast.alldiffs4", {
+  skip_if_not_installed("asreml")
+  skip_on_cran()
+  library(asreml)
+  library(asremlPlus)
+  library(dae)
+  data("Ladybird.dat")
+  
+  #Mixed model analysis of logs 
+  Ladybird.dat$log.P <- log(Ladybird.dat$Prop*100 + 1)
+  m1.asr <- do.call(asreml, 
+                    args = list(fixed = log.P ~ Host*Cadavers*Ladybird, 
+                                random = ~ Run,
+                                data = Ladybird.dat))
+  testthat::expect_equal(length(m1.asr$vparameters),2)
+  current.asrt <- as.asrtests(m1.asr)
+  testthat::expect_true(validAsrtests(current.asrt))
+  
+  HCL.diffs <- predictPlus(m1.asr, classify = "Host:Cadavers:Ladybird", tables = "none", 
+                           wald.tab = current.asrt$wald.tab, transform.power = 0, offset = 1)
+  
   ## Recast Ladybird
   HCL.recast.diffs <- facRecast(HCL.diffs, factor = "Ladybird", newlabels = c("none", "present"))
   testthat::expect_true(validAlldiffs(HCL.recast.diffs))
   testthat::expect_true(all(levels(HCL.recast.diffs$predictions$Ladybird) == c("none", "present")))
-  HCL.recast.diffs <- facRecast.alldiffs(HCL.recast.diffs, factor = "Host", levels.order = c("trefoil", "bean"))
+  testthat::expect_true(all(levels(HCL.recast.diffs$backtransforms$Ladybird) == c("none", "present")))
+  testthat::expect_true(all(abs((exp(HCL.recast.diffs$predictions$predicted.value) - 1) -
+                                  HCL.recast.diffs$backtransforms$backtransformed.predictions) < 1e-05))
+  testthat::expect_true(all(rownames(HCL.recast.diffs$differences)[1:2] == c("bean,5,none", "bean,5,present")))
+  HCL.recast.diffs <- facRecast.alldiffs(HCL.recast.diffs, factor = "Host", 
+                                         levels.order = c("trefoil", "bean"))
   testthat::expect_true(validAlldiffs(HCL.recast.diffs))
   testthat::expect_true(all(levels(HCL.recast.diffs$predictions$Host) == c("trefoil", "bean")))
-  HCL.recast.diffs <- facRecast(HCL.recast.diffs, factor = "Ladybird", levels.order = c("present", "none"), 
+  testthat::expect_true(all(levels(HCL.recast.diffs$backtransforms$Host) == c("trefoil", "bean")))
+  testthat::expect_true(all(rownames(HCL.recast.diffs$differences)[1:2] == c("trefoil,5,none", "trefoil,5,present")))
+  testthat::expect_true(all(abs((exp(HCL.recast.diffs$predictions$predicted.value) - 1) -
+                                  HCL.recast.diffs$backtransforms$backtransformed.predictions) < 1e-05))
+  HCL.recast.diffs <- facRecast(HCL.recast.diffs, factor = "Ladybird", 
+                                levels.order = c("present", "none"), 
                                 newlabels = c("yes","no"))
   testthat::expect_true(validAlldiffs(HCL.recast.diffs))
   testthat::expect_true(all(levels(HCL.recast.diffs$predictions$Ladybird) == c("yes", "no")))
+  testthat::expect_true(all(levels(HCL.recast.diffs$backtransforms$Ladybird) == c("yes", "no")))
+  testthat::expect_true(all(rownames(HCL.recast.diffs$differences)[1:2] == c("trefoil,5,yes", "trefoil,5,no")))
+  testthat::expect_true(all(abs((exp(HCL.recast.diffs$predictions$predicted.value) - 1) -
+                                  HCL.recast.diffs$backtransforms$backtransformed.predictions) < 1e-05))
   
 })
-
-
 
 cat("#### Test for linear.transformation on Oats with asreml4\n")
 test_that("linear.transform_Oats_asreml4", {
@@ -839,3 +875,176 @@ test_that("addBacktransforms_WaterRunoff_asreml4", {
                                     TS.diffs$backtransforms$upper.Confidence.limit) < 1e-06))
   }
 })
+
+
+cat("#### Test for ratioTansforms on system data with asreml4\n")
+test_that("ratioTransforms_SystemData_asreml4", {
+  skip_if_not_installed("asreml")
+  skip_on_cran()
+  library(asremlPlus)
+  library(dae)
+  load(system.file("extdata", "testDiffs.rda", package = "asremlPlus", mustWork = TRUE))
+  
+  Preds.ratio.RGR <- ratioTransform.alldiffs(alldiffs.obj = diffs.RGR,
+                                             ratio.factor = "Salinity", 
+                                             numerator.levels = "Salt",
+                                             denominator.levels = "Control")
+  testthat::expect_true(all(abs(Preds.ratio.RGR$`Salt,Control`$predicted.value[1:3] - 
+                                  c(0.7330241,0.9098487,0.9513331)) < 1e-05))
+  testthat::expect_true(all(Preds.ratio.RGR$`Salt,Control`$Temperature[1:3] == "Cool"))
+  testthat::expect_true(all(Preds.ratio.RGR$`Salt,Control`$Genotype[1:3] == as.character(1:3)))
+  testthat::expect_true(all(names(Preds.ratio.RGR$`Salt,Control`)[5:6] == c("upper.Confidence.limit",
+                                                                            "lower.Confidence.limit")))
+
+  Preds.ratio.ClUp <- pairdiffsTransform(diffs.ClUp, method = "log",
+                                         pairs.factor = "Temperature", 
+                                         first.levels = "Hot",
+                                         second.levels = "Cool",
+                                         error.intervals = "halfLeast",
+                                         tables = "backtrans")
+  testthat::expect_true(all(abs(Preds.ratio.ClUp$`Hot,Cool`$predictions$predicted.value[1:3] - 
+                                  c(-0.05752483,0.12987766,0.06916038)) < 1e-05))
+  testthat::expect_true(all(Preds.ratio.ClUp$`Hot,Cool`$predictions$Salinity[1:3] == "Control"))
+  testthat::expect_true(all(Preds.ratio.ClUp$`Hot,Cool`$predictions$Genotype[1:3] == as.character(1:3)))
+  testthat::expect_true(all(names(Preds.ratio.ClUp$`Hot,Cool`$predictions)[5:6] == 
+                              c("upper.halfLeastSignificant.limit", "lower.halfLeastSignificant.limit")))
+})
+
+cat("#### Test for ratioTansforms on the Oats data with asreml4\n")
+test_that("ratioTransforms_SystemData_asreml4", {
+  skip_if_not_installed("asreml")
+  skip_on_cran()
+  library(asreml)
+  library(asremlPlus)
+  data("Oats.dat")
+  
+  m1.asr <- asreml(Yield ~ Nitrogen*Variety, 
+                   random=~Blocks/Wplots,
+                   data=Oats.dat)
+  current.asrt <- as.asrtests(m1.asr)
+  wald.tab <-  current.asrt$wald.tab
+  Var.diffs <- predictPlus(m1.asr, classify="Nitrogen:Variety", pairwise = TRUE,
+                          Vmatrix = TRUE, error.intervals = "halfLeast",
+                          meanLSD.type = "factor", LSDby = "Variety",
+                          wald.tab = wald.tab)
+
+  #Test ratioTransform
+  Preds.ratio.OatsN <- ratioTransform(alldiffs.obj = Var.diffs,
+                                      ratio.factor = "Nitrogen", 
+                                      numerator.levels = "0.6",
+                                      denominator.levels = "0.2")
+  testthat::expect_true(names(Preds.ratio.OatsN) == "0.6,0.2")
+  testthat::expect_true(all(abs(Preds.ratio.OatsN$`0.6,0.2`$predicted.value - 
+                                  c(1.321561,1.267343,1.168971)) < 1e-05))
+  testthat::expect_true(all(Preds.ratio.OatsN$`0.6,0.2`$Variety == c("Victory", "Golden Rain","Marvellous")))
+  testthat::expect_true(all(names(Preds.ratio.OatsN$`0.2,0`)[4:5] == c("upper.Confidence.limit",
+                                                                       "lower.Confidence.limit")))
+  
+  #Test for ordering of the ratioTransforms
+  diffs.sort <- sort(Var.diffs, sortFactor = "Variety", decreasing = TRUE)
+  testthat::expect_equal(as.character(diffs.sort$predictions$Variety[1]),"Marvellous")
+  testthat::expect_equal(rownames(diffs.sort$differences)[1],"0,Marvellous")
+  testthat::expect_equal(colnames(diffs.sort$p.differences)[1],"0,Marvellous")
+  testthat::expect_silent(plotPvalues(diffs.sort, gridspacing = 3))
+  
+  Preds.ratio.sort.OatsN <- ratioTransform(alldiffs.obj = diffs.sort, 
+                                           ratio.factor = "Nitrogen", 
+                                           numerator.levels = "0.6",
+                                           denominator.levels = "0.2")
+  testthat::expect_true(names(Preds.ratio.sort.OatsN) == "0.6,0.2")
+  testthat::expect_true(all(abs(Preds.ratio.sort.OatsN$`0.6,0.2`$predicted.value - 
+                                  c(1.168971,1.267343,1.321561)) < 1e-05))
+  testthat::expect_true(all(Preds.ratio.sort.OatsN$`0.6,0.2`$Variety == c("Marvellous", "Golden Rain","Victory")))
+  testthat::expect_true(all(names(Preds.ratio.sort.OatsN$`0.6,0.2`)[4:5] == c("upper.Confidence.limit",
+                                                                       "lower.Confidence.limit")))
+
+  #Test pairdiffsTransform
+  Preds.diffs.OatsN <- pairdiffsTransform(alldiffs.obj = Var.diffs,
+                                          pairs.factor = "Nitrogen", 
+                                          first.levels = "0.6",
+                                          second.levels = "0.2", error.intervals = "halfLeast",
+                                          tables = "none")
+  testthat::expect_true(names(Preds.diffs.OatsN) == "0.6,0.2")
+  
+  testthat::expect_true(all(abs(Preds.diffs.OatsN$`0.6,0.2`$predictions$predicted.value - 
+                                  (Var.diffs$predictions$predicted.value[10:12] - 
+                                     Var.diffs$predictions$predicted.value[4:6])) < 1e-05))
+  testthat::expect_true(all(Preds.diffs.OatsN$`0.6,0.2`$predictions$Variety == c("Victory", "Golden Rain","Marvellous")))
+  testthat::expect_true(all(names(Preds.diffs.OatsN$`0.6,0.2`$predictions)[4:5] == 
+                              c("upper.halfLeastSignificant.limit", "lower.halfLeastSignificant.limit")))
+
+  #Remove the Victory, 0.2 combination to test what happens when not all numerator combinations are present
+  Var.red.diffs <- subset(Var.diffs, subset = !(Variety == "Victory" & Nitrogen == "0.2"))
+  testthat::expect_equal(nrow(Var.red.diffs$predictions),  11)
+
+  Preds.red.ratio.OatsN <- ratioTransform(alldiffs.obj = Var.red.diffs,
+                                          ratio.factor = "Nitrogen", 
+                                          numerator.levels = c("0.2","0.4","0.6"),
+                                          denominator.levels = "0")
+  testthat::expect_true(all(names(Preds.red.ratio.OatsN) == c("0.2,0", "0.4,0", "0.6,0")))
+  testthat::expect_true(is.na(Preds.red.ratio.OatsN$`0.2,0`$predicted.value[1])) 
+  testthat::expect_true(all(abs(Preds.red.ratio.OatsN$`0.2,0`$predicted.value[2:3] - 
+                                  c(1.231250,1.251923)) < 1e-05))
+  testthat::expect_true(all(Preds.red.ratio.OatsN$`0.2,0`$Variety == c("Victory", "Golden Rain","Marvellous")))
+  testthat::expect_true(all(names(Preds.red.ratio.OatsN$`0.2,0`)[4:5] == c("upper.Confidence.limit",
+                                                                       "lower.Confidence.limit")))
+  
+  Preds.red.diffs.OatsN <- pairdiffsTransform(alldiffs.obj = Var.red.diffs,
+                                              pairs.factor = "Nitrogen", 
+                                              first.levels = c("0.2","0.4","0.6"),
+                                              second.levels = "0", error.intervals = "halfLeast",
+                                              tables = "none")
+  testthat::expect_true(all(names(Preds.red.diffs.OatsN) == c("0.2,0", "0.4,0", "0.6,0")))
+  testthat::expect_true(all(abs(Preds.red.diffs.OatsN$`0.2,0`$predictions$predicted.value - 
+                                  c(18.50000, 21.83333)) < 1e-05))
+  testthat::expect_true(all(Preds.red.diffs.OatsN$`0.2,0`$predictions$Variety == c("Golden Rain","Marvellous")))
+  testthat::expect_true(all(names(Preds.red.diffs.OatsN$`0.2,0`$predictions)[4:5] == 
+                              c("upper.halfLeastSignificant.limit", "lower.halfLeastSignificant.limit")))
+  testthat::expect_true(all(abs(Preds.red.diffs.OatsN$`0.4,0`$predictions$predicted.value - 
+                                  c(39.33333,34.66667,30.50000)) < 1e-05))
+  testthat::expect_true(all(Preds.red.diffs.OatsN$`0.4,0`$predictions$Variety == c("Victory","Golden Rain","Marvellous")))
+  
+  #Remove the Victory, 0.4 combination to test what happens when not all denominator combinations are present
+  Var.red.diffs <- subset(Var.diffs, subset = !(Variety == "Victory" & Nitrogen == "0"))
+  testthat::expect_equal(nrow(Var.red.diffs$predictions),  11)
+  
+  Preds.red.ratio.OatsN <- ratioTransform(alldiffs.obj = Var.red.diffs,
+                                          ratio.factor = "Nitrogen", 
+                                          numerator.levels = c("0.2","0.4","0.6"),
+                                          denominator.levels = "0")
+  testthat::expect_true(all(names(Preds.red.ratio.OatsN) == c("0.2,0", "0.4,0", "0.6,0")))
+  testthat::expect_true(all(unlist(lapply(Preds.red.ratio.OatsN, function(pd) is.na(pd$predicted.value[1])))))
+  testthat::expect_true(all(abs(Preds.red.ratio.OatsN$`0.2,0`$predicted.value[2:3] - 
+                                  (Var.red.diffs$predictions$predicted.value[4:5]/
+                                     Var.red.diffs$predictions$predicted.value[1:2])) < 1e-05))
+  testthat::expect_true(all(Preds.red.ratio.OatsN$`0.2,0`$Variety == c("Victory", "Golden Rain","Marvellous")))
+  testthat::expect_true(all(names(Preds.red.ratio.OatsN$`0.2,0`)[4:5] == c("upper.Confidence.limit",
+                                                                       "lower.Confidence.limit")))
+  
+  Preds.red.diffs.OatsN <- pairdiffsTransform(alldiffs.obj = Var.red.diffs,
+                                              pairs.factor = "Nitrogen", 
+                                              first.levels = c("0.2","0.4","0.6"),
+                                              second.levels = "0", error.intervals = "halfLeast",
+                                              tables = "none")
+  testthat::expect_true(all(names(Preds.red.diffs.OatsN) == c("0.2,0", "0.4,0", "0.6,0")))
+  testthat::expect_true(all(abs(Preds.red.diffs.OatsN$`0.2,0`$predictions$predicted.value - 
+                                  c(18.50000, 21.83333)) < 1e-05))
+  testthat::expect_true(all(Preds.red.diffs.OatsN$`0.2,0`$predictions$Variety == c("Golden Rain","Marvellous")))
+  testthat::expect_true(all(names(Preds.red.diffs.OatsN$`0.2,0`$predictions)[4:5] == 
+                              c("upper.halfLeastSignificant.limit", "lower.halfLeastSignificant.limit")))
+  
+  #Test ratioTransform when a a level occurs in both numerator.levels and denominator.levels
+  Preds.ratio.OatsN <- ratioTransform(alldiffs.obj = Var.diffs,
+                                      ratio.factor = "Nitrogen", 
+                                      numerator.levels = c("0.2","0.6"),
+                                      denominator.levels = c("0.2","0.6"))
+  testthat::expect_true(all(names(Preds.ratio.OatsN) == c("0.2,0.2","0.6,0.2","0.2,0.6","0.6,0.6")))
+  
+  testthat::expect_true(all(unlist(lapply(Preds.ratio.OatsN, is.null)) == c(TRUE,FALSE,FALSE,TRUE)))
+  testthat::expect_true(all(abs(Preds.ratio.OatsN$`0.6,0.2`$predicted.value - 
+                                  c(1.321561,1.267343,1.168971)) < 1e-05))
+  testthat::expect_true(all(Preds.ratio.OatsN$`0.6,0.2`$Variety == c("Victory", "Golden Rain","Marvellous")))
+  testthat::expect_true(all(names(Preds.ratio.OatsN$`0.2,0`)[4:5] == c("upper.Confidence.limit",
+                                                                       "lower.Confidence.limit")))
+})
+

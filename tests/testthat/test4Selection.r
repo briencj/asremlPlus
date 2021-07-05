@@ -475,6 +475,11 @@ test_that("changeModelOnIC_wheat94_asreml4", {
   testthat::expect_equal(current.asrt$test.summary$denDF, 8)
   testthat::expect_equal(nrow(summary(current.asrt$asreml.obj)$varcomp), 9) #includes bound Block
   
+  
+  current.asrt <- changeModelOnIC(current.asrt, dropRandom = "Block",
+                                  IClikelihood = "full", checkboundaryonly = TRUE, which.IC="AIC")
+  
+  
   current.asrt <- rmboundary(current.asrt)
   testthat::expect_equal(nrow(summary(current.asrt$asreml.obj)$varcomp), 
                          current.asrt$test.summary$denDF[1])
@@ -483,25 +488,22 @@ test_that("changeModelOnIC_wheat94_asreml4", {
   current.asrt <- changeModelOnIC(current.asrt, dropRandom = "Row + Col", 
                                   label = "Drop Row + Col", 
                                   which.IC = "AIC", IClikelihood = "full")
-  testthat::expect_equal(current.asrt$test.summary$denDF[3], -2)
-  testthat::expect_equal(current.asrt$test.summary$action[current.asrt$test.summary$terms == 
-                                                            "Drop Row + Col"], "Unswapped")
-  
+  testthat::expect_equal(getTestEntry(current.asrt, label = "Drop Row + Col")[["denDF"]], -2)
+  testthat::expect_equal(getTestEntry(current.asrt, label = "Drop Row + Col")[["action"]], "Unswapped")
+
   #Drop random spl(Col) term
   current.asrt <- changeModelOnIC(current.asrt, dropRandom = "spl(Col)", 
                                   label = "Drop spl(Col)", IClikelihood = "full")
-  testthat::expect_true(current.asrt$test.summary$denDF[4] %in% c(-2,-3))
-  testthat::expect_equal(current.asrt$test.summary$action[current.asrt$test.summary$terms == 
-                                                            "Drop spl(Col)"], "Unswapped")
-  testthat::expect_true((abs(current.asrt$test.summary$AIC[4]) - 9.6239819) < 1e-05)
-  
+  testthat::expect_true(getTestEntry(current.asrt, label = "Drop spl(Col)")[["denDF"]] %in% c(-2,-3))
+  testthat::expect_equal(getTestEntry(current.asrt, label = "Drop spl(Col)")[["action"]], "Unswapped")
+  testthat::expect_true(abs(getTestEntry(current.asrt, label = "Drop spl(Col)")[["AIC"]] - 6.981351) < 1e-05)
+
   #Drop random units term
   current.asrt <- changeModelOnIC(current.asrt, dropRandom = "units", 
                                   label = "Drop units", IClikelihood = "full")
-  testthat::expect_equal(current.asrt$test.summary$denDF[6], -1)
-  testthat::expect_equal(current.asrt$test.summary$action[current.asrt$test.summary$terms == 
-                                                            "Drop units"], "Unswapped")
-  testthat::expect_true((abs(current.asrt$test.summary$AIC[6]) - 9.5172284) < 1e-05)
+  testthat::expect_equal(getTestEntry(current.asrt, label = "Drop units")[["denDF"]], -1)
+  testthat::expect_equal(getTestEntry(current.asrt, label = "Drop units")[["action"]], "Unswapped")
+  testthat::expect_true(abs(getTestEntry(current.asrt, label = "Drop units")[["AIC"]] - 9.511413) < 1e-05)
   
   mod <- printFormulae(current.asrt$asreml.obj)
   testthat::expect_equal(length(mod), 3)

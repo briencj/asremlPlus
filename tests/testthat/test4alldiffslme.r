@@ -240,7 +240,8 @@ test_that("alldiffs_lme4", {
                                      interval.names = c("lower.CL", "upper.CL"))
     
     ## Form an all.diffs object and check its validity
-    TS.vcov <- vcov(TS.emm)
+    els <- as.numeric(rownames(TS.preds))
+    TS.vcov <- vcov(TS.emm)[els,els]
     TS.diffs <- allDifferences(predictions = TS.preds, classify = "Sources:Type", 
                                vcov = TS.vcov, tdf = den.df)
     testthat::expect_true(validAlldiffs(TS.diffs))
@@ -397,7 +398,8 @@ test_that("sort.alldiffsWater_lme4", {
                                      interval.names = c("lower.CL", "upper.CL"))
     
     ## Form an all.diffs object and check its validity
-    TS.vcov <- vcov(TS.emm)
+    els <- as.numeric(rownames(TS.preds))
+    TS.vcov <- vcov(TS.emm)[els,els]
     TS.diffs <- allDifferences(predictions = TS.preds, 
                                classify = "Sources:Type", 
                                vcov = TS.vcov, tdf = den.df)
@@ -417,7 +419,7 @@ test_that("sort.alldiffsWater_lme4", {
     
     #Test sort.alldiffs and save order for use with other response variables
     TS.diffs.sort <- sort(TS.diffs, sortFactor = "Sources", 
-                          sortWithinVals = list(Type = "Control"))
+                          sortParallelToCombo = list(Type = "Control"))
     sort.order <- attr(TS.diffs.sort, which = "sortOrder")
     testthat::expect_is(TS.diffs.sort, "alldiffs")
     testthat::expect_true(validAlldiffs(TS.diffs.sort))
@@ -440,7 +442,8 @@ test_that("sort.alldiffsWater_lme4", {
                                      interval.names = c("lower.CL", "upper.CL"))
     
     ## Form an all.diffs object, sorting it using the pH sort.order and check its validity
-    TS.vcov <- vcov(TS.emm)
+    els <- as.numeric(rownames(TS.preds))
+    TS.vcov <- vcov(TS.emm)[els,els]
     TS.diffs2.sort <- allDifferences(predictions = TS.preds, 
                                      classify = "Sources:Type", 
                                      vcov = TS.vcov, tdf = den.df,
@@ -556,7 +559,8 @@ test_that("addBacktransforms_WaterRunoff_lme4", {
                                      interval.names = c("lower.CL", "upper.CL"))
     
     ## Form an all.diffs object and check its validity
-    TS.vcov <- vcov(TS.emm)
+    els <- as.numeric(rownames(TS.preds))
+    TS.vcov <- vcov(TS.emm)[els,els]
     TS.diffs <- allDifferences(predictions = TS.preds, classify = "Sources:Species", 
                                vcov = TS.vcov, tdf = den.df)
     validAlldiffs(TS.diffs)

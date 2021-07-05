@@ -15,8 +15,8 @@
              \code{Combination} in the \code{predictions} component with the new set of variables 
              and then call \code{renewClassify}.}
 \usage{\method{renewClassify}{alldiffs}(alldiffs.obj, newclassify, 
-              sortFactor = NULL, sortWithinVals = NULL, 
-              sortOrder = NULL, decreasing = FALSE, ...)}
+              sortFactor = NULL, sortParallelToCombo = NULL, 
+              sortNestingFactor = NULL, sortOrder = NULL, decreasing = FALSE, ...)}
 \arguments{
 \item{alldiffs.obj}{An \code{\link{alldiffs.object}}.}
 \item{newclassify}{A \code{\link{character}} string giving the variables that 
@@ -32,31 +32,39 @@
               \code{factor} that indexes the set of predicted values that determines 
                the sorting of the components. If there is only one variable in the 
               \code{classify} term then \code{sortFactor} can be \code{NULL} and 
-              the order is defined by the 
-              complete set of predicted values. If there is more than one variable 
-              in the \code{classify} term then \code{sortFactor} must be set. 
-              In this case the \code{sortFactor} is sorted for the predicted values 
-              within each combination of the values of the sortWithin 
-              variables: the \code{classify} variables, excluding the 
+              the order is defined by the complete set of predicted values. 
+              If there is more than one variable in the \code{classify} term 
+              then \code{sortFactor} must be set. In this case the \code{sortFactor} 
+              is sorted in the same order within each combination of the values of 
+              the \code{sortParallelToCombo} variables: the \code{classify} variables, excluding the 
               \code{sortFactor}. There should be only one predicted value for 
               each unique value of \code{sortFactor} within each set defined by a 
-              combination of the values of the sortWithin variables.}
- \item{sortWithinVals}{A \code{\link{list}} with a component named for each \code{factor} and 
-              \code{numeric} that is a \code{classify} variable for the predictions, 
-              excluding \code{sortFactor}. Each component should contain a single 
-              value that is a value of the variable. The combination of this set 
-              of values will be used to define a subset of the predicted values whose 
-              order will define the order of \code{sortFactor} to be used for all 
-              combinations of the \code{sortWithinVals} variables. If 
-              \code{sortWithinVals} is \code{NULL} then the first value of each 
-              sortWithin variable in \code{predictions} component is used 
-              to define \code{sortWithinVals}. If there is only one variable in the 
-              classify then \code{sortWithinVals} is ignored.}
+              combination of the values of the \code{classify} variables, excluding the 
+              \code{sortFactor} \code{factor}. 
+              The order to use is determined by either \code{sortParallelToCombo} or 
+              \code{sortOrder}.}
+ \item{sortParallelToCombo}{A \code{\link{list}} that specifies a combination of the values 
+              of the \code{factor}s and \code{numeric}s, excluding \code{sortFactor}, that 
+              are in \code{classify}. Each of the components of the supplied \code{\link{list}} 
+              is named for a \code{classify} variable and specifies a single value for it. The 
+              combination of this set of values will be used to define a subset of the predicted 
+              values whose order will define the order of \code{sortFactor}. Each of the other 
+              combinations of the values of the \code{factor}s and \code{numeric}s will be sorted 
+              in parallel. If \code{sortParallelToCombo} is \code{NULL} then the first value of               
+              each \code{classify} variable, except for the \code{sortFactor} \code{factor},  
+              in the \code{predictions} component is used to define \code{sortParallelToCombo}. 
+              If there is only one variable in the \code{classify} then 
+              \code{sortParallelToCombo} is ignored.}
+ \item{sortNestingFactor}{A \code{\link{character}} containing the name of the 
+              \code{factor} that defines groups of the \code{sortFactor} within which the predicted 
+              values are to be ordered. 
+              If there is only one variable in the \code{classify} then 
+              \code{sortNestingFactor} is ignored.}
  \item{sortOrder}{A \code{\link{character}} vector whose length is the same as the number 
                of levels for \code{sortFactor} in the \code{predictions} component of the 
               \code{\link{alldiffs.object}}. It specifies the desired order of the 
               levels in the reordered components of the \code{\link{alldiffs.object}}. 
-              The argument \code{sortWithinVals} is ignored.
+              The argument \code{sortParallelToCombo} is ignored.
 
               The following creates a \code{sortOrder} vector \code{levs} for factor 
               \code{f} based on the values in \code{x}: 
@@ -72,7 +80,7 @@
        attributes are set.}
 \details{First, the components of the \code{\link{alldiffs.object}} is arranged in standard order for
          the \code{newclassify}. Then predictions are reordered according to the settings of 
-         \code{sortFactor}, \code{sortWithinVals}, \code{sortOrder} and \code{decreasing} (see 
+         \code{sortFactor}, \code{sortParallelToCombo}, \code{sortOrder} and \code{decreasing} (see 
          \code{\link{sort.alldiffs}} for details).}
 
 
@@ -121,7 +129,8 @@ if (requireNamespace("lmerTest", quietly = TRUE) &
                                    interval.names = c("lower.CL", "upper.CL"))
    
   ## Form an all.diffs object and check its validity
-  TS.vcov <- vcov(TS.emm)
+  els <- as.numeric(rownames(TS.preds))
+  TS.vcov <- vcov(TS.emm)[els,els]
   TS.diffs <- allDifferences(predictions = TS.preds, 
                                classify = "Sources:Type", 
                                vcov = TS.vcov, tdf = den.df)

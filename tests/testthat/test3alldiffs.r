@@ -174,9 +174,9 @@ test_that("sort.alldiffs_asreml3", {
   testthat::expect_equal(attr(diffs.sort, which = "sortOrder"),
                          attr(diffs2.sort, which = "sortOrder"))
   
-  #Test sort.alldiffs with sortWithinVals and increasing order
+  #Test sort.alldiffs with sortParallelToCombo and increasing order
   diffs1.sort <- sort(diffs, sortFactor = "Genotype", 
-                      sortWithinVals = list(A = "N3", B = "D4"),
+                      sortParallelToCombo = list(A = "N3", B = "D4"),
                       decreasing = TRUE)
   testthat::expect_is(diffs1.sort, "alldiffs")
   testthat::expect_equal(as.character(diffs1.sort$predictions$Genotype[2]),"Wyalkatchem")
@@ -229,7 +229,7 @@ test_that("sort.alldiffsWater3", {
   testthat::expect_true(abs(TS.diffs.reord$predictions$predicted.value[2] - 7.646389) < 1e-06)
   
   #Test sort.alldiffs and save order for use with other response variables
-  TS.diffs.sort <- sort(TS.diffs, sortFactor = "Sources", sortWithinVals = list(Type = "Control"))
+  TS.diffs.sort <- sort(TS.diffs, sortFactor = "Sources", sortParallelToCombo = list(Type = "Control"))
   sort.order <- attr(TS.diffs.sort, which = "sortOrder")
   testthat::expect_is(TS.diffs.sort, "alldiffs")
   testthat::expect_true(validAlldiffs(TS.diffs.sort))

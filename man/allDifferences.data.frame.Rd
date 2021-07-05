@@ -46,8 +46,9 @@
                pairwise = TRUE, alpha = 0.05,
                transform.power = 1, offset = 0, scale = 1, 
                inestimable.rm = TRUE,
-               sortFactor = NULL, sortWithinVals = NULL, 
-               sortOrder = NULL, decreasing = FALSE, ...)}
+               sortFactor = NULL, sortParallelToCombo = NULL, 
+               sortNestingFactor = NULL, sortOrder = NULL, 
+               decreasing = FALSE, ...)}
 \arguments{
  \item{predictions}{A \code{\link{predictions.frame}}, or a \code{data.frame}, beginning 
                     with the variables classifying the predictions and also containing columns 
@@ -163,33 +164,43 @@
  \item{inestimable.rm}{A \code{logical} indicating whether rows for  predictions that 
                        are not estimable are to be removed from the components of the
                        \code{\link{alldiffs.object}}.}
-\item{sortFactor}{A \code{character} containing the name of the 
+\item{sortFactor}{A \code{\link{character}} containing the name of the 
               \code{factor} that indexes the set of predicted values that determines 
-              the sorting of each component of the the \code{\link{alldiffs.object}} by 
-              \code{\link{sort.alldiffs}}. If \code{NULL} then sorting is not carried 
-              out. If there is more than one variable 
-              in the \code{classify} term then \code{sortFactor} is sorted for the 
-              predicted values within each combination of the values of the sortWithin 
-              variables: the \code{classify} variables, excluding the 
+               the sorting of the components. If there is only one variable in the 
+              \code{classify} term then \code{sortFactor} can be \code{NULL} and 
+              the order is defined by the complete set of predicted values. 
+              If there is more than one variable in the \code{classify} term 
+              then \code{sortFactor} must be set. In this case the \code{sortFactor} 
+              is sorted in the same order within each combination of the values of 
+              the \code{sortParallelToCombo} variables: the \code{classify} variables, excluding the 
               \code{sortFactor}. There should be only one predicted value for 
               each unique value of \code{sortFactor} within each set defined by a 
-              combination of the values of the sortWithin variables.}
- \item{sortWithinVals}{A \code{list} with a component named for each \code{factor} and 
-              \code{numeric} that is a \code{classify} variable for the predictions, 
-              excluding \code{sortFactor}. Each component should contain a single 
-              value that is a value of the variable. The combination of this set 
-              of values will be used to define a subset of the predicted values whose 
-              order will define the order of \code{sortFactor} to be used for all 
-              combinations of the \code{sortWithinVals} variables. If 
-              \code{sortWithinVals} is \code{NULL} then the first value of each 
-              sortWithin variable in \code{predictions} component is used 
-              to define \code{sortWithinVals}. If there is only one variable in the 
-              classify then \code{sortWithinVals} is ignored.}
+              combination of the values of the \code{classify} variables, excluding the 
+              \code{sortFactor} \code{factor}. 
+              The order to use is determined by either \code{sortParallelToCombo} or 
+              \code{sortOrder}.}
+ \item{sortParallelToCombo}{A \code{\link{list}} that specifies a combination of the values 
+              of the \code{factor}s and \code{numeric}s, excluding \code{sortFactor}, that 
+              are in \code{classify}. Each of the components of the supplied \code{\link{list}} 
+              is named for a \code{classify} variable and specifies a single value for it. The 
+              combination of this set of values will be used to define a subset of the predicted 
+              values whose order will define the order of \code{sortFactor}. Each of the other 
+              combinations of the values of the \code{factor}s and \code{numeric}s will be sorted 
+              in parallel. If \code{sortParallelToCombo} is \code{NULL} then the first value of               
+              each \code{classify} variable, except for the \code{sortFactor} \code{factor},  
+              in the \code{predictions} component is used to define \code{sortParallelToCombo}. 
+              If there is only one variable in the \code{classify} then 
+              \code{sortParallelToCombo} is ignored.}
+ \item{sortNestingFactor}{A \code{\link{character}} containing the name of the 
+              \code{factor} that defines groups of the \code{sortFactor} within which the predicted 
+              values are to be ordered. 
+              If there is only one variable in the \code{classify} then 
+              \code{sortNestingFactor} is ignored.}
  \item{sortOrder}{A \code{character vector} whose length is the same as the number 
                of levels for \code{sortFactor} in the \code{predictions} component of the 
               \code{\link{alldiffs.object}}. It specifies the desired order of the 
               levels in the reordered components of the \code{\link{alldiffs.object}}. 
-              The argument \code{sortWithinVals} is ignored.
+              The argument \code{sortParallelToCombo} is ignored.
 
               The following creates a \code{sortOrder} vector \code{levs} for factor 
               \code{f} based on the values in \code{x}:  \cr
