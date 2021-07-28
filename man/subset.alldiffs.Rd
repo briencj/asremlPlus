@@ -6,8 +6,8 @@
              determine which of its rows are to be included in the subset. Then, if present, 
              this subset is applied to the rows of \code{backtransforms} and to the rows 
              and columns of \code{differences}, \code{p.differences} and \code{sed} 
-             components. In addition, if \code{sed} is present, 
-             \code{\link{recalcLSD.alldiffs}} is called to recalculate the values in the 
+             components. In addition, if \code{sed} is present, \code{\link{recalcLSD.alldiffs}} 
+             is called to recalculate the values in the \code{\link{LSD.frame}} stored in the 
              \code{LSD} component, with any arguments supplied via the \code{\dots} 
              argument passed ot it.
 
@@ -33,7 +33,7 @@
        \code{\link{alldiffs.object}} subsetted, if present in the original object: 
        \code{predictions}, \code{vcov}, \code{backtransforms}, \code{differences}, 
        \code{p.differences} and \code{sed}. In addition, if \code{sed} is present, the 
-       \code{LSD} component will be recalculated.}
+       \code{\link{LSD.frame}} in the \code{LSD} component will be recalculated.}
 
 \author{Chris Brien}
 \seealso{\code{\link{as.alldiffs}}, \code{\link{allDifferences.data.frame}}, 

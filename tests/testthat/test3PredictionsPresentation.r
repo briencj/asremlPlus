@@ -339,7 +339,7 @@ test_that("factor.combinations_asreml3", {
   LeafSucculence.diff <- readRDS("./data/LeafSucculence.diff")
   LeafSucculence.diff <- LeafSucculence.diff[[1]]
   
-  LeafSucculence.diff <- recalcLSD(LeafSucculence.diff, meanLSD.type = "factor.combinations", 
+  LeafSucculence.diff <- recalcLSD(LeafSucculence.diff, LSDtype = "factor.combinations", 
                                    LSDby = "Species")
   testthat::expect_warning(LeafSucculence.diff <- redoErrorIntervals(LeafSucculence.diff, 
                                                                      error.intervals = "half"))
@@ -371,7 +371,7 @@ test_that("recalcLSD.alldiffs_asreml3", {
                               present = c("Type","Species","Sources"))
   testthat::expect_is(diffs, "alldiffs")
   
-  diffs <- recalcLSD.alldiffs(diffs, meanLSD.type = "factor.combinations", LSDby = "Sources")
+  diffs <- recalcLSD.alldiffs(diffs, LSDtype = "factor.combinations", LSDby = "Sources")
   testthat::expect_equal(nrow(diffs$LSD), 6)
   testthat::expect_equal(ncol(diffs$LSD), 3)
   testthat::expect_warning(diffs <- redoErrorIntervals(diffs, 
@@ -427,14 +427,14 @@ test_that("LSDby3", {
                        #linear.transformation = ~(Nozzle + Pressure):Speed,
                        wald.tab = wald.tab,
                        tables = "none")
-  diffs.LSD <- recalcLSD(diffs, meanLSD.type = "factor",
+  diffs.LSD <- recalcLSD(diffs, LSDtype = "factor",
                          LSDby = c("Speed","Pressure"))
   testthat::expect_equal(nrow(diffs.LSD$LSD), 9)
   testthat::expect_true(abs(diffs.LSD$LSD$minLSD[1]- 11.92550) < 1e-05)
   testthat::expect_true(all(abs(diffs.LSD$LSD$minLSD- diffs.LSD$LSD$maxLSD) < 1e-05))
   diffs.LSD <- redoErrorIntervals(diffs.LSD, error.intervals = "half")
   testthat::expect_true("upper.halfLeastSignificant.limit" %in% names(diffs.LSD$predictions))
-  diffs <- redoErrorIntervals(diffs, error.intervals = "half", meanLSD.type = "factor",
+  diffs <- redoErrorIntervals(diffs, error.intervals = "half", LSDtype = "factor",
                        LSDby = c("Speed","Pressure"), wald.tab = wald.tab,
                        tables = "none")
   testthat::expect_true("upper.halfLeastSignificant.limit" %in% names(diffs$predictions))

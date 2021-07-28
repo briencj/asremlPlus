@@ -79,19 +79,19 @@
   return(isTSumm)
 }
 
-"asrtests" <- function(asreml.obj, wald.tab = NULL, test.summary = NULL, 
-                       denDF = "numeric", label = NULL, 
-                       IClikelihood = "none", bound.exclusions = c("F","B","S","C"), 
-                       ...)
-{
-  test <- as.asrtests(asreml.obj = asreml.obj, wald.tab = wald.tab, 
-                      test.summary = test.summary, denDF = denDF, 
-                      label = label, 
-                      IClikelihood = IClikelihood, 
-                      bound.exclusions = bound.exclusions, 
-                      ...)
-  return(test)
-}
+# "asrtests" <- function(asreml.obj, wald.tab = NULL, test.summary = NULL, 
+#                        denDF = "numeric", label = NULL, 
+#                        IClikelihood = "none", bound.exclusions = c("F","B","S","C"), 
+#                        ...)
+# {
+#   test <- as.asrtests(asreml.obj = asreml.obj, wald.tab = wald.tab, 
+#                       test.summary = test.summary, denDF = denDF, 
+#                       label = label, 
+#                       IClikelihood = IClikelihood, 
+#                       bound.exclusions = bound.exclusions, 
+#                       ...)
+#   return(test)
+# }
 
 "as.asrtests" <- function(asreml.obj, wald.tab = NULL, test.summary = NULL, 
                           denDF = "numeric", label = NULL, 
@@ -2572,19 +2572,20 @@ atLevelsMatch <- function(new, old, call)
 }
 
 "predictPlus.asreml" <- function(asreml.obj, classify, term = NULL, 
-                                 linear.transformation = NULL, 
-                                 titles = NULL, x.num = NULL, x.fac = NULL,  
-                                 x.pred.values = NULL, x.plot.values = NULL, 
-                                 error.intervals = "Confidence", avsed.tolerance = 0.25, 
-                                 meanLSD.type = "overall", LSDby = NULL, 
+                                 inestimable.rm = TRUE, linear.transformation = NULL, 
+                                 error.intervals = "Confidence", alpha = 0.05, 
+                                 wald.tab = NULL, dDF.na = "residual",  dDF.values = NULL, 
                                  pairwise = TRUE, Vmatrix = FALSE, 
-                                 tables = "all", level.length = NA, 
+                                 avsed.tolerance = 0.25, accuracy.threshold = NA, 
+                                 LSDtype = "overall", LSDsupplied = NULL, LSDby = NULL, 
+                                 LSDstatistic = "mean", LSDaccuracy = "maxAbsDeviation", 
+                                 x.num = NULL, x.fac = NULL,  
+                                 x.pred.values = NULL, x.plot.values = NULL, 
+                                 titles = NULL,  tables = "all" , level.length = NA, 
                                  transform.power = 1, offset = 0, scale = 1, 
-                                 inestimable.rm = TRUE, 
                                  sortFactor = NULL, sortParallelToCombo = NULL, 
-                                 sortNestingFactor = NULL, sortOrder = NULL, decreasing = FALSE, 
-                                 wald.tab = NULL, alpha = 0.05, 
-                                 dDF.na = "residual", dDF.values = NULL, trace = FALSE, ...)
+                                 sortNestingFactor = NULL, sortOrder = NULL, 
+                                 decreasing = FALSE, trace = FALSE, ...)
   #a function to get asreml predictions when there a parallel vector and factor are involved
 { 
   asr4 <- isASRemlVersionLoaded(4, notloaded.fault = TRUE)
@@ -2593,8 +2594,8 @@ atLevelsMatch <- function(new, old, call)
   if (is.character(validasr))
     stop(validasr)
   
-  AvLSD.options <- c("overall", "factor.combinations", "per.prediction")
-  avLSD <- AvLSD.options[check.arg.values(meanLSD.type, AvLSD.options)]
+  AvLSD.options <- c("overall", "factor.combinations", "per.prediction", "supplied")
+  avLSD <- AvLSD.options[check.arg.values(LSDtype, AvLSD.options)]
   if (!is.null(LSDby) &&  !is.character(LSDby))
     stop("LSDby must be a character")
   
@@ -2838,7 +2839,8 @@ atLevelsMatch <- function(new, old, call)
   else
     lintrans.vcov <- pred$vcov
   diffs <- allDifferences(predictions = pred$pvals, vcov = lintrans.vcov, 
-                          sed = pred$sed, meanLSD.type = meanLSD.type, LSDby = LSDby, 
+                          sed = pred$sed, LSDtype = LSDtype, LSDsupplied = LSDsupplied, 
+                          LSDby = LSDby, LSDstatistic = LSDstatistic, LSDaccuracy = LSDaccuracy, 
                           response = response, response.title =  response.title, 
                           term = term, classify = classify, 
                           tdf = denom.df, 
@@ -2853,11 +2855,10 @@ atLevelsMatch <- function(new, old, call)
   {
     #Add lower and upper uncertainty limits - send transform info to addBacktransforms.alldiffs 
     #so that backtransformed limits are updated
-    diffs <- redoErrorIntervals.alldiffs(diffs, error.intervals = error.intervals,
-                                         alpha = alpha, avsed.tolerance = avsed.tolerance,
-                                         meanLSD.type = meanLSD.type, LSDby = LSDby,
-                                         transform.power = transform.power, 
-                                         offset = offset, scale = scale)
+    diffs <- redoErrorIntervals.alldiffs(diffs, error.intervals = error.intervals, alpha = alpha, 
+                                         avsed.tolerance = avsed.tolerance, accuracy.threshold = accuracy.threshold, 
+                                         LSDtype = LSDtype, LSDsupplied = LSDsupplied, LSDby = LSDby, 
+                                         LSDstatistic = LSDstatistic, LSDaccuracy = LSDaccuracy) 
   } else
   {
     #Linear transformation required - send transform info to addBacktransforms.alldiffs
@@ -2866,7 +2867,9 @@ atLevelsMatch <- function(new, old, call)
                                    Vmatrix = Vmatrix, 
                                    error.intervals = error.intervals, 
                                    avsed.tolerance = avsed.tolerance, 
-                                   meanLSD.type = meanLSD.type, LSDby = LSDby, 
+                                   accuracy.threshold = accuracy.threshold, 
+                                   LSDtype = LSDtype, LSDsupplied = LSDsupplied, LSDby = LSDby, 
+                                   LSDstatistic = LSDstatistic, LSDaccuracy = LSDaccuracy, 
                                    response = response, response.title = response.title, 
                                    x.num = x.num, x.fac = x.fac, 
                                    tables = "none", level.length = level.length, 
@@ -3008,11 +3011,11 @@ atLevelsMatch <- function(new, old, call)
   }
   else
     vars <- non.x.terms
-  meanLSD <- attr(data, which = "meanLSD")
-  if (!is.null(meanLSD) && !is.na(meanLSD))
-    meanLSD <- sqrt(mean(meanLSD*meanLSD, na.rm = TRUE))
-  else
-    meanLSD <- NA
+  # meanLSD <- attr(data, which = "meanLSD")
+  # if (!is.null(meanLSD) && !is.na(meanLSD))
+  #   meanLSD <- sqrt(mean(meanLSD*meanLSD, na.rm = TRUE))
+  # else
+  #   meanLSD <- NA
   #Plot predicted values
   cbPalette <- rep(c("#CC79A7", "#56B4E9", "#009E73", "#E69F00", "#0072B2", "#D55E00", "#000000"), times=2)
   symb <- rep(c(18,17,15,3,13,8,21,9,3,2,11,1,7,5,10,0), times=10)
@@ -3062,10 +3065,10 @@ atLevelsMatch <- function(new, old, call)
           pred.plot <- pred.plot + 
             annotate("text", x=Inf, y=-Inf,  hjust=1, vjust=-0.3, size = 2, 
                      label = paste("Error bars are ", labend, sep=""))
-          if (low.parts[2] == "halfLeastSignificant" && !is.na(meanLSD))
-            pred.plot <- pred.plot + 
-              annotate("text", x=-Inf, y=-Inf,  hjust=-0.01, vjust=-0.3, size = 2, 
-                       label = paste("mean LSD = ",signif(meanLSD, digits=3)))
+          # if (low.parts[2] == "halfLeastSignificant" && !is.na(meanLSD))
+          #   pred.plot <- pred.plot + 
+          #     annotate("text", x=-Inf, y=-Inf,  hjust=-0.01, vjust=-0.3, size = 2, 
+          #              label = paste("mean LSD = ",signif(meanLSD, digits=3)))
         }
       }
     } else
@@ -3103,15 +3106,15 @@ atLevelsMatch <- function(new, old, call)
                       hjust=1, vjust=-1.3, size = 2) +
             geom_text(data = annot, label = labend, 
                       hjust=1, vjust=-0.3, size = 2)
-          if (low.parts[2] == "halfLeastSignificant" && !is.na(meanLSD)) 
-          { 
-            annot <- data.frame(-Inf, -Inf, 
-                                factor(non.x.lev[1], levels = non.x.lev))
-            names(annot) <- c(vars[1], y, vars[2])
-            pred.plot <- pred.plot + 
-              geom_text(data = annot, hjust=-0.01, vjust=-0.3, size = 2, 
-                        label = paste("mean LSD = ",signif(meanLSD, digits=3)))
-          }
+          # if (low.parts[2] == "halfLeastSignificant" && !is.na(meanLSD)) 
+          # { 
+          #   annot <- data.frame(-Inf, -Inf, 
+          #                       factor(non.x.lev[1], levels = non.x.lev))
+          #   names(annot) <- c(vars[1], y, vars[2])
+          #   pred.plot <- pred.plot + 
+          #     geom_text(data = annot, hjust=-0.01, vjust=-0.3, size = 2, 
+          #               label = paste("mean LSD = ",signif(meanLSD, digits=3)))
+          # }
         }
       }
     } else
@@ -3152,16 +3155,16 @@ atLevelsMatch <- function(new, old, call)
                       hjust=1, vjust=-2.1, size = 2) +
             geom_text(data = annot, label = labend, 
                       hjust=1, vjust=-1.1, size = 2)
-          if (low.parts[2] == "halfLeastSignificant" && !is.na(meanLSD)) 
-          { 
-            annot <- data.frame(-Inf, -Inf, 
-                                factor(non.x.lev1[length(non.x.lev1)], levels = non.x.lev1),
-                                factor(non.x.lev2[1], levels = non.x.lev2))
-            names(annot) <- c(vars[1], y, vars[c(3,2)])
-            pred.plot <- pred.plot + 
-              geom_text(data = annot, hjust=-0.01, vjust=-1.1, size = 2, 
-                        label = paste("mean LSD = ",signif(meanLSD, digits=3)))
-          }
+          # if (low.parts[2] == "halfLeastSignificant" && !is.na(meanLSD)) 
+          # { 
+          #   annot <- data.frame(-Inf, -Inf, 
+          #                       factor(non.x.lev1[length(non.x.lev1)], levels = non.x.lev1),
+          #                       factor(non.x.lev2[1], levels = non.x.lev2))
+          #   names(annot) <- c(vars[1], y, vars[c(3,2)])
+          #   pred.plot <- pred.plot + 
+          #     geom_text(data = annot, hjust=-0.01, vjust=-1.1, size = 2, 
+          #               label = paste("mean LSD = ",signif(meanLSD, digits=3)))
+          # }
         }
       }
     }
@@ -3216,10 +3219,10 @@ atLevelsMatch <- function(new, old, call)
           pred.plot <- pred.plot + 
             annotate("text", x=Inf, y=-Inf,  hjust=1, vjust=-0.3, size = 2, 
                      label =  paste("Error bars are ", labend, sep=""))
-          if (low.parts[2] == "halfLeastSignificant" && !is.na(meanLSD)) 
-            pred.plot <- pred.plot + 
-              annotate("text", x=-Inf, y=-Inf,  hjust=-0.01, vjust=-0.3, size = 2, 
-                       label = paste("mean LSD = ",signif(meanLSD, digits=3)))
+          # if (low.parts[2] == "halfLeastSignificant" && !is.na(meanLSD)) 
+          #   pred.plot <- pred.plot + 
+          #     annotate("text", x=-Inf, y=-Inf,  hjust=-0.01, vjust=-0.3, size = 2, 
+          #              label = paste("mean LSD = ",signif(meanLSD, digits=3)))
         }
       }
     } else
@@ -3250,11 +3253,11 @@ atLevelsMatch <- function(new, old, call)
             pred.plot <- pred.plot + 
               annotate("text", x=Inf, y=-Inf,  hjust=1, vjust=-0.3, size = 2, 
                        label =  paste("Error bars are ", labend, sep=""))
-            if (low.parts[2] == "halfLeastSignificant" && !is.na(meanLSD)) 
-            { pred.plot <- pred.plot + 
-              annotate("text", x=-Inf, y=-Inf,  hjust=-0.01, vjust=-0.3, size = 2, 
-                       label = paste("mean LSD = ",signif(meanLSD, digits=3)))
-            }
+            # if (low.parts[2] == "halfLeastSignificant" && !is.na(meanLSD)) 
+            # { pred.plot <- pred.plot + 
+            #   annotate("text", x=-Inf, y=-Inf,  hjust=-0.01, vjust=-0.3, size = 2, 
+            #            label = paste("mean LSD = ",signif(meanLSD, digits=3)))
+            # }
           }
         }
       }
@@ -3289,14 +3292,14 @@ atLevelsMatch <- function(new, old, call)
                                     hjust=1, vjust=-1.3, size = 2) +
                           geom_text(data = annot, label = labend, 
                                     hjust=1, vjust=-0.3, size = 2)
-          if (interval.annotate & low.parts[2] == "halfLeastSignificant" && !is.na(meanLSD)) 
-          { annot <- data.frame(-Inf, -Inf, 
-                                factor(non.x.lev[1], levels = non.x.lev))
-            names(annot) <- c(x.var, y, non.x.terms)
-            pred.plot <- pred.plot + 
-                          geom_text(data = annot, hjust=-0.01, vjust=-0.3, size = 2, 
-                                   label = paste("mean LSD = ",signif(meanLSD, digits=3)))
-          }
+          # if (interval.annotate & low.parts[2] == "halfLeastSignificant" && !is.na(meanLSD)) 
+          # { annot <- data.frame(-Inf, -Inf, 
+          #                       factor(non.x.lev[1], levels = non.x.lev))
+          #   names(annot) <- c(x.var, y, non.x.terms)
+          #   pred.plot <- pred.plot + 
+          #                 geom_text(data = annot, hjust=-0.01, vjust=-0.3, size = 2, 
+          #                          label = paste("mean LSD = ",signif(meanLSD, digits=3)))
+          # }
         }
       }
       if (n.non.x == 2)
@@ -3337,15 +3340,15 @@ atLevelsMatch <- function(new, old, call)
                         hjust=1, vjust=-1.3, size = 2) +
               geom_text(data = annot, label = labend, 
                         hjust=1, vjust=-0.3, size = 2)
-            if (low.parts[2] == "halfLeastSignificant" && !is.na(meanLSD)) 
-            { annot <- data.frame(-Inf, -Inf, 
-                                  factor(non.x.lev1[1], levels = non.x.lev1),
-                                  factor(non.x.lev2[length(non.x.lev2)], levels = non.x.lev2))
-            names(annot) <- c(x.var, y, non.x.terms)
-            pred.plot <- pred.plot + 
-              geom_text(data = annot, hjust=-0.01, vjust=-0.3, size = 2, 
-                        label = paste("mean LSD = ",signif(meanLSD, digits=3)))
-            }
+            # if (low.parts[2] == "halfLeastSignificant" && !is.na(meanLSD)) 
+            # { annot <- data.frame(-Inf, -Inf, 
+            #                       factor(non.x.lev1[1], levels = non.x.lev1),
+            #                       factor(non.x.lev2[length(non.x.lev2)], levels = non.x.lev2))
+            # names(annot) <- c(x.var, y, non.x.terms)
+            # pred.plot <- pred.plot + 
+            #   geom_text(data = annot, hjust=-0.01, vjust=-0.3, size = 2, 
+            #             label = paste("mean LSD = ",signif(meanLSD, digits=3)))
+            # }
           }
         }
       }
@@ -3373,21 +3376,20 @@ atLevelsMatch <- function(new, old, call)
 }
 
 "predictPresent.asreml" <- function(asreml.obj, terms, 
-                                    linear.transformation = NULL, 
-                                    wald.tab = NULL, dDF.na = "residual", 
-                                    dDF.values = NULL, 
-                                    x.num = NULL, x.fac = NULL, nonx.fac.order = NULL, 
+                                    inestimable.rm = TRUE, linear.transformation = NULL, 
+                                    error.intervals = "Confidence", alpha = 0.05, 
+                                    wald.tab = NULL, dDF.na = "residual", dDF.values = NULL, 
+                                    pairwise = TRUE, Vmatrix = FALSE,
+                                    avsed.tolerance = 0.25, accuracy.threshold = NA, 
+                                    LSDtype = "overall", LSDsupplied = NULL, LSDby = NULL, 
+                                    LSDstatistic = "mean", LSDaccuracy = "maxAbsDeviation", 
+                                    x.num = NULL, x.fac = NULL, nonx.fac.order = NULL,  
                                     x.pred.values = NULL, x.plot.values = NULL, 
                                     plots = "predictions", panels = "multiple", 
-                                    graphics.device = NULL, 
-                                    error.intervals = "Confidence", 
-                                    interval.annotate = TRUE, meanLSD.type = "overall", 
-                                    LSDby = NULL, avsed.tolerance = 0.25, titles = NULL, 
-                                    colour.scheme = "colour", save.plots = FALSE, 
+                                    graphics.device = NULL, interval.annotate = TRUE,
+                                    titles = NULL, colour.scheme = "colour", save.plots = FALSE, 
                                     transform.power = 1, offset = 0, scale = 1, 
-                                    pairwise = TRUE, Vmatrix = FALSE, 
                                     tables = "all", level.length = NA, 
-                                    alpha = 0.05, inestimable.rm = TRUE,
                                     sortFactor = NULL, sortParallelToCombo = NULL, 
                                     sortNestingFactor = NULL, sortOrder = NULL, 
                                     decreasing = FALSE, trace = FALSE, 
@@ -3407,8 +3409,8 @@ atLevelsMatch <- function(new, old, call)
   if (is.character(validasr))
     stop(validasr)
   
-  AvLSD.options <- c("overall", "factor.combinations", "per.prediction")
-  avLSD <- AvLSD.options[check.arg.values(meanLSD.type, AvLSD.options)]
+  AvLSD.options <- c("overall", "factor.combinations", "per.prediction", "supplied")
+  avLSD <- AvLSD.options[check.arg.values(LSDtype, AvLSD.options)]
   if (!is.null(LSDby) &&  !is.character(LSDby))
     stop("LSDby must be a character")
   
@@ -3481,7 +3483,10 @@ atLevelsMatch <- function(new, old, call)
                                   x.plot.values = x.plot.values, 
                                   error.intervals = error.intervals, 
                                   avsed.tolerance = avsed.tolerance, 
-                                  meanLSD.type = meanLSD.type, LSDby = LSDby, 
+                                  accuracy.threshold = accuracy.threshold, 
+                                  LSDtype = LSDtype, LSDsupplied = LSDsupplied, 
+                                  LSDby = LSDby, LSDstatistic = LSDstatistic, 
+                                  LSDaccuracy = LSDaccuracy, 
                                   pairwise = pairwise, Vmatrix = Vmatrix, 
                                   tables = tables, 
                                   level.length = level.length, 
@@ -3508,7 +3513,10 @@ atLevelsMatch <- function(new, old, call)
                                   x.plot.values = x.plot.values, 
                                   error.intervals = error.intervals, 
                                   avsed.tolerance = avsed.tolerance, 
-                                  meanLSD.type = meanLSD.type, LSDby = LSDby, 
+                                  accuracy.threshold = accuracy.threshold, 
+                                  LSDtype = LSDtype, LSDsupplied = LSDsupplied, 
+                                  LSDby = LSDby, LSDstatistic = LSDstatistic, 
+                                  LSDaccuracy = LSDaccuracy, 
                                   pairwise = pairwise, Vmatrix = Vmatrix, 
                                   tables = tables, 
                                   level.length = level.length, 

@@ -140,7 +140,7 @@ test_that("at_testing_asreml4", {
                         keep.order=TRUE, data = dat, 
                         maxiter=50, na.action = na.method(x="include"))
   
-  current.asrt <- asrtests(current.asr, NULL, NULL)
+  current.asrt <- as.asrtests(current.asr, NULL, NULL)
   current.asrt <- rmboundary(current.asrt)
   testthat::expect_equal(nrow(current.asrt$wald.tab),14)
   testthat::expect_equal(nrow(summary(current.asrt$asreml.obj)$varcomp),7)
@@ -212,7 +212,7 @@ test_that("at_multilevel_asreml4", {
                       data=comb.dat, maxiter = 100, workspace = "1Gb")
   
   summary(asreml.obj)$varcomp
-  current.asrt <- asrtests(asreml.obj, NULL, NULL)
+  current.asrt <- as.asrtests(asreml.obj, NULL, NULL)
   testthat::expect_equal(nrow(current.asrt$wald.tab), 24)
   
   asreml.options(step.size = 0.0001)

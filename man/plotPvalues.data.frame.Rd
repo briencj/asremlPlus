@@ -18,7 +18,7 @@
  \item{x}{A \code{character} giving the name of the column in \code{object} that contains 
              the factor whose levels index the p-values that are to be plotted in the same column.}
  \item{y}{A \code{character} giving the name of the column in \code{object} that contains 
-             the labels of the the p-values that are to be plotted as the rows.}
+             the labels of the p-values that are to be plotted as the rows.}
  \item{gridspacing}{A \code{numeric} specifying the number(s) of rows and columns 
              that form groups in the grid of differences. This is most useful when  
              two or more factors index the rows and columns. If a single, nonzero 

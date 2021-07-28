@@ -212,8 +212,8 @@
        \tab Calculates the ratios of noinated pairs of predictions \cr 
        \tab stored in an \code{\link{alldiffs.object}}.   \cr
 \code{\link{recalcLSD.alldiffs}} 
-       \tab Adds or recalculates the LSD component of an \cr 
-       \tab \code{\link{alldiffs.object}}.                           \cr
+       \tab Adds or recalculates the \code{\link{LSD.frame}} that is a \cr 
+       \tab component of an \code{\link{alldiffs.object}}.           \cr
 \code{\link{redoErrorIntervals.alldiffs}} 
        \tab Adds or replaces the error intervals stored in the \cr
        \tab prediction component of an \code{\link{alldiffs.object}}. \cr
@@ -262,7 +262,7 @@ The functions whose names end in 'alldiffs" utilize an \code{\link{alldiffs.obje
    (i) a \code{\link{predictions.frame}}, being a data frame containing predicted values, variables indexing them and their standard errores and estimability status; 
        the lower and upper limits of error intervals will be included when these are requested,
    (ii) optionally, square matrices containing all pairwise differences, the standard errors and p-values of the differences, 
-        and a summary of the LSD values, 
+        and a \code{data.frame} containing LSD values and their summary statistics, 
    (iii) optionally, the variance matrix of the predictions, and 
    (iv) if the response was trandformed for analysis, a data frame with backtransforms of the predicted values.
 

@@ -1,5 +1,18 @@
 \name{news}
 \title{News for Package asremlPlus}
+\section{asremlPlus Version 4.3-11 (2021-07-28)}{
+  \itemize{
+  \item{Deprecate the function asrtests, which has been replaced by the function as.asrtests.}
+  \item{There has been a substantial revision of the calculation and saving of the LSD component of an \code{alldiffs} object. 
+    \itemize{
+  \item{The argument \code{meanLSD.type} has been changed to \code{LSDtype}. All functions that are S3 methods for \code{alldiffs} objects will check for the \code{meanLSD.type} attribute and, if found, change it to \code{LSDtype}.} 
+  \item{The option \code{supplied} has been added to the argument \code{LSDtype} so that the user can supply LSD values to replace those in the \code{assignedLSD} column of the \code{LSD} component.}
+  \item{The two new arguments \code{LSDstatistic} and \code{LSDaccuracy} have been added. The argument \code{LSDstatistic} allows a choice of \code{minimum}, \code{mean}, \code{median} or \code{maximum}. The values of the nominated LSD statistics are stored in a column of the LSD component named \code{assignedLSD}. The argument \code{LSDaccuracy} allows the specification of a statistic summarizing the differences between the the LSDs and the assigned LSD value for each row of the LSD component. The values of the chosen measure are stored in a column of the \code{LSD} component named \code{accuracyLSD}. These two arguments have been added to the functions allDifferences.data.frame, as.alldiffs.object, as.alldiffs, linTransform.alldiffs, pairdiffsTransform, predictPlus.asreml, predictPresent.asreml, ratioTransform.alldiffs, recalcLSD.alldiffs and redoErrorIntervals.alldiffs.}
+  \item{The \code{LSD} component is always calculated and stored as a component when \code{pairwise} is \code{TRUE}.}}}
+  \item{A new argument \code{accuracy.threshold} has been introduced to control the addition of a column names \code{LSDwarning} to the \code{predictions} of an \code{alldiffs} object. THis column indicates whether or not the an \code{halfLeastSignificant} \code{error.interval} is reliable as determined using the supplied value of  \code{accuracy.threshold}.}
+  \item{The attributes of an alldiffs object  and of the \code{predictions} component have been modified. The arguments \code{LSDtype}, \code{LSDstatistic} and \code{LSDby}, if set, are attributes of an \code{alldiffs} object. They are also attributes of a \code{prediction.frame} and the \code{backtransforms} component of an \code{alldiffs} object, as is \code{LSDvalues}, when \code{halfLeastSignificant} \code{error.intervals} are specified. The \code{LSDvalues} attribute has the values used in calculating half-LSD intervals. The \code{meanLSD} attribute has been removed.}
+  \item{A separate entry for \code{LSD.frame} has been introduced into the manual to dedscribe the \code{data.frame} that is stored in the \code{LSD} component of an \code{alldiffs} object.}
+}}
 \section{asremlPlus Version 4.3-10 (2021-07-5)}{
   \itemize{
   \item{Fix bug in facRecast that meant that the argument \code{levels.order} was being ignored.}
@@ -317,7 +330,7 @@
     \item{Defined classes alldiffs, asrtests and predictions.frame.}
     \item{Added the functions is.alldiffs, validAlldiffs, is.asrtests, validAsrtests, is.predictions.frame and validPredictionsFrame for validating the objects.}
     \item{Added tests for the validity of objects to methods functions.}
-    \item{Provided as.asrtests function, while retaining asrtests function as a pseudonym for as.asrtests. Added as.prediction.frame function.}
+    \item{Provided as.asrtests function, while retaining asrtests function as a pseudonym for as.asrtests. Added an as.prediction.frame function.}
     \item{Add examples for \code{alldiffs} and \code{data.frame} methods functions that use lme4 to show how to use asremlPlus with packages othere than asreml.}
   }
 }

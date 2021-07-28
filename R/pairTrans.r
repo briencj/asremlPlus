@@ -118,6 +118,13 @@ ratioTransform.alldiffs <- function(alldiffs.obj, ratio.factor,
                                     tables = "predictions", 
                                     ...)
 {
+  #Check that a valid object of class alldiffs
+  validalldifs <- validAlldiffs(alldiffs.obj)  
+  if (is.character(validalldifs))
+    stop(validalldifs)
+  alldiffs.obj <- renameDiffsAttr(alldiffs.obj)
+  
+  
   meth.options <- c("Fieller")
   method.opt <- meth.options[check.arg.values(method, meth.options)]
   options <- c("none", "predictions", "backtransforms", "vcov", 
@@ -230,11 +237,31 @@ ratioTransform.alldiffs <- function(alldiffs.obj, ratio.factor,
   
 pairdiffsTransform.alldiffs <- function(alldiffs.obj, pairs.factor, first.levels, second.levels, 
                                         Vmatrix = FALSE, 
-                                        error.intervals = "Confidence", avsed.tolerance = 0.25, 
-                                        meanLSD.type = "overall", LSDby = NULL, 
+                                        error.intervals = "Confidence", 
+                                        avsed.tolerance = 0.25, accuracy.threshold = NA, 
+                                        LSDtype = "overall", LSDsupplied = NULL, LSDby = NULL, 
+                                        LSDstatistic = "mean", LSDaccuracy = "maxAbsDeviation", 
                                         response = NULL, response.title = NULL, tables = "all", 
                                         pairwise = TRUE, alpha = 0.05, ...)
 {
+  #Check that a valid object of class alldiffs
+  validalldifs <- validAlldiffs(alldiffs.obj)  
+  if (is.character(validalldifs))
+    stop(validalldifs)
+  alldiffs.obj <- renameDiffsAttr(alldiffs.obj)
+  attr(alldiffs.obj, which = "alpha") <- alpha
+
+  #get transform attributes from backtransforms
+  transform.power = 1; offset <- 0; scale <- 1
+  if (!is.null(alldiffs.obj$backtransforms))
+  {
+    transform.power = attr(alldiffs.obj$backtransforms, which = "transform.power")
+    offset = attr(alldiffs.obj$backtransforms, which = "offset")
+    scale = attr(alldiffs.obj$backtransforms, which = "scale")
+  } 
+  
+  sortFactor <- attr(alldiffs.obj, which = "sortFactor")
+  
   int.options <- c("none", "Confidence", "StandardError", "halfLeastSignificant")
   int.opt <- int.options[check.arg.values(error.intervals, int.options)]
   options <- c("none", "predictions", "backtransforms", "vcov", 
@@ -264,11 +291,6 @@ pairdiffsTransform.alldiffs <- function(alldiffs.obj, pairs.factor, first.levels
   
   indx <- setdiff(facs, pairs.factor)
 
-  transform.power <- attr(alldiffs.obj$backtransforms, which = "transform.power")
-  if (is.null(transform.power))
-    transform.power <- 1
-  sortFactor <- attr(alldiffs.obj, which = "sortFactor")
-
   Diffs <- lapply(second.levels, function(second.lev,tmp) 
   {
     lapply(first.levels, function(first.lev, second.lev, tmp) 
@@ -291,31 +313,34 @@ pairdiffsTransform.alldiffs <- function(alldiffs.obj, pairs.factor, first.levels
   
         #Calculate the differences for the current pair
         diffs <- linTransform(alldiffs.obj, classify = classify, 
-                                 linear.transformation = L, Vmatrix = Vmatrix, 
-                                 error.intervals = int.opt, avsed.tolerance = avsed.tolerance, 
-                                 meanLSD.type = meanLSD.type, LSDby = LSDby, 
-                                 response = response, response.title = response.title, 
-                                 pairwise = pairwise, alpha = alpha, 
-                                 tables = "none", ...)
+                              linear.transformation = L, Vmatrix = Vmatrix, 
+                              error.intervals = "Confidence",
+                              avsed.tolerance = avsed.tolerance, accuracy.threshold = accuracy.threshold, 
+                              response = response, response.title = response.title, 
+                              pairwise = pairwise, alpha = alpha, 
+                              tables = "none", ...)
         diffs$predictions <- cbind(pairs.dat, diffs$predictions)
         diffs$predictions <- diffs$predictions[, -match("Combination", names(diffs$predictions))]
-        if (!is.null(diffs$backtransforms))
-        {
-          diffs$backtransforms <- cbind(pairs.dat, diffs$backtransforms)
-          diffs$backtransforms <- diffs$backtransforms[, -match("Combination", names(diffs$backtransforms))]
-          #Find missing attributes in new alldiffs.obj and add them back in 
-          newattr <- attributes(diffs$backtransforms)
-          back.attr <- attributes(alldiffs.obj$backtransforms)
-          back.attr <- back.attr[names(back.attr)[!(names(back.attr) %in% names(newattr))]]
-          if (length(back.attr) > 0)
-          {
-            newattr <- c(newattr,back.attr)
-            attributes(diffs$backtransforms) <- newattr
-          }
-        }
-        
         diffs <- renewClassify(diffs, newclassify = paste(indx, collapse = ":"))
-
+        diffs <- redoErrorIntervals(diffs,  error.intervals = int.opt, alpha = alpha, 
+                                    avsed.tolerance = avsed.tolerance, accuracy.threshold = accuracy.threshold, 
+                                    LSDtype = LSDtype, LSDby = LSDby, LSDsupplied = LSDsupplied, 
+                                    LSDstatistic = LSDstatistic, LSDaccuracy = LSDaccuracy)
+        # if (!is.null(diffs$backtransforms))
+        # {
+        #   diffs$backtransforms <- cbind(pairs.dat, diffs$backtransforms)
+        #   diffs$backtransforms <- diffs$backtransforms[, -match("Combination", names(diffs$backtransforms))]
+        #   #Find missing attributes in new alldiffs.obj and add them back in 
+        #   newattr <- attributes(diffs$backtransforms)
+        #   back.attr <- attributes(alldiffs.obj$backtransforms)
+        #   back.attr <- back.attr[names(back.attr)[!(names(back.attr) %in% names(newattr))]]
+        #   if (length(back.attr) > 0)
+        #   {
+        #     newattr <- c(newattr,back.attr)
+        #     attributes(diffs$backtransforms) <- newattr
+        #   }
+        # }
+        
         #sort the alldiffs if it was previously sorted
         if (!is.null(sortFactor))
         {

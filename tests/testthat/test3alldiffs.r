@@ -90,7 +90,7 @@ test_that("allDifferences_asreml3", {
   testthat::expect_warning(Var.diffs.by <- linTransform(Var.diffs, 
                                                         linear.transformation = ~Nitrogen,
                                                         error.intervals = "half", 
-                                                        meanLSD.type = "factor", 
+                                                        LSDtype = "factor", 
                                                         LSDby = "Variety", 
                                                         tables = "none"))
 })
@@ -268,7 +268,7 @@ test_that("sort.alldiffsWater3", {
   diffs.fit <- linTransform(diffs.full, classify = "Sources:Type:Species",
                             linear.transformation = ~ Sources:Type, 
                             error.intervals="half", 
-                            meanLSD.type="factor", LSDby="Type", 
+                            LSDtype="factor", LSDby="Type", 
                             tables = "none")
   testthat::expect_true(setequal(names(diffs.fit$predictions), 
                                  c("Sources", "Type", "Species", "predicted.value", 
@@ -628,7 +628,7 @@ test_that("linear.transform_Oats_asreml3", {
                            linear.transformation = ~ Variety + Nitrogen, 
                            wald.tab = current.asrt$wald.tab,
                            error.intervals = "half", 
-                           meanLSD.type = "factor.comb",
+                           LSDtype = "factor.comb",
                            LSDby = "Nitrogen",
                            tables = "none")
   testthat::expect_is(diffs.mod, "alldiffs")

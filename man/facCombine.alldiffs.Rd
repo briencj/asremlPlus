@@ -1,3 +1,4 @@
+
 \name{facCombine.alldiffs}
 \alias{facCombine.alldiffs}
 \alias{facCombine}
@@ -5,7 +6,10 @@
 \description{Combines several \code{\link{factor}s}, in the \code{prediction} component 
              of \code{object}, into one whose \code{levels} are the combinations of the 
               used \code{levels} of the individual \code{\link{factor}s}. The matching 
-             changes are made to the other components of the \code{\link{alldiffs.object}}. 
+             changes are made to the other components and the attributes of the 
+             \code{\link{alldiffs.object}}. If any of the factors to be combined are in 
+             \code{LSDby}, they are removed from the \code{LSDby}, unless the factors to 
+             be combined are exactlly those in the \code{LSDby}. 
              The levels of the \code{factors} are combined using \code{fac.combine} 
              from the \code{dae} package.}
 \usage{\method{facCombine}{alldiffs}(object, factors, order="standard", 
@@ -30,11 +34,10 @@
    according to \code{order}.}
  \item{sep}{A \code{character} string to separate the levels when 
 \code{combine.levels = TRUE}.}
- \item{level.length}{The maximum number of characters from the the levels of 
+ \item{level.length}{The maximum number of characters from the levels of 
             factors to use in the row and column labels of the tables of 
             pairwise differences and their p-values and standard errors.}
- \item{...}{Further arguments passed to the \code{\link{factor}} call creating 
-            the new \code{\link{factor}}.}
+ \item{...}{Further arguments passed to \code{\link{redoErrorIntervals.alldiffs}}.}
 }
 \value{A modified \code{\link{alldiffs.object}}.}
 \author{Chris Brien}

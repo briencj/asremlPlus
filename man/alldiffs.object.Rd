@@ -29,7 +29,7 @@
              to \code{NULL}. 
              
              An \code{\link{alldiffs.object}} also has attributes \code{response}, 
-             \code{response.title}, \code{term}, \code{classify}, \code{tdf}, 
+             \code{response.title}, \code{term}, \code{classify}, \code{tdf}, \code{alpha}, 
              \code{sortFactor} and \code{sortOrder}, which may be set to \code{NULL}.
 
             The details of the components are as follows:
@@ -62,7 +62,7 @@
                     are in the \code{data.frame} supplied to \code{predictions}, they will be 
                     returned to the previous names. 
                     
-          \item{differences}{A \code{matrix} containing all pairwise differences between
+          \item \code{differences}: {A \code{matrix} containing all pairwise differences between
                     the predictions; it should have the same number of rows and columns as there are
                     rows in \code{predictions}.}
           \item \code{p.differences}: A \code{matrix} containing p-values for all pairwise differences 
@@ -76,22 +76,13 @@
                     between the predictions; they are used in computing the p-values in \code{p.differences}.
           \item \code{vcov}: A \code{matrix} containing the variance matrix of the predictions; it is 
                     used in computing the variance of linear transformations of the predictions.
-          \item \code{LSD}: A \code{data.frame} containing the mean, minimum and maximum LSD for determining             
-                    the significance of pairwise differences, the mean LSD being calculated using 
-                    the square root of the mean of the variances of pairwise differences. 
-                    If \code{factor.combination} was specified for \code{meanLSD.type} when the 
-                    LSDs were being calculated, then \code{LSD} contains an LSD for each 
-                    \code{factor.combination} of the \code{\link{factor}s} specified by \code{LSDby}.  
-                    Each LSD is calculated from the square root of the mean of the variances for all 
-                    pairwise differences for each factor combination, unless there is only one prediction 
-                    for a \code{factor.combination}, when notional LSDs are calculated that are based 
-                    on the standard error of the prediction multiplied by the square root of two. 
-                    If \code{LSD} is not \code{NULL} then the overall mean LSD will be added as 
-                    an attribute named \code{meanLSD} of the \code{\link{alldiffs.object}}, as will 
-                    the values of \code{meanLSD.type} and \code{LSDby}. The LSD for a single prediction 
-                    assumes that any predictions to be compared are independent; this is not the case if 
-                    residual errors are correlated.
-\item \code{backtransforms}: When the response values have been transformed for analysis, 
+          \item \code{LSD}: An \code{\link{LSD.frame}} containing the mean, minimum, maximum, assigned LSD, as
+                    well as the column \code{accuracyLSD} that gives a measure of the accuracy of the 
+                    assigned LSD. given the variation in LSD values. The LSD in the \code{assignedLSD} 
+                    column is used to determine the significance of pairwise differences and the 
+                    statistic. The value in the \code{assignedLSD} column is specified using the 
+                    \code{LSDstatistic} argument. 
+          \item \code{backtransforms}: When the response values have been transformed for analysis, 
                     a \code{data.frame} containing the backtransformed values of the 
                     predicted values is added to the \code{alldiffs.object}. This \code{data.frame} 
                     is consistent with the \code{predictions} component, except 
@@ -106,10 +97,10 @@
                     predictions.
           \item \code{response.title}: A \code{character} specifying the title for the response variable 
                     for the predictions.
-          \item \code{term}: A character string giving the variables that define the term 
+          \item \code{term}: A \code{character} giving the variables that define the term 
                  that was fitted using \code{asreml} and that corresponds 
                  to \code{classify}. It is often the same as \code{classify}.
-          \item \code{classify}: A character string giving the variables that define the margins
+          \item \code{classify}: A \code{character} giving the variables that define the margins
                  of the multiway table used in the prediction. Multiway tables are 
                  specified by forming an interaction type term from the 
                  classifying variables, that is, separating the variable names 
@@ -117,23 +108,31 @@
           \item \code{tdf}: An \code{integer} specifying the degrees of freedom of the standard error. It is used as 
                 the degrees of freedom for the t-distribution on which p-values and confidence 
                 intervals are based.
-          \item \code{meanLSD}: If the \code{LSD} component is not \code{NULL} then the mean LSD is added as an 
-                attribute, calculated using the square root of the mean of the variances of pairwise differences.
-          \item \code{meanLSD.type}: If the \code{LSD} component is not \code{NULL} then \code{meanLSD.type} is 
-                added as an attribute.
-          \item \code{LSDby}: If the \code{LSD} component is not \code{NULL} then \code{LSDby} is added as an attribute.
-          \item \code{sortFactor}: A \code{character} containing the name of the 
-              \code{factor} that indexes the set of predicted values that 
+          \item \code{alpha}: An \code{integer} specifying the significance level. It is used as 
+                the significance level calculating LSDs.
+          \item \code{LSDtype}: If the \code{LSD} component is not \code{NULL} then \code{LSDtype} is 
+                added as an attribute. A \code{character} nominating the type of grouping of seds to be used 
+                in combining LSDs.
+          \item \code{LSDby}: If the \code{LSD} component is not \code{NULL} then \code{LSDby} is added 
+                as an attribute. A \code{character} \code{vector} containing the names of the factors and numerics 
+                within whose combinations the LSDs are to be summarized.
+          \item \code{LSDstatistic}: If the \code{LSD} component is not \code{NULL} then \code{LSDstatistic} is 
+                added as an attribute. A \code{character} nominating what statistic to use in summarizing a  
+                set of LSDs.
+          \item \code{LSDaccuracy}: If the \code{LSD} component is not \code{NULL} then \code{LSDaccuracy} is 
+                added as an attribute. A \code{character} nominating the method of calculating a measure of 
+                the accuracy of the LSDs stored in the \code{assignedLSD} column of the \code{\link{LSD.frame}}.
+          \item \code{sortFactor}: \code{factor} that indexes the set of predicted values that 
               determined the sorting of the components.
           \item \code{sortOrder}: A \code{character} vector that is the same length as the number of levels for 
               \code{sortFactor} in the \code{predictions} component of the 
               \code{\link{alldiffs.object}}. It specifies the order of the 
               levels in the reordered components of the \code{\link{alldiffs.object}}.
-
+}
               The following creates a \code{sortOrder} vector \code{levs} for factor 
               \code{f} based on the values in \code{x}: \cr
               \code{levs <- levels(f)[order(x)]}.
-}
+
      See \code{\link{predictPlus.asreml}} for more information.
 }
 \author{Chris Brien}

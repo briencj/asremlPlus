@@ -121,7 +121,7 @@ test_that("Wheat_asreml3", {
   diffs <- predictPlus(classify = "Variety", 
                            asreml.obj=current.asr, 
                            error.intervals="halfLeast",
-                           meanLSD.type = "fact", LSDby = "Variety",
+                           LSDtype = "fact", LSDby = "Variety",
                            wald.tab=current.asrt$wald.tab,
                            tables = "predictions", 
                            sortFactor = "Variety")

@@ -24,6 +24,70 @@ test_that("PredictionsFrame_lme4", {
   testthat::expect_true(is.predictions.frame(Var.preds))
   testthat::expect_true(validPredictionsFrame(Var.preds))
   }
+  
+})
+
+cat("#### Test for LSD.frame on Oats with lme4\n")
+test_that("PredictionsFrame_lme4", {
+  #  skip_on_cran()
+  library(asremlPlus)
+  library(dae)
+  data(Oats.dat)
+  
+  ## Use lme4 and emmmeans to get predictions and associated statistics
+  if (requireNamespace("lmerTest", quietly = TRUE) & 
+      requireNamespace("emmeans", quietly = TRUE))
+  {
+    m1.lmer <- lmerTest::lmer(Yield ~ Nitrogen*Variety + (1|Blocks/Wplots),
+                              data=Oats.dat)
+    ## Set up a wald.tab
+    int <- as.data.frame(rbind(rep(NA,4)))
+    rownames(int) <- "(Intercept)"
+    wald.tab <- anova(m1.lmer, ddf = "Kenward", type = 1)[,3:6]
+    names(wald.tab) <- names(int) <- c("Df", "denDF", "F.inc", "Pr")
+    wald.tab <- rbind(int, wald.tab)
+    #Get predictions
+    Var.emm <- emmeans::emmeans(m1.lmer, specs = ~ Nitrogen:Variety)
+    Var.preds <- summary(Var.emm)
+    ## Modify Var.preds to be compatible with a predictions.frame
+    Var.preds <- as.predictions.frame(Var.preds, predictions = "emmean", 
+                                      se = "SE", interval.type = "CI", 
+                                      interval.names = c("lower.CL", "upper.CL"))
+    Var.vcov <- vcov(Var.emm)
+    Var.sed <- NULL
+    den.df <- wald.tab[match("Nitrogen:Variety", rownames(wald.tab)), "denDF"]
+    testthat::expect_equal(den.df, 45)
+    
+    #Test for LSDs in allDifference
+    Var.LSD.diffs <- allDifferences(predictions = Var.preds, classify = "Variety:Nitrogen", 
+                                     sed = Var.sed, vcov = Var.vcov, tdf = den.df,
+                                     sortFactor = "Variety", decreasing = TRUE)
+    testthat::expect_true(all(abs(Var.LSD.diffs$LSD -  c(15.47425, 18.54065, 19.56706, 18.54065, 0.1653881)) < 1e-05))
+    testthat::expect_true(setequal(names(Var.LSD.diffs$LSD), c("minLSD", "meanLSD", "maxLSD", 
+                                                              "assignedLSD", "accuracyLSD")))
+    testthat::expect_equal(rownames(Var.LSD.diffs$LSD), "overall")
+    
+    #Test for LSDby in allDifference
+    Var.LSD.diffs <- allDifferences(predictions = Var.preds, classify = "Variety:Nitrogen", 
+                                    sed = Var.sed, vcov = Var.vcov, tdf = den.df, 
+                                    LSDtype = "factor.combinations", LSDby = "Variety",
+                                    sortFactor = "Variety", decreasing = TRUE)
+    testthat::expect_true(all(abs(Var.LSD.diffs$LSD[1:4] -  15.47425) < 1e-05))
+    testthat::expect_true(all(Var.LSD.diffs$LSD["accuracyLSD"] < 1e-15))
+    testthat::expect_true(setequal(names(Var.LSD.diffs$LSD), c("minLSD", "meanLSD", "maxLSD", 
+                                                               "assignedLSD", "accuracyLSD")))
+    testthat::expect_true(setequal(rownames(Var.LSD.diffs$LSD), c("Marvellous", "Golden Rain", "Victory")))
+    
+    #test for LSDby recalcLSD
+    Var.LSD.diffs <- recalcLSD(Var.LSD.diffs, LSDtype = "factor.combinations", LSDby = "Variety")
+    testthat::expect_true(is.alldiffs(Var.LSD.diffs))
+    testthat::expect_true(validAlldiffs(Var.LSD.diffs))
+    testthat::expect_true(all(abs(Var.LSD.diffs$LSD[1:4] -  15.47425) < 1e-05))
+    testthat::expect_true(all(Var.LSD.diffs$LSD["accuracyLSD"] < 1e-15))
+    testthat::expect_true(setequal(names(Var.LSD.diffs$LSD), c("minLSD", "meanLSD", "maxLSD", 
+                                                               "assignedLSD", "accuracyLSD")))
+    testthat::expect_true(setequal(rownames(Var.LSD.diffs$LSD), c("Marvellous", "Golden Rain", "Victory")))
+  }
 })
 
 cat("#### Test for allDifferences.data.frame on Oats with lme4\n")
@@ -156,7 +220,7 @@ test_that("validity_lme4", {
   Var.diffs <- as.alldiffs(predictions = Var.preds, 
                            sed = Var.sed, vcov = Var.vcov, 
                            classify = "Variety:Nitrogen", response = "Yield", tdf = den.df)
-  testthat::expect_equal(length(attributes(Var.diffs)),5)
+  testthat::expect_equal(length(attributes(Var.diffs)),6)
   testthat::expect_true(is.null(attr(Var.diffs, which = "sortOrder")))
   testthat::expect_true(is.character(msg <- validAlldiffs(Var.diffs))) #invalid classify
   testthat::expect_true(grepl("classify var", msg[2], fixed = TRUE))
@@ -264,11 +328,12 @@ test_that("alldiffs_lme4", {
     testthat::expect_true(all(c("X1","X2","p","sections1","sections2") %in% names(pdata)))
     testthat::expect_equal(sum(!is.na(pdata$p)), 380)
     
-    p <- within(reshape::melt(TS.diffs$p.differences), 
-                { 
-                  X1 <- factor(X1, levels=dimnames(TS.diffs$p.differences)[[1]])
-                  X2 <- factor(X2, levels=levels(X1))
-                })
+    #row and col names cause reshape::melt to throw a warning re type.convert
+    testthat::expect_warning(p <- within(reshape::melt(TS.diffs$p.differences), 
+                                         { 
+                                           X1 <- factor(X1, levels=dimnames(TS.diffs$p.differences)[[1]])
+                                           X2 <- factor(X2, levels=levels(X1))
+                                         }))
     names(p)[match("value", names(p))] <- "p"
     testthat::expect_silent(plotPvalues(p, x = "X1", y = "X2", 
                                         gridspacing = rep(c(3,4), c(4,2)), 
@@ -276,10 +341,10 @@ test_that("alldiffs_lme4", {
     
     
     ##Recalculate the LSD values for predictions obtained using asreml or lme4  
-    TS.diffs <- recalcLSD(TS.diffs, meanLSD.type = "factor.combinations", 
+    TS.diffs <- recalcLSD(TS.diffs, LSDtype = "factor.combinations", 
                           LSDby = "Sources")
     testthat::expect_equal(nrow(TS.diffs$LSD), 6)
-    testthat::expect_equal(ncol(TS.diffs$LSD), 3)
+    testthat::expect_equal(ncol(TS.diffs$LSD), 5)
     testthat::expect_warning(TS.diffs <- redoErrorIntervals(TS.diffs, 
                                                             error.intervals = "halfLeast"))
     testthat::expect_false("upper.halfLeastSignificant.limit" %in% names(TS.diffs$predictions))
@@ -294,7 +359,7 @@ test_that("alldiffs_lme4", {
     testthat::expect_equal(ncol(TS.diffs.subs$predictions),8)
     testthat::expect_false(any(TS.diffs.subs$predictions$Sources == "Tap water"))
     testthat::expect_false(any(TS.diffs.subs$predictions$B %in% c("Landscape","Culinary")))
-    testthat::expect_equal(length(attributes(TS.diffs.subs)),6)
+    testthat::expect_equal(length(attributes(TS.diffs.subs)),9)
   }
 })
 
@@ -346,7 +411,7 @@ test_that("sort.alldiffs_lme4", {
     testthat::expect_equal(nrow(GAB.diffs.sort$predictions),120)
     testthat::expect_equal(ncol(GAB.diffs.sort$predictions),9)
     testthat::expect_equal(as.character(GAB.diffs.sort$predictions$Genotype[1]),"Gladius")
-    testthat::expect_equal(length(attributes(GAB.diffs.sort)),7)
+    testthat::expect_equal(length(attributes(GAB.diffs.sort)),9)
     testthat::expect_equal(length(attr(GAB.diffs.sort, which = "sortOrder")),10)
     
     
@@ -426,7 +491,7 @@ test_that("sort.alldiffsWater_lme4", {
     testthat::expect_equal(nrow(TS.diffs.sort$predictions),20)
     testthat::expect_equal(ncol(TS.diffs.sort$predictions),8)
     testthat::expect_equal(as.character(TS.diffs.sort$predictions$Sources[1]),"Recycled water")
-    testthat::expect_equal(length(attributes(TS.diffs.sort)),7)
+    testthat::expect_equal(length(attributes(TS.diffs.sort)),9)
     testthat::expect_equal(length(attr(TS.diffs.sort, which = "sortOrder")),6)
     
     #Test sort.alldiffs with supplied sortOrder
@@ -492,20 +557,20 @@ test_that("facCombine.alldiffs_lme4", {
                              sed = HCL.sed, vcov = HCL.vcov, tdf = den.df)
     
     ## check the class and validity of the alldiffs object
-    is.alldiffs(HCL.diffs)
-    validAlldiffs(HCL.diffs)
+    testthat::expect_true(is.alldiffs(HCL.diffs))
+    testthat::expect_true(validAlldiffs(HCL.diffs))
     testthat::expect_equal(nrow(HCL.diffs$predictions),12)
     testthat::expect_equal(ncol(HCL.diffs$predictions),9)
     
     ## Combine Cadavers and Ladybird
-    HCL.diffs <- facCombine(HCL.diffs, factors = c("Cadavers","Ladybird"))
+    HCL.Comb.diffs <- facCombine(HCL.diffs, factors = c("Cadavers","Ladybird"))
     
-    ## check the validity of HCL.diffs
-    validAlldiffs(HCL.diffs)
-    testthat::expect_equal(nrow(HCL.diffs$predictions),12)
-    testthat::expect_equal(ncol(HCL.diffs$predictions),8)
+    ## check the validity of HCL.Comb.diffs
+    validAlldiffs(HCL.Comb.diffs)
+    testthat::expect_equal(nrow(HCL.Comb.diffs$predictions),12)
+    testthat::expect_equal(ncol(HCL.Comb.diffs$predictions),8)
     testthat::expect_true(all(c("Host", "Cadavers_Ladybird", "predicted.value") %in% 
-                                names(HCL.diffs$predictions)))
+                                names(HCL.Comb.diffs$predictions)))
   }
   
 })

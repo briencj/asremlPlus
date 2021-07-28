@@ -59,6 +59,11 @@ alldiffs <- function(...)
   invisible()
 }
 
+asrtests <- function(...)
+{ .Deprecated(new = "as.asrtests", package = "asremlPlus")
+  invisible()
+}
+
 choose.model.asreml <- function(...)
 { .Deprecated(new = "chooseModel.asrtests", package = "asremlPlus")
   invisible()

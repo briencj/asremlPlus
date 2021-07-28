@@ -105,6 +105,8 @@
   validalldifs <- validAlldiffs(object)  
   if (is.character(validalldifs))
     stop(validalldifs)
+  object <- renameDiffsAttr(object)
+  
   if (is.null(object$p.differences))
     stop("The p.differences component of object cannot be NULL")
   if (all(is.na(object$p.differences)))

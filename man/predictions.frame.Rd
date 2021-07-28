@@ -14,12 +14,11 @@
              \code{\link{validPredictionsFrame}} can be used to test the validity of a 
              \code{predictions.frame}.
 }
-\value{A \code{data.frame} being a \code{data.frame} beginning with the variables 
-                    classifying the predictions, in the same order as in the 
-                    \code{classify}, and also containing columns named \code{standard.error} 
-                    and \code{est.status}; each row contains a single predicted value. 
-                    The usual name of the column containing the predictions is  
-                    \code{predicted.value} or \code{backtransformed.predictions}. 
+\value{A \code{data.frame} that begins with the variables classifying the predictions, 
+                    in the same order as in the \code{classify}, followed by a column of 
+                    predictions that is named either \code{predicted.value} or
+                    \code{backtransformed.predictions}; it also contains columns named  
+                    \code{standard.error} and \code{est.status}. 
                     The number of rows should equal the number of unique combinations 
                     of the classifying variables. While such a \code{data.frame} 
                     can be constructed from the beginning, the \code{pvals} component 
@@ -38,6 +37,18 @@
                      2) the second part will be one of \code{Confidence}, 
                         \code{StandardError} or \code{halfLeastSignificant}; 
                      3) the third component will be \code{limits}.
+
+                   IF \code{accuracy.threshold} is set to a numeric value at the time the 
+                   \code{prediction.frame} is formed, it will also include a column \code{logical} values 
+                   named \code{LSDwarning}.
+
+                   When \code{halfLeastSignificant} limits have been included in a \code{predictions.frame}, 
+                   its attributes will include those that are not \code{NULL} of \code{LSDtype}, 
+                   \code{LSDby}, \code{LSDstatistic}, \code{LSDaccuracy} and \code{LSDvalues}. \code{LSDvalues} are 
+                   the LSD values used to calculate the \code{halfLeastSignificant} \code{error.intervals} 
+                   and are an expanded version of the values stored in the \code{assignedLSD} column of the 
+                   \code{\link{LSD.frame}}.
+
                     
      See \code{\link{predictPlus.asreml}} for more information.
 }

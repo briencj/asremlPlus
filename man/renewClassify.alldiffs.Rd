@@ -72,7 +72,8 @@
  \item{decreasing}{A \code{\link{logical}} passed to \code{order} that detemines whether 
               the order is for increasing or decreasing magnitude of the predicted 
               values.}
- \item{\dots}{further arguments passed to \code{\link{allDifferences.data.frame}}.}
+ \item{\dots}{further arguments passed to \code{\link{allDifferences.data.frame}}; 
+              attributes \code{tranform.power}, \code{offset} and \code{scale} cannot be passed.}
 }
 \value{The \code{\link{alldiffs.object}} supplied with the following components, 
        if present, sorted: \code{predictions}, \code{vcov}, \code{backtransforms}, \code{differences}, 

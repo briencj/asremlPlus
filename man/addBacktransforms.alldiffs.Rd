@@ -2,8 +2,10 @@
 \alias{addBacktransforms.alldiffs}
 \alias{addBacktransforms}
 \title{Adds or recalculates the backtransforms component of an \code{\link{alldiffs.object}}.}
-\description{Given an \code{\link{alldiffs.object}}, adds or recalculate its \code{backtransforms} component.
-}
+\description{Given an \code{\link{alldiffs.object}}, adds or recalculate its \code{backtransforms} component. 
+             The values of \code{transform.power}, \code{offset}, \code{scale} from the \code{backtransforms} 
+            component will be used, unless this component is \code{NULL} when the values supplied in the call 
+            will be used.}
 \usage{
 \method{addBacktransforms}{alldiffs}(alldiffs.obj, transform.power = 1, 
                   offset = 0, scale = 1, ...)}
@@ -25,7 +27,12 @@
 }
 \value{An \code{\link{alldiffs.object}} with components 
        \code{predictions}, \code{vcov}, \code{differences}, \code{p.differences}, 
-       \code{sed}, \code{LSD} and \code{backtransforms}.}
+       \code{sed}, \code{LSD} and \code{backtransforms}.
+
+       The \code{backtransforms} component will have the attributes (i) \code{LSDtpe}, 
+       \code{LSDby} and \code{LSDstatistic} added from the \code{predictions} component and 
+       (ii) \code{transform.power}, \code{offset}, \code{scale}.
+}
 
 
 \author{Chris Brien}

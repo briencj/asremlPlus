@@ -80,7 +80,7 @@ current.asrt <- as.asrtests(m1.asr)
 wald.tab <-  current.asrt$wald.tab
 Var.diffs <- predictPlus(m1.asr, classify="Nitrogen:Variety", pairwise = TRUE,
                          Vmatrix = TRUE, error.intervals = "halfLeast",
-                         meanLSD.type = "factor", LSDby = "Variety",
+                         LSDtype = "factor", LSDby = "Variety",
                          wald.tab = wald.tab)
 }
 

@@ -9,7 +9,7 @@
        \code{\link{alldiffs.object}}, for those components not already present, 
        (i) a table of all pairwise differences of the predictions, 
        (ii) the p-value of each pairwise difference, and 
-       (iii) the minimum, mean and  maximum LSD values. 
+       (iii) the minimum, mean, maximum and accuracy of LSD values. 
        Predictions that are aliased (or nonestimable) are removed from the 
        \code{predictions} component of the \code{\link{alldiffs.object}} and 
        standard errors of differences involving them are removed from the \code{sed} 
@@ -32,13 +32,14 @@
        p-values are stored in the \code{p.differences} component. The degrees of freedom of 
        the t-distribution is the degrees of freedom stored in the \code{tdf} attribute of 
        the \code{\link{alldiffs.object}}. This t-distibrution is also used in calculating 
-       the LSD statistics stored in the \code{\link{alldiffs.object}}.
+       the LSD statistics stored in the \code{LSD} component of the \code{\link{alldiffs.object}}.
 }
 \usage{
 \method{allDifferences}{data.frame}(predictions, classify, vcov = NULL, 
                differences = NULL, p.differences = NULL, sed = NULL, 
-               LSD = NULL, meanLSD.type = "overall", LSDby = NULL, 
-               backtransforms = NULL, 
+               LSD = NULL, LSDtype = "overall", LSDsupplied = NULL, 
+               LSDby = NULL, LSDstatistic = "mean", 
+               LSDaccuracy = "maxAbsDeviation", backtransforms = NULL, 
                response = NULL, response.title = NULL, 
                term = NULL, tdf = NULL,  
                x.num = NULL, x.fac = NULL,  
@@ -79,61 +80,80 @@
                     the matrix should be of the same size as that for \code{differences}.}
  \item{sed}{A \code{matrix} containing the standard errors of all pairwise differences 
                     between the predictions; they are used in computing the p-values.}
-\item{LSD}{A \code{data.frame} containing the mean, minimum and maximum LSD for determining             
-                    the significance of pairwise differences, the mean LSD being calculated using 
-                    the square root of the mean of the variances of pairwise differences. 
-                    If \code{factor.combination} was specified for \code{meanLSD.type} when the 
-                    LSDs were being calculated, then \code{LSD} contains an LSD for each 
-                    \code{factor.combination} of the \code{\link{factor}s} specified by \code{LSDby}.  
-                    Each LSD is calculated from the square root of the mean of the variances for all 
-                    pairwise differences for each factor combination, unless there is only one predicted 
-                    value for each \code{factor.combination}, when it is based on the standard error of 
-                    the prediction multiplied by the square root of two. 
-                    If \code{LSD} is not \code{NULL} then the overall mean LSD will be added as 
-                    an attribute named \code{meanLSD} of the \code{\link{alldiffs.object}}, as will 
-                    the values of \code{meanLSD.type} and \code{LSDby}. The LSD for a single prediction 
+\item{LSD}{An \code{\link{LSD.frame}} containing the mean, minimum and maximum LSD for determining             
+                    the significance of pairwise differences, as well as an assigned LSD and a measure 
+                    of the accuracy of the LSD. If \code{LSD} is \code{NULL} then the \code{\link{LSD.frame}} 
+                     stored in the \code{LSD} component will be calculated and 
+                    the values of \code{LSDtype}, \code{LSDby} and \code{LSDstatistic} added as attributes 
+                    of the \code{\link{alldiffs.object}}. The LSD for a single prediction 
                     assumes that any predictions to be compared are independent; this is not the case if 
                     residual errors are correlated.}
- \item{meanLSD.type}{A \code{\link{character}} string determining whether the mean LSD stored is 
-             (i) the \code{overall} mean, based on the square root of the mean of the variances of 
-             all pairwise variances, (ii) the mean for each \code{factor.combination} of the 
-             \code{\link{factor}s} specified by \code{LSDby}, which is based on the square root of 
-             the mean of the variances for all pairwise differences for each factor combination, unless 
-             there is only one prediction for a \code{factor.combination}, when notional LSDs are 
-             calculated that are based on the standard error of the prediction multiplied by the square 
-              root of two, or 
-             (iii) the \code{per.prediction} mean, based, for each prediction, 
-             on the square root of the mean of the variances for all pairwise differences involving 
-             that prediction. If \code{LSD} is not \code{NULL} then \code{meanLSD.type} will be added 
-             as an attribute of the \code{\link{alldiffs.object}}.}
+\item{LSDtype}{A \code{\link{character}} string that can be \code{overall}, \code{factor.combinations}, 
+              \code{per.prediction} or \code{supplied}. It determines whether the values stored in an 
+              \code{\link{LSD.frame}} are  
+             (i) the \code{overall} minimum, mean, maximum and accuracy of all pairwise LSDs, 
+             (ii) the minimum, mean, maximum and acuracy for the pairwise LSDs for each 
+              \code{factor.combination}, unless there is only one prediction for a \code{factor.combination}, 
+              when notional LSDs are calculated,  
+             (iii) the \code{per.prediction} minimum, mean, maximum and accuracy, based, for each 
+             prediction, on all pairwise differences involving that prediction, or 
+            (iv) \code{supplied} values of the LSD, specified with the \code{LSDsupplied} argument; these 
+             values are to be placed in the \code{assignedLSD} column of the \code{\link{LSD.frame}} 
+             stored in an \code{\link{alldiffs.object}} so that they can be used in LSD calculations.
+             See \code{\link{LSD.frame}} for further information on the calculation of the values in this 
+             \code{data.frame}.}
+\item{LSDsupplied}{A \code{\link{data.frame}} or a named \code{\link{numeric}} containing a set of \code{LSD} 
+             values that correspond to the observed combinations of the values of the \code{LSDby} variables 
+             in the \code{\link{predictions.frame}} or a single LSD value that is an overall LSD. 
+             If a \code{\link{data.frame}}, it may have a column for each \code{LSDby} variable and a column 
+             of \code{LSD} values or a single column of \code{LSD} values with rownames being the combinations 
+             of the observed combinations of the values of the \code{LSDby} variables. Any name can be used 
+             for the column of \code{LSD} values; \code{assignedLSD} is sensible, but not obligatory. Otherwise, 
+             a \code{\link{numeric}} containing the \code{LSD} values, each of which is named for the observed 
+             combination of the values of the \code{LSDby} variables to which it corresponds. (Applying the 
+             \code{function} \code{dae::fac.combine} to the \code{predictions} component is one way of 
+             forming the required combinations for the (row) names.)  The values supplied 
+             will be incorporated into \code{assignedLSD} column of the \code{\link{LSD.frame}} stored as the 
+             \code{LSD} component of the \code{\link{alldiffs.object}}.}
 \item{LSDby}{A \code{\link{character}} (vector) of variables names, being the names of the 
              \code{\link{factor}s} or \code{\link{numeric}s} in the \code{classify} for each 
-             combination of which a mean LSD, minLSD and max LSD is stored in the \code{LSD} 
-             component of the \code{\link{alldiffs.object}} when \code{meanLSD.type} is 
+             combination of which a mean LSD, minLSD and maxLSD is stored in the \code{LSD} 
+             component of the \code{\link{alldiffs.object}} when \code{LSDtype} is 
              \code{factor.combinatons}.}
- \item{backtransforms}{A \code{data.frame} containing the backtransformed values of the predicted 
+\item{LSDstatistic}{A \code{\link{character}} nominating one of \code{mean}, \code{median}, \code{minmum} or 
+             \code{maximum} as the value(s) to use in the calculation of the \code{halfLeastSignificant} 
+             \code{error.intervals}. These values are stored in the column named \code{assignedLSD} in an 
+             \code{\link{LSD.frame}}. \code{LSDstatistic} is ignored if it is not \code{NULL}.}
+\item{LSDaccuracy}{A \code{\link{character}} nominating one of \code{maxAbsDeviation}, \code{maxDeviation}, 
+             \code{90Deviation} or \code{RootMeanSqDeviation} as the statistic to be calculated as a measure 
+             of the accuracy of \code{assignedLSD}. The option \code{90Deviation} produces the sample quantile 
+             corresponding to a probability of 0.90. The deviations are the differences between the LSDs used in 
+             calculating the LSD statistics and each assigned LSD and the accuracy is expressed as a 
+             proportion of the assigned LSD value. The calculated values are stored in the column named 
+             \code{accuracyLSD} in an \code{\link{LSD.frame}}.}
+\item{backtransforms}{A \code{data.frame} containing the backtransformed values of the predicted 
                     values  that is consistent with the \code{predictions} component, except 
                     that the column named \code{predicted.value} is replaced by one called 
                     \code{backtransformed.predictions}. Any \code{error.interval} values will also 
                     be the backtransformed values. Each row contains a single predicted value.}
- \item{response}{A \code{character} specifying the response variable for the 
+\item{response}{A \code{character} specifying the response variable for the 
                     predictions. It is stored as an attribute to the \code{\link{alldiffs.object}}.}
- \item{response.title}{A \code{character} specifying the title for the response variable 
+\item{response.title}{A \code{character} specifying the title for the response variable 
                     for the predictions. It is stored as an attribute to the \code{\link{alldiffs.object}}.}
- \item{term}{A character string giving the variables that define the term 
+\item{term}{A character string giving the variables that define the term 
                  that was fitted using \code{asreml} and that corresponds 
                  to \code{classify}. It is often the same as \code{classify}. 
                  It is stored as an attribute to the \code{\link{alldiffs.object}}.}
- \item{tdf}{an \code{integer} specifying the degrees of freedom of the standard error. It is used as 
+\item{tdf}{an \code{integer} specifying the degrees of freedom of the standard error. It is used as 
                 the degrees of freedom for the t-distribution on which p-values and confidence 
                 intervals are based. 
                 It is stored as an attribute to the \code{\link{alldiffs.object}}.}
- \item{x.num}{A character string giving the name of the numeric covariate that 
+\item{x.num}{A character string giving the name of the numeric covariate that 
               corresponds to \code{x.fac}, is potentially included in terms in the 
               fitted model and which corresponds to the x-axis variable. It should 
               have the same number of unique values as the number of levels in 
               \code{x.fac}.}
- \item{x.fac}{A character string giving the name of the factor that corresponds to 
+\item{x.fac}{A character string giving the name of the factor that corresponds to 
               \code{x.num}, is potentially included in terms in the fitted model and 
               which corresponds to the x-axis variable. It should have the same 
               number of levels as the number of unique values in \code{x.num}. 
@@ -141,27 +161,29 @@
               be plotted - if they are dates, then they should be in the form 
               yyyymmdd, which can be achieved using \code{as.Date}. However, the levels
               can be non-numeric in nature, provided that \code{x.num} is also set.}
- \item{level.length}{The maximum number of characters from the the levels of 
+\item{level.length}{The maximum number of characters from the levels of 
             factors to use in the row and column labels of the tables of 
             pairwise differences and their p-values and standard errors.}
- \item{pairwise}{A logical indicating whether all pairwise differences of the
+\item{pairwise}{A logical indicating whether all pairwise differences of the
                 \code{predictions} and their standard errors and p-values are to be 
                 computed and stored. If \code{FALSE}, the components \code{differences} 
                 and \code{p.differences} will be \code{NULL} in the returned 
                 \code{\link{alldiffs.object}}.}
- \item{alpha}{The significance level for an LSD to compare a pair of predictions.}
- \item{transform.power}{A \code{\link{numeric}} specifying the power of a transformation, if 
+\item{alpha}{A \code{\link{numeric}} giving the significance level for LSDs or one minus 
+              the confidence level for confidence intervals.
+              It is stored as an attribute to the \code{\link{alldiffs.object}}.}
+\item{transform.power}{A \code{\link{numeric}} specifying the power of a transformation, if 
               one has been applied to the response variable. Unless it is equal 
               to 1, the default, back-transforms of the predictions will be 
               obtained and presented in tables or graphs as appropriate. 
               The back-transformation raises the predictions to the power equal 
               to the reciprocal of \code{transform.power}, unless it equals 0 in 
               which case the exponential of the predictions is taken.} 
- \item{offset}{A \code{\link{numeric}} that has been added to each value of the 
+\item{offset}{A \code{\link{numeric}} that has been added to each value of the 
                response after any scaling and before applying any power transformation.}
- \item{scale}{A \code{\link{numeric}} by which each value of the response has been multiplied 
+\item{scale}{A \code{\link{numeric}} by which each value of the response has been multiplied 
                before adding any offset and applying any power transformation.}
- \item{inestimable.rm}{A \code{logical} indicating whether rows for  predictions that 
+\item{inestimable.rm}{A \code{logical} indicating whether rows for  predictions that 
                        are not estimable are to be removed from the components of the
                        \code{\link{alldiffs.object}}.}
 \item{sortFactor}{A \code{\link{character}} containing the name of the 
@@ -179,7 +201,7 @@
               \code{sortFactor} \code{factor}. 
               The order to use is determined by either \code{sortParallelToCombo} or 
               \code{sortOrder}.}
- \item{sortParallelToCombo}{A \code{\link{list}} that specifies a combination of the values 
+\item{sortParallelToCombo}{A \code{\link{list}} that specifies a combination of the values 
               of the \code{factor}s and \code{numeric}s, excluding \code{sortFactor}, that 
               are in \code{classify}. Each of the components of the supplied \code{\link{list}} 
               is named for a \code{classify} variable and specifies a single value for it. The 
@@ -191,12 +213,12 @@
               in the \code{predictions} component is used to define \code{sortParallelToCombo}. 
               If there is only one variable in the \code{classify} then 
               \code{sortParallelToCombo} is ignored.}
- \item{sortNestingFactor}{A \code{\link{character}} containing the name of the 
+\item{sortNestingFactor}{A \code{\link{character}} containing the name of the 
               \code{factor} that defines groups of the \code{sortFactor} within which the predicted 
               values are to be ordered. 
               If there is only one variable in the \code{classify} then 
               \code{sortNestingFactor} is ignored.}
- \item{sortOrder}{A \code{character vector} whose length is the same as the number 
+\item{sortOrder}{A \code{character vector} whose length is the same as the number 
                of levels for \code{sortFactor} in the \code{predictions} component of the 
               \code{\link{alldiffs.object}}. It specifies the desired order of the 
               levels in the reordered components of the \code{\link{alldiffs.object}}. 
@@ -205,10 +227,10 @@
               The following creates a \code{sortOrder} vector \code{levs} for factor 
               \code{f} based on the values in \code{x}:  \cr
               \code{levs <- levels(f)[order(x)]}.}
- \item{decreasing}{A \code{logical} passed to \code{order} that detemines whether 
+\item{decreasing}{A \code{logical} passed to \code{order} that detemines whether 
               the order for sorting the components of the \code{\link{alldiffs.object}} 
               is for increasing or decreasing magnitude of the predicted values.}
- \item{\dots}{provision for passsing arguments to functions called internally - 
+\item{\dots}{provision for passsing arguments to functions called internally - 
             not used at present.}
 }
 \value{An \code{\link{alldiffs.object}} with components 
@@ -216,7 +238,7 @@
        \code{sed}, and \code{LSD}. 
 
        The name of the \code{response}, the \code{response.title}, 
-       the \code{term}, the \code{classify}, \code{tdf}, \code{sortFactor} 
+       the \code{term}, the \code{classify}, \code{tdf}, \code{alpha}, \code{sortFactor} 
        and the \code{sortOrder} will be set as attributes to the object. 
        Note that the \code{classify} in an \code{\link{alldiffs.object}} is based on the 
        variables indexing the predictions, which may differ from the 

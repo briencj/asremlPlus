@@ -241,7 +241,7 @@ test_that("noPredictions.asreml4", {
                                    random = ~ Row + Column,
                                    keep.order=TRUE, data = gw.dat, 
                                    maxiter=50, workspace = 1e08, stepsize = 0.0001))
-  current.asrt <- asrtests(current.asr, NULL, NULL)
+  current.asrt <- as.asrtests(current.asr, NULL, NULL)
   current.asrt <- rmboundary(current.asrt)
   testthat::expect_error(diffs <- predictPresent(current.asrt$asreml.obj,
                                                  terms = "Irrigation",
@@ -371,12 +371,12 @@ test_that("factor.combinations.asreml4", {
   LeafSucculence.diff <- readRDS("./data/LeafSucculence.diff")
   LeafSucculence.diff <- LeafSucculence.diff[[1]]
   
-  LeafSucculence.diff <- recalcLSD(LeafSucculence.diff, meanLSD.type = "factor.combinations", 
+  LeafSucculence.diff <- recalcLSD(LeafSucculence.diff, LSDtype = "factor.combinations", 
                                    LSDby = "Species")
   testthat::expect_warning(LeafSucculence.diff <- redoErrorIntervals(LeafSucculence.diff, 
                                                                     error.intervals = "half"))
   testthat::expect_equal(nrow(LeafSucculence.diff$LSD), 3)
-  testthat::expect_equal(ncol(LeafSucculence.diff$LSD), 3)
+  testthat::expect_equal(ncol(LeafSucculence.diff$LSD), 5)
   testthat::expect_true(all(c("P1","P2","P3") %in% rownames(LeafSucculence.diff$LSD)))
   testthat::expect_false("lower.halfLeastSignificant.limit" %in% names(LeafSucculence.diff$predictions))
   testthat::expect_true(names(LeafSucculence.diff$predictions)[length(names(
@@ -403,9 +403,9 @@ test_that("recalcLSD.alldiffs4", {
                               present = c("Type","Species","Sources"))
   testthat::expect_is(diffs, "alldiffs")
   
-  diffs <- recalcLSD.alldiffs(diffs, meanLSD.type = "factor.combinations", LSDby = "Sources")
+  diffs <- recalcLSD.alldiffs(diffs, LSDtype = "factor.combinations", LSDby = "Sources")
   testthat::expect_equal(nrow(diffs$LSD), 6)
-  testthat::expect_equal(ncol(diffs$LSD), 3)
+  testthat::expect_equal(ncol(diffs$LSD), 5)
   testthat::expect_warning(diffs <- redoErrorIntervals(diffs, 
                                                        error.intervals = "halfLeastSignificant"))
   testthat::expect_false("upper.halfLeastSignificant.limit" %in% names(diffs$predictions))
@@ -460,20 +460,26 @@ test_that("LSDby4", {
                        wald.tab = wald.tab,
                        tables = "none")
   testthat::expect_true("upper.Confidence.limit" %in% names(diffs$predictions))
+  testthat::expect_true(all(c( "LSDtype", "LSDstatistic") %in% names(attributes(diffs))))
+  testthat::expect_true(is.null(attr(diffs, which = "LSDby")))
+  testthat::expect_true((attr(diffs, which = "LSDtype") == "overall"))
   
+    
   #Calculate LSD, but leave as CIs
-  diffs.LSD <- recalcLSD(diffs, meanLSD.type = "factor",
+  diffs.LSD <- recalcLSD(diffs, LSDtype = "factor",
                          LSDby = c("Speed","Pressure"))
   testthat::expect_equal(nrow(diffs.LSD$LSD), 9)
   testthat::expect_true(abs(diffs.LSD$LSD$minLSD[1]- 11.92550) < 1e-05)
   testthat::expect_true(all(abs(diffs.LSD$LSD$minLSD- diffs.LSD$LSD$maxLSD) < 1e-05))
+  testthat::expect_true(all(c( "LSDtype", "LSDby", "LSDstatistic") %in% names(attributes(diffs.LSD))))
+  testthat::expect_true((attr(diffs.LSD, which = "LSDtype") == "factor.combinations"))
   testthat::expect_true("upper.Confidence.limit" %in% names(diffs$predictions))
   
   #Convert from CI to LSI
   diffs.LSI <- redoErrorIntervals(diffs.LSD, error.intervals = "half")
   testthat::expect_true("upper.halfLeastSignificant.limit" %in% names(diffs.LSI$predictions))
   testthat::expect_equal(nrow(diffs.LSI$LSD), 9)
-  diffs <- redoErrorIntervals(diffs, error.intervals = "half", meanLSD.type = "factor",
+  diffs <- redoErrorIntervals(diffs, error.intervals = "half", LSDtype = "factor",
                        LSDby = c("Speed","Pressure"), wald.tab = wald.tab,
                        tables = "none")
   testthat::expect_true("upper.halfLeastSignificant.limit" %in% names(diffs$predictions))
@@ -484,7 +490,7 @@ test_that("LSDby4", {
   #Test changing the LSDby
   testthat::expect_warning(diff.Press <- 
                              redoErrorIntervals(diffs, error.intervals = "half", 
-                                                meanLSD.type = "factor",
+                                                LSDtype = "factor",
                                                 LSDby = "Pressure", wald.tab = wald.tab,
                                                 tables = "none"))
   diff.Press$LSD
@@ -493,7 +499,7 @@ test_that("LSDby4", {
   testthat::expect_true(abs(diff.Press$LSD$meanLSD[1]- 41.13342) < 1e-05)
   testthat::expect_true(abs(diff.Press$LSD$maxLSD[1]- 67.62672) < 1e-05)
   
-  #No meanLSD.type
+  #No LSDtype
   testthat::expect_warning(diff.Press <- 
                              redoErrorIntervals(diffs, error.intervals = "half", 
                                                 LSDby = "Pressure", wald.tab = wald.tab,
@@ -505,21 +511,36 @@ test_that("LSDby4", {
   
   testthat::expect_warning(diff.all <- 
                              redoErrorIntervals(diffs, error.intervals = "half", 
-                                                meanLSD.type = "overall",
+                                                LSDtype = "overall",
                                                 LSDby = NULL, wald.tab = wald.tab,
                                                 tables = "none"))
   testthat::expect_equal(nrow(diff.all$LSD), 1)
   testthat::expect_true(rownames(diff.all$LSD) == "overall")
   testthat::expect_true(abs(diff.all$LSD$minLSD[1]- 11.92550) < 1e-05)
 
-  #meanLSD.type = overall only
+  #LSDtype = overall only
   testthat::expect_warning(diff.all <- 
                              redoErrorIntervals(diffs, error.intervals = "half", 
-                                                meanLSD.type = "overall",
+                                                LSDtype = "overall",
                                                 wald.tab = wald.tab,
                                                 tables = "none"))
   testthat::expect_equal(nrow(diff.all$LSD), 1)
   testthat::expect_true(abs(diff.all$LSD$minLSD[1]- 11.92550) < 1e-05)
-  
+
+  #Test predictPlus with LSD options
+  #With linear transformation and LSDtype = "factor combinations"
+  diffs.LSD <- predictPlus(m1, classify = "Nozzle:Pressure:Speed", 
+                       linear.transformation = ~(Nozzle + Pressure):Speed,
+                       error.intervals = "half", LSDtype = "factor", LSDby = c("Speed", "Pressure"),
+                       wald.tab = wald.tab,
+                       tables = "none")
+  testthat::expect_true("upper.halfLeastSignificant.limit" %in% names(diffs.LSD$predictions))
+  testthat::expect_true(all(c( "LSDtype", "LSDby", "LSDstatistic") %in% names(attributes(diffs.LSD))))
+  testthat::expect_true((attr(diffs.LSD, which = "LSDtype") == "factor.combinations"))
+  testthat::expect_true(all(c( "LSDtype", "LSDby", "LSDstatistic", "LSDvalues") %in% 
+                              names(attributes(diffs.LSD$predictions))))
+  testthat::expect_true(attr(diffs.LSD$predictions, which = "LSDtype") == "factor.combinations")
+  testthat::expect_true(attr(diffs.LSD$predictions, which = "LSDstatistic") == "mean")
+
 })
 

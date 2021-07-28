@@ -8,7 +8,7 @@
              but the order can be changed. To revise the levels, specify the new levels in the 
              \code{newlabels} vector and these will replace the corresponding value in the 
              \code{levels.order} vector. The matching 
-             changes are made to the other components of the \code{\link{alldiffs.object}}.}
+             changes are made to the other components and attributes of the \code{\link{alldiffs.object}}.}
 \usage{\method{facRecast}{alldiffs}(object, factor, levels.order = NULL, newlabels = NULL, ...)}
 \arguments{
  \item{object}{An \code{\link{alldiffs.object}}.}

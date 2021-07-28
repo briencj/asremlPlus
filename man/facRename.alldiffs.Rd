@@ -5,7 +5,7 @@
        \code{\link{alldiffs.object}}.}
 \description{Renames \code{\link{factor}}s in the \code{prediction} component of an 
        \code{\link{alldiffs.object}}. These changes are propogated to the other 
-        components of the \code{\link{alldiffs.object}}.}
+        components and attributes of the \code{\link{alldiffs.object}}.}
 \usage{\method{facRename}{alldiffs}(object, factor.names, newnames,  ...)}
 \arguments{
  \item{object}{An \code{\link{alldiffs.object}}.}

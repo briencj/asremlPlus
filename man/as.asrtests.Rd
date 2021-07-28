@@ -1,6 +1,5 @@
 \name{as.asrtests}
 \alias{as.asrtests}
-\alias{asrtests}
 \title{Forms an asrtests object that stores (i) a fitted asreml object, 
        (ii) a pseudo-anova table for the fixed terms and (iii) a history of 
        changes and hypthesis testing used in obtaining the model.}
@@ -25,9 +24,7 @@
 as.asrtests(asreml.obj, wald.tab = NULL, test.summary = NULL, 
             denDF = "numeric", label = NULL, 
             IClikelihood = "none", bound.exclusions = c("F","B","S","C"), ...)
-asrtests(asreml.obj, wald.tab = NULL, test.summary = NULL, 
-         denDF = "numeric", label = NULL, 
-         IClikelihood = "none", bound.exclusions = c("F","B","S","C"), ...)}
+}
 \arguments{
  \item{asreml.obj}{an \code{asreml} object for a fitted model.}
  \item{wald.tab}{A \code{data.frame} containing a pseudo-anova table for 

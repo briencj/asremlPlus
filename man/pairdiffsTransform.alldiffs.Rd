@@ -30,9 +30,10 @@
 }
 \usage{
 \method{pairdiffsTransform}{alldiffs}(alldiffs.obj, pairs.factor, first.levels, second.levels, 
-                   Vmatrix = FALSE, 
-                   error.intervals = "Confidence", avsed.tolerance = 0.25, 
-                   meanLSD.type = "overall", LSDby = NULL, 
+                   Vmatrix = FALSE, error.intervals = "Confidence", 
+                   avsed.tolerance = 0.25, accuracy.threshold = NA, 
+                   LSDtype = "overall", LSDsupplied = NULL, LSDby = NULL, 
+                   LSDstatistic = "mean", LSDaccuracy = "maxAbsDeviation", 
                    response = NULL, response.title = NULL, tables = "all", 
                    pairwise = TRUE, alpha = 0.05, ...)
 }
@@ -57,53 +58,94 @@
              variances of all or a subset of pairwise differences between the predictions. 
              If the LSD is zero, as can happen when predictions are constrained to be equal,
              then the limits of the error intervals are set to \code{NA}. 
-             If \code{meanLSD.type} is set to \code{overall}, the \code{avsed.tolerance} is not 
+             If \code{LSDtype} is set to \code{overall}, the \code{avsed.tolerance} is not 
              \code{NA} and the range of the SEDs divided by the average of the SEDs exceeds 
              \code{avsed.tolerance} then the \code{error.intervals} calculations and the plotting 
              will revert to confidence intervals.}
 \item{avsed.tolerance}{A \code{\link{numeric}} giving the value of the SED range, the range of the SEDs 
              divided by the square root of the mean of the variances of all or a subset of the 
              pairwise differences, that is considered reasonable in calculating 
-             \code{error.intervals}. It should be a value between 0 and 1. The following rules apply:
+             \code{error.intervals}. To have it ignored, set it to \code{NA}. It should be a 
+             value between 0 and 1. The following rules apply:
              \enumerate{
              \item If \code{avsed.tolerance} is \code{NA} then mean LSDs of the type specified by 
-             \code{meanLSD.type} are calculated and used in \code{error.intervals} and plots.
-             \item Irrespective of the setting of \code{meanLSD.type}, if \code{avsed.tolerance} is not 
+             \code{LSDtype} are calculated and used in \code{error.intervals} and plots.
+             \item Irrespective of the setting of \code{LSDtype}, if \code{avsed.tolerance} is not 
              exceeded then the mean LSDs are used in \code{error.intervals} and plots. 
-             \item If \code{meanLSD.type} is set to \code{overall}, \code{avsed.tolerance} is not 
+             \item If \code{LSDtype} is set to \code{overall}, \code{avsed.tolerance} is not 
              \code{NA}, and \code{avsed.tolerance} is exceeded then  \code{error.intervals} and 
              plotting revert to confidence intervals. 
-             \item If \code{meanLSD.type} is set to \code{factor.combinations} and \code{avsed.tolerance} 
+             \item If \code{LSDtype} is set to \code{factor.combinations} and \code{avsed.tolerance} 
              is not exceeded for any factor combination then the half LSDs are 
              used in \code{error.intervals} and plots; otherwise, \code{error.intervals} and 
-             plotting revert to confidence intervals.
-             \item If \code{meanLSD.type} is set to \code{per.prediction} and \code{avsed.tolerance} 
+             plotting revert to confidence intervals. 
+             \item If \code{LSDtype} is set to \code{per.prediction} and \code{avsed.tolerance} 
              is not exceeded for any prediction then the half LSDs are used in \code{error.intervals} 
              and plots; otherwise, \code{error.intervals} and plotting revert to confidence intervals.
              }}
-\item{meanLSD.type}{A \code{\link{character}} string determining whether the mean LSD stored is 
-             (i) the \code{overall} mean, based on the square root of the mean of the variances of 
-             all pairwise variances, (ii) the mean for each \code{factor.combination} of the 
-             \code{\link{factor}s} specified by \code{LSDby}, which is based on the square root of 
-             the mean of the variances for all pairwise differences for each factor combination, or 
-             (iii) the \code{per.prediction} mean, based, for each prediction, 
-             on the square root of the mean of the variances for all pairwise differences 
-             involving that prediction, unless there is only one prediction for a 
-             \code{factor.combination}, when notional LSDs are calculated that are based on the 
-             standard error of the prediction multiplied by the square root of two. It also 
-             determines, in conjunction with \code{avsed.tolerance}, which LSD will be used
-             in calculating \code{error.intervals} and, hence, is used for plots.}
+\item{accuracy.threshold}{A \code{\link{numeric}} specifying the value of the LSD accuracy measure,  
+             which measure is specified by \code{LSDaccuracy}, as a threshold value in determining whether the 
+             \code{hallfLeastSignificant} \code{error.interval} for a predicted value is a reasonable  
+             approximation; this will be the case if the LSDs across all pairwise comparisons for which 
+             the interval's LSD was computed, as specified by \code{LSDtype} and \code{LSDby}, 
+             are similar enough to the interval's LSD, as measured by \code{LSDaccuracy}.  
+             If it is \code{NA}, it will be ignored. If it is 
+             not \code{NA}, a column of \code{\link{logical}s} named \code{LSDwarning}  will be added 
+             to the \code{predictions} component of the \code{\link{alldiffs.object}}. The value of 
+             \code{LSDwarning} for a \code{predicted.value} will be \code{TRUE} if the value of the 
+             \code{LSDaccuracy} measure computed from the LSDs for differences between this 
+             \code{predicted.value} and the other \code{predicted.values} as compared to its 
+             \code{assignedLSD} exceeds the value of \code{accuracy.threshold}. Otherwise, the 
+             value of \code{LSDwarning} for a \code{predicted.value} will be \code{FALSE}.}
+\item{LSDtype}{A \code{\link{character}} string that can be \code{overall}, \code{factor.combinations}, 
+              \code{per.prediction} or \code{supplied}. It determines whether the values stored in an 
+              \code{\link{LSD.frame}} are  
+             (i) the \code{overall} minimum, mean, maximum and accuracy of all pairwise LSDs, 
+             (ii) the minimum, mean, maximum and acuracy for the pairwise LSDs for each 
+              \code{factor.combination}, unless there is only one prediction for a \code{factor.combination}, 
+              when notional LSDs are calculated,  
+             (iii) the \code{per.prediction} minimum, mean, maximum and accuracy, based, for each 
+             prediction, on all pairwise differences involving that prediction, or 
+            (iv) \code{supplied} values of the LSD, specified with the \code{LSDsupplied} argument; these 
+             values are to be placed in the \code{assignedLSD} column of the \code{\link{LSD.frame}} 
+             stored in an \code{\link{alldiffs.object}} so that they can be used in LSD calculations.
+             See \code{\link{LSD.frame}} for further information on the calculation of the values in this 
+             \code{data.frame}.}
+\item{LSDsupplied}{A \code{\link{data.frame}} or a named \code{\link{numeric}} containing a set of \code{LSD} 
+             values that correspond to the observed combinations of the values of the \code{LSDby} variables 
+             in the \code{\link{predictions.frame}} or a single LSD value that is an overall LSD. 
+             If a \code{\link{data.frame}}, it may have a column for each \code{LSDby} variable and a column 
+             of \code{LSD} values or a single column of \code{LSD} values with rownames being the combinations 
+             of the observed combinations of the values of the \code{LSDby} variables. Any name can be used 
+             for the column of \code{LSD} values; \code{assignedLSD} is sensible, but not obligatory. Otherwise, 
+             a \code{\link{numeric}} containing the \code{LSD} values, each of which is named for the observed 
+             combination of the values of the \code{LSDby} variables to which it corresponds. (Applying the 
+             \code{function} \code{dae::fac.combine} to the \code{predictions} component is one way of 
+             forming the required combinations for the (row) names.)  The values supplied 
+             will be incorporated into \code{assignedLSD} column of the \code{\link{LSD.frame}} stored as the 
+             \code{LSD} component of the \code{\link{alldiffs.object}}.}
 \item{LSDby}{A \code{\link{character}} (vector) of variables names, being the names of the 
              \code{\link{factor}s} or \code{\link{numeric}s} in the \code{classify} for each 
-             combination of which a mean LSD, minLSD and max LSD is stored in the \code{LSD} 
-             component of the \code{\link{alldiffs.object}} when \code{meanLSD.type} is 
+             combination of which a mean LSD, minLSD and maxLSD is stored in the \code{LSD} 
+             component of the \code{\link{alldiffs.object}} when \code{LSDtype} is 
              \code{factor.combinatons}.}
- \item{response}{A \code{character} specifying the response variable for the 
+\item{LSDstatistic}{A \code{\link{character}} nominating one of \code{mean}, \code{median}, \code{minmum} or 
+             \code{maximum} as the value(s) to use in the calculation of the \code{halfLeastSignificant} 
+             \code{error.intervals}. These values are stored in the column named \code{assignedLSD} in an 
+             \code{\link{LSD.frame}}. \code{LSDstatistic} is ignored if it is not \code{NULL}.}
+\item{LSDaccuracy}{A \code{\link{character}} nominating one of \code{maxAbsDeviation}, \code{maxDeviation}, 
+             \code{90Deviation} or \code{RootMeanSqDeviation} as the statistic to be calculated as a measure 
+             of the accuracy of \code{assignedLSD}. The option \code{90Deviation} produces the sample quantile 
+             corresponding to a probability of 0.90. The deviations are the differences between the LSDs used in 
+             calculating the LSD statistics and each assigned LSD and the accuracy is expressed as a 
+             proportion of the assigned LSD value. The calculated values are stored in the column named 
+             \code{accuracyLSD} in an \code{\link{LSD.frame}}.}
+\item{response}{A \code{character} specifying the response variable for the 
                     predictions. It is stored as an attribute to the \code{\link{alldiffs.object}} .}
- \item{response.title}{A \code{character} specifying the title for the response variable 
+\item{response.title}{A \code{character} specifying the title for the response variable 
                     for the predictions. It is stored as an attribute to the 
                     \code{\link{alldiffs.object}}.}
- \item{tables}{A \code{\link{character}} vector containing a combination of 
+\item{tables}{A \code{\link{character}} vector containing a combination of 
               \code{none}, \code{predictions}, \code{vcov}, \code{backtransforms}, \code{differences}, 
               \code{p.differences}, \code{sed}, \code{LSD} and \code{all}.  
               These nominate which components of the \code{\link{alldiffs.object}} to print.
@@ -115,9 +157,10 @@
              \code{"differences"} or \code{"all"} or \code{error.intervals} is 
              equal to \code{"halfLeastSignificant"}, they will be stored 
              irrespective of the value of \code{pairwise}.}
- \item{alpha}{A \code{\link{numeric}} giving the significance level for LSDs or one minus 
-              the confidence level for confidence intervals.}
- \item{\dots}{further arguments passed to \code{\link{linTransform.alldiffs}}.}
+\item{alpha}{A \code{\link{numeric}} giving the significance level for LSDs or one minus 
+              the confidence level for confidence intervals. 
+              It is stored as an attribute to the \code{\link{alldiffs.object}}.}
+\item{\dots}{further arguments passed to \code{\link{linTransform.alldiffs}}.}
 }
 \value{A \code{list} of \code{\link{alldiffs.object}}s with a component for each combination 
        of a \code{first.levels} with a \code{second.levels}. The name of a component will be 
@@ -154,7 +197,7 @@ Preds.ratio.ClUp <- pairdiffsTransform(diffs.ClUp, method = "log",
                                        first.levels = "Hot",
                                        second.levels = "Cool",
                                        error.intervals = "halfLeast",
-                                       tables = "backtransforms") #BAcktransforms are ratios
+                                       tables = "backtransforms") #Backtransforms are ratios
 
 #### Form the differences for Nitrogen compared to no Nitrogen                                  
 data("Oats.dat")
@@ -166,7 +209,7 @@ current.asrt <- as.asrtests(m1.asr)
 wald.tab <-  current.asrt$wald.tab
 Var.diffs <- predictPlus(m1.asr, classify="Nitrogen:Variety", pairwise = TRUE,
                          Vmatrix = TRUE, error.intervals = "halfLeast",
-                         meanLSD.type = "factor", LSDby = "Variety",
+                         LSDtype = "factor", LSDby = "Variety",
                          wald.tab = wald.tab)
 }
 

@@ -28,7 +28,7 @@ test_that("sort.alldiffs4", {
   testthat::expect_equal(nrow(diffs$predictions),120)
   testthat::expect_equal(ncol(diffs$predictions),8)
   testthat::expect_equal(as.character(diffs$predictions$Genotype[1]),"Axe")
-  testthat::expect_equal(length(attributes(diffs)),8)
+  testthat::expect_equal(length(attributes(diffs)),11)
   testthat::expect_true(is.null(attr(diffs, which = "sortOrder")))
   
   testthat::expect_silent(plotPredictions(data = diffs$predictions, 
@@ -54,7 +54,7 @@ test_that("sort.alldiffs4", {
   testthat::expect_equal(nrow(diffs.sort$predictions),120)
   testthat::expect_equal(ncol(diffs.sort$predictions),8)
   testthat::expect_equal(as.character(diffs.sort$predictions$Genotype[1]),"Gladius")
-  testthat::expect_equal(length(attributes(diffs.sort)),10)
+  testthat::expect_equal(length(attributes(diffs.sort)),13)
   testthat::expect_equal(length(attr(diffs.sort, which = "sortOrder")),10)
   
   #Test sort.alldiffs with supplied sortOrder
@@ -170,7 +170,7 @@ test_that("sort.alldiffs4", {
   Var.diffs <- as.alldiffs(predictions = Var.pred$pvals, 
                            sed = Var.pred$sed, 
                            tdf = den.df)
-  testthat::expect_equal(length(attributes(Var.diffs)),3)
+  testthat::expect_equal(length(attributes(Var.diffs)),4)
   testthat::expect_true(is.null(attr(Var.diffs, which = "sortOrder")))
   
   #Test for predictPlus no sorting
@@ -181,7 +181,7 @@ test_that("sort.alldiffs4", {
   testthat::expect_equal(nrow(diffs$predictions),12)
   testthat::expect_equal(ncol(diffs$predictions),7)
   testthat::expect_equal(as.character(diffs$predictions$Variety[1]),"Victory")
-  testthat::expect_equal(length(attributes(diffs)),8)
+  testthat::expect_equal(length(attributes(diffs)),11)
   testthat::expect_true(is.null(attr(diffs, which = "sortOrder")))
   
   testthat::expect_silent(plotPredictions(data = diffs$predictions, 
@@ -200,6 +200,9 @@ test_that("sort.alldiffs4", {
   testthat::expect_equal(rownames(diffs.sort$differences)[1],"0,Marvellous")
   testthat::expect_equal(colnames(diffs.sort$p.differences)[1],"0,Marvellous")
   testthat::expect_silent(plotPvalues(diffs.sort, gridspacing = 3))
+  
+  diffs.LSD <- redoErrorIntervals(diffs, error.intervals = "halfLeast", LSDtype = "factor", LSDby = "Variety")
+  diffs.LSD.sort <- sort(diffs.LSD, sortFactor = "Variety", decreasing = TRUE)
   
   #Test for sort.predictions.frame
   preds <- diffs$predictions
@@ -225,7 +228,7 @@ test_that("sort.alldiffs4", {
   testthat::expect_equal(nrow(diffs[[1]]$predictions),12)
   testthat::expect_equal(ncol(diffs[[1]]$predictions),7)
   testthat::expect_equal(as.character(diffs[[1]]$predictions$Variety[[1]]),"Marvellous")
-  testthat::expect_equal(length(attributes(diffs$xNitrogen.Variety)),10)
+  testthat::expect_equal(length(attributes(diffs$xNitrogen.Variety)),13)
   testthat::expect_equal(length(attr(diffs[[1]], which = "sortOrder")),3)
   
   #Test for predictPlus with sortFactor
@@ -239,7 +242,7 @@ test_that("sort.alldiffs4", {
   testthat::expect_equal(nrow(diffs$predictions),12)
   testthat::expect_equal(ncol(diffs$predictions),7)
   testthat::expect_equal(as.character(diffs$predictions$Variety[1]),"Marvellous")
-  testthat::expect_equal(length(attributes(diffs)),10)
+  testthat::expect_equal(length(attributes(diffs)),13)
   testthat::expect_true(all(attr(diffs, which = "sortOrder") == 
                               levels(diffs$predictions$Variety)))
   testthat::expect_true(all(attr(diffs, which = "sortOrder") == 
@@ -279,7 +282,7 @@ test_that("classify.sort4", {
   Var.diffs <- as.alldiffs(predictions = Var.pred$pvals, 
                            sed = Var.pred$sed, 
                            tdf = den.df)
-  testthat::expect_equal(length(attributes(Var.diffs)),3)
+  testthat::expect_equal(length(attributes(Var.diffs)),4)
   testthat::expect_true(is.null(attr(Var.diffs, which = "sortOrder")))
   testthat::expect_true(all(names(Var.diffs$predictions)[1:2] ==  c("Variety","Nitrogen")))
   
