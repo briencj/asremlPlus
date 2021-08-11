@@ -442,3 +442,19 @@
   }
   geninv.x
 }
+
+subset.list <- function(x, select = 1:length(x), ...)
+{
+  selx <- select
+  if (inherits(select, what = "logical"))
+    selx <- c(1:length(x))[select]
+  y <- lapply(selx, function(k, x){x[[k]]}, x = x)
+  namx <- names(x)
+  if (!is.null(namx))
+  {
+    if (inherits(select, what = "character"))
+      selx <- namx %in% select
+    names(y) <- names(x)[selx]
+  }
+  return(y)
+}

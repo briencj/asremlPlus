@@ -2588,6 +2588,12 @@ atLevelsMatch <- function(new, old, call)
                                  decreasing = FALSE, trace = FALSE, ...)
   #a function to get asreml predictions when there a parallel vector and factor are involved
 { 
+  #Check for deprecated argument meanLSD.type and warn
+  tempcall <- list(...)
+  if (length(tempcall)) 
+    if ("meanLSD.type" %in% names(tempcall))
+      stop("meanLSD.type has been deprecated - use LSDtype")
+
   asr4 <- isASRemlVersionLoaded(4, notloaded.fault = TRUE)
   #Check that have a valid object of class asreml
   validasr <- validAsreml(asreml.obj)  
@@ -3403,6 +3409,12 @@ atLevelsMatch <- function(new, old, call)
 # - with dates, they should be in the form yyyymmdd
 #Probably need to supply x.plot.values if x.fac is to be plotted
 { 
+  #Check for deprecated argument meanLSD.type and warn
+  tempcall <- list(...)
+  if (length(tempcall)) 
+    if ("meanLSD.type" %in% names(tempcall))
+      stop("meanLSD.type has been deprecated - use LSDtype")
+
   asr4 <- isASRemlVersionLoaded(4, notloaded.fault = TRUE)
   #Check that have a valid object of class asreml
   validasr <- validAsreml(asreml.obj)  

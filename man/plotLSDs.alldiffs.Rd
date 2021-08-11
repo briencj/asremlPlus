@@ -1,33 +1,36 @@
-\name{plotPvalues.alldiffs}
-\alias{plotPvalues.alldiffs}
-\alias{plotPvalues}
-\title{Plots a heat map of p-values for pairwise differences between predictions.}
-\description{Produces a heat-map plot of the p-values for pairwise differences between 
-             predictions that is stored in the \code{p.differences} component of an 
-             \code{all.diffs} object. This is generally a matrix whose rows and columns 
+\name{plotLSDs.alldiffs}
+\alias{plotLSDs.alldiffs}
+\alias{plotLSDs}
+\title{Plots a heat map of computed LSD values for pairwise differences between predictions.}
+\description{Produces a heat-map plot of the computed  LSD values for pairwise differences between 
+             predictions by multiplying the values stored in the \code{sed} component of an 
+             \code{all.diffs} object by the \code{t}-value for the \code{df} stored in the  
+             \code{tdf} attribute of the object. 
+             This component is generally a matrix whose rows and columns 
              are labelled by the levels of one or more factors, the set of labels being 
              the same for rows and columns. The \code{sections} argument allows multiple 
              plots to be produced, one for each combination of the levels of the factors 
              listed in \code{sections}. Otherwise, a single plot is produced for all 
              observed combinations of the levels of the factors in the \code{classify} 
-             for the \code{\link{alldiffs.object}}. The plots are produced using 
-             \code{\link{plotPvalues.data.frame}}. The order of plotting the levels of 
+             attribute for the \code{\link{alldiffs.object}}. The plots are produced using 
+             \code{\link{plotLSDs.data.frame}}. The order of plotting the levels of 
              one of the factors indexing the predictions can be modified using 
              \code{\link{sort.alldiffs}}.
 }
-\usage{plotPvalues(object, ...)
-\method{plotPvalues}{alldiffs}(object, sections = NULL, 
-            gridspacing = 0, factors.per.grid = 0, 
-            show.sig = FALSE, alpha = 0.10, triangles = "both", 
-            title = NULL, axis.labels = TRUE, axis.text.size = 12, 
-            sep=",", colours = RColorBrewer::brewer.pal(3, "Set2"), 
-            ggplotFuncs = NULL, printPlot = TRUE, 
-            sortFactor = NULL, sortParallelToCombo = NULL, 
-            sortNestingFactor = NULL, sortOrder = NULL, 
-            decreasing = FALSE, ...)}
+\usage{plotLSDs(object, ...)
+\method{plotLSDs}{alldiffs}(object, alpha = 0.05, 
+         sections = NULL, gridspacing = 0, factors.per.grid = 0, 
+         triangles = "both", 
+         title = NULL, axis.labels = TRUE, axis.text.size = 12, 
+         sep=",", colours = RColorBrewer::brewer.pal(3, "Set2"), 
+         ggplotFuncs = NULL, printPlot = TRUE, 
+         sortFactor = NULL, sortParallelToCombo = NULL, 
+         sortNestingFactor = NULL, sortOrder = NULL, 
+         decreasing = FALSE, ...)}
 \arguments{
- \item{object}{An \code{\link{alldiffs.object}} with a \code{p.differences} component that is not 
+ \item{object}{An \code{\link{alldiffs.object}} with an \code{sed} component that is not 
              \code{NULL}.}
+ \item{alpha}{A \code{\link{numeric}} giving the significance level for the LSD.}
  \item{sections}{A \code{character} listing the names of the factors that are to be used 
                  to break the plot into sections. A separate plot will be produced for 
                  each observed combination of the levels of these factors.}
@@ -47,34 +50,25 @@
              argument to this function will be ignored if \code{factors.per.grid} is 
              greater than zero. Grids are most useful when two or more factors index the 
              rows and columns of each plot.}
-\item{show.sig}{A \code{logical} that specifies whether asterisks indicating the level 
-             of significance are to be added to the plot. If they are then 
-             `***' indicates that \eqn{p \leq 0.001}{p <= 0.001}, 
-             `**' that \eqn{ 0.001 < p \leq 0.01}{0.001 < p <= 0.01}, 
-             `*' that \eqn{ 0.01 < p \leq 0.05}{0.01 < p <= 0.05}
-             `.' that \eqn{ 0.05 < p \leq 0.10}{0.05 < p <= 0.10}. The last is only 
-             included for \code{alpha} = 0.10.}
- \item{alpha}{A \code{\link{numeric}} giving the significance level for testing 
-             pairwise differences; must be 0.05 or 0.10.}
   \item{triangles}{A \code{character} indicating whether the plot should include the 
              \code{lower}, \code{upper} or \code{both} traingle(s).}
 \item{title}{A \code{character} string giving the main title for the plot and to which 
               is appended the levels combination of the sectioning factors, if any, for each plot.}
  \item{axis.labels}{A \code{logical} indicating whether a label is to be added to the x- and y-axes. 
               If TRUE, the label is the comma-separated list of factors whose levels 
-              combinations are involved in the prediction differences for which the p-values 
+              combinations are involved in the prediction differences for which the LSD values 
               are calculated.}
  \item{axis.text.size}{A \code{\link{numeric}} giving the size of the \code{labels} on the axes   
                   of the \code{heatmap}.}
  \item{sep}{A \code{character} giving the characters separating the levels of different 
-               factors in the row and column names of the \code{p.differences} component. }
+               factors in the row and column names of the \code{sed} component. }
  \item{colours}{A vector of of colours to be passed to the \code{ggplot} function 
                 \code{scale\_colour\_gradientn}.}
  \item{ggplotFuncs}{A \code{\link{list}}, each element of which contains the 
                 results of evaluating a \code{\link{ggplot}} function. 
                 It is created by calling the \code{\link{list}} function with 
                 a \code{\link{ggplot}} function call for each element. 
-                It is passed to \code{ggplot} via \code{\link{plotPvalues.data.frame}} 
+                It is passed to \code{ggplot} via \code{\link{plotLSDs.data.frame}} 
                 to be applied in creating the \code{ggplot} object.}
  \item{printPlot}{A \code{logical} indicating whether or not the a plot is to be printed. This would 
                 be used when just the returned \code{data.frame} is required.}
@@ -125,12 +119,12 @@
  \item{\dots}{Provision for passsing arguments to functions called internally - 
             not used at present.}
  }
-\value{A \code{data.frame} with the columns \code{X1}, \code{X2}, \code{p}, \code{sections1} 
-       and \code{sections2}. This {data.frame} is formed from the \code{p.differences} component 
+\value{A \code{data.frame} with the columns \code{X1}, \code{X2}, \code{LSD}, \code{sections1} 
+       and \code{sections2}. This {data.frame} is formed using the \code{sed} component 
        of \code{object} and is used in producng the plot.}
 \author{Chris Brien}
-\seealso{\code{\link{plotPvalues.data.frame}}, \code{\link{allDifferences.data.frame}}, 
-         \code{\link{sort.alldiffs}}, \code{\link{subset.alldiffs}}, \code{ggplot}}
+\seealso{\code{\link{plotLSDs.data.frame}}, \code{\link{exploreLSDs}}, \code{\link{sort.alldiffs}}, \code{\link{subset.alldiffs}}, 
+         \code{ggplot}}
 \examples{
 ##Subset WaterRunoff data to reduce time to execute
 data(WaterRunoff.dat)
@@ -174,12 +168,12 @@ if (requireNamespace("lmerTest", quietly = TRUE) &
   validAlldiffs(TS.diffs)
 }  
 
-## Plot p-values for predictions obtained using asreml or lmerTest
+## Plot LSD values for predictions obtained using asreml or lmerTest
 if (exists("TS.diffs"))
 {
-  plotPvalues(TS.diffs, gridspacing = rep(c(3,4), c(4,2)), show.sig = TRUE)
+  plotLSDs(TS.diffs, gridspacing = rep(c(3,4), c(4,2)))
 \donttest{
-  plotPvalues(TS.diffs, sections = "Sources", show.sig = TRUE, axis.labels = TRUE)
+  plotLSDs(TS.diffs, sections = "Sources", axis.labels = TRUE)
 }  
 }
 }

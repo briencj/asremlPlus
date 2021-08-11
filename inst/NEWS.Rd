@@ -1,5 +1,12 @@
 \name{news}
 \title{News for Package asremlPlus}
+\section{asremlPlus Version 4.3-12 (2021-08-11)}{
+  \itemize{
+  \item{Fix bug in pairdiffsTransform when only two factors in \code{classify}.}
+  \item{Add function subset.list.}
+  \item{Add functions exploreLSDs, plotLSDs.alldiffs, plotLSDs.matrix and plotLSDs.data.frame.}
+  \item{Incorporate arguments \code{retain.zerLSDs} and \code{zero.tolerance} into AllDifferences.data.frame, redoErrotIntervals.alldiffs amd exploreLSDs.alldiffs to allow control of the retention of the zero LSD values when calculating LSD summaries.}
+}}
 \section{asremlPlus Version 4.3-11 (2021-07-28)}{
   \itemize{
   \item{Deprecate the function asrtests, which has been replaced by the function as.asrtests.}

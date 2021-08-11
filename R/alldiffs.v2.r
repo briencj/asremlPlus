@@ -967,8 +967,10 @@ subset.alldiffs <- function(x, subset = rep(TRUE, nrow(x$predictions)),
   if (is.character(validalldifs))
     stop(validalldifs)
   x <- renameDiffsAttr(x)
+
   #Save attributes
   x.attr <- attributes(x)
+
   #Deal with unsupported parameters
   tempcall <- list(...)
   if (length(tempcall)) 
@@ -1327,12 +1329,12 @@ recalcLSD.alldiffs <- function(alldiffs.obj,
   if (length(avLSD) != 1)
     avLSD <- NULL
   
-  LSDstat.options <- c("mean", "median", "minimum", "maximum")
+  LSDstat.options <- c("minimum", "q10", "mean", "median", "q90", "maximum")
   LSDstat <- LSDstat.options[check.arg.values(LSDstatistic, LSDstat.options)]
   if (length(LSDstat) != 1)
     stop("LSDstatistic must contain only one value")
 
-  LSDacc.options <- c("maxAbsDeviation", "maxDeviation", "90Deviation", "RootMeanSqDeviation")
+  LSDacc.options <- c("maxAbsDeviation", "maxDeviation", "q90Deviation", "RootMeanSqDeviation")
   LSDacc <- LSDacc.options[check.arg.values(LSDaccuracy, LSDacc.options)]
   if (length(LSDacc) == 0)
     LSDacc <- "maxAbsDeviation"
@@ -1372,6 +1374,102 @@ recalcLSD.alldiffs <- function(alldiffs.obj,
   return(alldiffs.obj)
 }
 
+#Function to explore the LSD values
+exploreLSDs.alldiffs <- function(alldiffs.obj,  LSDtype = "overall", LSDby = NULL, 
+                                 LSDaccuracy = "maxAbsDeviation", alpha = 0.05, digits = 3, 
+                                 retain.zeroLSDs = FALSE, zero.tolerance = .Machine$double.eps ^ 0.5,
+                                 plotHistogram = TRUE, ...)
+{
+  #Check that a valid object of class alldiffs
+  validalldifs <- validAlldiffs(alldiffs.obj)  
+  if (is.character(validalldifs))
+    stop(validalldifs)
+  alldiffs.obj <- renameDiffsAttr(alldiffs.obj)
+  
+  AvLSD.options <- c("overall", "factor.combinations")
+  avLSD <- AvLSD.options[check.arg.values(LSDtype, AvLSD.options)]
+  if (length(avLSD) != 1)
+    avLSD <- NULL
+  
+  LSDacc.options <- c("maxAbsDeviation", "maxDeviation", "q90Deviation", "RootMeanSqDeviation")
+  LSDacc <- LSDacc.options[check.arg.values(LSDaccuracy, LSDacc.options)]
+  if (length(LSDacc) == 0)
+    LSDacc <- "maxAbsDeviation"
+  
+  LSDstat.hdr <- c("minimum", "quantile10", "mean", "median", "quantile90", "maximum")
+
+  #Deal with case when have vcov, but not sed
+  if (is.null(alldiffs.obj$sed))
+  {
+    if (!is.null(alldiffs.obj$vcov))
+    {
+      alldiffs.obj$sed <- alldiffs.obj$vcov
+      n <- nrow(alldiffs.obj$sed)
+      dvcov <- diag(alldiffs.obj$sed)
+      alldiffs.obj$sed <- matrix(rep(dvcov, each = n), nrow = n) + 
+        matrix(rep(dvcov, times = n), nrow = n) - 2 * alldiffs.obj$sed
+      alldiffs.obj$sed <- sqrt(alldiffs.obj$sed)
+      diag(alldiffs.obj$sed) <- NA_real_
+    } else
+      stop("Neither the vcov or sed components are present in the alldiffs.obj")
+  }
+  
+  
+  classify <- attr(alldiffs.obj, which = "classify")
+  if (!all(unlist(lapply(LSDby, grepl, x = classify, fixed = TRUE))))
+    stop("One of the elements of LSDby is not in the classify")
+  
+  denom.df <- attr(alldiffs.obj, which = "tdf")
+  if (is.null(denom.df))
+    stop(paste("The degrees of freedom of the t-distribtion are not available in alldiffs.obj\n",
+               "- LSDs cannot be calculated"))
+  t.value = qt(1-alpha/2, denom.df) 
+  LSDs <- t.value * alldiffs.obj$sed
+  
+  #Prepare for frequencies
+  LSD.dat <- as.data.frame(LSDs[upper.tri(LSDs)])
+  names(LSD.dat) <- "LSD"
+  freq <- hist(LSD.dat$LSD, plot = FALSE, include.lowest = TRUE)
+  breaks <- freq$breaks
+  
+  if (avLSD == "overall")
+  {
+    distinct <- sort(unique(signif(na.omit(as.vector(LSDs)), digits = digits)))
+    allstats <- LSDallstats(LSDs, LSDaccuracy = LSDaccuracy, 
+                            retain.zeroLSDs = retain.zeroLSDs, zero.tolerance = zero.tolerance)
+    predacc <- do.call(cbind, lapply(LSDstat.hdr, 
+                                     function(LSDstatistic, LSDs, allstats, LSDaccuracy, t.value, 
+                                              retain.zeroLSDs, zero.tolerance)
+                                     { 
+                                       acc <- LSDpred.acc(LSDs, 
+                                                          assignedLSD = allstats$statistics[[LSDstatistic]], 
+                                                          LSDaccuracy = LSDaccuracy, t.value = t.value, 
+                                                          retain.zeroLSDs = retain.zeroLSDs, 
+                                                          zero.tolerance = zero.tolerance)
+                                       acc <- as.data.frame(acc)
+                                       names(acc) <- LSDstatistic
+                                       return(acc)
+                                     }, 
+                                     LSDs = LSDs, allstats = allstats, LSDaccuracy = LSDacc, t.value = 1, 
+                                     retain.zeroLSDs = retain.zeroLSDs, zero.tolerance = zero.tolerance))
+    rownames(predacc) <- rownames(LSDs)
+    counts <- freq$counts
+    names(counts) <- as.character(freq$mids)
+    LSD.list <- list(frequencies = counts, distinct.vals = distinct, statistics = allstats$statistics, 
+                     accuracy = allstats$accuracy, per.pred.accuracy = predacc, LSD = LSDs)
+    if (plotHistogram)
+      print(ggplot(LSD.dat, aes_string(x = "LSD")) + geom_histogram(breaks = breaks) + theme_bw())
+  } else #factor.combinations
+  {
+    LSD.list <- sliceAll(alldiffs.obj, by = LSDby, t.value = t.value, LSDaccuracy = LSDacc, 
+                         breaks = breaks, digits = digits, plotHistogram = plotHistogram, 
+                         retain.zeroLSDs = retain.zeroLSDs, zero.tolerance = zero.tolerance)
+    LSD.list <- c(LSD.list, list(LSD = LSDs))
+  }
+  
+  return(LSD.list)
+}
+
 #redoErrorIntervals calls recalcLSD to compute LSD component, which in turn calls allDifferences, but ... does not pass parameters to recalcLSD; 
 #redoErrorIntervals is responsible for setting LSD attributes for alldiffs.obj and predictions.frame;
 #at the end redoErrorIntervals also calls addBackTransforms, but ... does not pass parameters to addBackTransforms
@@ -1379,7 +1477,9 @@ redoErrorIntervals.alldiffs <- function(alldiffs.obj, error.intervals = "Confide
                                         avsed.tolerance = 0.25, accuracy.threshold = NA, 
                                         LSDtype = NULL, LSDsupplied = NULL, 
                                         LSDby = NULL, LSDstatistic = "mean", 
-                                        LSDaccuracy = "maxAbsDeviation", ...)
+                                        LSDaccuracy = "maxAbsDeviation", 
+                                        retain.zeroLSDs = FALSE, 
+                                        zero.tolerance = .Machine$double.eps ^ 0.5, ...)
 {
   tempcall <- list(...)
   if ("meanLSD.type" %in% names(tempcall))
@@ -1414,7 +1514,7 @@ redoErrorIntervals.alldiffs <- function(alldiffs.obj, error.intervals = "Confide
   avLSD <- AvLSD.options[check.arg.values(LSDtype, AvLSD.options)]
   if (length(avLSD) != 1)
     avLSD <- NULL
-  LSDstat.options <- c("mean", "median", "minimum", "maximum")
+  LSDstat.options <- c("minimum", "q10", "mean", "median", "q90", "maximum")
   LSDstat <- LSDstat.options[check.arg.values(LSDstatistic, LSDstat.options)]
   if (length(LSDstat) == 0)
     LSDstat <- "mean"
@@ -1424,7 +1524,7 @@ redoErrorIntervals.alldiffs <- function(alldiffs.obj, error.intervals = "Confide
   if (!is.null(LSDby) &&  !is.character(LSDby))
     stop("LSDby must be a character")
 
-  LSDacc.options <- c("maxAbsDeviation", "maxDeviation", "90Deviation", "RootMeanSqDeviation")
+  LSDacc.options <- c("maxAbsDeviation", "maxDeviation", "q90Deviation", "RootMeanSqDeviation")
   LSDacc <- LSDacc.options[check.arg.values(LSDaccuracy, LSDacc.options)]
   if (length(LSDacc) == 0)
     LSDacc <- "maxAbsDeviation"
@@ -1501,7 +1601,11 @@ redoErrorIntervals.alldiffs <- function(alldiffs.obj, error.intervals = "Confide
 
   #Calculate overall sed ranges
   t.value = qt(1-alpha/2, denom.df)
-  overall.LSDs <- LSDstats(alldiffs.obj$sed, t.value = t.value)
+  #remove NA and zero values
+  ksed <- na.omit(as.vector(alldiffs.obj$sed))
+  if (!retain.zeroLSDs)
+    ksed <- rm.zerovals(ksed, zero.tolerance = zero.tolerance)
+  overall.LSDs <- LSDstats(ksed, t.value = t.value)
   rownames(overall.LSDs) <- "overall"
   overall.sed.range <- unlist(abs(overall.LSDs["maxLSD"] - overall.LSDs["minLSD"]) / 
                                 overall.LSDs["meanLSD"])
@@ -1570,11 +1674,12 @@ redoErrorIntervals.alldiffs <- function(alldiffs.obj, error.intervals = "Confide
                                                })
             if (!is.na(accuracy.threshold))
             {
-              #calculate the accuaracy of individual observations
-              alldiffs.obj$predictions$LSDwarning  <- apply(alldiffs.obj$sed, FUN = LSDaccmeas, MARGIN = 1, 
-                                                            assignedLSD = alldiffs.obj$LSD$assignedLSD, 
-                                                            t.value = t.value, LSDaccuracy = LSDacc) > 
-                                                                      accuracy.threshold
+              #calculate the accuracy of individual observations
+              alldiffs.obj$predictions$LSDwarning <- LSDpred.acc(alldiffs.obj$sed, 
+                                                                 assignedLSD = alldiffs.obj$LSD$assignedLSD, 
+                                                                 LSDaccuracy = LSDacc, t.value = t.value,
+                                                                 retain.zeroLSDs = retain.zeroLSDs, 
+                                                                 zero.tolerance = zero.tolerance) > accuracy.threshold
             }
             LSDvalues <- alldiffs.obj$LSD$assignedLSD #overallLSDstat
           }
@@ -1733,7 +1838,10 @@ redoErrorIntervals.alldiffs <- function(alldiffs.obj, error.intervals = "Confide
                                         sed = NULL, LSD = NULL,
                                         LSDtype = "overall", LSDsupplied = NULL, 
                                         LSDby = NULL, LSDstatistic = "mean", 
-                                        LSDaccuracy = "maxAbsDeviation", backtransforms = NULL, 
+                                        LSDaccuracy = "maxAbsDeviation", 
+                                        retain.zeroLSDs = FALSE,
+                                        zero.tolerance = .Machine$double.eps ^ 0.5, 
+                                        backtransforms = NULL, 
                                         response = NULL, response.title = NULL, 
                                         term = NULL, tdf = NULL, 
                                         x.num = NULL, x.fac = NULL, level.length = NA, 
@@ -1752,13 +1860,13 @@ redoErrorIntervals.alldiffs <- function(alldiffs.obj, error.intervals = "Confide
   if (!is.null(LSDby) &&  !is.character(LSDby))
     stop("LSDby must be a character")
 
-  LSDstat.options <- c("mean", "median", "minimum", "maximum")
+  LSDstat.options <- c("minimum", "q10", "mean", "median", "q90", "maximum")
   LSDstat <- LSDstat.options[check.arg.values(LSDstatistic, LSDstat.options)]
   if (length(LSDstat) != 1)
     stop("LSDstatistic must contain only one value")
   LSDname <- paste0(gsub("imum", "", LSDstat, fixed = TRUE), "LSD")
  
-  LSDacc.options <- c("maxAbsDeviation", "maxDeviation", "90Deviation", "RootMeanSqDeviation")
+  LSDacc.options <- c("maxAbsDeviation", "maxDeviation", "q90Deviation", "RootMeanSqDeviation")
   LSDacc <- LSDacc.options[check.arg.values(LSDaccuracy, LSDacc.options)]
   if (length(LSDacc) == 0)
     LSDacc <- "maxAbsDeviation"
@@ -1959,8 +2067,7 @@ redoErrorIntervals.alldiffs <- function(alldiffs.obj, error.intervals = "Confide
     }
     
     #Set LSD component
-    zero.tolerance <- 1e-12
-    {
+     {
       if (pairwise && (nrow(alldiffs.obj$predictions) != 1))
       { 
         #calculate LSDs, if not present - it seems that they are never present as set to NULL in makeAlldiffs call
@@ -1970,7 +2077,11 @@ redoErrorIntervals.alldiffs <- function(alldiffs.obj, error.intervals = "Confide
           t.value = qt(1-alpha/2, denom.df)
           if (avLSD == "overall" || (avLSD == "supplied" && is.null(LSDby)))
           {
-            LSDs<- LSDstats(alldiffs.obj$sed, t.value, LSDstatistic = LSDstat, LSDaccuracy = LSDacc)
+            #remove NA and zero values
+            ksed <- na.omit(as.vector(alldiffs.obj$sed))
+            if (!retain.zeroLSDs)
+              ksed <- rm.zerovals(ksed, zero.tolerance = zero.tolerance)
+            LSDs<- LSDstats(ksed, t.value, LSDstatistic = LSDstat, LSDaccuracy = LSDacc)
             rownames(LSDs) <- "overall"
           } 
           if (avLSD == "factor.combinations" || (avLSD == "supplied" && !is.null(LSDby))) #factor.combinations
@@ -1979,52 +2090,73 @@ redoErrorIntervals.alldiffs <- function(alldiffs.obj, error.intervals = "Confide
               stop("Need to specify factors using LSDby for LSDtype = factor.combinations")
             LSDs <- sliceLSDs(alldiffs.obj, by = LSDby, LSDstatistic = LSDstat, LSDaccuracy = LSDacc, 
                               t.value = t.value, alpha = alpha,
-                              zero.tolerance = zero.tolerance)
+                              retain.zeroLSDs = retain.zeroLSDs, zero.tolerance = zero.tolerance)
           } 
           if (avLSD == "per.prediction")  #per.prediction
           {
-            zero.tolerance = 1E-04
-            max.var <- max(alldiffs.obj$sed*alldiffs.obj$sed, na.rm = TRUE)
-            if (max.var > zero.tolerance ||
-                sum(alldiffs.obj$sed*alldiffs.obj$sed/max.var < zero.tolerance, na.rm = TRUE) > 0)
-              alldiffs.obj$sed[alldiffs.obj$sed*alldiffs.obj$sed/max.var < zero.tolerance] <- NA
-            
             #set up LSD data.frame
-            ksed <- alldiffs.obj$sed
-            LSDs <- data.frame(minLSD  = t.value * apply(ksed, FUN = min, MARGIN = 1, na.rm = TRUE),
-                               meanLSD = t.value * sqrt(apply(ksed*ksed, FUN = mean, MARGIN = 1, na.rm = TRUE)),
-                               maxLSD = t.value * apply(ksed, FUN = max, MARGIN = 1, na.rm = TRUE),
-                               assignedLSD = NA,
-                               accuracyLSD = NA)
-            #Add assigned LSD column
-            medianLSD <- t.value * sqrt(apply(ksed*ksed,FUN = median, MARGIN = 1, na.rm = TRUE))
-            LSDname <- LSDstat2name(LSDstat)
-            if (LSDstat != "median")
-              LSDs$assignedLSD <- LSDs[[LSDname]]
-            else
-              LSDs$assignedLSD <- medianLSD
-            #Add the accuracy of the assigned LSD 
-            LSDs$accuracyLSD <- unlist(lapply(rownames(ksed), 
-                                              function(nam, ksed, assLSDs) 
-                                                LSDaccmeas(ksed[nam,], assignedLSD = assLSDs[nam,], 
-                                                           t.value = t.value, LSDaccuracy = LSDacc), 
-                                              ksed = alldiffs.obj$sed, assLSDs = LSDs["assignedLSD"]))
-        }
+            LSDs <- LSDpred.stats(alldiffs.obj$sed, t.value = t.value, LSDstatistic = LSDstat, 
+                                  LSDaccuracy = LSDacc, retain.zeroLSDs = retain.zeroLSDs, 
+                                  zero.tolerance = zero.tolerance)
+            
+            # max.var <- max(alldiffs.obj$sed*alldiffs.obj$sed, na.rm = TRUE)
+            # if (max.var > zero.tolerance ||
+            #     sum(alldiffs.obj$sed*alldiffs.obj$sed/max.var < zero.tolerance, na.rm = TRUE) > 0)
+            #   alldiffs.obj$sed[alldiffs.obj$sed*alldiffs.obj$sed/max.var < zero.tolerance] <- NA
+            # 
+            # #set up LSD data.frame
+            # ksed <- alldiffs.obj$sed
+            # LSDs <- data.frame(minLSD  = t.value * apply(ksed, FUN = min, MARGIN = 1, na.rm = TRUE),
+            #                    meanLSD = t.value * sqrt(apply(ksed*ksed, FUN = mean, MARGIN = 1, na.rm = TRUE)),
+            #                    maxLSD = t.value * apply(ksed, FUN = max, MARGIN = 1, na.rm = TRUE),
+            #                    assignedLSD = NA,
+            #                    accuracyLSD = NA)
+            # #Add assigned LSD column
+            # medianLSD <- t.value * sqrt(apply(ksed*ksed,FUN = median, MARGIN = 1, na.rm = TRUE))
+            # LSDname <- LSDstat2name(LSDstat)
+            # if (LSDstat != "median")
+            #   LSDs$assignedLSD <- LSDs[[LSDname]]
+            # else
+            #   LSDs$assignedLSD <- medianLSD
+            # #Add the accuracy of the assigned LSD 
+            # LSDs$accuracyLSD <- unlist(lapply(rownames(ksed), 
+            #                                   function(nam, ksed, t.value, assLSDs, LSDaccuracy, 
+            #                                            retain.zeroLSDs, zero.tolerance) 
+            #                                   {
+            #                                     sedrow <- na.omit(as.vector(ksed[nam,]))
+            #                                     if (!retain.zeroLSDs)
+            #                                       sedrow <- rm.zerovals(sedrow, zero.tolerance = zero.tolerance)
+            #                                     acc <- LSDaccmeas(sedrow, assignedLSD = assLSDs[nam,], 
+            #                                                       t.value = t.value, 
+            #                                                       LSDaccuracy = LSDaccuracy)
+            #                                     return(acc)
+            #                                   }, ksed = alldiffs.obj$sed, t.value = t.value, 
+            #                                   assLSDs = LSDs["assignedLSD"], 
+            #                                   LSDaccuracy = LSDacc, retain.zeroLSDs = retain.zeroLSDs, 
+            #                                   zero.tolerance = zero.tolerance))
+          }
           alldiffs.obj$LSD <- LSDs
           if (avLSD == "supplied")
           {
             alldiffs.obj <- addLSDsupplied(alldiffs.obj, LSDsupplied = LSDsupplied, LSDby = LSDby, 
-                                           denom.df = denom.df, alpha = alpha, 
-                                           zero.tolerance = zero.tolerance)
+                                           denom.df = denom.df, alpha = alpha)
             #Calculate the accuracy of the supplied LSDs
             if (is.null(LSDby))
-              alldiffs.obj$LSD$accuracyLSD <- LSDaccmeas(ksed = alldiffs.obj$sed, 
+            {
+              ksed <- alldiffs.obj$sed
+              #remove NA and zero values
+              ksed <- na.omit(as.vector(ksed))
+              if (!retain.zeroLSDs)
+                ksed <- rm.zerovals(ksed, zero.tolerance = zero.tolerance)
+              alldiffs.obj$LSD$accuracyLSD <- LSDaccmeas(ksed = ksed, 
                                                          assignedLSD = alldiffs.obj$LSD$assignedLSD, 
                                                          t.value = t.value, LSDaccuracy = LSDacc)
+            }
             else
               alldiffs.obj$LSD$accuracyLSD <- sliceLSDs(alldiffs.obj, by = LSDby, t.value = t.value, 
                                                         LSDstatistic = LSDstat, LSDaccuracy = LSDacc, 
                                                         alpha = alpha, which.stats = "accuracyLSD", 
+                                                        retain.zeroLSDs = retain.zeroLSDs, 
                                                         zero.tolerance = zero.tolerance)
           }
 
@@ -2217,18 +2349,24 @@ redoErrorIntervals.alldiffs <- function(alldiffs.obj, error.intervals = "Confide
                                     inestimable.rm = TRUE, 
                                     ...)
 {
+  #Check for deprecated argument meanLSD.type and warn
+  tempcall <- list(...)
+  if (length(tempcall)) 
+    if ("meanLSD.type" %in% names(tempcall))
+      stop("meanLSD.type has been deprecated - use LSDtype")
+
   #Check that a valid object of class alldiffs
   validalldifs <- validAlldiffs(alldiffs.obj)  
   if (is.character(validalldifs))
     stop(validalldifs)
   alldiffs.obj <- renameDiffsAttr(alldiffs.obj)
   
-  LSDstat.options <- c("mean", "median", "minimum", "maximum")
+  LSDstat.options <- c("minimum", "q10", "mean", "median", "q90", "maximum")
   LSDstat <- LSDstat.options[check.arg.values(LSDstatistic, LSDstat.options)]
   if (length(LSDstat) != 1)
     stop("LSDstatistic must contain only one value")
 
-  LSDacc.options <- c("maxAbsDeviation", "maxDeviation", "90Deviation", "RootMeanSqDeviation")
+  LSDacc.options <- c("maxAbsDeviation", "maxDeviation", "q90Deviation", "RootMeanSqDeviation")
   LSDacc <- LSDacc.options[check.arg.values(LSDaccuracy, LSDacc.options)]
   if (length(LSDacc) == 0)
     LSDacc <- "maxAbsDeviation"
@@ -2300,9 +2438,9 @@ redoErrorIntervals.alldiffs <- function(alldiffs.obj, error.intervals = "Confide
         warning("Some factors in the LSDby are not in the linear.transformation submodel")
       
       #Form projector on predictions for submodel
-      suppressWarnings(Q <- pstructure(linear.transformation, grandMean = TRUE, 
-                                       orthogonalize = "eigen", #aliasing.print = FALSE, 
-                                       data = alldiffs.obj$predictions)$Q)
+      suppressWarnings(Q <- dae::pstructure(linear.transformation, grandMean = TRUE, 
+                                            orthogonalize = "eigen", #aliasing.print = FALSE, 
+                                            data = alldiffs.obj$predictions)$Q)
       Q.submod <- Q[[1]]
       if (length(Q) > 1)
         for (k in 2:length(Q))

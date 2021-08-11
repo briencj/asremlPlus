@@ -244,6 +244,12 @@ pairdiffsTransform.alldiffs <- function(alldiffs.obj, pairs.factor, first.levels
                                         response = NULL, response.title = NULL, tables = "all", 
                                         pairwise = TRUE, alpha = 0.05, ...)
 {
+  #Check for deprecated argument meanLSD.type and warn
+  tempcall <- list(...)
+  if (length(tempcall)) 
+    if ("meanLSD.type" %in% names(tempcall))
+      stop("meanLSD.type has been deprecated - use LSDtype")
+
   #Check that a valid object of class alldiffs
   validalldifs <- validAlldiffs(alldiffs.obj)  
   if (is.character(validalldifs))
@@ -309,7 +315,15 @@ pairdiffsTransform.alldiffs <- function(alldiffs.obj, pairs.factor, first.levels
           levels(tmp[[fac]])
         }, data = tmp)
         names(new.facs) <- indx
-        pairs.dat <- fac.split(rownames(L), new.factors = new.facs, sep = ",")
+        if (length(indx) == 1)
+        {
+          pairs.dat <- as.data.frame(rownames(L), stringsAsFactors = FALSE)
+          names(pairs.dat) <- indx
+          pairs.dat[indx] <- factor(pairs.dat[[indx]], levels = rownames(L))
+        }
+        else
+          pairs.dat <- fac.split(rownames(L), new.factors = new.facs, sep = ",")
+        
   
         #Calculate the differences for the current pair
         diffs <- linTransform(alldiffs.obj, classify = classify, 

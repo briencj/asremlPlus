@@ -79,6 +79,9 @@
 \code{\link{subset.alldiffs}}
        \tab Subsets the components in an \code{\link{alldiffs.object}} according \cr 
        \tab to the supplied condition. \cr
+\code{\link{subset.list}}
+       \tab Forms a \code{list} that contains a subset of the components of \cr
+       \tab the supplied \code{\link{list}}.     \cr
 \code{\link{validAlldiffs}}
        \tab Checks that an object is a valid \code{\link{alldiffs.object}}. \cr
 \code{\link{validAsrtests}}
@@ -183,12 +186,21 @@
        \tab differences or the variance matrix of predictions, forms \cr
        \tab all pairwise differences between the set of predictions, and \cr
        \tab p-values for the differences. \cr
+\code{\link{exploreLSDs}}
+       \tab Explores the computed LSD values for pairwise differences \cr
+       \tab between predictions.    \cr
 \code{\link{linTransform.alldiffs}} 
        \tab Calculates a linear transformation of the \cr
        \tab predictions stored in an \code{\link{alldiffs.object}}. \cr
 \code{\link{pairdiffsTransform.alldiffs}} 
        \tab Calculates the differences between nominated pairs of \cr 
        \tab predictions stored in an \code{\link{alldiffs.object}} \cr
+\code{\link{plotLSDs.data.frame}}
+       \tab Plots a heat map of computed LSD values for pairwise \cr
+       \tab differences between predictions. \cr
+\code{\link{plotLSDs.alldiffs}}
+       \tab Plots a heat map of computed LSD values for pairwise \cr
+       \tab differences between predictions. \cr
 \code{\link{plotPredictions.data.frame}}
        \tab Plots the predictions for a term, possibly with \cr
        \tab error bars. \cr
