@@ -83,6 +83,34 @@ makeContrastMatrix <- function(preds, indx, pairs.factor, first.level, second.le
   return(L)
 }
 
+
+fac.split <- function(factor, new.factors, sep = ",")
+{
+  fac.sep <- strsplit(factor, split = sep)
+  #name the values in each elements of fac.sep 
+  fac.sep <- lapply(fac.sep, 
+                    function(obs, new.factors)
+                    {
+                      names(obs) <- names(new.factors); return(obs)
+                    }, new.factors = new.factors)
+  #form separate columns for the values in each element of fac.sep
+  new.facs <- lapply(names(new.factors), 
+                     function(elem)
+                     {
+                       unlist(lapply(fac.sep, function(obs, elem) obs[elem], 
+                                     elem = elem))
+                     })
+  names(new.facs) <- names(new.factors)
+  df <- as.data.frame(new.facs, stringsAsFactors = FALSE)
+  for ( fac in names(new.factors))
+  {
+    df[fac] <- factor(df[[fac]], levels = new.factors[[fac]])
+    df[fac] <- factor(df[[fac]]) #make sure no unused levels
+  }
+  return(df)
+}
+
+
 ratioTransform.alldiffs <- function(alldiffs.obj, ratio.factor, 
                                     numerator.levels, denominator.levels, 
                                     method = "Fieller", alpha = 0.05, 
@@ -294,7 +322,7 @@ pairdiffsTransform.alldiffs <- function(alldiffs.obj, pairs.factor, first.levels
           pairs.dat[indx] <- factor(pairs.dat[[indx]], levels = rownames(L))
         }
         else
-          pairs.dat <- dae::fac.uncombine(rownames(L), new.factors = new.facs, sep = ",")
+          pairs.dat <- fac.split(rownames(L), new.factors = new.facs, sep = ",")
         
   
         #Calculate the differences for the current pair

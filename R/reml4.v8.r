@@ -2704,16 +2704,16 @@ atLevelsMatch <- function(new, old, call)
   { 
     #if levels in ... ignore x.pred.values
     if ("levels" %in% names(tempcall)) 
+    {
       if (asr4)
-        pred <- predictASR4(asreml.obj, classify=classify, 
+        pred <- predictASR4(asreml.obj, classify=classify,
                             sed = pairwise, vcov = get.vcov, 
                             trace = trace, ...)
       else
         pred <- predictASR3(asreml.obj, classify=classify, 
                             sed = pairwise,  vcov = get.vcov, 
                             trace = trace, ...)
-      
-      else
+    } else
     {
       if (is.null(x.pred.values)) 
       {

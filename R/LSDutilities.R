@@ -87,8 +87,27 @@ addByFactorsToLSD.alldiffs <- function(alldiffs.obj, LSDby = NULL)
 {
   if (is.null(LSDby))
     LSDby <- attr(alldiffs.obj, which = "LSDby")
-  combs <- dae::fac.genfactors(alldiffs.obj$predictions[LSDby])
+  LSD.facsvars <- alldiffs.obj$predictions[LSDby]
+  any.num <- lapply(LSD.facsvars, 
+                    function(fac) {is.numeric(fac)})
+  #Convert numerics to factors
+  if (length(any.num) > 0)
+  {
+    nams.num <- names(any.num)
+    LSD.facsvars <- lapply(LSD.facsvars, 
+                           function(fac)
+                           {
+                             if (is.numeric(fac))
+                               fac <- factor(fac)
+                             return(fac)
+                           }) 
+    
+  } 
+  combs <- dae::fac.genfactors(LSD.facsvars)
   combs <- cbind(fac.comb = fac.combine(combs, combine.levels = TRUE), combs)
+  #Convert numerics back from factors
+  if (length(any.num) > 0)
+    combs[nams.num] <- lapply(combs[nams.num], function(fac) {fac <- as.numfac(fac); return(fac)}) 
   combs <- merge(data.frame(fac.comb = rownames(alldiffs.obj$LSD)),
                  combs, all.x = TRUE, sort = FALSE)
   combs <- combs[-match("fac.comb", names(combs))]

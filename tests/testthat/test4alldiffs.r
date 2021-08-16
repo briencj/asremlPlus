@@ -336,6 +336,31 @@ test_that("LSD_asreml4", {
   testthat::expect_true(all(abs(Var.diffs.by$LSD["meanLSD"] - 
                                   attr(Var.diffs.by$predictions, which = "LSDvalues")) < 1E-06))
   testthat::expect_true(all(abs(attr(Var.diffs.one$predictions, which = "LSDvalues") - 9.883479) < 1e-05))  
+
+  #Test for predictPlus with numeric in classify
+  mx.asr <- asreml(Yield ~ xNitrogen*Variety, 
+                   random=~Blocks/Wplots,
+                   data=Oats.dat)
+  current.asrt <- as.asrtests(mx.asr)
+  
+  testthat::expect_equal(length(mx.asr$vparameters),3)
+  
+  diffs <- predictPlus(mx.asr, classify = "xNitrogen:Variety", 
+                       x.num = "xNitrogen", #x.fac = "Nitrogen", 
+                       x.pred.values = sort(unique(Oats.dat$xNitrogen)),
+                       wald.tab = current.asrt$wald.tab, 
+                       error.intervals = "half", LSDtype = "factor", 
+                       LSDby = "xNitrogen", 
+                       tables = "none")
+  testthat::expect_is(diffs, "alldiffs")
+  testthat::expect_true(validAlldiffs(diffs))
+  testthat::expect_equal(nrow(diffs$predictions),12)
+  testthat::expect_equal(ncol(diffs$predictions),7)
+  testthat::expect_equal(length(attributes(diffs)),12)
+  testthat::expect_true(all(nrow(diffs$LSD) == 4))
+  testthat::expect_true(all(abs(diffs$LSD["meanLSD"] - diffs$LSD["assignedLSD"]) < 1E-06))
+  testthat::expect_true(all(diffs$LSD["accuracyLSD"] < 1E-10))
+
 })
 
 cat("#### Test for sort.alldiffs on Smarthouse with asreml4\n")
