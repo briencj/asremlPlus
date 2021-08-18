@@ -346,7 +346,7 @@ test_that("LSD_asreml4", {
   testthat::expect_equal(length(mx.asr$vparameters),3)
   
   diffs <- predictPlus(mx.asr, classify = "xNitrogen:Variety", 
-                       x.num = "xNitrogen", #x.fac = "Nitrogen", 
+                       x.num = "xNitrogen", 
                        x.pred.values = sort(unique(Oats.dat$xNitrogen)),
                        wald.tab = current.asrt$wald.tab, 
                        error.intervals = "half", LSDtype = "factor", 

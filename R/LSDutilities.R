@@ -87,11 +87,15 @@ addByFactorsToLSD.alldiffs <- function(alldiffs.obj, LSDby = NULL)
 {
   if (is.null(LSDby))
     LSDby <- attr(alldiffs.obj, which = "LSDby")
+  
   LSD.facsvars <- alldiffs.obj$predictions[LSDby]
+  
+  #Determine if any numerics
   any.num <- lapply(LSD.facsvars, 
                     function(fac) {is.numeric(fac)})
+  
   #Convert numerics to factors
-  if (length(any.num) > 0)
+  if (any(unlist(any.num)))
   {
     nams.num <- names(any.num)
     LSD.facsvars <- lapply(LSD.facsvars, 
@@ -103,11 +107,16 @@ addByFactorsToLSD.alldiffs <- function(alldiffs.obj, LSDby = NULL)
                            }) 
     
   } 
+  #Generate factors and combine
   combs <- dae::fac.genfactors(LSD.facsvars)
   combs <- cbind(fac.comb = fac.combine(combs, combine.levels = TRUE), combs)
+
   #Convert numerics back from factors
-  if (length(any.num) > 0)
-    combs[nams.num] <- lapply(combs[nams.num], function(fac) {fac <- as.numfac(fac); return(fac)}) 
+  if (any(unlist(any.num)))
+    combs[nams.num] <- lapply(combs[nams.num], 
+                              function(fac) {fac <- as.numfac(fac); return(fac)}) 
+  
+  #Add LSDby factors to LSD object
   combs <- merge(data.frame(fac.comb = rownames(alldiffs.obj$LSD)),
                  combs, all.x = TRUE, sort = FALSE)
   combs <- combs[-match("fac.comb", names(combs))]
@@ -466,7 +475,7 @@ sliceAll <- function(alldiffs.obj, by, t.value, LSDaccuracy = "maxAbsDeviation",
                         #Get the frequencies
                         kLSD.dat <- as.data.frame(kLSDs[upper.tri(kLSDs)])
                         names(kLSD.dat) <- "LSD"
-                        freq <- hist(kLSD.dat$LSD, include.lowest = TRUE, breaks = breaks)
+                        freq <- hist(kLSD.dat$LSD, plot = FALSE, include.lowest = TRUE, breaks = breaks)
                         stats <- c(stats, list(distinct = distinct, frequencies = freq, per.prediction = per.pred))
                       }
                       return(stats)
