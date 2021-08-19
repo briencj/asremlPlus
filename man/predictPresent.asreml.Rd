@@ -52,17 +52,20 @@
 \item{inestimable.rm}{A \code{logical} indicating whether rows for  predictions that 
                        are not estimable are to be removed from the components of the
                        \code{\link{alldiffs.object}}.}
- \item{linear.transformation}{A \code{\link{formula}} or a \code{\link{matrix}} specifying 
-               a linear transformation to be applied to the predictions. 
+ \item{linear.transformation}{A \code{\link{formula}} or a \code{\link{matrix}}. 
                If a \code{\link{formula}} is given then it is taken to be a submodel of 
-               the model term corresponding to the \code{classify}. The projection matrix 
+               a model term corresponding to the \code{classify}. The projection matrix 
                that transforms the \code{predictions} so that they conform to the submodel 
-               is obtained; the submodel should involving the variables in the 
-               \code{classify}. For example, 
-               for \code{classify} set to \code{"A:B"}, the submodel \code{~ A + B} will 
-               result in the \code{predictions} for the combinations of 
+               is obtained; the submodel does not have to involve variables in the 
+               \code{classify}, but the variables must be columns in the \code{predictions} 
+               component of \code{alldiffs.obj} and the space for the submodel must be a 
+               subspace of the space for the term specified by the \code{classify}. 
+               For example, for \code{classify} set to \code{"A:B"}, the submodel 
+               \code{~ A + B} will result in the \code{predictions} for the combinations of 
                \code{A} and \code{B} being made additive for the \code{\link{factor}s} 
-               \code{A} and \code{B}.
+               \code{A} and \code{B}. The submodel space corresponding to \code{A + B} is 
+               a subspace of the space \code{A:B}. In this case both the submodel and the 
+               the classify involve only the factors A and B.
                
                If a \code{\link{matrix}} is provided then it will be 
                used to apply the linear transformation to the \code{predictions}. 

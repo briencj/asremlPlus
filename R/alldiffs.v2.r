@@ -2371,6 +2371,17 @@ redoErrorIntervals.alldiffs <- function(alldiffs.obj, error.intervals = "Confide
       response.title <- attr(alldiffs.obj, which = "response.title")
       response.title <- paste(response.title, "transform(s)", sep = " ")
     }
+      
+    if (is.null(classify))
+      classify <- attr(alldiffs.obj, which = "classify")
+    if (is.null(classify))
+      stop("The clssify has been neither set nor is an attribute of the alldiffs.obj")
+    denom.df <- attr(alldiffs.obj, which = "tdf")
+    if (is.null(denom.df))
+      warning(paste("The degrees of freedom of the t-distribtion are not available in alldiffs.obj\n",
+                    "- p-values and LSDs not calculated"))
+    
+    #get and set term
     if (is.null(term))
     {
       term <- attr(alldiffs.obj, which = "term")
@@ -2380,14 +2391,6 @@ redoErrorIntervals.alldiffs <- function(alldiffs.obj, error.intervals = "Confide
         attr(alldiffs.obj, which = "term") <- term
       }
     }
-      
-    if (is.null(classify))
-      classify <- attr(alldiffs.obj, which = "classify")
-    denom.df <- attr(alldiffs.obj, which = "tdf")
-    if (is.null(denom.df))
-      warning(paste("The degrees of freedom of the t-distribtion are not available in alldiffs.obj\n",
-                    "- p-values and LSDs not calculated"))
-    
     #get attributes from predictions
     preds.attr <- attributes(alldiffs.obj$predictions)
     
@@ -2403,9 +2406,13 @@ redoErrorIntervals.alldiffs <- function(alldiffs.obj, error.intervals = "Confide
     #Project predictions on submodel, if required
     if (lintrans.type == "submodel")
     {
+      colnam <- names(alldiffs.obj$predictions)
+      
       #Check that factors in LSDby are in the formula
       term.obj <- as.terms.object(linear.transformation, alldiffs.obj)
       lintrans.fac <- rownames(attr(term.obj, which = "factor"))
+      if (!all(lintrans.fac %in% colnam))
+        stop("Some factors in the linear.transformation are not in the predictions component of the alldiffs object\n")
       if (!all(LSDby %in% lintrans.fac))
         warning("Some factors in the LSDby are not in the linear.transformation submodel")
       
@@ -2419,9 +2426,11 @@ redoErrorIntervals.alldiffs <- function(alldiffs.obj, error.intervals = "Confide
           Q.submod <- Q.submod + Q[[k]]
       Q.submod <- projector(Q.submod)
       
+      #Check classify variables
+      vars <- fac.getinTerm(classify, rmfunction = TRUE)
+      if (!all(vars %in% colnam))
+        stop("Not all of the variables in the classify are in the predictions component of the alldiffs object\n")
       #Process the classify to ensure there is a separate term for covariates
-#      vars <- fac.getinTerm(classify, rmfunction = TRUE)
-      vars <- fac.getinTerm(term, rmfunction = TRUE)
       facs <- covs <- list()
       for (var in vars)
       {

@@ -62,13 +62,12 @@
                     for the predictions. It is stored as an attribute to the \code{\link{alldiffs.object}}.}
  \item{term}{A \code{\link{character}} string giving the variables that define the term 
                that was fitted using \code{asreml} and that corresponds to \code{classify}. 
-               It only needs to be specified when it is different to \code{classify} and 
+               It only needs to be specified when it is different to \code{classify}; it 
                is stored as an attribute of the \code{\link{alldiffs.object}}. 
                It is likely to be needed when the fitted model includes terms that involve  
-               both a \code{\link{numeric}} covariate and a \code{\link{factor}} that parallel 
-               each other. It may also be useful when a \code{linear.transformation} is 
-               to be made, in which case the term corresponds to an alternative expression 
-               for the \code{classify} that is to be transformed.}
+               both a \code{\link{numeric}} covariate and a \code{\link{factor}} that 
+               parallel each other; the \code{classify} would include the covariate and 
+               the \code{term} would include the \code{factor}.}
  \item{classify}{A character string giving the variables that define the margins
                  of the multiway table used in the prediction. Multiway tables are 
                  specified by forming an interaction type term from the 
