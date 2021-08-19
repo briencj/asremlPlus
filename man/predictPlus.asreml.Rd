@@ -88,9 +88,14 @@
                  variable names with the \code{:} operator. To predict the overall 
                  mean, set the \code{classify} to "\code{(Intercept)}".}
  \item{term}{A \code{\link{character}} string giving the variables that define the term 
-               that was fitted using \code{asreml} and that corresponds 
-               to \code{classify}. It only needs to be specified when 
-               it is different to \code{classify}.}
+               that was fitted using \code{asreml} and that corresponds to \code{classify}. 
+               It only needs to be specified when it is different to \code{classify} and 
+               is stored as an attribute of the \code{\link{alldiffs.object}}. 
+               It is likely to be needed when the fitted model includes terms that involve  
+               both a \code{\link{numeric}} covariate and a \code{\link{factor}} that parallel 
+               each other. It may also be useful when a \code{linear.transformation} is 
+               to be made, in which case the term corresponds to an alternative expression 
+               for the \code{classify} that is to be transformed.}
 \item{inestimable.rm}{A \code{logical} indicating whether rows for  predictions 
                that are not estimable are to be removed from the components of 
                the \code{\link{alldiffs.object}}.}

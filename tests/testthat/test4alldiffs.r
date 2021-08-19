@@ -360,7 +360,14 @@ test_that("LSD_asreml4", {
   testthat::expect_true(all(nrow(diffs$LSD) == 4))
   testthat::expect_true(all(abs(diffs$LSD["meanLSD"] - diffs$LSD["assignedLSD"]) < 1E-06))
   testthat::expect_true(all(diffs$LSD["accuracyLSD"] < 1E-10))
-
+  
+  #Test limits when assignedLSD is zero
+  Var.diffs.fac <- linTransform(Var.diffs, linear.transformation = ~Nitrogen,
+                                LSDtype = "factor", LSDby = "Nitrogen", 
+                                error.intervals = "half", tables = "none")
+  testthat::expect_true(all(Var.diffs.fac$LSD$assignedLSD == 0))
+  testthat::expect_true(all(is.na(Var.diffs.fac$predictions$upper.halfLeastSignificant.limit)))
+  
 })
 
 cat("#### Test for sort.alldiffs on Smarthouse with asreml4\n")
@@ -1812,7 +1819,6 @@ test_that("linear.transform_WaterRunoff_asreml4", {
     save[[responses.lRGR[k]]] <- linTransform(HEB25.diffs, 
                                               classify = "Treatment.1:Genotype.ID", 
                                               linear.transformation = L, 
-                                              transform.power = 0,
                                               error.intervals = "Conf", 
                                               tables = "none")
   }

@@ -1321,8 +1321,8 @@ recalcLSD.alldiffs <- function(alldiffs.obj,
     if ("meanLSD.type" %in% names(tempcall))
       stop("meanLSD.type has been deprecated - use LSDtype")
   if (any(c("transform.power", "offset", "scale")  %in% names(tempcall)))
-    stop(cat("Including transform.power, offset or scale in the call is invalid ",
-             "- they are obtained from the backtransform component"))
+    stop(cat("Including transform.power, offset or scale in the call is invalid \n",
+             "- they are obtained from the backtransform component\n"))
   
   AvLSD.options <- c("overall", "factor.combinations", "per.prediction", "supplied")
   avLSD <- AvLSD.options[check.arg.values(LSDtype, AvLSD.options)]
@@ -1485,8 +1485,8 @@ redoErrorIntervals.alldiffs <- function(alldiffs.obj, error.intervals = "Confide
   if ("meanLSD.type" %in% names(tempcall))
     stop("meanLSD.type has been deprecated - use LSDtype")
   if (any(c("transform.power", "offset", "scale")  %in% names(tempcall)))
-    stop(cat("Including transform.power, offset or scale in the call is invalid ",
-             "- they are obtained from the backtransform component"))
+    stop(cat("Including transform.power, offset or scale in the call is invalid \n",
+             "- they are obtained from the backtransform component\n"))
   if (any(c("LSDtype", "LSDby", "LSDstatistic", "LSDaccuracy", 
             "avsed.tolerance", "accuracy.threshold", "alpha") %in% names(tempcall)))
     stop("Do not try to change LSDtype, LSDby, LSDstatistic, LSDaccuracy, ",
@@ -1658,7 +1658,7 @@ redoErrorIntervals.alldiffs <- function(alldiffs.obj, error.intervals = "Confide
           {
             alldiffs.obj$predictions <- within(alldiffs.obj$predictions,
                                                {
-                                                 if (alldiffs.obj$LSD$assignedLSD == 0) #[[LSDname]] == 0)
+                                                 if (alldiffs.obj$LSD$assignedLSD < zero.tolerance)
                                                  {
                                                    lower.halfLeastSignificant.limit <- NA
                                                    upper.halfLeastSignificant.limit <- NA
@@ -1700,7 +1700,7 @@ redoErrorIntervals.alldiffs <- function(alldiffs.obj, error.intervals = "Confide
             {
               warning("The avsed.tolerance is exceeded for the factor combinations - reverting to confidence intervals")
               revert <- TRUE
-            } else #plot factor.combination LSD
+            } else # factor.combination LSD
             {
               LSD.dat <- addByFactorsToLSD.alldiffs(alldiffs.obj, LSDby = LSDby)$LSD
               LSD.dat <- LSD.dat[c(LSDby, "assignedLSD")]
@@ -1721,10 +1721,10 @@ redoErrorIntervals.alldiffs <- function(alldiffs.obj, error.intervals = "Confide
                                   preds[["predicted.value"]] - 0.5 * preds$assignedLSD
                                 upper.halfLeastSignificant.limit <- 
                                   preds[["predicted.value"]] + 0.5 * preds$assignedLSD
-                                if (any(preds$LSDstat == 0))
+                                if (any(preds$assignedLSD < zero.tolerance))
                                 {
-                                  lower.halfLeastSignificant.limit[preds$LSDstat == 0] <- NA
-                                  upper.halfLeastSignificant.limit[preds$LSDstat == 0] <- NA
+                                  lower.halfLeastSignificant.limit[preds$assignedLSD < zero.tolerance] <- NA
+                                  upper.halfLeastSignificant.limit[preds$assignedLSD < zero.tolerance] <- NA
                                 } 
                               })
               if (!is.na(accuracy.threshold))
@@ -2098,42 +2098,6 @@ redoErrorIntervals.alldiffs <- function(alldiffs.obj, error.intervals = "Confide
             LSDs <- LSDpred.stats(alldiffs.obj$sed, t.value = t.value, LSDstatistic = LSDstat, 
                                   LSDaccuracy = LSDacc, retain.zeroLSDs = retain.zeroLSDs, 
                                   zero.tolerance = zero.tolerance)
-            
-            # max.var <- max(alldiffs.obj$sed*alldiffs.obj$sed, na.rm = TRUE)
-            # if (max.var > zero.tolerance ||
-            #     sum(alldiffs.obj$sed*alldiffs.obj$sed/max.var < zero.tolerance, na.rm = TRUE) > 0)
-            #   alldiffs.obj$sed[alldiffs.obj$sed*alldiffs.obj$sed/max.var < zero.tolerance] <- NA
-            # 
-            # #set up LSD data.frame
-            # ksed <- alldiffs.obj$sed
-            # LSDs <- data.frame(minLSD  = t.value * apply(ksed, FUN = min, MARGIN = 1, na.rm = TRUE),
-            #                    meanLSD = t.value * sqrt(apply(ksed*ksed, FUN = mean, MARGIN = 1, na.rm = TRUE)),
-            #                    maxLSD = t.value * apply(ksed, FUN = max, MARGIN = 1, na.rm = TRUE),
-            #                    assignedLSD = NA,
-            #                    accuracyLSD = NA)
-            # #Add assigned LSD column
-            # medianLSD <- t.value * sqrt(apply(ksed*ksed,FUN = median, MARGIN = 1, na.rm = TRUE))
-            # LSDname <- LSDstat2name(LSDstat)
-            # if (LSDstat != "median")
-            #   LSDs$assignedLSD <- LSDs[[LSDname]]
-            # else
-            #   LSDs$assignedLSD <- medianLSD
-            # #Add the accuracy of the assigned LSD 
-            # LSDs$accuracyLSD <- unlist(lapply(rownames(ksed), 
-            #                                   function(nam, ksed, t.value, assLSDs, LSDaccuracy, 
-            #                                            retain.zeroLSDs, zero.tolerance) 
-            #                                   {
-            #                                     sedrow <- na.omit(as.vector(ksed[nam,]))
-            #                                     if (!retain.zeroLSDs)
-            #                                       sedrow <- rm.zerovals(sedrow, zero.tolerance = zero.tolerance)
-            #                                     acc <- LSDaccmeas(sedrow, assignedLSD = assLSDs[nam,], 
-            #                                                       t.value = t.value, 
-            #                                                       LSDaccuracy = LSDaccuracy)
-            #                                     return(acc)
-            #                                   }, ksed = alldiffs.obj$sed, t.value = t.value, 
-            #                                   assLSDs = LSDs["assignedLSD"], 
-            #                                   LSDaccuracy = LSDacc, retain.zeroLSDs = retain.zeroLSDs, 
-            #                                   zero.tolerance = zero.tolerance))
           }
           alldiffs.obj$LSD <- LSDs
           if (avLSD == "supplied")
@@ -2287,8 +2251,8 @@ redoErrorIntervals.alldiffs <- function(alldiffs.obj, error.intervals = "Confide
 {
   tempcall <- list(...)
   if (any(c("transform.power", "offset", "scale")  %in% names(tempcall)))
-    stop(cat("Including transform.power, offset or scale in the call is invalid ",
-             "- they are obtained from the backtransform component"))
+    stop(cat("Including transform.power, offset or scale in the call is invalid \n",
+             "- they are obtained from the backtransform component\n"))
 
   #Check for meanLSD.type and, if found, rename to LSDtype
   alldiffs.obj <- renameDiffsAttr(alldiffs.obj)
@@ -2408,7 +2372,15 @@ redoErrorIntervals.alldiffs <- function(alldiffs.obj, error.intervals = "Confide
       response.title <- paste(response.title, "transform(s)", sep = " ")
     }
     if (is.null(term))
+    {
       term <- attr(alldiffs.obj, which = "term")
+      if (is.null(term))
+      {
+        term <- attr(alldiffs.obj, which = "classify")
+        attr(alldiffs.obj, which = "term") <- term
+      }
+    }
+      
     if (is.null(classify))
       classify <- attr(alldiffs.obj, which = "classify")
     denom.df <- attr(alldiffs.obj, which = "tdf")
@@ -2439,7 +2411,7 @@ redoErrorIntervals.alldiffs <- function(alldiffs.obj, error.intervals = "Confide
       
       #Form projector on predictions for submodel
       suppressWarnings(Q <- dae::pstructure(linear.transformation, grandMean = TRUE, 
-                                            orthogonalize = "eigen", #aliasing.print = FALSE, 
+                                            orthogonalize = "eigen", 
                                             data = alldiffs.obj$predictions)$Q)
       Q.submod <- Q[[1]]
       if (length(Q) > 1)
@@ -2448,7 +2420,8 @@ redoErrorIntervals.alldiffs <- function(alldiffs.obj, error.intervals = "Confide
       Q.submod <- projector(Q.submod)
       
       #Process the classify to ensure there is a separate term for covariates
-      vars <- fac.getinTerm(classify, rmfunction = TRUE)
+#      vars <- fac.getinTerm(classify, rmfunction = TRUE)
+      vars <- fac.getinTerm(term, rmfunction = TRUE)
       facs <- covs <- list()
       for (var in vars)
       {
@@ -2590,7 +2563,7 @@ redoErrorIntervals.alldiffs <- function(alldiffs.obj, error.intervals = "Confide
                                          accuracy.threshold = accuracy.threshold,
                                          LSDtype = LSDtype, LSDsupplied = LSDsupplied, 
                                          LSDby = LSDby, LSDstatistic = LSDstat,
-                                         LSDaccuracy = LSDacc)
+                                         LSDaccuracy = LSDacc, ...)
  
     #Outut tables according to table.opt
     if (!("none" %in% table.opt))

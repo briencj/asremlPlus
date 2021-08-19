@@ -1,5 +1,11 @@
 \name{news}
 \title{News for Package asremlPlus}
+\section{asremlPlus Version 4.3-15 (2021-08-19)}{
+  \itemize{
+  \item{Use \code{term} instead of \code{classify} to obtain the projector for the full model in a linTransform.alldiffs.}
+  \item{Fixed bug in \code{halfLeastSignificant.limit} when \code{LSDtype} is \code{factor.combination} and the \code{assignedLSD} is zero to now ensure that the limit is \code{NA}.}
+  \item{Reinstated passing of parameters from linTransform.alldiffs to redoErrorIntervals.alldiffs}
+}}
 \section{asremlPlus Version 4.3-14 (2021-08-18)}{
   \itemize{
   \item{Fix newly introduced  bug for \code{LSDtype = "halfLeastSignificant"} when there is not a numeric covariate involved in the \code{LSDby} argument.}

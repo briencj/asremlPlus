@@ -61,9 +61,14 @@
                  term from the classifying variables, that is, separating the 
                  variable names with the \code{:} operator.}
  \item{term}{A \code{\link{character}} string giving the variables that define the term 
-               that was fitted using \code{asreml} and that corresponds 
-               to \code{classify}. It only needs to be specified when 
-               it is different to \code{classify}.}
+               that was fitted using \code{asreml} and that corresponds to \code{classify}. 
+               It only needs to be specified when it is different to \code{classify} and 
+               is stored as an attribute of the \code{\link{alldiffs.object}}. 
+               It is likely to be needed when the fitted model includes terms that involve  
+               both a \code{\link{numeric}} covariate and a \code{\link{factor}} that parallel 
+               each other. It may also be useful when a \code{linear.transformation} is 
+               to be made, in which case the term corresponds to an alternative expression 
+               for the \code{classify} that is to be transformed.}
  \item{linear.transformation}{A \code{\link{formula}} or a \code{\link{matrix}}. 
                If a \code{\link{formula}} is given then it is taken to be a submodel of 
                the model term corresponding to the \code{classify}. The projection matrix 
