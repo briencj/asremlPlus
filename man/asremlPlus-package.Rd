@@ -65,6 +65,9 @@
       \tab Prints the values in an \code{\link{alldiffs.object}} in a nice format. \cr
 \code{\link{print.asrtests}}
       \tab Prints the values in an \code{\link{asrtests.object}}. \cr
+\code{\link{print.LSDdata}}
+      \tab Prints the components of a list containing data on the \cr
+      \tab LSDs for all pairwise differences of predictions.      \cr
 \code{\link{print.predictions.frame}}
       \tab Prints the values in a \code{\link{predictions.frame}}, with or without title and heading. \cr
 \code{\link{print.test.summary}}

@@ -344,6 +344,5 @@ pairdiffsTransform.alldiffs <- function(alldiffs.obj, pairs.factor, first.levels
   Diffs <- unlist(Diffs, recursive = FALSE)
   nams <- outer(first.levels, second.levels, paste, sep = ",")
   names(Diffs) <- nams
-  
   invisible(Diffs)                      
 }

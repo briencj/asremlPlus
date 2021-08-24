@@ -89,6 +89,7 @@ addByFactorsToLSD.alldiffs <- function(alldiffs.obj, LSDby = NULL)
     LSDby <- attr(alldiffs.obj, which = "LSDby")
   
   LSD.facsvars <- alldiffs.obj$predictions[LSDby]
+  names(LSD.facsvars) <- LSDby
   
   #Determine if any numerics
   any.num <- lapply(LSD.facsvars, 

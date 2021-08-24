@@ -83,6 +83,7 @@ export(addBacktransforms,
        pred.present.asreml,
        print.alldiffs,
        print.asrtests, 
+       print.LSDdata,
        print.predictions.frame, 
        print.test.summary,
        print.wald.tab, 
@@ -150,6 +151,7 @@ importFrom("foreach", "foreach", "%do%", "%dopar%")
 importFrom("parallel", "makeCluster", "stopCluster", "detectCores", "nextRNGStream")
 importFrom("doParallel", "registerDoParallel")
 importFrom("stringr", "str_split", "str_trim", "str_sub")
+importFrom("sticky", "sticky")
 S3method(addBacktransforms, alldiffs)
 S3method(allDifferences, data.frame)
 S3method(changeModelOnIC, asrtests)
@@ -181,6 +183,7 @@ S3method(predictPresent, asreml)
 S3method(predictPlus, asreml)
 S3method(print, asrtests)
 S3method(print, alldiffs)
+S3method(print, LSDdata)
 S3method(print, predictions.frame)
 S3method(print, test.summary)
 S3method(print, wald.tab)

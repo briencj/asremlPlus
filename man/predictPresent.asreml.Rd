@@ -32,7 +32,7 @@
                pairwise = TRUE, Vmatrix = FALSE, 
                avsed.tolerance = 0.25, accuracy.threshold = NA, 
                LSDtype = "overall", LSDsupplied = NULL, LSDby = NULL, 
-              LSDstatistic = "mean", LSDaccuracy = "maxAbsDeviation", 
+               LSDstatistic = "mean", LSDaccuracy = "maxAbsDeviation", 
                x.num = NULL, x.fac = NULL, nonx.fac.order = NULL,  
                x.pred.values = NULL, x.plot.values = NULL, 
                plots = "predictions", panels = "multiple", 

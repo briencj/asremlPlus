@@ -222,7 +222,6 @@ setOldClass("predictions.frame")
                     response = response, response.title = response.title, 
                     term = term, classify = classify, 
                     tdf = tdf, alpha = alpha, sortFactor = sortFactor, sortOrder = sortOrder)
-  
   return(p)
 }
 
@@ -787,7 +786,6 @@ facCombine.alldiffs <- function(object, factors, order="standard", combine.level
                                  LSDtype = LSDtype, LSDby = LSDby, 
                                  LSDstatistic = LSDstatistic, LSDaccuracy = LSDaccuracy,
                                  alpha = alpha, ...)
-  
   return(object)
 }
 
@@ -901,7 +899,6 @@ facRecast.alldiffs <- function(object, factor, levels.order = NULL, newlabels = 
       names(attr(object$predictions, which = "LSDvalues")) <- rownames(object$LSD)
     }
   }
-
   return(object)
 }
 
@@ -955,7 +952,6 @@ facRename.alldiffs <- function(object, factor.names, newnames,  ...)
   classify <- fac.formTerm(class.facs)
   attr(object, which = "classify") <- classify
   response <- attr(object, which = "response")
-
   return(object)
 }
 
@@ -1255,7 +1251,7 @@ sort.predictions.frame <- function(x, decreasing = FALSE, classify, sortFactor =
   attributes(x) <- x.attr
   attr(x, which = "sortFactor") <- sortFactor
   attr(x, which = "sortOrder") <- newlevs
-  
+  x <- sticky::sticky(x)
   return(x)
 }
 
@@ -1303,7 +1299,6 @@ sort.alldiffs <- function(x, decreasing = FALSE, classify = NULL, sortFactor = N
   attr(x, which = "classify") <- classify
   attr(x, which = "sortFactor") <- sortFactor
   attr(x, which = "sortOrder") <- sortOrder
-  
   return(x)
 }
 
@@ -1467,6 +1462,13 @@ exploreLSDs.alldiffs <- function(alldiffs.obj,  LSDtype = "overall", LSDby = NUL
     LSD.list <- c(LSD.list, list(LSD = LSDs))
   }
   
+  #Set attributes on the lsd.list
+  class(LSD.list) <- c("LSDdata", "list")
+  attr(LSD.list, which = "LSDtype") <- avLSD
+  attr(LSD.list, which = "LSDby") <- LSDby
+  attr(LSD.list, which = "LSDaccuracy") <- LSDacc
+  attr(LSD.list, which = "alpha") <- alpha
+  attr(LSD.list, which = "retain.zeroLSDs") <- retain.zeroLSDs
   return(LSD.list)
 }
 
@@ -1825,7 +1827,6 @@ redoErrorIntervals.alldiffs <- function(alldiffs.obj, error.intervals = "Confide
   alldiffs.obj <- addBacktransforms.alldiffs(alldiffs.obj = alldiffs.obj, 
                                              transform.power = transform.power, 
                                              offset = offset, scale = scale)
-
   return(alldiffs.obj)
 }
 
@@ -2580,3 +2581,27 @@ redoErrorIntervals.alldiffs <- function(alldiffs.obj, error.intervals = "Confide
   }
   return(diffs)
 }
+
+preserveAttributes.alldiffs <- function(alldiffs.obj)
+{
+  if (!is.null(alldiffs.obj$predictions))
+  {
+    alldiffs.obj$predictions <- sticky::sticky(alldiffs.obj$predictions)
+    cl.vals <- class(alldiffs.obj$predictions)
+    class(alldiffs.obj$predictions) <- cl.vals[c(2:length(cl.vals),1)]
+  }
+  if (!is.null(alldiffs.obj$LSD))
+  {
+    alldiffs.obj$LSD <- sticky::sticky(alldiffs.obj$LSD)
+    cl.vals <- class(alldiffs.obj$LSD)
+    class(alldiffs.obj$LSD) <- cl.vals[c(2:length(cl.vals),1)]
+  }
+  if (!is.null(alldiffs.obj$backtransforms))
+  {
+    alldiffs.obj$backtransforms <- sticky::sticky(alldiffs.obj$backtransforms)
+    cl.vals <- alldiffs.obj$backtransforms
+    class(alldiffs.obj$backtransforms) <- cl.vals[c(2:length(cl.vals),1)]
+  }
+  return(alldiffs.obj)
+}
+

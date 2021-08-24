@@ -233,6 +233,62 @@ setOldClass("asrtests")
   invisible()
 }
 
+"print.LSDdata" <- function(x,  which.print = c("statistics", "accuracy"), ...)
+{
+  options <- c("frequencies", "distinct.vals", "statistics", "accuracy", "per.pred.accuracy", 
+               "LSDmatrix", "summary", "all")
+  opt <- options[unlist(lapply(which.print, check.arg.values, options=options))]
+  if (all(c("summary", "all") %in% opt))
+    stop("Can only specify one of summary and all for which argument")
+
+  #make change to control printing
+  class(x) <- c("LSDdata", "data.frame")
+
+  if (any(c("frequencies", "all") %in% opt))
+  {
+    cat("\n\n####  Frequency distribution of LSDs \n\n")
+    fr <- as.data.frame(x$frequencies)
+    fr <- cbind(rownames(fr),fr)
+    rownames(fr) <- NULL
+    names(fr) <- c("midpoint", "frequency")
+    print(fr, ...)
+  }
+  
+  if (any(c("distinct.vals", "summary", "all") %in% opt))
+  {
+    cat("\n\n####  Distinct LSD values \n\n")
+    print(x$distinct.vals, ...)
+  }
+  
+  if (any(c("statistics", "summary", "all") %in% opt))
+  {
+    cat("\n\n####  Statistics calculated from LSD values \n\n")
+    print(x$statistics, ...)
+  }
+  
+  if (any(c("accuracy", "summary", "all") %in% opt))
+  {
+    cat(paste0("\n\n####  Accuracy (", attr(x, which = "LSDaccuracy"), 
+               ") of statistics calculated from LSD values \n\n"))
+    print(x$accuracy, ...)
+  }
+  
+  if (any(c("per.pred.accuracy", "all") %in% opt))
+  {
+    cat(paste0("\n\n####  Accuracy (", attr(x, which = "LSDaccuracy"), 
+               ") for each prediction if LSD statistics are used \n\n"))
+    print(x$per.pred.accuracy, ...)
+  }
+  
+  if (any(c("LSDmatrix", "all") %in% opt))
+  {
+    cat("\n\n####  Matrix of all LSD values \n\n")
+    print(x$LSD, ...)
+  }
+  
+  invisible()
+}
+
 "print.wald.tab" <- function(x, which.wald = c("title", "heading", "table"), 
                              colourise = FALSE, ...)
 {
