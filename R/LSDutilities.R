@@ -3,6 +3,9 @@
 LSDstat2name <- function(LSDstat)
   LSDname <- paste0(gsub("imum", "", LSDstat, fixed = TRUE), "LSD")
 
+getUpperTri <- function(x)
+  x <- x[upper.tri(x)]
+
 #Function to make a combined factor of the LSDby factor
 #Convert any non-factors and form levels combination for which a LSDs are required
 fac.LSDcombs.alldiffs <- function(alldiffs.obj, by)
@@ -135,23 +138,46 @@ checkLSD <- function(alldiffs.obj)
   return(alldiffs.obj)
 }
 
-#Function to remove zero values from a vector using zero.tolerance to determine if zero
-rm.zerovals <- function(x, zero.tolerance = .Machine$double.eps ^ 0.5)
+#Function to find nonzero values in a vector using zero.tolerance to determine if zero
+findNonzero <- function(x, zero.tolerance = .Machine$double.eps ^ 0.5)
 {
   max.x <- max(x)
+  which.nonzero <- NULL
   #Retain only nonzero variances
   if (max.x > zero.tolerance && sum(x/max.x > zero.tolerance) > 0)
-    x <- x[x/max.x > zero.tolerance]
-  else if (max.x < zero.tolerance)
-    x <- 0
-  return(x)
+    which.nonzero <- x/max.x > zero.tolerance
+  return(which.nonzero)
+}
+
+#Function to remove nas & zero values from a vector using zero.tolerance to determine if zero
+rm.nazero <- function(ksed, kdif = NULL, retain.zeroLSDs = FALSE, zero.tolerance = .Machine$double.eps ^ 0.5)
+{
+  #remove NA and zero values
+  which.na <- is.na(ksed)
+  ksed <- ksed[!which.na]
+  if (!is.null(kdif))
+    kdif <- kdif[!which.na]
+  if (!retain.zeroLSDs)
+  {
+    which.nonzero <- findNonzero(ksed, zero.tolerance = zero.tolerance)
+    if (is.null(which.nonzero))
+    {
+      ksed <- 0
+      if (!is.null(kdif))
+        kdif <- 0
+    } else
+    {
+      ksed <- ksed[which.nonzero]
+      if (!is.null(kdif))
+        kdif <- kdif[which.nonzero]
+    }
+  }
+  return(list(ksed = ksed, kdif = kdif)) 
 }
 
 #sed should be a vector that has had NAs and zeroes removed
 "LSDaccmeas" <- function(ksed, assignedLSD, t.value, LSDaccuracy = "maxAbsDeviation")
 {
-  ksed <- na.omit(as.vector(ksed))
-  
   #Determine the accuracy of the assigned LSD 
   if (is.na(assignedLSD) || all(is.na(ksed)))
     accuracyLSD <- NA
@@ -181,8 +207,19 @@ rm.zerovals <- function(x, zero.tolerance = .Machine$double.eps ^ 0.5)
   return(accuracyLSD)
 }
 
+#sed and kdif should be vectors that have had NAs and zeroes removed
+falseSignif <- function(ksed, kdif, assignedLSD, t.value)
+{
+  sig.actual <- abs(kdif) >= t.value * ksed
+  sig.approx <- abs(kdif) >= assignedLSD
+  falsesig <- c(sum(!sig.actual & sig.approx, na.rm = TRUE), 
+                sum(sig.actual & !sig.approx, na.rm = TRUE))
+  names(falsesig) <- c("false.pos", "false.neg")
+  return(falsesig)
+}
+
 #sed should be a vector that has had NAs and zeroes removed
-"LSDstats" <- function(ksed, t.value, LSDstatistic = "mean", LSDaccuracy = "maxAbsDeviation") 
+"LSDstats" <- function(ksed, kdif, t.value, LSDstatistic = "mean", LSDaccuracy = "maxAbsDeviation") 
 {
   #calculate LSD statistics
   stats <- data.frame(n = length(ksed),
@@ -190,7 +227,9 @@ rm.zerovals <- function(x, zero.tolerance = .Machine$double.eps ^ 0.5)
                       meanLSD = t.value * sqrt(mean(ksed*ksed)),
                       maxLSD = t.value * max(ksed),
                       assignedLSD = NA,
-                      accuracyLSD = NA)
+                      accuracyLSD = NA,
+                      falsePos = NA,
+                      falseNeg = NA)
   #Set assigned LSD for use with halfLSIs
   if (LSDstatistic == "median")
     stats$assignedLSD <- t.value * median(ksed)
@@ -210,6 +249,12 @@ rm.zerovals <- function(x, zero.tolerance = .Machine$double.eps ^ 0.5)
   #Determine the accuracy of the assigned LSD 
   stats$accuracyLSD <- LSDaccmeas(ksed = ksed, assignedLSD = stats$assignedLSD, 
                                   t.value = t.value, LSDaccuracy = LSDaccuracy)
+  
+  #Calculate the number of false positives and negatives
+  falsesig <- falseSignif(ksed = ksed, kdif = kdif, assignedLSD = stats$assignedLSD, 
+                          t.value = t.value)
+  stats$falsePos <- falsesig["false.pos"]
+  stats$falseNeg <- falsesig["false.neg"]
   return(stats)
 }
 
@@ -222,7 +267,6 @@ sliceLSDs <- function(alldiffs.obj, by, t.value, LSDstatistic = "mean", LSDaccur
   if (!all(unlist(lapply(by, grepl, x = classify, fixed = TRUE))))
     stop("One of the elements of LSDby is not in the classify")
   
-  sed <- alldiffs.obj$sed
   denom.df <- attr(alldiffs.obj, which = "tdf")
   if (is.null(denom.df))
   {
@@ -232,13 +276,16 @@ sliceLSDs <- function(alldiffs.obj, by, t.value, LSDstatistic = "mean", LSDaccur
   } else
   {
     t.value = qt(1-alpha/2, denom.df)
+    sed <- alldiffs.obj$sed
+    dif <- alldiffs.obj$differences
+    diag(dif) <- NA
     
     #Get the LSDs
     fac.comb <- fac.LSDcombs.alldiffs(alldiffs.obj, by)
     levs <- levels(fac.comb)
     #loop over LSDby combinations
     LSDs <- lapply(levs, 
-                   function(lev, sed, t.value)
+                   function(lev, sed, dif, t.value)
                    {
                      krows <- lev == fac.comb
                      if (length(fac.comb[krows]) == 1) #have a single prediction
@@ -247,9 +294,10 @@ sliceLSDs <- function(alldiffs.obj, by, t.value, LSDstatistic = "mean", LSDaccur
                                      "- applies to two independent predictions with the same standard error"))
                        if (which.stats == "all")
                        {
-                         stats <- c(1, rep(t.value * sqrt(2) * 
-                                          alldiffs.obj$predictions$standard.error[krows] /2, times = 4), NA)
-                         names(stats) <- c("n", "minLSD", "meanLSD", "maxLSD", "assignedLSD", "accuracyLSD")
+                         stats <- c(0, rep(t.value * sqrt(2) * 
+                                          alldiffs.obj$predictions$standard.error[krows], times = 4), NA, NA, NA)
+                         names(stats) <- c("n", "minLSD", "meanLSD", "maxLSD", "assignedLSD", "accuracyLSD", 
+                                           "false.pos", "false.neg")
                        } else
                          if (which.stats == "accuracyLSD")
                            stats <- NA
@@ -257,13 +305,16 @@ sliceLSDs <- function(alldiffs.obj, by, t.value, LSDstatistic = "mean", LSDaccur
                            stop("Unknown which.stats option in SliceLSDs")
                      } else  #have several predictions
                      {
-                       ksed <- sed[krows, krows]
+                       ksed <- getUpperTri(sed[krows, krows])
+                       kdif <- getUpperTri(dif[krows, krows])
                        #remove NA and zero values
-                       ksed <- na.omit(as.vector(ksed))
-                       if (!retain.zeroLSDs)
-                         ksed <- rm.zerovals(ksed, zero.tolerance = zero.tolerance)
+                       rm.list <- rm.nazero(ksed, kdif, retain.zeroLSDs = retain.zeroLSDs, 
+                                            zero.tolerance = zero.tolerance)
+                       ksed <- rm.list$ksed
+                       kdif <- rm.list$kdif
                        if (which.stats == "all")
-                         stats <- LSDstats(ksed, t.value, LSDstatistic = LSDstatistic, LSDaccuracy = LSDaccuracy)
+                         stats <- LSDstats(ksed = ksed, kdif = kdif, t.value, 
+                                           LSDstatistic = LSDstatistic, LSDaccuracy = LSDaccuracy)
                        else
                        {  
                          if (which.stats == "accuracyLSD")
@@ -276,7 +327,7 @@ sliceLSDs <- function(alldiffs.obj, by, t.value, LSDstatistic = "mean", LSDaccur
                        }
                      }
                      return(stats)
-                   }, sed = sed, t.value = t.value)
+                   }, sed = sed, dif = dif, t.value = t.value)
     if (!is.null(LSDs))
     {
       LSDs <- as.data.frame(do.call(rbind, LSDs))
@@ -326,9 +377,9 @@ sliceAccs <- function(alldiffs.obj, by, LSDstatistic = "mean", LSDaccuracy = "ma
                                     function(sedrow, assignedLSD, t.value, LSDaccuracy, 
                                              retain.zeroLSDs, zero.tolerance)
                                     {
-                                      sedrow <- na.omit(as.vector(sedrow))
-                                      if (!retain.zeroLSDs)
-                                        sedrow <- rm.zerovals(sedrow, zero.tolerance = zero.tolerance)
+                                      sedrow <- as.vector(sedrow)
+                                      sedrow <- rm.nazero(sedrow, retain.zeroLSDs = retain.zeroLSDs,
+                                                           zero.tolerance = zero.tolerance)$ksed
                                       acc <- LSDaccmeas(sedrow, t.value = t.value, assignedLSD, 
                                                         LSDaccuracy = LSDaccuracy)
                                       return(acc)
@@ -345,22 +396,26 @@ sliceAccs <- function(alldiffs.obj, by, LSDstatistic = "mean", LSDaccuracy = "ma
   return(Acc)
 }
 #Function to produce the per.prediction LSD stats 
-LSDpred.stats <- function(LSD.mat, LSDstatistic, LSDaccuracy, t.value = 1, 
+LSDpred.stats <- function(LSD.mat, dif.mat, LSDstatistic, LSDaccuracy, t.value = 1, 
                           retain.zeroLSDs, zero.tolerance)
 {
-  perpred <- apply(LSD.mat, MARGIN = 1, FUN =  
-                     function(LSDrow, LSDstatistic, LSDaccuracy, t.value = 1, 
-                              retain.zeroLSDs, zero.tolerance)
-                     {
-                       LSDrow <- na.omit(as.vector(LSDrow))
-                       if (!retain.zeroLSDs)
-                         LSDrow <- rm.zerovals(LSDrow, zero.tolerance = zero.tolerance)
-                       x <- LSDstats(LSDrow, t.value = t.value, LSDstatistic = LSDstatistic, 
-                                     LSDaccuracy = LSDaccuracy)
-                       return(x)
-                     }, 
-                   LSDstatistic = LSDstatistic, LSDaccuracy = LSDaccuracy, t.value = t.value, 
-                   retain.zeroLSDs = retain.zeroLSDs, zero.tolerance = zero.tolerance)
+  perpred <- lapply(1:nrow(LSD.mat), FUN =  
+                      function(k, LSD.mat, dif.mat, LSDstatistic, LSDaccuracy, t.value = 1, 
+                               retain.zeroLSDs, zero.tolerance)
+                      {
+                        LSDrow <- as.vector(LSD.mat[k,])
+                        difrow <- as.vector(dif.mat[k,])
+                        #remove NA and zero values
+                        rm.list <- rm.nazero(LSDrow, difrow, retain.zeroLSDs = retain.zeroLSDs, 
+                                             zero.tolerance = zero.tolerance)
+                        LSDrow <- rm.list$ksed
+                        difrow <- rm.list$kdif
+                        x <- LSDstats(LSDrow, difrow, t.value = t.value, LSDstatistic = LSDstatistic, 
+                                      LSDaccuracy = LSDaccuracy)
+                        return(x)
+                      }, LSD.mat = LSD.mat, dif.mat = dif.mat, 
+                    LSDstatistic = LSDstatistic, LSDaccuracy = LSDaccuracy, t.value = t.value, 
+                    retain.zeroLSDs = retain.zeroLSDs, zero.tolerance = zero.tolerance)
   perpred <- do.call(rbind, perpred)
   return(perpred)
 }
@@ -373,9 +428,9 @@ LSDpred.acc <- function(LSD.mat, assignedLSD, LSDaccuracy, t.value = 1,
                      function(LSDrow, assignedLSD, LSDaccuracy, t.value = 1, 
                               retain.zeroLSDs, zero.tolerance)
                      {
-                       LSDrow <- na.omit(as.vector(LSDrow))
-                       if (!retain.zeroLSDs)
-                         LSDrow <- rm.zerovals(LSDrow, zero.tolerance = zero.tolerance)
+                       LSDrow <- as.vector(LSDrow)
+                       LSDrow <- rm.nazero(LSDrow, retain.zeroLSDs = retain.zeroLSDs, 
+                                           zero.tolerance = zero.tolerance)$ksed
                        x <- LSDaccmeas(LSDrow, t.value = t.value, assignedLSD = assignedLSD, 
                                        LSDaccuracy = LSDaccuracy)
                        return(x)
@@ -386,32 +441,47 @@ LSDpred.acc <- function(LSD.mat, assignedLSD, LSDaccuracy, t.value = 1,
   return(perpred)
 }
 
-#Function to get all stats and accuracies for all supplied LSDs
-"LSDallstats" <- function(LSDs, LSDaccuracy = "maxAbsDeviation", 
+#Function to get all stats and accuracies for all kLSDs and kdifs supplied in vectors
+"LSDallstats" <- function(kLSDs, kdifs, LSDaccuracy = "maxAbsDeviation", t.value = 1, 
                           retain.zeroLSDs = FALSE, 
                           zero.tolerance = .Machine$double.eps ^ 0.5) 
 {
   LSDstat.labs <- c("minimum", "quantile10", "mean", "median", "quantile90", "maximum")
 
-  kLSDs <- na.omit(as.vector(LSDs))
-  #Retain only nonzero LSDs
-  if (!retain.zeroLSDs)
-    kLSDs <- rm.zerovals(kLSDs, zero.tolerance = zero.tolerance)
-
   #calculate LSD statistics
+  n <- length(kLSDs)
   quants <- quantile(kLSDs, c(0,0.10, 0.50, 0.90, 1))
-  stats <- c(length(kLSDs), quants[1:2], sqrt(mean(kLSDs*kLSDs)), quants[3:5])
+  stats <- c(n, quants[1:2], sqrt(mean(kLSDs*kLSDs)), quants[3:5])
   names(stats) <- c("n", LSDstat.labs)
   stats <- as.data.frame(as.list(stats))
-  #Determine the accuracy of the assigned LSD 
+
+  #Calculate the number of false positives and negatives
+  falsesig <- lapply(LSDstat.labs, 
+                     function(LSDstat, kLSDs, kdifs, stats, t.value)
+                     {
+                       fsig <- falseSignif(ksed = kLSDs, kdif = kdifs, assignedLSD = stats[[LSDstat]], 
+                                   t.value = t.value)
+                     }, kLSDs = kLSDs, kdif = kdifs, stats = stats, t.value = t.value)
+  if (!is.null(falsesig))
+  {
+    false.pos <- c(list(n = n), lapply(falsesig, function(comp) comp["false.pos"]))
+    false.pos <- as.data.frame(do.call(cbind, false.pos))
+    names(false.pos) <- c("n", LSDstat.labs)
+    false.neg <- c(list(n = n), lapply(falsesig, function(comp) comp["false.neg"]))
+    false.neg <- as.data.frame(do.call(cbind, false.neg))
+    names(false.neg) <- c("n", LSDstat.labs)
+  }
   
-  Acc <- lapply(LSDstat.labs, function(LSDstat, kLSDs, stats, LSDaccuracy)
-    acc <- LSDaccmeas(ksed = kLSDs, assignedLSD = stats[[LSDstat]], 
-                      t.value = 1, LSDaccuracy = LSDaccuracy),
-    kLSDs = kLSDs, stats = stats, LSDaccuracy = LSDaccuracy)
+  #Determine the accuracy of the assigned LSD 
+  Acc <- lapply(LSDstat.labs, 
+                function(LSDstat, kLSDs, stats, LSDaccuracy)
+                {
+                  acc <- LSDaccmeas(ksed = kLSDs, assignedLSD = stats[[LSDstat]], 
+                                    t.value = 1, LSDaccuracy = LSDaccuracy)
+                }, kLSDs = kLSDs, stats = stats, LSDaccuracy = LSDaccuracy)
   Acc <- as.data.frame(c(list(length(kLSDs)), Acc))
   names(Acc) <- c("n", LSDstat.labs)
-  return(list(statistics = stats, accuracy = Acc))
+  return(list(statistics = stats, accuracy = Acc, false.pos = false.pos, false.neg = false.neg))
 }
 
 #Function to get stats, accuracy, per.pred.acc for sets of LSDs specified by the by argument
@@ -426,6 +496,7 @@ sliceAll <- function(alldiffs.obj, by, t.value, LSDaccuracy = "maxAbsDeviation",
     stop("One of the elements of LSDby is not in the classify")
   
   LSDs <-t.value * alldiffs.obj$sed
+  difs <- alldiffs.obj$differences
   
   #Get the LSDs
   fac.comb <- fac.LSDcombs.alldiffs(alldiffs.obj, by)
@@ -439,24 +510,30 @@ sliceAll <- function(alldiffs.obj, by, t.value, LSDaccuracy = "maxAbsDeviation",
                       {
                         warning(paste("LSD calculated for a single prediction",
                                       "- applies to two independent predictions with the same standard error"))
-                        stats <- rep(1, t.value * sqrt(2) * alldiffs.obj$predictions$standard.error[krows] /2, 
-                                     times = length(LSDstat.labs))
+                        stats <- c(0, rep(t.value * sqrt(2) * alldiffs.obj$predictions$standard.error[krows], 
+                                     times = length(LSDstat.labs)))
                         names(stats) <- c("n", LSDstat.labs)
-                        stats <- as.data.frame(stats)
-                        acc <- rep(NA, times = length(LSDstat.labs))
+                        stats <- as.data.frame(as.list(stats))
+                        acc <- c(0, rep(NA, times = length(LSDstat.labs)))
                         names(acc) <- c("n", LSDstat.labs)
-                        acc <- as.data.frame(acc)
-                        per.pred <- acc
+                        acc <- as.data.frame(as.list(acc))
+                        fneg <- fpos <- acc
+                        per.pred <- acc[,-1]
                         names(per.pred) <- LSDstat.labs
-                        stats <- list(statistics = stats, accuracy = acc, per.predictions = per.pred)
+                        stats <- list(statistics = stats, accuracy = acc, false.pos = fpos, false.neg = fneg, 
+                                      per.predictions = per.pred)
                       } else  #have several predictions
                       {
                         kLSDs <- LSDs[krows, krows]
-                        kLSDs.vec <- na.omit(as.vector(kLSDs))
-                        if (!retain.zeroLSDs)
-                          kLSDs.vec <- rm.zerovals(kLSDs.vec, zero.tolerance = zero.tolerance)
+                        kdifs <- difs[krows, krows]
+                        #remove NA and zero values
+                        rm.list <- rm.nazero(getUpperTri(kLSDs), getUpperTri(kdifs), 
+                                             retain.zeroLSDs = retain.zeroLSDs, 
+                                             zero.tolerance = zero.tolerance)
+                        kLSDs.vec <- rm.list$ksed
+                        kdifs.vec <- rm.list$kdif
                         distinct <- sort(unique(signif(kLSDs.vec, digits = digits)))
-                        stats <- LSDallstats(kLSDs.vec, LSDaccuracy = LSDaccuracy)
+                        stats <- LSDallstats(kLSDs.vec, kdifs.vec, t.value = 1, LSDaccuracy = LSDaccuracy)
                         
                         #get per.prediction accuracies
                         per.pred <- lapply(LSDstat.labs, 
@@ -488,6 +565,10 @@ sliceAll <- function(alldiffs.obj, by, t.value, LSDaccuracy = "maxAbsDeviation",
     stats <- as.data.frame(do.call(rbind, stats))
     acc <- lapply(LSDsall, function(comp) comp$accuracy)
     acc <- as.data.frame(do.call(rbind, acc))
+    false.pos <- lapply(LSDsall, function(comp) comp$false.pos)
+    false.pos <- as.data.frame(do.call(rbind, false.pos))
+    false.neg <- lapply(LSDsall, function(comp) comp$false.neg)
+    false.neg <- as.data.frame(do.call(rbind, false.neg))
     freq.labs <- as.character(LSDsall[[1]]$frequencies$mids)
     freq <- lapply(LSDsall, function(comp) comp$frequencies$counts)
     freq <- as.data.frame(do.call(rbind, freq))
@@ -519,5 +600,5 @@ sliceAll <- function(alldiffs.obj, by, t.value, LSDaccuracy = "maxAbsDeviation",
   }
   
   return(list(frequencies = freq, distinct.vals = distinct, statistics = stats, accuracy = acc, 
-              per.pred.accuracy = per.pred))
+              false.pos = false.pos, false.neg = false.neg, per.pred.accuracy = per.pred))
 }

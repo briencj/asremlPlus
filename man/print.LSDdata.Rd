@@ -10,10 +10,11 @@
  \item{which.print}{Which components of the \code{LSDdata} \code{\link{list}} to print. 
                     Possible values are some combination of \code{frequencies}, 
                     \code{distinct.vals}, \code{statistics},   \code{accuracy}, 
+                    \code{false.pos}, \code{false.neg}, 
                     \code{per.pred.accuracy}, \code{LSD}, \code{summary} and \code{all}. 
                     Only one of \code{summary} and \code{all} is allowed. 
                     The option \code{summary} results in the printing of 
-                    \code{distinct.vals}, \code{statistics}, \code{accuracy}. 
+                    \code{distinct.vals}, \code{statistics}, \code{false.pos}, \code{false.neg}. 
                     For a description of these components, see \code{\link{alldiffs.object}}.}
  \item{\dots}{further arguments passed to \code{print}.}
 }

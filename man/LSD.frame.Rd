@@ -29,10 +29,14 @@
        \code{predictions} and, if present \code{backtransforms}, components of the 
        \code{\link{alldiffs.object}}.
        
-       An \code{LSD.frame} always has the five columns \code{minimumLSD}, \code{meanLSD}, 
-       \code{maximumLSD}, \code{assignedLSD} and \code{accuracyLSD}.
+       An \code{LSD.frame} always has the eight columns \code{n}, \code{minimumLSD}, \code{meanLSD}, 
+       \code{maximumLSD}, \code{assignedLSD}, \code{accuracyLSD}, \code{false.pos} and 
+       \code{false.neg}.
        \enumerate{
-         \item \code{minimumLSD, meanLSD, maximumLSD}: {These are computed for either \code{overall}, for 
+        \item \code{n}: {This gives the number of pairwise coomparison of predictions for the combinations of 
+             the factor levels given by the row name. If the row name is \code{overall} then it is for 
+             all predictions.}
+        \item \code{minimumLSD, meanLSD, maximumLSD}: {These are computed for either \code{overall}, for 
              \code{factor.combinations}, \code{per.prediction} or \code{supplied}, as specified by the 
              \code{LSDtype} argument. 
              
@@ -68,7 +72,12 @@
               correct LSD for a single \code{predicted.value} might deviate from its \code{assignedLSD} value. 
               The contents of the \code{accuracyLSD} column is controlled by the \code{LSDaccuracy} 
               argument.}
-              }
+         \item \code{false.pos} and \code{false.neg}: {These columns contain the number of false positives 
+              and negatives if the \code{assignedLSD} value(s) is(are) used to determine the significance 
+              of the pairwise predictions differences. Each LSD value in the \code{assignedLSD} 
+              column is used to determine the significance of pairwise differences that involve 
+              predictions for the combination of levels given by the row name for the LSD value.}
+      }
        
        See \code{\link{recalcLSD.alldiffs}} for more information.
 

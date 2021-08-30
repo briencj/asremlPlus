@@ -293,10 +293,12 @@ test_that("LSD_asreml4", {
   Var.diffs.one <- linTransform(Var.diffs, linear.transformation = ~Nitrogen,
                                 error.intervals = "half", tables = "none")
   testthat::expect_true(all("LSDtype" %in% names(attributes(Var.diffs.one))))
-  testthat::expect_true(all(abs(Var.diffs.one$LSD[-match(c("n","accuracyLSD"), names(Var.diffs.one$LSD))] - 
+  testthat::expect_true(all(abs(Var.diffs.one$LSD[c("minLSD", "meanLSD", "maxLSD", "assignedLSD")] - 
                                   9.883479) < 1e-06))
   testthat::expect_true(all(abs(Var.diffs.one$LSD$assignedLSD - 
                                   attr(Var.diffs.one$predictions, which = "LSDvalues")) < 1E-06))
+  testthat::expect_true(all(Var.diffs.one$LSD$falsePos == 0))
+  testthat::expect_true(all(Var.diffs.one$LSD$falseNeg == 0))
   testthat::expect_true(all(c("tdf", "alpha", "LSDtype", "LSDstatistic", "LSDaccuracy") %in% 
                               names(attributes(Var.diffs.one))))
   testthat::expect_true(all(c("LSDtype", "LSDstatistic", "LSDvalues", "LSDaccuracy", "avsed.tolerance", 
@@ -585,8 +587,12 @@ test_that("sort.alldiffs4", {
                        wald.tab = current.asrt$wald.tab, 
                        error.intervals = "half", tables = "none")
   testthat::expect_true(validAlldiffs(diffs))
+  testthat::expect_true(all(abs(c(66, 15.47426, 18.54066, 19.56707, 18.54066, 0.1653879, 2, 4) - 
+                                  diffs$LSD) < 1e-05))
   LSD.dat <- diffs$LSD
   LSD.dat$assignedLSD <- qt(0.975, attr(diffs, which = "tdf"))*median(diffs$sed, na.rm = TRUE)
+  
+  
   
   diffs.reLSD <- redoErrorIntervals(diffs, error.intervals = "half", 
                                     LSDtype = "supplied", LSDsupplied = LSD.dat["assignedLSD"])
@@ -602,7 +608,8 @@ test_that("sort.alldiffs4", {
                               names(attributes(diffs.reLSD$predictions))))
   testthat::expect_true(rownames(diffs.reLSD$LSD) == "overall")
   testthat::expect_true(all(LSD.hdr %in% names(diffs.reLSD$LSD)))
-  testthat::expect_true(all(abs(c(132, 15.47426, 18.54066, 19.56707, 19.56707, 0.2091679) - diffs.reLSD$LSD) < 1e-05))
+  testthat::expect_true(all(abs(c(66, 15.47426, 18.54066, 19.56707, 19.56707, 0.2091679, 0, 4) - 
+                                  diffs.reLSD$LSD) < 1e-05))
   #Check limit difference equals the LSD$meanLSD
   testthat::expect_true(all(abs((diffs.reLSD$predictions$upper.halfLeastSignificant.limit - 
                                    diffs.reLSD$predictions$lower.halfLeastSignificant.limit) 
@@ -624,7 +631,7 @@ test_that("sort.alldiffs4", {
                               names(attributes(diffs.med.reLSD$predictions))))
   testthat::expect_true(rownames(diffs.med.reLSD$LSD) == "overall")
   testthat::expect_true(all(LSD.hdr %in% names(diffs.med.reLSD$LSD)))
-  testthat::expect_true(all(abs(c(132, 15.47426, 18.54066, 19.56707, 18.54066, 0.1653879) - 
+  testthat::expect_true(all(abs(c(66, 15.47426, 18.54066, 19.56707, 18.54066, 0.1653879,2,4) - 
                                   diffs.med.reLSD$LSD) < 1e-05))
   #Check limit difference equals the LSD$meanLSD
   testthat::expect_true(all(abs((diffs.med.reLSD$predictions$upper.halfLeastSignificant.limit - 
@@ -641,7 +648,7 @@ test_that("LSDWater4", {
   library(asremlPlus)
   library(dae)
   data(WaterRunoff.dat)
-  LSD.hdr <- c("n", "minLSD", "meanLSD", "maxLSD", "assignedLSD", "accuracyLSD")
+  LSD.hdr <- c("n", "minLSD", "meanLSD", "maxLSD", "assignedLSD", "accuracyLSD", "falsePos", "falseNeg")
   
   #Analyse pH  
   m1.asr <- asreml(fixed = pH ~ Benches + (Sources * (Type + Species)), 
@@ -675,6 +682,8 @@ test_that("LSDWater4", {
   testthat::expect_true(all(abs(attr(diffs.full.LSD$predictions, which = "LSDvalues") - 
                                   c(0.3052944, 0.3052944, 0.3099100, 0.3076127, 
                                     0.3076127, 0.3739078, 0.3739078, 0.3783488)) < 1e-05))
+  testthat::expect_true(all(diffs.full.LSD$LSD$falsePos == c(rep(0,7),1))) 
+  testthat::expect_true(all(diffs.full.LSD$LSD$falseNeg == c(rep(0,7),1))) 
   
   
   medianLSD.dat <-  data.frame(meanLSD = c(0.3052944, 0.3052944, 0.3121896, 0.3052944, 
@@ -691,7 +700,6 @@ test_that("LSDWater4", {
                                   assignedLSD = medianLSD.dat$meanLSD)
   
   #### Test different LSDaccuracy with overall
-
   #Test of LSDaccuracy = "maxAbs"
   diffs.over.Acc <- predictPlus.asreml(asreml.obj = m1.asr, 
                                        classify = "Sources:Type:Species", 
@@ -702,6 +710,8 @@ test_that("LSDWater4", {
                                        accuracy.threshold = 0.10,
                                        tables = "none", Vmatrix = TRUE)
   testthat::expect_true(abs(diffs.over.Acc$LSD$accuracyLSD - 0.1860607) < 01e-05)
+  testthat::expect_true(diffs.over.Acc$LSD$falsePos ==  15)
+  testthat::expect_true(diffs.over.Acc$LSD$falseNeg ==  10)
   
   #Test of LSDaccuracy = "maxDev"
   diffs.over.Acc <- predictPlus.asreml(asreml.obj = m1.asr, 
@@ -713,6 +723,8 @@ test_that("LSDWater4", {
                                        accuracy.threshold = 0.10,
                                        tables = "none", Vmatrix = TRUE)
   testthat::expect_true(abs(diffs.over.Acc$LSD$accuracyLSD - 0.1860607) < 01e-05)
+  testthat::expect_true(diffs.over.Acc$LSD$falsePos ==  15)
+  testthat::expect_true(diffs.over.Acc$LSD$falseNeg ==  10)
   
   #Test of LSDaccuracy = "q90Dev"
   diffs.over.Acc <- predictPlus.asreml(asreml.obj = m1.asr, 
@@ -724,6 +736,8 @@ test_that("LSDWater4", {
                                        accuracy.threshold = 0.10,
                                        tables = "none", Vmatrix = TRUE)
   testthat::expect_true(abs(diffs.over.Acc$LSD$accuracyLSD - 0.06892194) < 01e-05)
+  testthat::expect_true(diffs.over.Acc$LSD$falsePos ==  15)
+  testthat::expect_true(diffs.over.Acc$LSD$falseNeg ==  10)
   
   #Test of LSDaccuracy = "Root"
   diffs.over.Acc <- predictPlus.asreml(asreml.obj = m1.asr, 
@@ -735,8 +749,9 @@ test_that("LSDWater4", {
                                        accuracy.threshold = 0.10,
                                        tables = "none", Vmatrix = TRUE)
   testthat::expect_true(abs(diffs.over.Acc$LSD$accuracyLSD - 0.06833254) < 01e-05)
+  testthat::expect_true(diffs.over.Acc$LSD$falsePos ==  15)
+  testthat::expect_true(diffs.over.Acc$LSD$falseNeg ==  10)
   
-
   #Test LSDstatistic = "q90"
   diffs.reLSD.q90 <- redoErrorIntervals(diffs.full.LSD, error.intervals = "half", 
                                         LSDtype = "factor", LSDby = c("Type", "Species"), 
@@ -745,7 +760,9 @@ test_that("LSDWater4", {
   
   testthat::expect_true(all(abs(diffs.reLSD.q90$LSD$assignedLSD - c(0.3052944,0.3052944,0.3099100,0.3076127,
                                                                     0.3076127,0.3739078,0.3739078,0.3783488)) < 1e-05))
-    
+  testthat::expect_true(all(diffs.reLSD.q90$LSD$falsePos == c(rep(0,7),1))) 
+  testthat::expect_true(all(diffs.reLSD.q90$LSD$falseNeg == c(rep(0,7),1))) 
+  
   #supplied is a data.frame with rownames and LSD suppled 
   diffs.reLSD <- redoErrorIntervals(diffs.full.LSD, error.intervals = "half", 
                                     LSDtype = "supplied", LSDby = c("Type", "Species"), 
@@ -763,6 +780,8 @@ test_that("LSDWater4", {
   testthat::expect_true(all(rownames(diffs.reLSD$LSD) == rownames(medianLSD.dat)))
   testthat::expect_true(all(LSD.hdr %in% names(diffs.reLSD$LSD)))
   testthat::expect_true(all(abs(medianLSD.dat$meanLSD - diffs.reLSD$LSD$assignedLSD) < 1e-05))
+  testthat::expect_true(all(diffs.reLSD$LSD$falsePos == c(rep(0,7),1))) 
+  testthat::expect_true(all(diffs.reLSD$LSD$falseNeg == c(rep(0,7),1))) 
   #Check limit difference equals the median LSDs
   tmp <- merge(diffs.reLSD$predictions, medianLSDfacs.dat)
   testthat::expect_true(all(abs((tmp$upper.halfLeastSignificant.limit - tmp$lower.halfLeastSignificant.limit) 
@@ -875,7 +894,7 @@ test_that("LSDWater4", {
                             == unlist(attributes(diffs.full.all.Acc$predictions)[c("LSDtype", "LSDstatistic", 
                                                                                "LSDaccuracy")])))
   
-
+  
   #Test of factor.comb and accuracy.threshold, when there are some single prediction combinations
   diffs.full.comb.Acc <- predictPlus.asreml(asreml.obj = m1.asr, 
                                             classify = "Sources:Type:Species", 
@@ -904,7 +923,17 @@ test_that("LSDWater4", {
   testthat::expect_true(all(unlist(attributes(diffs.full.comb.Acc)[c("LSDtype", "LSDby", "LSDstatistic", "LSDaccuracy")]) 
                             == unlist(attributes(diffs.full.comb.Acc$predictions)[c("LSDtype", "LSDby", 
                                                                                     "LSDstatistic", "LSDaccuracy")])))
-
+  testthat::expect_true(all(grepl("Control", rownames(diffs.full.comb.Acc$LSD[15:20,]), fixed = TRUE)))
+  testthat::expect_true(all(diffs.full.comb.Acc$LSD[15:20,"n"] == 0))
+  testthat::expect_true(all(is.na(diffs.full.comb.Acc$LSD[15:20,c("accuracyLSD", "falsePos", "falseNeg")])))
+  
+  #Test of exploreLSD when there when there are some single prediction combinations
+  lsd <- exploreLSDs(diffs.full.comb.Acc, LSDtype = "factor", LSDby = c("Type", "Sources"),
+                     plotHistogram = FALSE)
+  testthat::expect_true(all(grepl("Control", rownames(lsd$accuracy[15:20,]), fixed = TRUE)))
+  testthat::expect_true(all(lsd$falsepos[15:20,"n"] == 0))
+  testthat::expect_true(all(is.na(lsd$falseneg[15:20,-1])))
+  
   #Test of supplied and accuracy.threshold, when there are some single prediction combinations
   LSDsupp <- rep(0.3, 20)
   names(LSDsupp) <- levels(with(WaterRunoff.dat, fac.combine(list(Type, Sources), combine.levels = TRUE)))
@@ -989,11 +1018,11 @@ test_that("exploreLSDWater4", {
                           wald.tab = current.asrt$wald.tab, 
                           present = c("Sources", "Type", "Species"),
                           tables = "none")
-  
-  ##Explore the LSD values for predictions obtained using asreml or lmerTest  
+
+   ##Explore the LSD values for predictions obtained using asreml or lmerTest  
   LSDstat <- exploreLSDs(TS.diffs, LSDtype = "factor.combinations", LSDby = "Sources")
   testthat::expect_equal(names(LSDstat), c("frequencies", "distinct.vals", "statistics", "accuracy", 
-                                           "per.pred.accuracy", "LSD"))
+                                           "false.pos", "false.neg", "per.pred.accuracy", "LSD"))
   testthat::expect_true(all(lapply(c("frequencies", "statistics", "accuracy"), 
                             function(k, LSDstat) nrow(LSDstat[[k]]), LSDstat = LSDstat) == 6))
   testthat::expect_true(all(unlist(lapply(c("frequencies", "statistics", "accuracy"), function(k, LSDstat, dat) 
@@ -1001,20 +1030,42 @@ test_that("exploreLSDWater4", {
   testthat::expect_equal(names(LSDstat$frequencies), as.character(seq(0.17, 0.39, 0.02)))
   testthat::expect_equal(LSDstat$distinct.vals$`Rain+Basalt`, c(0.197,0.294,0.307))
   testthat::expect_true(all(abs(LSDstat$statistics[1,] - 
-                                  c(6, 0.1982634,0.1982634,0.2708314,0.2945287,0.3065833,0.3065833)) < 1e-05))
+                                  c(3, 0.1982634,0.2175164,0.2708314,0.2945287,0.3041724,0.3065833)) < 1e-05))
+  #Test false positive and negative values
+  kLSD <- TS.diffs$sed[17:20,17:20]
+  kLSD <- qt(0.975, attr(TS.diffs, which = "tdf")) * kLSD[upper.tri(kLSD)]
+  kdif <- TS.diffs$differences[17:20,17:20]
+  kdif <- abs(kdif[upper.tri(kdif)])
+  kLSD <- kdif >= kLSD
+  minLSD <- kdif >= LSDstat$statistics$minimum[6]
+  fpos <- sum(minLSD & !kLSD)
+  fneg <- sum(!minLSD & kLSD)
+  testthat::expect_true(fpos == LSDstat$false.pos$minimum[6])
+  testthat::expect_true(fneg == LSDstat$false.neg$minimum[6])
   testthat::expect_true(all(abs(LSDstat$accuracy[1,] - 
-                                  c(6, 0.5463438,0.5463438,0.2679453,0.3268454,0.3533133,0.3533133)) < 1e-05))
+                                  c(3, 0.5463438,0.4094721,0.2679453,0.3268454,0.3481875,0.3533133)) < 1e-05))
   testthat::expect_true(all(lapply(c("per.pred.accuracy", "LSD"), 
                                    function(k, LSDstat) nrow(LSDstat[[k]]), LSDstat = LSDstat) == 20))
   testthat::expect_equal(rownames(LSDstat$per.pred.accuracy), 
                          as.character(fac.combine(as.list(TS.diffs$predictions[c("Sources","Type")]), 
                                                   combine.levels = TRUE)))
   testthat::expect_true(all(abs(LSDstat$per.pred.accuracy[1,] - 
-                                  c(0.4855427,0.4855427,0.2679453,0.3268454,0.3533133,0.3533133)) < 1e-05))
+                                  c(0.4855427,0.3540527,0.2679453,0.3268454,0.3481875,0.3533133)) < 1e-05))
+  
+  #Check falsePos and falseNeg in LSD component
+  TS.diffs.min <- predictPlus(classify = "Sources:Type", 
+                              asreml.obj = current.asr, 
+                              wald.tab = current.asrt$wald.tab, 
+                              LSDtype = "factor.combinations", LSDby = "Sources",
+                              LSDstatistic = "min",  
+                              present = c("Sources", "Type", "Species"),
+                              tables = "none")
+  testthat::expect_true(fpos == TS.diffs.min$LSD$falsePos[6])
+  testthat::expect_true(fneg == TS.diffs.min$LSD$falseNeg[6])
   
   LSDstat <- exploreLSDs(TS.diffs, LSDtype = "factor.combinations", LSDby = "Sources", LSDaccuracy = "maxDev")
   testthat::expect_equal(names(LSDstat), c("frequencies", "distinct.vals", "statistics", "accuracy", 
-                                           "per.pred.accuracy", "LSD"))
+                                           "false.pos", "false.neg", "per.pred.accuracy", "LSD"))
   testthat::expect_true(all(lapply(c("frequencies", "statistics", "accuracy"), 
                                    function(k, LSDstat) nrow(LSDstat[[k]]), LSDstat = LSDstat) == 6))
   testthat::expect_true(all(unlist(lapply(c("frequencies", "statistics", "accuracy"), function(k, LSDstat, dat) 
@@ -1022,16 +1073,16 @@ test_that("exploreLSDWater4", {
   testthat::expect_equal(names(LSDstat$frequencies), as.character(seq(0.17, 0.39, 0.02)))
   testthat::expect_equal(LSDstat$distinct.vals$`Rain+Basalt`, c(0.197,0.294,0.307))
   testthat::expect_true(all(abs(LSDstat$statistics[1,] - 
-                                  c(6,0.1982634,0.1982634,0.2708314,0.2945287,0.3065833,0.3065833)) < 1e-05))
+                                  c(3,0.1982634,0.2175164,0.2708314,0.2945287,0.3041724,0.3065833)) < 1e-05))
   testthat::expect_true(all(abs(LSDstat$accuracy[1,] - 
-                                  c(6,0.5463438,0.5463438,0.1320083,0.04092854,0,0)) < 1e-05))
+                                  c(3,0.5463438,0.4094721,0.1320083,0.04092854,0.007926183,0)) < 1e-05))
   testthat::expect_true(all(lapply(c("per.pred.accuracy", "LSD"), 
                                    function(k, LSDstat) nrow(LSDstat[[k]]), LSDstat = LSDstat) == 20))
   testthat::expect_equal(rownames(LSDstat$per.pred.accuracy), 
                          as.character(fac.combine(as.list(TS.diffs$predictions[c("Sources","Type")]), 
                                                   combine.levels = TRUE)))
   testthat::expect_true(all(abs(LSDstat$per.pred.accuracy[1,] - 
-                                  c(0.4855427,0.4855427,0.08749856,0,-0.03931926,-0.03931926) < 1e-05)))
+                                  c(0.4855427,0.3540527,0.08749856,0,-0.03170473,-0.03931926) < 1e-05)))
   
   LSD.dat <- plotLSDs(TS.diffs, factors.per.grid = 1)
   testthat::expect_equal(nrow(LSD.dat),400)
@@ -1060,17 +1111,32 @@ test_that("exploreLSDOatsr4", {
   Var.diffs <- allDifferences(predictions = Var.pred$pvals,
                               classify = "Nitrogen:Variety", 
                               vcov = Var.pred$vcov, tdf = den.df)
+
+  #Check false positives and negative for overall
+  kLSD <- Var.diffs$sed
+  kLSD <- qt(0.975, attr(Var.diffs, which = "tdf")) * kLSD[upper.tri(kLSD)]
+  kdif <- Var.diffs$differences
+  kdif <- abs(kdif[upper.tri(kdif)])
+  kLSD <- kdif >= kLSD
+  minLSD <- kdif >= Var.diffs$LSD$assignedLSD
+  fpos <- sum(minLSD & !kLSD)
+  fneg <- sum(!minLSD & kLSD)
+  testthat::expect_true(fpos == Var.diffs$LSD$falsePos)
+  testthat::expect_true(fneg == Var.diffs$LSD$falseNeg)
+  
   
   lsd <- exploreLSDs(Var.diffs)  
   testthat::expect_equal(names(lsd), c("frequencies", "distinct.vals", "statistics", "accuracy", 
-                                       "per.pred.accuracy", "LSD"))
+                                       "false.pos", "false.neg","per.pred.accuracy", "LSD"))
   testthat::expect_true(all(lapply(c("statistics", "accuracy"), function(k, lsd) nrow(lsd[[k]]), lsd = lsd) == 1))
   testthat::expect_equal(names(lsd$frequencies), as.character(seq(17.25, 21.75, 0.5)))
   testthat::expect_equal(lsd$distinct.vals, c(17.1, 21.6))
   testthat::expect_true(all(abs(lsd$statistics[1,] - 
-                                  c(132,17.11869,17.11869,20.51095,21.64642,21.64642,21.64642)) < 1e-05))
+                                  c(66,17.11869,17.11869,20.51095,21.64642,21.64642,21.64642)) < 1e-05))
   testthat::expect_true(all(abs(lsd$accuracy[1,] - 
-                                  c(132,0.2644909,0.2644909,0.1653879,0.2091679,0.2091679,0.2091679)) < 1e-05))
+                                  c(66,0.2644909,0.2644909,0.1653879,0.2091679,0.2091679,0.2091679)) < 1e-05))
+  testthat::expect_true(all(abs(lsd$false.pos - c(66,30,30,24,23,23,23)) < 1e-05))
+  testthat::expect_true(all(abs(lsd$false.neg - c(66,0,0,0,0,0,0)) < 1e-05))
   testthat::expect_true(all(lapply(c("per.pred.accuracy", "LSD"), function(k, lsd) nrow(lsd[[k]]), lsd = lsd) == 12))
   testthat::expect_equal(rownames(lsd$per.pred.accuracy), 
                          as.character(fac.combine(as.list(Var.diffs$predictions[c("Nitrogen","Variety")]), 
@@ -1080,7 +1146,7 @@ test_that("exploreLSDOatsr4", {
   
   lsd <- exploreLSDs(Var.diffs, LSDtype = "fact", LSDby = "Nitrogen")  
   testthat::expect_equal(names(lsd), c("frequencies", "distinct.vals", "statistics", "accuracy", 
-                                       "per.pred.accuracy", "LSD"))
+                                       "false.pos", "false.neg","per.pred.accuracy", "LSD"))
   testthat::expect_true(all(lapply(c("frequencies", "statistics", "accuracy"), 
                                    function(k, lsd) nrow(lsd[[k]]), lsd = lsd) == 4))
   testthat::expect_equal(names(lsd$frequencies), as.character(seq(17.25, 21.75, 0.5)))
@@ -1702,9 +1768,10 @@ test_that("linear.transform_WaterRunoff_asreml4", {
                                                    linear.transformation = L,
                                                    tables = "none"))
   #check for zero seds and their removal
-  ksed <- na.omit(as.vector(diffs.L$sed))
+  ksed <- diffs.L$sed
+  ksed <- na.omit(ksed[upper.tri(ksed)])
   ksed <- ksed[!(ksed < 1e-08)]
-  testthat::expect_true(length(ksed) == diffs.L$LSD["n"] && diffs.L$LSD["n"] == 968)
+  testthat::expect_true(length(ksed) == diffs.L$LSD["n"] && diffs.L$LSD["n"] == 484)
   testthat::expect_true(all(abs(diffs.L$predictions$predicted.value[c(1,6,11,16,21,28)] - 
                                   (diffs.sub$predictions$predicted.value[1] - 
                                      diffs.sub$predictions$predicted.value[6])) < 1e-06))

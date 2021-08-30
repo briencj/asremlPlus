@@ -135,9 +135,9 @@ ratioTransform.alldiffs <- function(alldiffs.obj, ratio.factor,
   #   names(ratios.dat)[1] <- indx
   # }
   tmp <- split(tmp, tmp[indx], sep = ",", lex.order = TRUE)
-  Ratios <- lapply(denominator.levels, function(denom.lev,tmp) 
+  Ratios <- lapply(denominator.levels, function(denom.lev,tmp, t) 
   {
-    lapply(numerator.levels, function(num.lev, denom.lev, tmp) 
+    lapply(numerator.levels, function(num.lev, denom.lev, tmp, t) 
     { 
       
       if (!(num.lev %in% alldiffs.obj$predictions[[ratio.factor]]) || 
@@ -146,7 +146,7 @@ ratioTransform.alldiffs <- function(alldiffs.obj, ratio.factor,
         ratioCIs <-NULL
       else
       {
-        ratioCIs <- do.call(rbind, lapply(tmp, function(preds, num.lev, denom.lev, V, tval)
+        ratioCIs <- do.call(rbind, lapply(tmp, function(preds, num.lev, denom.lev, V, t)
         {
           indx.vals <- (lapply(preds[indx], function(x) as.character(x)[1])) #current levels of indx factors
           ratio.pair <- c(indx.vals, rep(NA,3))
@@ -162,7 +162,7 @@ ratioTransform.alldiffs <- function(alldiffs.obj, ratio.factor,
             ratio.pair <- as.data.frame(c(indx.vals, (FiellerRatioCI(a, b, Vpair, t = t))))
           }
           return(ratio.pair)
-        }, V = alldiffs.obj$vcov, num.lev = num.lev, denom.lev = denom.lev))
+        }, V = alldiffs.obj$vcov, num.lev = num.lev, denom.lev = denom.lev, t = t))
         
         rownames(ratioCIs) <- NULL
         names(ratioCIs)[match("pred.ratio", names(ratioCIs))] <- "predicted.value"
@@ -192,8 +192,8 @@ ratioTransform.alldiffs <- function(alldiffs.obj, ratio.factor,
         }
       }
       return(ratioCIs)
-    }, tmp = tmp, denom.lev = denom.lev)
-  }, tmp = tmp)
+    }, tmp = tmp, denom.lev = denom.lev, t = t)
+  }, tmp = tmp, t = t)
   Ratios <- unlist(Ratios, recursive = FALSE)
   nams <- outer(numerator.levels, denominator.levels, paste, sep = ",")
   names(Ratios) <- nams

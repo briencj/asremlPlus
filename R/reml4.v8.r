@@ -235,8 +235,8 @@ setOldClass("asrtests")
 
 "print.LSDdata" <- function(x,  which.print = c("statistics", "accuracy"), ...)
 {
-  options <- c("frequencies", "distinct.vals", "statistics", "accuracy", "per.pred.accuracy", 
-               "LSDmatrix", "summary", "all")
+  options <- c("frequencies", "distinct.vals", "statistics", "accuracy", "false.pos", "false.neg", 
+               "per.pred.accuracy", "LSDmatrix", "summary", "all")
   opt <- options[unlist(lapply(which.print, check.arg.values, options=options))]
   if (all(c("summary", "all") %in% opt))
     stop("Can only specify one of summary and all for which argument")
@@ -266,11 +266,23 @@ setOldClass("asrtests")
     print(x$statistics, ...)
   }
   
-  if (any(c("accuracy", "summary", "all") %in% opt))
+  if (any(c("accuracy", "all") %in% opt))
   {
     cat(paste0("\n\n####  Accuracy (", attr(x, which = "LSDaccuracy"), 
                ") of statistics calculated from LSD values \n\n"))
     print(x$accuracy, ...)
+  }
+  
+  if (any(c("false.pos", "summary", "all") %in% opt))
+  {
+    cat(paste0("\n\n####  False positves resulting from use of various LSD statistics\n\n"))
+    print(x$false.pos, ...)
+  }
+  
+  if (any(c("false.neg", "summary", "all") %in% opt))
+  {
+    cat(paste0("\n\n####  False negatives resulting from use of various LSD statistics\n\n"))
+    print(x$false.neg, ...)
   }
   
   if (any(c("per.pred.accuracy", "all") %in% opt))
@@ -2755,8 +2767,7 @@ atLevelsMatch <- function(new, old, call)
                                    return(data[[vars[k]]])}, 
                                  data=pred$pvals, vars=vars)
     }
-  } else
-    #Get the predicted values when x.num is involved in classify
+  } else    #Get the predicted values when x.num is involved in classify
   { 
     #if levels in ... ignore x.pred.values
     if ("levels" %in% names(tempcall)) 

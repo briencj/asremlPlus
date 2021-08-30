@@ -1,5 +1,10 @@
 \name{news}
 \title{News for Package asremlPlus}
+\section{asremlPlus Version 4.3-17 (2021-08-30)}{
+  \itemize{
+  \item{Add False positives and negatives counts to LSD statistics.}
+}}
+\title{News for Package asremlPlus}
 \section{asremlPlus Version 4.3-16 (2021-08-24)}{
   \itemize{
   \item{Fix bug in redoErrorIntervals when only one factor in \code{LSDby}.}

@@ -76,12 +76,15 @@
                     between the predictions; they are used in computing the p-values in \code{p.differences}.
           \item \code{vcov}: A \code{matrix} containing the variance matrix of the predictions; it is 
                     used in computing the variance of linear transformations of the predictions.
-          \item \code{LSD}: An \code{\link{LSD.frame}} containing the mean, minimum, maximum, assigned LSD, as
-                    well as the column \code{accuracyLSD} that gives a measure of the accuracy of the 
-                    assigned LSD. given the variation in LSD values. The LSD in the \code{assignedLSD} 
-                    column is used to determine the significance of pairwise differences and the 
-                    statistic. The value in the \code{assignedLSD} column is specified using the 
-                    \code{LSDstatistic} argument. 
+          \item \code{LSD}: An \code{\link{LSD.frame}} containing (i) the mean, minimum, maximum, assigned LSD, 
+                    (ii) the column \code{accuracyLSD} that gives a measure of the accuracy of the 
+                    assigned LSD. given the variation in LSD values, and (iii) the columns \code{false.pos} and 
+                    \code{false.neg} that contain the number of false positives and negatives if the 
+                    \code{assignedLSD} value(s) is(are) used to determine the significance of the 
+                    pairwise predictions differences. The LSD values in the \code{assignedLSD} 
+                    column is used to determine the significance of pairwise differences that involve 
+                    predictions for the combination of levels given by a row name. The value in the 
+                    \code{assignedLSD} column is specified using the \code{LSDstatistic} argument. 
           \item \code{backtransforms}: When the response values have been transformed for analysis, 
                     a \code{data.frame} containing the backtransformed values of the 
                     predicted values is added to the \code{alldiffs.object}. This \code{data.frame} 

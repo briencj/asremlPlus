@@ -9,7 +9,7 @@
 #         recalcLSD      Passes LSD parameters to allDifferences; sets object attributes
 #             |
 #             |
-#      allDifferences    Calculates LSDs using LSDstats and sliceLSDs; sets object LSD attributs; 
+#      allDifferences    Calculates LSDs using LSDstats and sliceLSDs; sets object LSD attributes; 
 #                        sets predictions attribute, but not LSD attr; 
 #                        calls addBacktransforms that sets backtransforms attributes
 
@@ -1251,7 +1251,6 @@ sort.predictions.frame <- function(x, decreasing = FALSE, classify, sortFactor =
   attributes(x) <- x.attr
   attr(x, which = "sortFactor") <- sortFactor
   attr(x, which = "sortOrder") <- newlevs
-  x <- sticky::sticky(x)
   return(x)
 }
 
@@ -1422,16 +1421,28 @@ exploreLSDs.alldiffs <- function(alldiffs.obj,  LSDtype = "overall", LSDby = NUL
   LSDs <- t.value * alldiffs.obj$sed
   
   #Prepare for frequencies
-  LSD.dat <- as.data.frame(LSDs[upper.tri(LSDs)])
+  LSD.dat <- as.data.frame(getUpperTri(LSDs))
   names(LSD.dat) <- "LSD"
   freq <- hist(LSD.dat$LSD, plot = FALSE, include.lowest = TRUE)
   breaks <- freq$breaks
   
   if (avLSD == "overall")
   {
-    distinct <- sort(unique(signif(na.omit(as.vector(LSDs)), digits = digits)))
-    allstats <- LSDallstats(LSDs, LSDaccuracy = LSDaccuracy, 
+    #Get distinct  values
+    distinct <- sort(unique(signif(na.omit(getUpperTri(LSDs)), digits = digits)))
+
+    #Remove NAs and zero values
+    rm.list <- rm.nazero(LSD.dat$LSD, getUpperTri(alldiffs.obj$differences), 
+                         retain.zeroLSDs = retain.zeroLSDs, 
+                         zero.tolerance = zero.tolerance)
+    kLSDs.vec <- rm.list$ksed
+    kdifs.vec <- rm.list$kdif
+    
+    #Get statistics
+    allstats <- LSDallstats(kLSDs.vec, kdifs.vec, t.value = t.value, LSDaccuracy = LSDacc, 
                             retain.zeroLSDs = retain.zeroLSDs, zero.tolerance = zero.tolerance)
+    
+    #Get per.pred.accuracy
     predacc <- do.call(cbind, lapply(LSDstat.hdr, 
                                      function(LSDstatistic, LSDs, allstats, LSDaccuracy, t.value, 
                                               retain.zeroLSDs, zero.tolerance)
@@ -1450,8 +1461,10 @@ exploreLSDs.alldiffs <- function(alldiffs.obj,  LSDtype = "overall", LSDby = NUL
     rownames(predacc) <- rownames(LSDs)
     counts <- freq$counts
     names(counts) <- as.character(freq$mids)
-    LSD.list <- list(frequencies = counts, distinct.vals = distinct, statistics = allstats$statistics, 
-                     accuracy = allstats$accuracy, per.pred.accuracy = predacc, LSD = LSDs)
+    LSD.list <- list(frequencies = counts, distinct.vals = distinct, 
+                     statistics = allstats$statistics, accuracy = allstats$accuracy, 
+                     false.pos = allstats$false.pos, false.neg = allstats$false.neg, 
+                     per.pred.accuracy = predacc, LSD = LSDs)
     if (plotHistogram)
       print(ggplot(LSD.dat, aes_string(x = "LSD")) + geom_histogram(breaks = breaks) + theme_bw())
   } else #factor.combinations
@@ -1592,32 +1605,39 @@ redoErrorIntervals.alldiffs <- function(alldiffs.obj, error.intervals = "Confide
     }
   }
   
-  #If no LSD component or not match, call recalcLSDs
-  if (!is.null(alldiffs.obj$LSD) | !avLSD.same | !LSDby.same)
-    alldiffs.obj <- recalcLSD(alldiffs.obj, 
-                              LSDtype = avLSD, LSDsupplied = LSDsupplied, 
-                              LSDby = LSDby, LSDstatistic = LSDstat, LSDaccuracy = LSDacc,
-                              alpha = alpha, ...)
-  else #check for assigned LSD
-    alldiffs.obj <- checkLSD(alldiffs.obj)
-
-  #Calculate overall sed ranges
-  t.value = qt(1-alpha/2, denom.df)
-  #remove NA and zero values
-  ksed <- na.omit(as.vector(alldiffs.obj$sed))
-  if (!retain.zeroLSDs)
-    ksed <- rm.zerovals(ksed, zero.tolerance = zero.tolerance)
-  overall.LSDs <- LSDstats(ksed, t.value = t.value)
-  rownames(overall.LSDs) <- "overall"
-  overall.sed.range <- unlist(abs(overall.LSDs["maxLSD"] - overall.LSDs["minLSD"]) / 
-                                overall.LSDs["meanLSD"])
-  if (is.nan(overall.sed.range))
-    overall.sed.range <- 0
-
-  #Calculate sed ranges from the LSD component
-  nLSD <- length(alldiffs.obj$LSD$meanLSD)
-  sed.range <- abs(alldiffs.obj$LSD$minLSD - alldiffs.obj$LSD$maxLSD) /  alldiffs.obj$LSD$meanLSD
-  sed.range[is.nan(sed.range)] <- 0
+  if (!is.null(alldiffs.obj$sed))
+  {
+    #If no LSD component or not match, call recalcLSDs
+    if (!is.null(alldiffs.obj$LSD) | !avLSD.same | !LSDby.same)
+      alldiffs.obj <- recalcLSD(alldiffs.obj, 
+                                LSDtype = avLSD, LSDsupplied = LSDsupplied, 
+                                LSDby = LSDby, LSDstatistic = LSDstat, LSDaccuracy = LSDacc,
+                                alpha = alpha, ...)
+    else #check for assigned LSD
+      alldiffs.obj <- checkLSD(alldiffs.obj)
+    
+    #Calculate overall sed ranges
+    t.value = qt(1-alpha/2, denom.df)
+    ksed <- getUpperTri(alldiffs.obj$sed)
+    kdif <- getUpperTri(alldiffs.obj$differences)
+    #remove NA and zero values
+    rm.list <- rm.nazero(ksed, kdif, retain.zeroLSDs = retain.zeroLSDs, 
+                         zero.tolerance = zero.tolerance)
+    ksed <- rm.list$ksed
+    kdif <- rm.list$kdif
+    overall.LSDs <- LSDstats(ksed, kdif, t.value = t.value)
+    rownames(overall.LSDs) <- "overall"
+    overall.sed.range <- unlist(abs(overall.LSDs["maxLSD"] - overall.LSDs["minLSD"]) / 
+                                  overall.LSDs["meanLSD"])
+    if (is.nan(overall.sed.range))
+      overall.sed.range <- 0
+    
+    #Calculate sed ranges from the LSD component
+    nLSD <- length(alldiffs.obj$LSD$meanLSD)
+    sed.range <- abs(alldiffs.obj$LSD$minLSD - alldiffs.obj$LSD$maxLSD) /  alldiffs.obj$LSD$meanLSD
+    sed.range[is.nan(sed.range)] <- 0
+  }
+  
   
   #Add lower and upper uncertainty limits
   if (int.opt != "none")
@@ -2068,7 +2088,7 @@ redoErrorIntervals.alldiffs <- function(alldiffs.obj, error.intervals = "Confide
     }
     
     #Set LSD component
-     {
+    {
       if (pairwise && (nrow(alldiffs.obj$predictions) != 1))
       { 
         #calculate LSDs, if not present - it seems that they are never present as set to NULL in makeAlldiffs call
@@ -2078,11 +2098,14 @@ redoErrorIntervals.alldiffs <- function(alldiffs.obj, error.intervals = "Confide
           t.value = qt(1-alpha/2, denom.df)
           if (avLSD == "overall" || (avLSD == "supplied" && is.null(LSDby)))
           {
+            ksed <- getUpperTri(alldiffs.obj$sed)
+            kdif <- getUpperTri(alldiffs.obj$differences)
             #remove NA and zero values
-            ksed <- na.omit(as.vector(alldiffs.obj$sed))
-            if (!retain.zeroLSDs)
-              ksed <- rm.zerovals(ksed, zero.tolerance = zero.tolerance)
-            LSDs<- LSDstats(ksed, t.value, LSDstatistic = LSDstat, LSDaccuracy = LSDacc)
+            rm.list <- rm.nazero(ksed, kdif, retain.zeroLSDs = retain.zeroLSDs, 
+                                 zero.tolerance = zero.tolerance)
+            ksed <- rm.list$ksed
+            kdif <- rm.list$kdif
+            LSDs<- LSDstats(ksed, kdif, t.value, LSDstatistic = LSDstat, LSDaccuracy = LSDacc)
             rownames(LSDs) <- "overall"
           } 
           if (avLSD == "factor.combinations" || (avLSD == "supplied" && !is.null(LSDby))) #factor.combinations
@@ -2096,7 +2119,8 @@ redoErrorIntervals.alldiffs <- function(alldiffs.obj, error.intervals = "Confide
           if (avLSD == "per.prediction")  #per.prediction
           {
             #set up LSD data.frame
-            LSDs <- LSDpred.stats(alldiffs.obj$sed, t.value = t.value, LSDstatistic = LSDstat, 
+            LSDs <- LSDpred.stats(alldiffs.obj$sed, alldiffs.obj$differences, t.value = t.value, 
+                                  LSDstatistic = LSDstat, 
                                   LSDaccuracy = LSDacc, retain.zeroLSDs = retain.zeroLSDs, 
                                   zero.tolerance = zero.tolerance)
           }
@@ -2108,14 +2132,21 @@ redoErrorIntervals.alldiffs <- function(alldiffs.obj, error.intervals = "Confide
             #Calculate the accuracy of the supplied LSDs
             if (is.null(LSDby))
             {
-              ksed <- alldiffs.obj$sed
+              ksed <- getUpperTri(alldiffs.obj$sed)
+              kdif <- getUpperTri(alldiffs.obj$differences)
               #remove NA and zero values
-              ksed <- na.omit(as.vector(ksed))
-              if (!retain.zeroLSDs)
-                ksed <- rm.zerovals(ksed, zero.tolerance = zero.tolerance)
+              rm.list <- rm.nazero(ksed, kdif, retain.zeroLSDs = retain.zeroLSDs, 
+                                   zero.tolerance = zero.tolerance)
+              ksed <- rm.list$ksed
+              kdif <- rm.list$kdif
               alldiffs.obj$LSD$accuracyLSD <- LSDaccmeas(ksed = ksed, 
                                                          assignedLSD = alldiffs.obj$LSD$assignedLSD, 
                                                          t.value = t.value, LSDaccuracy = LSDacc)
+              #Recalculate the false significances
+              falsesig <- falseSignif(ksed = ksed, kdif = kdif, assignedLSD = alldiffs.obj$LSD$assignedLSD, 
+                                      t.value = t.value)
+              alldiffs.obj$LSD$falsePos <- falsesig["false.pos"]
+              alldiffs.obj$LSD$falseNeg <- falsesig["false.neg"]
             }
             else
               alldiffs.obj$LSD$accuracyLSD <- sliceLSDs(alldiffs.obj, by = LSDby, t.value = t.value, 
