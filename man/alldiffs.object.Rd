@@ -76,7 +76,8 @@
                     between the predictions; they are used in computing the p-values in \code{p.differences}.
           \item \code{vcov}: A \code{matrix} containing the variance matrix of the predictions; it is 
                     used in computing the variance of linear transformations of the predictions.
-          \item \code{LSD}: An \code{\link{LSD.frame}} containing (i) the mean, minimum, maximum, assigned LSD, 
+          \item \code{LSD}: An \code{\link{LSD.frame}} containing (i) \code{c}, the number of pairwise 
+                    predictions comparisons for each LSD value and the mean, minimum, maximum and assigned LSD, 
                     (ii) the column \code{accuracyLSD} that gives a measure of the accuracy of the 
                     assigned LSD. given the variation in LSD values, and (iii) the columns \code{false.pos} and 
                     \code{false.neg} that contain the number of false positives and negatives if the 

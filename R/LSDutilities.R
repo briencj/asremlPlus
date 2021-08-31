@@ -1,5 +1,5 @@
 #### LSD functions
-#Functionto convert a LSDstatistic option into a column name in the LSD component
+#Function to convert a LSDstatistic option into a column name in the LSD component
 LSDstat2name <- function(LSDstat)
   LSDname <- paste0(gsub("imum", "", LSDstat, fixed = TRUE), "LSD")
 
@@ -222,7 +222,7 @@ falseSignif <- function(ksed, kdif, assignedLSD, t.value)
 "LSDstats" <- function(ksed, kdif, t.value, LSDstatistic = "mean", LSDaccuracy = "maxAbsDeviation") 
 {
   #calculate LSD statistics
-  stats <- data.frame(n = length(ksed),
+  stats <- data.frame(c = length(ksed),
                       minLSD = t.value * min(ksed),
                       meanLSD = t.value * sqrt(mean(ksed*ksed)),
                       maxLSD = t.value * max(ksed),
@@ -296,7 +296,7 @@ sliceLSDs <- function(alldiffs.obj, by, t.value, LSDstatistic = "mean", LSDaccur
                        {
                          stats <- c(0, rep(t.value * sqrt(2) * 
                                           alldiffs.obj$predictions$standard.error[krows], times = 4), NA, NA, NA)
-                         names(stats) <- c("n", "minLSD", "meanLSD", "maxLSD", "assignedLSD", "accuracyLSD", 
+                         names(stats) <- c("c", "minLSD", "meanLSD", "maxLSD", "assignedLSD", "accuracyLSD", 
                                            "false.pos", "false.neg")
                        } else
                          if (which.stats == "accuracyLSD")
@@ -449,10 +449,10 @@ LSDpred.acc <- function(LSD.mat, assignedLSD, LSDaccuracy, t.value = 1,
   LSDstat.labs <- c("minimum", "quantile10", "mean", "median", "quantile90", "maximum")
 
   #calculate LSD statistics
-  n <- length(kLSDs)
+  c <- length(kLSDs)
   quants <- quantile(kLSDs, c(0,0.10, 0.50, 0.90, 1))
-  stats <- c(n, quants[1:2], sqrt(mean(kLSDs*kLSDs)), quants[3:5])
-  names(stats) <- c("n", LSDstat.labs)
+  stats <- c(c, quants[1:2], sqrt(mean(kLSDs*kLSDs)), quants[3:5])
+  names(stats) <- c("c", LSDstat.labs)
   stats <- as.data.frame(as.list(stats))
 
   #Calculate the number of false positives and negatives
@@ -464,12 +464,12 @@ LSDpred.acc <- function(LSD.mat, assignedLSD, LSDaccuracy, t.value = 1,
                      }, kLSDs = kLSDs, kdif = kdifs, stats = stats, t.value = t.value)
   if (!is.null(falsesig))
   {
-    false.pos <- c(list(n = n), lapply(falsesig, function(comp) comp["false.pos"]))
+    false.pos <- c(list(c = c), lapply(falsesig, function(comp) comp["false.pos"]))
     false.pos <- as.data.frame(do.call(cbind, false.pos))
-    names(false.pos) <- c("n", LSDstat.labs)
-    false.neg <- c(list(n = n), lapply(falsesig, function(comp) comp["false.neg"]))
+    names(false.pos) <- c("c", LSDstat.labs)
+    false.neg <- c(list(c = c), lapply(falsesig, function(comp) comp["false.neg"]))
     false.neg <- as.data.frame(do.call(cbind, false.neg))
-    names(false.neg) <- c("n", LSDstat.labs)
+    names(false.neg) <- c("c", LSDstat.labs)
   }
   
   #Determine the accuracy of the assigned LSD 
@@ -480,7 +480,7 @@ LSDpred.acc <- function(LSD.mat, assignedLSD, LSDaccuracy, t.value = 1,
                                     t.value = 1, LSDaccuracy = LSDaccuracy)
                 }, kLSDs = kLSDs, stats = stats, LSDaccuracy = LSDaccuracy)
   Acc <- as.data.frame(c(list(length(kLSDs)), Acc))
-  names(Acc) <- c("n", LSDstat.labs)
+  names(Acc) <- c("c", LSDstat.labs)
   return(list(statistics = stats, accuracy = Acc, false.pos = false.pos, false.neg = false.neg))
 }
 
@@ -512,10 +512,10 @@ sliceAll <- function(alldiffs.obj, by, t.value, LSDaccuracy = "maxAbsDeviation",
                                       "- applies to two independent predictions with the same standard error"))
                         stats <- c(0, rep(t.value * sqrt(2) * alldiffs.obj$predictions$standard.error[krows], 
                                      times = length(LSDstat.labs)))
-                        names(stats) <- c("n", LSDstat.labs)
+                        names(stats) <- c("c", LSDstat.labs)
                         stats <- as.data.frame(as.list(stats))
                         acc <- c(0, rep(NA, times = length(LSDstat.labs)))
-                        names(acc) <- c("n", LSDstat.labs)
+                        names(acc) <- c("c", LSDstat.labs)
                         acc <- as.data.frame(as.list(acc))
                         fneg <- fpos <- acc
                         per.pred <- acc[,-1]

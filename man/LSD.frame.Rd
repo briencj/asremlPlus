@@ -29,11 +29,11 @@
        \code{predictions} and, if present \code{backtransforms}, components of the 
        \code{\link{alldiffs.object}}.
        
-       An \code{LSD.frame} always has the eight columns \code{n}, \code{minimumLSD}, \code{meanLSD}, 
+       An \code{LSD.frame} always has the eight columns \code{c}, \code{minimumLSD}, \code{meanLSD}, 
        \code{maximumLSD}, \code{assignedLSD}, \code{accuracyLSD}, \code{false.pos} and 
        \code{false.neg}.
        \enumerate{
-        \item \code{n}: {This gives the number of pairwise coomparison of predictions for the combinations of 
+        \item \code{c}: {This gives the number of pairwise coomparison of predictions for the combinations of 
              the factor levels given by the row name. If the row name is \code{overall} then it is for 
              all predictions.}
         \item \code{minimumLSD, meanLSD, maximumLSD}: {These are computed for either \code{overall}, for 

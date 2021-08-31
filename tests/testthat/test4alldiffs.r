@@ -574,7 +574,7 @@ test_that("sort.alldiffs4", {
   library(asremlPlus)
   library(dae)
   data(Oats.dat)
-  LSD.hdr <- c("n", "minLSD", "meanLSD", "maxLSD", "assignedLSD", "accuracyLSD")
+  LSD.hdr <- c("c", "minLSD", "meanLSD", "maxLSD", "assignedLSD", "accuracyLSD")
   
   m1.asr <- asreml(Yield ~ Nitrogen*Variety, 
                    random=~Blocks/Wplots,
@@ -648,7 +648,7 @@ test_that("LSDWater4", {
   library(asremlPlus)
   library(dae)
   data(WaterRunoff.dat)
-  LSD.hdr <- c("n", "minLSD", "meanLSD", "maxLSD", "assignedLSD", "accuracyLSD", "falsePos", "falseNeg")
+  LSD.hdr <- c("c", "minLSD", "meanLSD", "maxLSD", "assignedLSD", "accuracyLSD", "falsePos", "falseNeg")
   
   #Analyse pH  
   m1.asr <- asreml(fixed = pH ~ Benches + (Sources * (Type + Species)), 
@@ -924,14 +924,14 @@ test_that("LSDWater4", {
                             == unlist(attributes(diffs.full.comb.Acc$predictions)[c("LSDtype", "LSDby", 
                                                                                     "LSDstatistic", "LSDaccuracy")])))
   testthat::expect_true(all(grepl("Control", rownames(diffs.full.comb.Acc$LSD[15:20,]), fixed = TRUE)))
-  testthat::expect_true(all(diffs.full.comb.Acc$LSD[15:20,"n"] == 0))
+  testthat::expect_true(all(diffs.full.comb.Acc$LSD[15:20,"c"] == 0))
   testthat::expect_true(all(is.na(diffs.full.comb.Acc$LSD[15:20,c("accuracyLSD", "falsePos", "falseNeg")])))
   
   #Test of exploreLSD when there when there are some single prediction combinations
   lsd <- exploreLSDs(diffs.full.comb.Acc, LSDtype = "factor", LSDby = c("Type", "Sources"),
                      plotHistogram = FALSE)
   testthat::expect_true(all(grepl("Control", rownames(lsd$accuracy[15:20,]), fixed = TRUE)))
-  testthat::expect_true(all(lsd$falsepos[15:20,"n"] == 0))
+  testthat::expect_true(all(lsd$falsepos[15:20,"c"] == 0))
   testthat::expect_true(all(is.na(lsd$falseneg[15:20,-1])))
   
   #Test of supplied and accuracy.threshold, when there are some single prediction combinations
@@ -1771,7 +1771,7 @@ test_that("linear.transform_WaterRunoff_asreml4", {
   ksed <- diffs.L$sed
   ksed <- na.omit(ksed[upper.tri(ksed)])
   ksed <- ksed[!(ksed < 1e-08)]
-  testthat::expect_true(length(ksed) == diffs.L$LSD["n"] && diffs.L$LSD["n"] == 484)
+  testthat::expect_true(length(ksed) == diffs.L$LSD["c"] && diffs.L$LSD["c"] == 484)
   testthat::expect_true(all(abs(diffs.L$predictions$predicted.value[c(1,6,11,16,21,28)] - 
                                   (diffs.sub$predictions$predicted.value[1] - 
                                      diffs.sub$predictions$predicted.value[6])) < 1e-06))

@@ -16,12 +16,14 @@ to modify both the error.intervals and the \code{\link{LSD.frame}}.}
 \item{LSDtype}{A \code{\link{character}} string that can be \code{overall}, \code{factor.combinations}, 
               \code{per.prediction} or \code{supplied}. It determines whether the values stored in an 
               \code{\link{LSD.frame}} are  
-             (i) the \code{overall} minimum, mean, maximum and accuracy of all pairwise LSDs, 
-             (ii) the minimum, mean, maximum and acuracy for the pairwise LSDs for each 
-              \code{factor.combination}, unless there is only one prediction for a \code{factor.combination}, 
-              when notional LSDs are calculated,  
-             (iii) the \code{per.prediction} minimum, mean, maximum and accuracy, based, for each 
-             prediction, on all pairwise differences involving that prediction, or 
+             (i) the \code{overall} number of pairwise comparisons, \code{c}, and the  minimum, mean, 
+              maximum and accuracy of all pairwise LSDs, 
+             (ii) the number of pairwise comparisons, \code{c}, and the minimum, mean, maximum and 
+             acuracy for the pairwise LSDs for each \code{factor.combination}, unless there is only 
+             one prediction for a \code{factor.combination}, when notional LSDs are calculated,  
+             (iii) the \code{per.prediction} number of pairwise comparisons, \code{c}, and the minimum, 
+             mean, maximum and accuracy, based, for each prediction, on all pairwise differences 
+             involving that prediction, or 
             (iv) \code{supplied} values of the LSD, specified with the \code{LSDsupplied} argument; these 
              values are to be placed in the \code{assignedLSD} column of the \code{\link{LSD.frame}} 
              stored in an \code{\link{alldiffs.object}} so that they can be used in LSD calculations.
