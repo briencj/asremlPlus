@@ -376,7 +376,7 @@ test_that("factor.combinations.asreml4", {
   testthat::expect_warning(LeafSucculence.diff <- redoErrorIntervals(LeafSucculence.diff, 
                                                                     error.intervals = "half"))
   testthat::expect_equal(nrow(LeafSucculence.diff$LSD), 3)
-  testthat::expect_equal(ncol(LeafSucculence.diff$LSD), 6)
+  testthat::expect_equal(ncol(LeafSucculence.diff$LSD), 8)
   testthat::expect_true(all(c("P1","P2","P3") %in% rownames(LeafSucculence.diff$LSD)))
   testthat::expect_false("lower.halfLeastSignificant.limit" %in% names(LeafSucculence.diff$predictions))
   testthat::expect_true(names(LeafSucculence.diff$predictions)[length(names(
@@ -405,7 +405,7 @@ test_that("recalcLSD.alldiffs4", {
   
   diffs <- recalcLSD.alldiffs(diffs, LSDtype = "factor.combinations", LSDby = "Sources")
   testthat::expect_equal(nrow(diffs$LSD), 6)
-  testthat::expect_equal(ncol(diffs$LSD), 6)
+  testthat::expect_equal(ncol(diffs$LSD), 8)
   testthat::expect_warning(diffs <- redoErrorIntervals(diffs, 
                                                        error.intervals = "halfLeastSignificant"))
   testthat::expect_false("upper.halfLeastSignificant.limit" %in% names(diffs$predictions))

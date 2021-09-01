@@ -95,7 +95,7 @@ test_that("Wheat_asreml4", {
   testthat::expect_equal(ncol(Var.diffs$differences), 25)
   testthat::expect_equal(nrow(Var.diffs$p.differences), 25)
   testthat::expect_equal(ncol(Var.diffs$p.differences), 25)
-  testthat::expect_equal(length(Var.diffs$LSD), 6)
+  testthat::expect_equal(length(Var.diffs$LSD), 8)
   testthat::expect_true("lower.halfLeastSignificant.limit" %in% names(Var.diffs$predictions))
   testthat::expect_equal(Var.diffs$backtransforms, NULL)
   testthat::expect_equal(as.character(Var.diffs$predictions$Variety[[1]]),"10")

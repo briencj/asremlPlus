@@ -1,6 +1,10 @@
 \name{news}
 \title{News for Package asremlPlus}
-\section{asremlPlus Version 4.3-8 (2021-08-31)}{
+\section{asremlPlus Version 4.3-19 (2021-09-01)}{
+  \itemize{
+  \item{Rebuild under R 4.1.1 for new submission.}
+}}
+\section{asremlPlus Version 4.3-18 (2021-08-31)}{
   \itemize{
   \item{Change number of comparisons symbol in an \code{LSD.frame} from \code{n} to \code{c}.}
 }}

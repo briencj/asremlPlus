@@ -14,7 +14,7 @@ test_that("HEB25_estimateV_asreml4", {
   test.specials <- c( "ar1", "ar2", "ar3", "sar","sar2",
                       "ma1", "ma2", "arma", "exp", "gau", 
                       "cor")
-  vpar.vals <- c(-1.274424e-01, 6.669068-02, -2.265849e-01, -1.238088e-01, -1.57972e-01, 
+  vpar.vals <- c(-1.274424e-01, 0.0669068, -2.265849e-01, -1.238088e-01, -1.57972e-01, 
                  1.200424e-01, -4.0854110e-02, 0, 3.116814e-08,  2.721824e-08, 4.134244e-02)
   # vpar.vals <- c(-1.278067e-01, 6.676302e-02, -2.265831e-01, -1.242148e-01, -1.580255e-01, 
   #                1.186700e-01, -4.063130e-02, 0, 1.937006e-07, 1.549264e-07, 4.164659e-02 )
@@ -40,7 +40,7 @@ test_that("HEB25_estimateV_asreml4", {
                                 vpar.vals[func]) < 1e-03)
     V <- estimateV(asreml.obj)
     cat("\n",func,": ", V[2, 1], " and ",V.el[func],"\n\n")
-    testthat::expect_true(abs(V[2, 1] - V.el[func]) < 1e-04)
+    testthat::expect_true(abs(V[2, 1] - V.el[func]) < 1e-03)
   }
   
   ### This had a bug, but seems to be working - need to see if can get to converge
@@ -49,8 +49,8 @@ test_that("HEB25_estimateV_asreml4", {
                                               residual = ~ ar1(Col):corb(Row, b = 3), 
                                               data=site2, 
                                               na.action=na.method(y="include", x="include")))
-  testthat::expect_false(asreml.obj$converge)
-  testthat::expect_equal(nrow(summary(asreml.obj)$varcomp), 8)
+  testthat::expect_true(asreml.obj$converge)
+  testthat::expect_equal(nrow(summary(asreml.obj)$varcomp), 6)
   
   
   
