@@ -1135,8 +1135,10 @@ test_that("exploreLSDOatsr4", {
                                   c(66,17.11869,17.11869,20.51095,21.64642,21.64642,21.64642)) < 1e-05))
   testthat::expect_true(all(abs(lsd$accuracy[1,] - 
                                   c(66,0.2644909,0.2644909,0.1653879,0.2091679,0.2091679,0.2091679)) < 1e-05))
-  testthat::expect_true(all(abs(lsd$false.pos - c(66,30,30,24,23,23,23)) < 1e-05))
-  testthat::expect_true(all(abs(lsd$false.neg - c(66,0,0,0,0,0,0)) < 1e-05))
+  testthat::expect_true(fpos == lsd$false.pos["mean"])
+  testthat::expect_true(fneg == lsd$false.neg["mean"])
+  testthat::expect_true(all(lsd$false.pos == c(66,3,3,0,0,0,0)))
+  testthat::expect_true(all(lsd$false.neg == c(66,0,0,3,4,4,4)))
   testthat::expect_true(all(lapply(c("per.pred.accuracy", "LSD"), function(k, lsd) nrow(lsd[[k]]), lsd = lsd) == 12))
   testthat::expect_equal(rownames(lsd$per.pred.accuracy), 
                          as.character(fac.combine(as.list(Var.diffs$predictions[c("Nitrogen","Variety")]), 

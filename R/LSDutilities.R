@@ -461,7 +461,7 @@ LSDpred.acc <- function(LSD.mat, assignedLSD, LSDaccuracy, t.value = 1,
                      {
                        fsig <- falseSignif(ksed = kLSDs, kdif = kdifs, assignedLSD = stats[[LSDstat]], 
                                    t.value = t.value)
-                     }, kLSDs = kLSDs, kdif = kdifs, stats = stats, t.value = t.value)
+                     }, kLSDs = kLSDs, kdifs = kdifs, stats = stats, t.value = t.value)
   if (!is.null(falsesig))
   {
     false.pos <- c(list(c = c), lapply(falsesig, function(comp) comp["false.pos"]))

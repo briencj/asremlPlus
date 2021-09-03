@@ -233,7 +233,7 @@ setOldClass("asrtests")
   invisible()
 }
 
-"print.LSDdata" <- function(x,  which.print = c("statistics", "accuracy"), ...)
+"print.LSDdata" <- function(x,  which.print = c("statistics", "false.pos", "false.neg"), ...)
 {
   options <- c("frequencies", "distinct.vals", "statistics", "accuracy", "false.pos", "false.neg", 
                "per.pred.accuracy", "LSDmatrix", "summary", "all")
@@ -275,7 +275,7 @@ setOldClass("asrtests")
   
   if (any(c("false.pos", "summary", "all") %in% opt))
   {
-    cat(paste0("\n\n####  False positves resulting from use of various LSD statistics\n\n"))
+    cat(paste0("\n\n####  False positives resulting from use of various LSD statistics\n\n"))
     print(x$false.pos, ...)
   }
   

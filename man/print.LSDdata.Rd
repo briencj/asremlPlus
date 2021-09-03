@@ -4,21 +4,22 @@
 \description{Prints the components of an \code{LSDdata} \code{\link{list}} created by \code{\link{exploreLSDs}}, 
              that contains data on the LSDs for all pairwise differences of predictions stored in an 
              \code{\link{alldiffs.object}}.}
-\usage{\method{print}{LSDdata}(x, which.print = c("statistics", "accuracy"), ...)}
+\usage{\method{print}{LSDdata}(x, which.print = c("statistics", "false.pos", "false.neg"), ...)}
 \arguments{
  \item{x}{An object that, ideally, is of class \code{LSDdata}.}
  \item{which.print}{Which components of the \code{LSDdata} \code{\link{list}} to print. 
-                    Possible values are some combination of \code{frequencies}, 
+                    Possible values are any combination of \code{frequencies}, 
                     \code{distinct.vals}, \code{statistics},   \code{accuracy}, 
                     \code{false.pos}, \code{false.neg}, 
-                    \code{per.pred.accuracy}, \code{LSD}, \code{summary} and \code{all}. 
-                    Only one of \code{summary} and \code{all} is allowed. 
-                    The option \code{summary} results in the printing of 
-                    \code{distinct.vals}, \code{statistics}, \code{false.pos}, \code{false.neg}. 
-                    For a description of these components, see \code{\link{alldiffs.object}}.}
+                    \code{per.pred.accuracy}, \code{LSD}, \code{summary} and \code{all}, 
+                    except that \code{summary} and \code{all} cannot occur together. 
+                    For a description of the components, see \code{\link{alldiffs.object}}.
+                    The default is to print \code{statistics}, \code{false.pos}, 
+                    \code{false.neg}. The option \code{summary} results in the printing of 
+                    \code{distinct.vals}, \code{statistics}, \code{false.pos}, \code{false.neg}.}
  \item{\dots}{further arguments passed to \code{print}.}
 }
-\value{No value is returned, but \code{x} is printed as specified in \code{which.print}.}
+\value{No value is returned, but components of \code{x} are printed as specified in \code{which.print}.}
 
 
 \author{Chris Brien}

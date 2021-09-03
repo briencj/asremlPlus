@@ -15,7 +15,7 @@
             LSDaccuracy = "maxAbsDeviation", alpha = 0.05, digits = 3, 
             retain.zeroLSDs = FALSE, 
             zero.tolerance = .Machine$double.eps ^ 0.5, 
-            plotHistogram = TRUE, ...)}
+            plotHistogram = FALSE, ...)}
 \arguments{
 \item{alldiffs.obj}{An \code{\link{alldiffs.object}}.}
 \item{LSDtype}{A \code{\link{character}} string that can be \code{overall} or \code{factor.combinations}. 

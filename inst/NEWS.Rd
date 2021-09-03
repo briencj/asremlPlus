@@ -1,5 +1,10 @@
 \name{news}
 \title{News for Package asremlPlus}
+\section{asremlPlus Version 4.3-20 (2021-09-03)}{
+  \itemize{
+  \item{Fix bug in the calculation of false positives and negatives in exploreLSDs.alldiffs for \code{LSDtype} set to \code{overall}.}
+  \item{Change default for \code{plotHistogram} in exploreLSDs.alldiffs to \code{FALSE}.}
+}}
 \section{asremlPlus Version 4.3-19 (2021-09-01)}{
   \itemize{
   \item{Rebuild under R 4.1.1 for new submission.}

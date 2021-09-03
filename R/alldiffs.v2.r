@@ -1372,7 +1372,7 @@ recalcLSD.alldiffs <- function(alldiffs.obj,
 exploreLSDs.alldiffs <- function(alldiffs.obj,  LSDtype = "overall", LSDby = NULL, 
                                  LSDaccuracy = "maxAbsDeviation", alpha = 0.05, digits = 3, 
                                  retain.zeroLSDs = FALSE, zero.tolerance = .Machine$double.eps ^ 0.5,
-                                 plotHistogram = TRUE, ...)
+                                 plotHistogram = FALSE, ...)
 {
   #Check that a valid object of class alldiffs
   validalldifs <- validAlldiffs(alldiffs.obj)  
@@ -1439,7 +1439,7 @@ exploreLSDs.alldiffs <- function(alldiffs.obj,  LSDtype = "overall", LSDby = NUL
     kdifs.vec <- rm.list$kdif
     
     #Get statistics
-    allstats <- LSDallstats(kLSDs.vec, kdifs.vec, t.value = t.value, LSDaccuracy = LSDacc, 
+    allstats <- LSDallstats(kLSDs.vec, kdifs.vec, t.value = 1, LSDaccuracy = LSDacc, 
                             retain.zeroLSDs = retain.zeroLSDs, zero.tolerance = zero.tolerance)
     
     #Get per.pred.accuracy
