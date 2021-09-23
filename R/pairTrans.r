@@ -75,9 +75,9 @@ makeContrastMatrix <- function(preds, indx, pairs.factor, first.level, second.le
                                 else retain <- !all(X[,k] == 0)
                               }))
   L <- t(X[, which.cols])
-#  lev <- paste0("Combinations",second.level)
-  lev <- paste0("Combinations",levels(preds[[pairs.factor]])[1])
-  rownames(L) <- gsub(paste0(",",lev,","), "", rownames(L), fixed = TRUE)
+
+  rownames(L) <- gsub(paste0("Combinations"), "", rownames(L), fixed = TRUE)
+  lev <- levels(preds[[pairs.factor]])[1]
   rownames(L) <- gsub(paste0(",",lev), "", rownames(L), fixed = TRUE)
   rownames(L) <- gsub(paste0(lev,","), "", rownames(L), fixed = TRUE)
   return(L)
@@ -280,7 +280,7 @@ pairdiffsTransform.alldiffs <- function(alldiffs.obj, pairs.factor, first.levels
       else
       {
         L <- makeContrastMatrix(tmp, indx = indx, pairs.factor = pairs.factor, first.lev, second.lev)
-  
+
         #form the factors indexing the pair-difference predictions
         new.facs <- lapply(indx, function(fac, data)
         {

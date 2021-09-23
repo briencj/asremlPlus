@@ -139,7 +139,7 @@ addtoChooseSummary <- function(choose.summary, term, DF = NA, denDF = NA, p = NA
     #get p-value for term for column j
     term <- (rownames(terms.marginality))[j]
     termno <- match(term, object[[terms]])
-   p <- object[p.values][[1]][termno]
+    p <- object[p.values][[1]][termno]
     if (!omit.DF)
     {
       ndf <- object[[DF]][termno]
@@ -268,8 +268,6 @@ addtoChooseSummary <- function(choose.summary, term, DF = NA, denDF = NA, p = NA
                                         bounds = bounds, IClikelihood = IClikelihood, 
                                         initial.values = initial.values, ...)
     p <- getTestPvalue(current.asrt, label = term)
-    # test.summary <- current.asrt$test.summary
-    # p <- (test.summary[tail(findterm(term, as.character(test.summary$terms)),1), ])$p
     #if significant, add to sig term list and work out which can be tested next
     if (!is.na(p)) 
     { 
@@ -321,7 +319,7 @@ addtoChooseSummary <- function(choose.summary, term, DF = NA, denDF = NA, p = NA
   #Uses information criteria to select the best model after comparing that fitted in the asrtests.obj 
   #and the one obtained after modifying the model using a combination of adding and removing sets of 
   #terms from one or both of the fixed or random asreml models and replacing the residual model.
-  #The function changeTerms is used to cahnge the model.
+  #The function changeTerms is used to change the model.
 { 
   #Check IClikelihood options, because "none" is not allowed here
   options <- c("REML", "full")
@@ -337,98 +335,140 @@ addtoChooseSummary <- function(choose.summary, term, DF = NA, denDF = NA, p = NA
   names(old.IC) <- c("DF", "denDF", "AIC", "BIC")
   nlines.test <- nrow(asrtests.obj$test.summary)
   
-  #Use changeTerms to change the model
-  new.asrtests.obj <- changeTerms(asrtests.obj, 
-                                  dropFixed = dropFixed, addFixed = addFixed, 
-                                  dropRandom = dropRandom,  addRandom = addRandom, 
-                                  newResidual = newResidual, label = label, 
-                                  allow.unconverged = TRUE, 
-                                  checkboundaryonly = checkboundaryonly, 
-                                  trace = trace, update = update, denDF = denDF, 
-                                  set.terms = set.terms, ignore.suffices = ignore.suffices, 
-                                  bounds = bounds, initial.values = initial.values, 
-                                  IClikelihood = IClikelihood, 
-                                  bound.exclusions = bound.exclusions,  
-                                  ...)
-
-  #Obtain IC for new model
-  new.IC <- infoCriteria(new.asrtests.obj$asreml.obj, IClikelihood = ic.lik, 
-                         bound.exclusions = bound.exclusions, 
-                         fixedDF = fixedDF, varDF = varDF, ...)
-  new.IC <- as.vector(new.IC[c("fixedDF", "varDF", "AIC", "BIC")])
-  names(new.IC) <- c("DF", "denDF", "AIC", "BIC")
-
-  #Extract asreml.objects
-  asreml.obj <- asrtests.obj$asreml.obj
-  new.asreml.obj <- new.asrtests.obj$asreml.obj
-  
-  change <- FALSE
-  diff.IC <- new.IC - old.IC
-  #check convergence
-  if (!allow.unconverged && (!asreml.obj$converge | !new.asreml.obj$converge))
+  #Check that terms to drop are present - otherwise do not change the model
+  absent <- FALSE
+  if (!is.null(dropFixed) || !is.null(dropRandom))
   {
-    if (!asreml.obj$converge)
+    if (!is.null(dropFixed))
     {
-      if (!new.asreml.obj$converge)
+      #Test whether any terms in dropFixed are absent
+      fix.form <- as.formula(paste("~ (", dropFixed, ")", sep = ""))
+      fix.terms <- getTerms.formula(fix.form)
+      fixterms.obj <- as.terms.object(languageEl(asrtests.obj$asreml.obj$call, which="fixed"), 
+                                      asrtests.obj$asreml.obj)
+      if (any(unlist(lapply(fix.terms, 
+                            function (term, terms.obj) findterm(term, labels(terms.obj)) == 0, 
+                            terms.obj = fixterms.obj))))
+        absent <- TRUE
+    }
+    if (!is.null(dropRandom))
+    {
+      #Test whether any terms in dropRandom are absent
+      ran.form <- as.formula(paste("~ (", dropRandom, ")", sep = ""))
+      ran.terms <- getTerms.formula(ran.form)
+      ranterms.obj <- as.terms.object(languageEl(asrtests.obj$asreml.obj$call, which="random"), 
+                                      asrtests.obj$asreml.obj)
+      if (any(unlist(lapply(ran.terms, 
+                            function (term, terms.obj) findterm(term, labels(terms.obj)) == 0, 
+                            terms.obj = ranterms.obj))))
+        absent <- TRUE
+    }
+  }
+ 
+  if (absent)
+  {
+    ic.NA <- data.frame(fixedDF = NA, varDF = NA, AIC = NA, BIC = NA)
+    action <- "Absent"
+    ic <- ic.NA
+    test.summary <- asrtests.obj$test.summary
+    test.summary <- addtoTestSummary(test.summary, terms = label, 
+                                     DF=NA, denDF = NA, p = NA, AIC = NA, BIC = NA, 
+                                     action = "Absent")
+  } else
+  {
+    #Use changeTerms to change the model
+    new.asrtests.obj <- changeTerms(asrtests.obj, 
+                                    dropFixed = dropFixed, addFixed = addFixed, 
+                                    dropRandom = dropRandom,  addRandom = addRandom, 
+                                    newResidual = newResidual, label = label, 
+                                    allow.unconverged = TRUE, 
+                                    checkboundaryonly = checkboundaryonly, 
+                                    trace = trace, update = update, denDF = denDF, 
+                                    set.terms = set.terms, ignore.suffices = ignore.suffices, 
+                                    bounds = bounds, initial.values = initial.values, 
+                                    IClikelihood = IClikelihood, 
+                                    bound.exclusions = bound.exclusions,  
+                                    ...)
+    
+    #Obtain IC for new model
+    new.IC <- infoCriteria(new.asrtests.obj$asreml.obj, IClikelihood = ic.lik, 
+                           bound.exclusions = bound.exclusions, 
+                           fixedDF = fixedDF, varDF = varDF, ...)
+    new.IC <- as.vector(new.IC[c("fixedDF", "varDF", "AIC", "BIC")])
+    names(new.IC) <- c("DF", "denDF", "AIC", "BIC")
+    
+    #Extract asreml.objects
+    asreml.obj <- asrtests.obj$asreml.obj
+    new.asreml.obj <- new.asrtests.obj$asreml.obj
+    
+    change <- FALSE
+    diff.IC <- new.IC - old.IC
+    #check convergence
+    if (!allow.unconverged && (!asreml.obj$converge | !new.asreml.obj$converge))
+    {
+      if (!asreml.obj$converge)
       {
-        action <- "Unchanged - both unconverged"
-        change <- FALSE
+        if (!new.asreml.obj$converge)
+        {
+          action <- "Unchanged - both unconverged"
+          change <- FALSE
+        } else
+        {
+          action <- "Swappped - old unconverged"
+          change <- TRUE
+        }
       } else
       {
-        action <- "Swappped - old unconverged"
-        change <- TRUE
+        action <- "Unchanged - new unconverged"
+        change <- FALSE
       }
     } else
     {
-      action <- "Unchanged - new unconverged"
-      change <- FALSE
-    }
-  } else
-  {
-    #Make the comparison
-    action <- "Unswapped"
-    if ((ic.type == "AIC" & diff.IC["AIC"] < 0) || 
-        (ic.type == "BIC" & diff.IC["BIC"] < 0))
-    {
-      change <- TRUE
-      action <- "Swapped"
-    }
-
-    #check convergence, when it is allowed
-    if (allow.unconverged)
-    {
-      if (!asreml.obj$converge && !new.asreml.obj$converge)
+      #Make the comparison
+      action <- "Unswapped"
+      if ((ic.type == "AIC" & diff.IC["AIC"] < 0) || 
+          (ic.type == "BIC" & diff.IC["BIC"] < 0))
       {
-        action <- paste(action, " - both unconverged", sep="")
-      } else
+        change <- TRUE
+        action <- "Swapped"
+      }
+      
+      #check convergence, when it is allowed
+      if (allow.unconverged)
       {
-        if (!asreml.obj$converge)
-          action <- paste(action, " - old unconverged", sep="")
-        else
+        if (!asreml.obj$converge && !new.asreml.obj$converge)
         {
-          if (!new.asreml.obj$converge)
-            action <- paste(action, " - new unconverged", sep="")
+          action <- paste(action, " - both unconverged", sep="")
+        } else
+        {
+          if (!asreml.obj$converge)
+            action <- paste(action, " - old unconverged", sep="")
+          else
+          {
+            if (!new.asreml.obj$converge)
+              action <- paste(action, " - new unconverged", sep="")
+          }
         }
       }
     }
-  }
-  
-  #I don't check that removing a boundary term will result in convergence here as is done
-  #in, for example, testresidual.asrtests
-  if (change)
-    asrtests.obj <- new.asrtests.obj
 
-  #Modify action to reflect model selection
-  test.summary <- new.asrtests.obj$test.summary
-  krows <- (nlines.test+1):nrow(test.summary)
-  k <- krows[test.summary$terms[krows] == label & 
-               test.summary$action[krows] != "Boundary"]
-  
-  test.summary[k, "DF"] <- diff.IC["DF"]
-  test.summary[k, "denDF"] <- diff.IC["denDF"]
-  test.summary[k, "AIC"] <- diff.IC["AIC"]
-  test.summary[k, "BIC"] <- diff.IC["BIC"]
-  test.summary[k, "action"] <- action
+    #I don't check that removing a boundary term will result in convergence here as is done
+    #in, for example, testresidual.asrtests
+    if (change)
+      asrtests.obj <- new.asrtests.obj
+    
+    #Modify action to reflect model selection
+    test.summary <- new.asrtests.obj$test.summary
+    krows <- (nlines.test+1):nrow(test.summary)
+    k <- krows[test.summary$terms[krows] == label & 
+                 test.summary$action[krows] != "Boundary"]
+    
+    test.summary[k, "DF"] <- diff.IC["DF"]
+    test.summary[k, "denDF"] <- diff.IC["denDF"]
+    test.summary[k, "AIC"] <- diff.IC["AIC"]
+    test.summary[k, "BIC"] <- diff.IC["BIC"]
+    test.summary[k, "action"] <- action
+  }
   asrtests.obj$test.summary <- test.summary
 
   return(asrtests.obj)

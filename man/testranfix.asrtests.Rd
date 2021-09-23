@@ -3,9 +3,9 @@
 \alias{testranfix}
 \title{Tests for a single fixed or random term in model fitted using \code{asreml}
        and records the result in an \code{\link{asrtests.object}}.}
-\description{Tests for a single term, using a REML LRT for a random term or based 
+\description{Tests for a single term, using a REML ratio test (REMLRT) for a random term or based 
   on Wald statistics for a fixed term. The term must be in the fitted model. 
-  A random term is removed from the model fit and a REML likelihood ratio test is 
+  A random term is removed from the model fit and a REMLRT is 
   performed using \code{\link{REMLRT.asreml}}. It compares the fit of the model in 
   \code{asreml.obj} and the newly fitted model without the \code{term}. 
   If the newly fitted model is retained, any boundary terms are then removed

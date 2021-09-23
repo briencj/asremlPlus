@@ -1,5 +1,10 @@
 \name{news}
 \title{News for Package asremlPlus}
+\section{asremlPlus Version 4.3-21 (2021-09-23)}{
+  \itemize{
+  \item{Fix a bug in pairdiffsTransform.alldiffs where the factors indexing the predictions were not generated correctly.}
+  \item{In changeModelOnIC.alldiffs, add detection of absent terms to be dropped and do not change the model if one or more are detected.}
+}}
 \section{asremlPlus Version 4.3-20 (2021-09-03)}{
   \itemize{
   \item{Fix bug in the calculation of false positives and negatives in exploreLSDs.alldiffs for \code{LSDtype} set to \code{overall}.}

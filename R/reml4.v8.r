@@ -1580,8 +1580,8 @@ atLevelsMatch <- function(new, old, call)
                                   trace = FALSE, update = TRUE, 
                                   set.terms = NULL, ignore.suffices = TRUE, 
                                   bounds = "P", initial.values = NA, ...)
-#function to test for a single term, using a REMLRT for a random term or based 
-#on Wald statistics for a fixed term. Note that fixed terms are never dropped.
+  #function to test for a single term, using a REMLRT for a random term or based 
+  #on Wald statistics for a fixed term. Note that fixed terms are never dropped.
 { 
   #Deal with deprecated constraints parameter
   tempcall <- list(...)
@@ -1590,11 +1590,11 @@ atLevelsMatch <- function(new, old, call)
       stop("constraints has been deprecated in setvarianceterms.asreml - use bounds")
   
   asr4 <- isASRemlVersionLoaded(4, notloaded.fault = TRUE)
-   #Check that have a valid object of class asrtests
+  #Check that have a valid object of class asrtests
   validasrt <- validAsrtests(asrtests.obj)  
   if (is.character(validasrt))
     stop(validasrt)
-
+  
   #Check IClikelihood options
   options <- c("none", "REML", "full")
   ic.lik <- options[check.arg.values(IClikelihood, options)]
@@ -1637,12 +1637,12 @@ atLevelsMatch <- function(new, old, call)
       }
     }
   }
-
-    #Test whether term is in random model
+  
+  #Test whether term is in random model
   ranterms.obj <- as.terms.object(languageEl(asreml.obj$call, which="random"), asreml.obj)
   termno <- findterm(term, labels(ranterms.obj))
   if (termno == 0)
-  #See if in fixed model
+    #See if in fixed model
   { 
     if (asr4)
       termno <- findterm(term, rownames(wald.tab))
@@ -1662,7 +1662,7 @@ atLevelsMatch <- function(new, old, call)
                                        AIC = ic$AIC, BIC = ic$BIC, 
                                        action = "Absent")
     } else
-    #Have a fixed term
+      #Have a fixed term
     { 
       wald.tab <- asreml::wald.asreml(asreml.obj, denDF = denDF, trace = trace, ...)
       wald.tab <- chkWald(wald.tab)
@@ -1670,14 +1670,14 @@ atLevelsMatch <- function(new, old, call)
       options <- c("none", "residual", "maximum", "supplied")
       opt <- options[check.arg.values(dDF.na, options)]
       if (opt == "supplied" & is.null(dDF.values))
-            stop('Need to set dDF.values because have set dDF.na = \"supplied\"')
+        stop('Need to set dDF.values because have set dDF.na = \"supplied\"')
       #Compute p-value
       p <- wald.tab[termno, 
                     colnames(wald.tab)[grepl("Pr", colnames(wald.tab), fixed = TRUE)]]
       ndf <- wald.tab$Df[termno]
       den.df <- NA
       if ("denDF" %in% colnames(wald.tab) & !is.na(wald.tab$denDF[termno]))
-         den.df <- wald.tab$denDF[termno]
+        den.df <- wald.tab$denDF[termno]
       else
       { 
         if (opt == "supplied")
@@ -1712,7 +1712,7 @@ atLevelsMatch <- function(new, old, call)
           test.stat <- wald.tab$'Wald statistic'[termno]/ndf
         p <- 1 - pf(test.stat, ndf, den.df)
       }
-
+      
       #Add record for test to test.summary and, if drop.fix.ns is TRUE, remove term
       if (is.na(p))
       {
@@ -1783,7 +1783,7 @@ atLevelsMatch <- function(new, old, call)
                                                DF = ndf, denDF = den.df, p = p, 
                                                AIC = ic$AIC, BIC = ic$BIC, 
                                                action = action)
-
+              
               #Check for boundary terms
               temp.asrt <- rmboundary.asrtests(as.asrtests(asreml.obj, wald.tab, 
                                                            test.summary, ...), 
@@ -1798,10 +1798,10 @@ atLevelsMatch <- function(new, old, call)
               {
                 if (asr4)
                   warning("In analysing ",asreml.obj$formulae$fixed[[2]],
-                       ", Boundary terms removed")
+                          ", Boundary terms removed")
                 else
                   warning("In analysing ",asreml.obj$fixed.formula[[2]],
-                       ", Boundary terms removed")
+                          ", Boundary terms removed")
               }
               asreml.obj <- temp.asrt$asreml.obj
               test.summary <- temp.asrt$test.summary
@@ -1862,7 +1862,7 @@ atLevelsMatch <- function(new, old, call)
       }
     }
   } else
-  #Remove random term and test
+    #Remove random term and test
   { 
     term.form <- as.formula(paste("~ . - ",term, sep=""))
     asreml.new.obj <- newfit.asreml(asreml.obj, random. = term.form, trace = trace, 
@@ -1872,11 +1872,11 @@ atLevelsMatch <- function(new, old, call)
                                     ignore.suffices = ignore.suffices, 
                                     bounds = bounds, 
                                     initial.values = initial.values, ...)
-
-
     
     
-
+    
+    
+    
     if (!drop.ran.ns)
     {
       #Perform test
@@ -1959,7 +1959,7 @@ atLevelsMatch <- function(new, old, call)
                             positive.zero = positive.zero, 
                             bound.exclusions = bound.exclusions, DF = REMLDF, 
                             bound.test.parameters = bound.test.parameters)
-
+      
       #Check convergence and force a converged model, if possible
       if (!allow.unconverged && (!asreml.obj$converge | !asreml.new.obj$converge))
       {
@@ -2000,17 +2000,17 @@ atLevelsMatch <- function(new, old, call)
           }
         } else
         { 
-            action <- "Dropped"
-            asreml.obj <- asreml.new.obj
-            #Update wald.tab
-            wald.tab <- asreml::wald.asreml(asreml.obj, denDF = denDF, trace = trace, ...)
-            wald.tab <- chkWald(wald.tab)
+          action <- "Dropped"
+          asreml.obj <- asreml.new.obj
+          #Update wald.tab
+          wald.tab <- asreml::wald.asreml(asreml.obj, denDF = denDF, trace = trace, ...)
+          wald.tab <- chkWald(wald.tab)
         }
         if (!asreml.new.obj$converge)
           action <- paste(action, " - new unconverged", sep="")
       }
     }
-      
+    
     #Update summary
     if (ic.lik != "none")
       ic <- infoCriteria(asreml.obj, IClikelihood = ic.lik, 
@@ -2021,7 +2021,7 @@ atLevelsMatch <- function(new, old, call)
                                      DF=test$DF, denDF = NA, p = p, 
                                      AIC = ic$AIC, BIC = ic$BIC, 
                                      action = action)
-
+    
     #Check for boundary terms
     temp.asrt <- rmboundary.asrtests(as.asrtests(asreml.obj, wald.tab, 
                                                  test.summary, ...), 

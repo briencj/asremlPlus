@@ -43,7 +43,9 @@
 }
 \value{A \code{list} of \code{\link{predictions.frame}}s, each containing the ratio predictions 
        and their confidence limits for a combination of the \code{numerator.levels} with the 
-       \code{denominator.levels}.
+       \code{denominator.levels}. It will also contain the values of the variables in the 
+       \code{classify} of \code{alldiffs.obj} that index the ratio predictions, except that 
+       the \code{ratio.factor} is omitted. 
 
        If \code{sortFactor} attribute of the \code{\link{alldiffs.object}} is set and is not the 
        \code{ratio.factor}, the predictions and their backtransforms will be sorted using 

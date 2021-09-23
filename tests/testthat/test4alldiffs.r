@@ -1994,6 +1994,32 @@ test_that("ratioTransforms_SystemData_asreml4", {
   testthat::expect_true(all(c("LSDtype", "LSDstatistic") %in% 
                               names(attributes(Preds.ratio.ClUp$`Hot,Cool`$backtransforms))))
   testthat::expect_true(is.null(attr(Preds.ratio.ClUp$`Hot,Cool`$backtransforms, which = "LSDvalues")))
+
+  #Reorder the classify and test 
+  diffs.new <- renewClassify(diffs.new, newclassify = c("Salinity:Temperature:Genotype"))
+  Preds.ratio.ClUp <- pairdiffsTransform(diffs.new, method = "log",
+                                         pairs.factor = "Temperature", 
+                                         first.levels = "Hot",
+                                         second.levels = "Cool",
+                                         error.intervals = "halfLeast",
+                                         LSDtype = "factor", LSDby = "Genotype",
+                                         tables = "backtrans")
+  testthat::expect_true(all(abs(Preds.ratio.ClUp$`Hot,Cool`$predictions$predicted.value[1:3] - 
+                                  c(-0.05752483,0.12987766,0.06916038)) < 1e-05))
+  testthat::expect_true(all(Preds.ratio.ClUp$`Hot,Cool`$predictions$Salinity == rep(c("Control","Salt"), each = 10)))
+  testthat::expect_true(all(Preds.ratio.ClUp$`Hot,Cool`$predictions$Genotype == rep(as.character(1:10, times = 2))))
+  testthat::expect_true(all(names(Preds.ratio.ClUp$`Hot,Cool`$predictions)[5:6] == 
+                              c("upper.halfLeastSignificant.limit", "lower.halfLeastSignificant.limit")))
+  testthat::expect_true(all(c("tdf", "alpha", "LSDtype", "LSDstatistic") %in% 
+                              names(attributes(Preds.ratio.ClUp$`Hot,Cool`))))
+  testthat::expect_true(all(attr(Preds.ratio.ClUp$`Hot,Cool`, which = "LSDtype") == "factor.combinations"))
+  testthat::expect_true(all(attr(Preds.ratio.ClUp$`Hot,Cool`, which = "LSDstatistic") == "mean"))
+  testthat::expect_true(all(c("LSDtype", "LSDstatistic", "LSDvalues") %in% 
+                              names(attributes(Preds.ratio.ClUp$`Hot,Cool`$predictions))))
+  testthat::expect_true(all(c("LSDtype", "LSDstatistic") %in% 
+                              names(attributes(Preds.ratio.ClUp$`Hot,Cool`$backtransforms))))
+  testthat::expect_true(is.null(attr(Preds.ratio.ClUp$`Hot,Cool`$backtransforms, which = "LSDvalues")))
+  
 })
 
 cat("#### Test for ratioTansforms on the Oats data with asreml4\n")
@@ -2059,6 +2085,22 @@ test_that("ratioTransforms_SystemData_asreml4", {
   testthat::expect_true(all(names(Preds.diffs.OatsN$`0.6,0.2`$predictions)[4:5] == 
                               c("upper.halfLeastSignificant.limit", "lower.halfLeastSignificant.limit")))
 
+  #Reverse classify so that the ratio factor is the second factor
+  Var.rev.diffs <- renewClassify(Var.diffs, newclassify = "Variety:Nitrogen")
+  Preds.diffs.OatsN <- pairdiffsTransform(alldiffs.obj = Var.diffs,
+                                          pairs.factor = "Nitrogen", 
+                                          first.levels = "0.6",
+                                          second.levels = "0.2", error.intervals = "halfLeast",
+                                          tables = "none")
+  testthat::expect_true(names(Preds.diffs.OatsN) == "0.6,0.2")
+  
+  testthat::expect_true(all(abs(Preds.diffs.OatsN$`0.6,0.2`$predictions$predicted.value - 
+                                  (Var.diffs$predictions$predicted.value[10:12] - 
+                                     Var.diffs$predictions$predicted.value[4:6])) < 1e-05))
+  testthat::expect_true(all(Preds.diffs.OatsN$`0.6,0.2`$predictions$Variety == c("Victory", "Golden Rain","Marvellous")))
+  testthat::expect_true(all(names(Preds.diffs.OatsN$`0.6,0.2`$predictions)[4:5] == 
+                              c("upper.halfLeastSignificant.limit", "lower.halfLeastSignificant.limit")))
+  
   #Remove the Victory, 0.2 combination to test what happens when not all numerator combinations are present
   Var.red.diffs <- subset(Var.diffs, subset = !(Variety == "Victory" & Nitrogen == "0.2"))
   testthat::expect_equal(nrow(Var.red.diffs$predictions),  11)

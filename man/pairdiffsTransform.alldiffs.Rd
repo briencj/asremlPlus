@@ -170,13 +170,15 @@
 \value{A \code{list} of \code{\link{alldiffs.object}}s with a component for each combination 
        of a \code{first.levels} with a \code{second.levels}. The name of a component will be 
        a level from \code{first.levels} combined with a level from \code{second.levels}, 
-       separated by a comma. If the predictions in the supplied \code{\link{alldiffs.object}} 
+       separated by a comma. If the \code{predictions} in the supplied \code{\link{alldiffs.object}} 
        are based on a \code{response} that was transformed, each \code{\link{alldiffs.object}} 
        in the \code{list} will include a \code{backtransforms} component that contains   
        a column labelled \code{backtransformed.predictions}, along with the backtransforms of 
-       the nominated \code{error.intervals}. If the transformation was the logarithmic 
-       transformation, these \code{backtransformed.predictions} are predicted ratios of the 
-       untransformed \code{response}. 
+       the nominated \code{error.intervals}. The \code{predictions} and \code{backtransforms} 
+       components in an \code{\link{alldiffs.object}} will be indexed by the variables in the 
+       \code{classify} of \code{alldiffs.obj}, except that the \code{pairs.factor} is omitted.  
+       If the transformation was the logarithmic transformation, these 
+       \code{backtransformed.predictions} are predicted ratios of the untransformed \code{response}. 
        
        If \code{sortFactor} attribute is set and is not the 
        \code{ratio.factor}, the predictions and, if present, their backtransforms will be sorted using 
