@@ -17,6 +17,7 @@ bootREMLRT <- function(h0.asreml.obj, h1.asreml.obj, ...) UseMethod("bootREMLRT"
 estimateV <- function(asreml.obj, ...) UseMethod("estimateV")
 getFormulae <- function(asreml.obj, ...) UseMethod("getFormulae")
 infoCriteria <- function(object, ...) UseMethod("infoCriteria")
+isFixedCorrelOK <- function(asreml.obj, ...) UseMethod("isFixedCorrelOK")
 newfit <- function(asreml.obj, ...) UseMethod("newfit")
 predictPlus <- function(asreml.obj, ...) UseMethod("predictPlus")
 predictPresent <- function(asreml.obj, ...) UseMethod("predictPresent")

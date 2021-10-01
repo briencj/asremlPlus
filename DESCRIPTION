@@ -1,6 +1,6 @@
 Package: asremlPlus
-Version: 4.3-21
-Date: 2021-09-23
+Version: 4.3-22
+Date: 2021-10-01
 Title: Augments 'ASReml-R' in Fitting Mixed Models and Packages
         Generally in Exploring Prediction Differences
 Authors@R: person("Chris","Brien", role = c("aut","cre"),
@@ -12,7 +12,7 @@ Imports: dae, ggplot2, stats, methods, utils, reshape, dplyr,
 Suggests: testthat, lattice, emmeans, lmerTest, pbkrtest, R.rsp
 Enhances: asreml
 VignetteBuilder: R.rsp
-SystemRequirements: asreml-R 2.x
+SystemRequirements: asreml-R 4.x
 LazyData: true
 Description: Assists in automating the selection of terms to include in mixed models when  
   'asreml' is used to fit the models. Also used to display, in tables and graphs, predictions   

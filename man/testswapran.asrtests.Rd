@@ -11,16 +11,19 @@
        However, if \code{simpler = TRUE} the model to be fitted must be simpler 
        than the one whose fit has been stored in \code{asrtests.obj} in that it 
        must have fewer parameters. The test is a REML ratio test that is performed using 
-       \code{\link{REMLRT.asreml}}, which is only valid if the models are nested. 
+       \code{\link{REMLRT.asreml}}, \bold{which is only valid if the models are nested}. 
        It compares the newly fitted model with the fit of the model in 
        \code{asrtest.obj}. A row is added to the \code{test.summary} 
        \code{data.frame} using the supplied \code{label}. If the newly fitted model 
        is retained, any boundary terms are then removed using 
-       \code{\link{rmboundary.asrtests}}. }
+       \code{\link{rmboundary.asrtests}}. If the models are not nested, then using 
+       \code{\link{changeModelOnIC.asrtests}} may be the more appropriate approach 
+       for comparing models.}
 \usage{
 \method{testswapran}{asrtests}(asrtests.obj, oldterms = NULL, newterms = NULL, 
-            label = "Swap in random model", simpler = FALSE, 
-            alpha = 0.05, allow.unconverged = TRUE, checkboundaryonly = FALSE, 
+            label = "Swap in random model", simpler = FALSE, alpha = 0.05, 
+            allow.unconverged = TRUE, allow.fixedcorrelation = TRUE, 
+            checkboundaryonly = FALSE, 
             positive.zero = FALSE, bound.test.parameters = "none", 
             bound.exclusions = c("F","B","S","C"), REMLDF = NULL, 
             denDF="numeric", IClikelihood = "none", 
@@ -34,7 +37,7 @@
  \item{oldterms}{Terms, stored as a \code{character}, that are to be removed from the 
                  random model using \code{asreml}. The names of the terms must 
                  match those in the \code{vparameters} component of the \code{asreml.obj} 
-                 component in the \code{\link{asrtests.object}}.}
+                 component in \code{asrtests.obj}.}
  \item{newterms}{Terms, stored as a \code{character}, that are to be added to the 
                  random model using \code{asreml}.}
  \item{simpler}{A logical indicating whether the new model to be fitted. after the
@@ -44,9 +47,14 @@
  \item{alpha}{The significance level for the test.}
  \item{allow.unconverged}{A \code{logical} indicating whether to accept a new model 
                       even when it does not converge. If \code{FALSE} and the fit of the new 
-                      model does not converge, the supplied \code{asreml} object is returned.  
+                      model does not converge, the supplied \code{asrtests.obj} is returned.  
                       Also, if \code{FALSE} and the fit of the new model has converged, but that 
                       of the old model has not, the new model will be accepted.}
+ \item{allow.fixedcorrelation}{A \code{logical} indicating whether to accept a new model 
+              even when it contains correlations in the model whose values have been 
+              fixed. If \code{FALSE} and the model contains correlations whose values 
+              have been set to a fixed value, the supplied \code{asrtests.obj} is 
+              returned.}
  \item{checkboundaryonly}{If \code{TRUE} then boundary and singular terms are not removed by 
               \code{\link{rmboundary.asrtests}}; a warning is issued instead.}
  \item{label}{A character string to use as the label in \code{test.summary} and 
@@ -90,7 +98,7 @@
               part of the model.}
  \item{IClikelihood}{A \code{character} that controls both the occurence and the type 
                     of likelihood for information criterion in the \code{test.summary} 
-                    of the \code{\link{asrtests.object}}. If \code{none}, none are 
+                    of the new \code{\link{asrtests.object}}. If \code{none}, none are 
                     included. Otherwise, if \code{REML}, then the AIC and BIC based 
                     on the Restricted Maximum Likelihood are included; if \code{full}, 
                     then the AIC and BIC based on the full likelihood are included. 

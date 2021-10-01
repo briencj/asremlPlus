@@ -1,5 +1,10 @@
 \name{news}
 \title{News for Package asremlPlus}
+\section{asremlPlus Version 4.3-22 (2021-10-01)}{
+  \itemize{
+  \item{Support is no longer provided in asremlPlus for versions of ASReml-R prior to version 4.0.}
+  \item{Add a new argument \code{allow.fixedcorrelation} to changeModelOnIC.alldiffs, newfit.asreml, chooseModel.asrtests, changeTerms.asrtests, testranfix.asrtests, testresidual.asrtests, testswapran.asrtests and reparamSigDevn.asrtests so that a model with a fixed correlation parameter may be rejected.}
+}}
 \section{asremlPlus Version 4.3-21 (2021-09-23)}{
   \itemize{
   \item{Fix a bug in pairdiffsTransform.alldiffs where the factors indexing the predictions were not generated correctly.}

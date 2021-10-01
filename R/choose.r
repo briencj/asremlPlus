@@ -191,7 +191,8 @@ addtoChooseSummary <- function(choose.summary, term, DF = NA, denDF = NA, p = NA
 }
 
 "chooseModel.asrtests" <- function(object, terms.marginality=NULL, alpha = 0.05, 
-                                   allow.unconverged = TRUE, checkboundaryonly = FALSE, 
+                                   allow.unconverged = TRUE, allow.fixedcorrelation = TRUE, 
+                                   checkboundaryonly = FALSE, 
                                    drop.ran.ns=TRUE, positive.zero = FALSE, 
                                    bound.test.parameters = "none", 
                                    drop.fix.ns=FALSE, denDF = "numeric",  dDF.na = "none", 
@@ -256,6 +257,7 @@ addtoChooseSummary <- function(choose.summary, term, DF = NA, denDF = NA, p = NA
     term <- (rownames(terms.marginality))[j]
     current.asrt <- testranfix.asrtests(asrtests.obj = current.asrt, term, 
                                         alpha=alpha, allow.unconverged = allow.unconverged, 
+                                        allow.fixedcorrelation = allow.fixedcorrelation, 
                                         checkboundaryonly = checkboundaryonly,  
                                         drop.ran.ns = drop.ran.ns, 
                                         positive.zero = positive.zero, 
@@ -308,7 +310,8 @@ addtoChooseSummary <- function(choose.summary, term, DF = NA, denDF = NA, p = NA
                                        dropFixed = NULL, addFixed = NULL, 
                                        dropRandom = NULL,  addRandom = NULL, 
                                        newResidual = NULL, label = "Changed terms", 
-                                       allow.unconverged = TRUE, checkboundaryonly = FALSE, 
+                                       allow.unconverged = TRUE, allow.fixedcorrelation = TRUE,
+                                       checkboundaryonly = FALSE, 
                                        trace = FALSE, update = TRUE, denDF = "numeric", 
                                        set.terms = NULL, ignore.suffices = TRUE, 
                                        bounds = "P", initial.values = NA, 
@@ -381,7 +384,7 @@ addtoChooseSummary <- function(choose.summary, term, DF = NA, denDF = NA, p = NA
                                     dropFixed = dropFixed, addFixed = addFixed, 
                                     dropRandom = dropRandom,  addRandom = addRandom, 
                                     newResidual = newResidual, label = label, 
-                                    allow.unconverged = TRUE, 
+                                    allow.unconverged = TRUE, allow.fixedcorrelation = TRUE, 
                                     checkboundaryonly = checkboundaryonly, 
                                     trace = trace, update = update, denDF = denDF, 
                                     set.terms = set.terms, ignore.suffices = ignore.suffices, 
@@ -424,29 +427,37 @@ addtoChooseSummary <- function(choose.summary, term, DF = NA, denDF = NA, p = NA
       }
     } else
     {
-      #Make the comparison
-      action <- "Unswapped"
-      if ((ic.type == "AIC" & diff.IC["AIC"] < 0) || 
-          (ic.type == "BIC" & diff.IC["BIC"] < 0))
+      #Check fixed correlation
+      if (!isFixedCorrelOK(new.asreml.obj, allow.fixedcorrelation = allow.fixedcorrelation))
       {
-        change <- TRUE
-        action <- "Swapped"
-      }
-      
-      #check convergence, when it is allowed
-      if (allow.unconverged)
+        action <- "Unchanged - fixed correlation"
+        change <- FALSE
+      } else
       {
-        if (!asreml.obj$converge && !new.asreml.obj$converge)
+        #Make the comparison
+        action <- "Unswapped"
+        if ((ic.type == "AIC" & diff.IC["AIC"] < 0) || 
+            (ic.type == "BIC" & diff.IC["BIC"] < 0))
         {
-          action <- paste(action, " - both unconverged", sep="")
-        } else
+          change <- TRUE
+          action <- "Swapped"
+        }
+        
+        #check convergence, when it is allowed
+        if (allow.unconverged)
         {
-          if (!asreml.obj$converge)
-            action <- paste(action, " - old unconverged", sep="")
-          else
+          if (!asreml.obj$converge && !new.asreml.obj$converge)
           {
-            if (!new.asreml.obj$converge)
-              action <- paste(action, " - new unconverged", sep="")
+            action <- paste(action, " - both unconverged", sep="")
+          } else
+          {
+            if (!asreml.obj$converge)
+              action <- paste(action, " - old unconverged", sep="")
+            else
+            {
+              if (!new.asreml.obj$converge)
+                action <- paste(action, " - new unconverged", sep="")
+            }
           }
         }
       }

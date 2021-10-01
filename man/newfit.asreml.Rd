@@ -18,9 +18,9 @@
 \usage{
 \method{newfit}{asreml}(asreml.obj, fixed., random., sparse., 
        residual., rcov., update = TRUE, trace = FALSE, 
-       allow.unconverged = TRUE, keep.order = TRUE, 
-       set.terms = NULL, ignore.suffices = TRUE, bounds = "P", 
-       initial.values = NA, ...)}
+       allow.unconverged = TRUE, allow.fixedcorrelation = TRUE,
+       keep.order = TRUE, set.terms = NULL, ignore.suffices = TRUE, 
+       bounds = "P", initial.values = NA, ...)}
 \arguments{
  \item{asreml.obj}{A valid \code{asreml} object with with 
                    a component named \code{call} (from a previous 
@@ -62,16 +62,21 @@
               functions are invoked; if FALSE then no output is displayed.}
  \item{allow.unconverged}{A \code{logical} indicating whether to accept a new model 
                       even when it does not converge. If \code{FALSE} and the fit does not 
-                      converge, the supplied \code{asreml} object is returned.}
+                      converge, the supplied \code{asreml.obj} is returned.}
+ \item{allow.fixedcorrelation}{A \code{logical} indicating whether to accept a new model 
+              even when it contains correlations in the model whose values have been 
+              fixed. If \code{FALSE} and the model contains correlations whose values 
+              have been set to a fixed value, the supplied \code{asreml.obj} is 
+              returned.}
  \item{keep.order}{A logical value indicating whether the terms should keep 
                their positions. If \code{FALSE} the terms are reordered so 
                that main effects come first, followed by the interactions, 
                all second-order, all third-order and so on. Effects of a 
                given order are kept in the order specified.}
  \item{set.terms}{A character vector specifying the terms that are to have 
-                  bounds and/or initial values set prior to fitting.
+               bounds and/or initial values set prior to fitting.
                The names must match those in the \code{vparameters} component of the 
-               \code{asreml.obj} component in the \code{\link{asrtests.object}}.}
+               new \code{asreml.obj}.}
  \item{ignore.suffices}{A logical vector specifying whether the suffices of the 
                     \code{asreml}-assigned names of the variance terms (i.e. the 
                     information to the right of an "!", other than "R!") is to 

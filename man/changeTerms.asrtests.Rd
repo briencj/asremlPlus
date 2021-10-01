@@ -24,7 +24,8 @@
             dropFixed = NULL, addFixed = NULL, 
             dropRandom = NULL,  addRandom = NULL, 
             newResidual = NULL, label = "Changed terms", 
-            allow.unconverged = TRUE, checkboundaryonly = FALSE, 
+            allow.unconverged = TRUE, allow.fixedcorrelation, 
+            checkboundaryonly = FALSE, 
             trace = FALSE, update = TRUE, denDF = "numeric", 
             set.terms = NULL, ignore.suffices = TRUE, 
             bounds = "P", initial.values = NA, 
@@ -37,7 +38,7 @@
                after addition of \code{". ~ . -"} and after expansion, specifies the sum 
                of a set of terms to be dropped from the fixed formula. 
                The names must match those in the \code{wald.tab} component of the 
-               \code{\link{asrtests.object}}.}
+               \code{asrtests.obj}.}
  \item{addFixed}{A single \code{character} string in the form of a formula which, 
                after addition of \code{". ~ . +"} and expansion, specifies the sum 
                of a set of terms to be added to the fixed formula.}
@@ -45,7 +46,7 @@
                after addition of \code{" ~ . -"} and expansion, specifies the sum 
                of a set of terms to be dropped from the random formula. 
                The names must match those in the \code{vparameters} component of the 
-               \code{asreml.obj} component in the \code{\link{asrtests.object}}.}
+               \code{asreml.obj} component in the \code{asrtests.obj}.}
  \item{addRandom}{A single \code{character} string in the form of a formula which, 
                after addition of \code{" ~ . +"}and expansion, specifies the sum 
                of a set of terms to be added to the random formula.}
@@ -57,7 +58,12 @@
               being manipulated.}
  \item{allow.unconverged}{A \code{logical} indicating whether to accept a new model 
                       even when it does not converge. If \code{FALSE} and the fit does not 
-                      converge, the supplied \code{asreml} object is returned.}
+                      converge, the supplied \code{asrtests.obj} is returned.}
+ \item{allow.fixedcorrelation}{A \code{logical} indicating whether to accept a new model 
+              even when it contains correlations in the model whose values have been 
+              fixed. If \code{FALSE} and the model contains correlations whose values 
+              have been set to a fixed value, the supplied \code{asrtests.obj} is 
+              returned.}
  \item{checkboundaryonly}{If \code{TRUE} then boundary and singular terms are not removed by 
               \code{\link{rmboundary.asrtests}}; a warning is issued instead.}
  \item{trace}{If TRUE then partial iteration details are displayed when ASReml-R 
@@ -110,7 +116,7 @@
                     left unchanged for those terms.}
  \item{IClikelihood}{A \code{character} that controls both the occurence and the type 
                     of likelihood for information criterion in the \code{test.summary} 
-                    of the \code{\link{asrtests.object}}. If \code{none}, none are 
+                    of the new \code{\link{asrtests.object}}. If \code{none}, none are 
                     included. Otherwise, if \code{REML}, then the AIC and BIC based 
                     on the Restricted Maximum Likelihood are included; if \code{full}, 
                     then the AIC and BIC based on the full likelihood are included. 

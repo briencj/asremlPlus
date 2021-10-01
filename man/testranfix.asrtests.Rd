@@ -19,7 +19,8 @@
   added to the \code{test.summary} \code{data.frame} for the term that is tested.}
 \usage{
 \method{testranfix}{asrtests}(asrtests.obj, term=NULL, alpha = 0.05, 
-           allow.unconverged = TRUE, checkboundaryonly = FALSE, 
+           allow.unconverged = TRUE, allow.fixedcorrelation = TRUE, 
+           checkboundaryonly = FALSE, 
            drop.ran.ns = TRUE, positive.zero = FALSE, 
            bound.test.parameters = "none", 
            bound.exclusions = c("F","B","S","C"), REMLDF = NULL, 
@@ -33,9 +34,9 @@
        (ii) \code{wald.tab}, and (iii) \code{test.summary}.}
  \item{term}{A single model term that is valid in \code{asreml}, stored 
              as a \code{character}. The names of fixed terms must match those in the \code{wald.tab} 
-             component of the \code{\link{asrtests.object}}, while the names of random terms must 
+             component of the \code{asrtests.obj}, while the names of random terms must 
              match those in the \code{vparameters} component of the \code{asreml.obj} component 
-             in the \code{\link{asrtests.object}}.}
+             in the \code{asrtests.obj}.}
  \item{alpha}{The significance level for the test.}
  \item{allow.unconverged}{A \code{logical} indicating whether to accept a new model 
                       even when it does not converge. If \code{FALSE}, it will be 
@@ -44,6 +45,11 @@
                       are removed. Also, if \code{FALSE} and the fit of the new model has 
                       converged, but that of the old model has not, the new model will be 
                       accepted.}
+ \item{allow.fixedcorrelation}{A \code{logical} indicating whether to accept a new model 
+              even when it contains correlations in the model whose values have been 
+              fixed. If \code{FALSE} and the model contains correlations whose values 
+              have been set to a fixed value, the supplied \code{asrtests.obj} is 
+              returned.}
  \item{checkboundaryonly}{If \code{TRUE} then boundary and singular terms are not removed by 
               \code{\link{rmboundary.asrtests}}; a warning is issued instead.}
  \item{drop.ran.ns}{A \code{logical} indicating whether to drop a random 
@@ -106,7 +112,7 @@
               fixed terms, including (Intercept) whose value could be \code{NA}.}
  \item{IClikelihood}{A \code{character} that controls both the occurence and the type 
                     of likelihood for information criterion in the \code{test.summary} 
-                    of the \code{\link{asrtests.object}}. If \code{none}, none are 
+                    of the new \code{\link{asrtests.object}}. If \code{none}, none are 
                     included. Otherwise, if \code{REML}, then the AIC and BIC based 
                     on the Restricted Maximum Likelihood are included; if \code{full}, 
                     then the AIC and BIC based on the full likelihood are included. 
@@ -124,7 +130,7 @@
  \item{set.terms}{A character vector specifying the terms that are to have 
                bounds and/or initial values set prior to fitting. 
                The names must match those in the \code{vparameters} component of the 
-               \code{asreml.obj} component in the \code{\link{asrtests.object}}.}
+               \code{asreml.obj} component in the new \code{\link{asrtests.object}}.}
  \item{ignore.suffices}{A logical vector specifying whether the suffices of the 
                     \code{asreml}-assigned names of the variance terms (i.e. the 
                     information to the right of an "!", other than "R!") is to 

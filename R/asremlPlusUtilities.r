@@ -16,6 +16,23 @@
   return(kopt)
 }
 
+#Check for fixed correlations
+isFixedCorrelOK.asreml <- function(asreml.obj, allow.fixedcorrelation = TRUE)  
+{
+  correlOK <- TRUE
+  if (!allow.fixedcorrelation)
+  {
+    vsumm <- summary(asreml.obj)$varcomp
+    vsumm <- vsumm[grepl("!cor", rownames(vsumm), fixed = TRUE),]
+    if (!all(is.na(vsumm)))
+    {
+      if (any(vsumm$bound == "F"))
+        correlOK <- FALSE
+    }
+  }  
+  return(correlOK)
+}
+
 #Get the loaded version of asreml
 "getASRemlVersionLoaded" <- function(nchar = NULL, notloaded.fault = FALSE)
 {
