@@ -26,7 +26,7 @@ isFixedCorrelOK.asreml <- function(asreml.obj, allow.fixedcorrelation = TRUE)
     vsumm <- vsumm[grepl("!cor", rownames(vsumm), fixed = TRUE),]
     if (!all(is.na(vsumm)))
     {
-      if (any(vsumm$bound == "F"))
+      if (any(vsumm$bound %in% c("F","B","S")))
         correlOK <- FALSE
     }
   }  

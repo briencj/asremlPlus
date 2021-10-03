@@ -24,7 +24,7 @@
 \arguments{
  \item{asrtests.obj}{an \code{\link{asrtests.object}} containing the components (i) \code{asreml.obj},
        (ii) \code{wald.tab}, and (iii) \code{test.summary}.}
- \item{terms}{A character string vector giving the terms that are to be reparameterized.}
+ \item{terms}{A character string vector giving the random terms that are to be reparameterized.}
  \item{trend.num}{A character string giving the name of the numeric covariate that 
               corresponds to \code{devn.fac} and is potentially included in terms 
               in the fitted model.}
@@ -41,9 +41,12 @@
                       the supplied \code{asrtests.obj} is returned.}
  \item{allow.fixedcorrelation}{A \code{logical} indicating whether to accept a new model 
               even when it contains correlations in the model whose values have been 
-              fixed. If \code{FALSE} and the model contains correlations whose values 
-              have been set to a fixed value, the supplied \code{asrtests.obj} is 
-              returned.}
+              designated as fixed, bound or singular. If \code{FALSE} and the new model 
+              contains correlations whose values have not been able to be estimated, 
+              the supplied \code{asrtests.obj} is returned. The fit in the 
+              \code{asreml.obj} component of the supplied \code{asrtests.obj} will 
+              also be tested and a warning issued if both fixed correlations are found 
+              in it and \code{allow.fixedcorrelation} is \code{FALSE}.}
  \item{checkboundaryonly}{If \code{TRUE} then boundary and singular terms are not removed by 
               \code{\link{rmboundary.asrtests}}; a warning is issued instead.}
  \item{denDF}{Specifies the method to use in computing approximate denominator 

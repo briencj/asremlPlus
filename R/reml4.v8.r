@@ -864,6 +864,17 @@ atLevelsMatch <- function(new, old, call)
   if (is.character(validasr))
     stop(validasr)
   
+  #Check for fixed correlations in supplied asrtests.obj
+  if (!isFixedCorrelOK(asreml.obj, allow.fixedcorrelation = allow.fixedcorrelation))
+  {
+    if (asr4)
+      kresp <- asreml.obj$formulae$fixed[[2]]
+    else
+      kresp <- asreml.obj$fixed.formula[[2]]
+    warning(paste("The estimated value of one or more correlations in the supplied asreml fit for", kresp,
+                  "is fixed and allow.fixedcorrelation is FALSE"))
+  }
+  
   if (is.null(call <- asreml.obj$call) && 
       is.null(call <- attr(asreml.obj, "call"))) 
     stop("Need an object with call component or attribute")
@@ -1366,6 +1377,10 @@ atLevelsMatch <- function(new, old, call)
     kresp <- asrtests.obj$asreml.obj$formulae$fixed[[2]]
   else
     kresp <- asrtests.obj$asreml.obj$fixed.formula[[2]]
+  #Check for fixed correlations in supplied asrtests.obj
+  if (!isFixedCorrelOK(asrtests.obj$asreml.obj, allow.fixedcorrelation = allow.fixedcorrelation))
+    warning(paste("The estimated value of one or more correlations in the supplied asreml fit for", kresp,
+                  "is fixed and allow.fixedcorrelation is FALSE"))
   all.terms <- c(dropFixed, addFixed, dropRandom, addRandom, newResidual)
   if (all(is.null(all.terms)))
     stop("In analysing ", kresp, ", must supply terms to be removed/added")
@@ -1634,6 +1649,18 @@ atLevelsMatch <- function(new, old, call)
   asreml.obj <- asrtests.obj$asreml.obj
   wald.tab <- asrtests.obj$wald.tab
   test.summary <- asrtests.obj$test.summary
+
+  #Check for fixed correlations in supplied asrtests.obj
+  if (!isFixedCorrelOK(asrtests.obj$asreml.obj, allow.fixedcorrelation = allow.fixedcorrelation))
+  {
+    if (asr4)
+      kresp <- asrtests.obj$asreml.obj$formulae$fixed[[2]]
+    else
+      kresp <- asrtests.obj$asreml.obj$fixed.formula[[2]]
+    warning(paste("The estimated value of one or more correlations in the supplied asreml fit for", kresp,
+                  "is fixed and allow.fixedcorrelation is FALSE"))
+  }
+  
   #Check for multiple terms
   term.form <- as.formula(paste("~ ",term, sep=""))
   term.obj <- as.terms.object(term, asreml.obj)
@@ -1994,7 +2021,8 @@ atLevelsMatch <- function(new, old, call)
           term.form <- as.formula(paste("~ . + ",term, sep=""))
           asreml.new.obj <- newfit.asreml(asreml.obj, random. = term.form, trace = trace, 
                                           update = update, 
-                                          allow.unconverged = TRUE, allow.fixedcorrelation = TRUE,
+                                          allow.unconverged = TRUE, 
+                                          allow.fixedcorrelation = TRUE,
                                           set.terms = set.terms, 
                                           ignore.suffices = ignore.suffices, 
                                           bounds = bounds, 
@@ -2144,6 +2172,17 @@ atLevelsMatch <- function(new, old, call)
   wald.tab <- asrtests.obj$wald.tab
   test.summary <- asrtests.obj$test.summary
 
+  #Check for fixed correlations in supplied asrtests.obj
+  if (!isFixedCorrelOK(asrtests.obj$asreml.obj, allow.fixedcorrelation = allow.fixedcorrelation))
+  {
+    if (asr4)
+      kresp <- asrtests.obj$asreml.obj$formulae$fixed[[2]]
+    else
+      kresp <- asrtests.obj$asreml.obj$fixed.formula[[2]]
+    warning(paste("The estimated value of one or more correlations in the supplied asreml fit for", kresp,
+                  "is fixed and allow.fixedcorrelation is FALSE"))
+  }
+  
   #Test whether oldterms are in random model
   oldterms.obj <- as.terms.object(oldterms, asreml.obj)
   ranterms.obj <- as.terms.object(languageEl(asreml.obj$call, which="random"), asreml.obj)
@@ -2343,6 +2382,10 @@ atLevelsMatch <- function(new, old, call)
     kresp <- asrtests.obj$asreml.obj$formulae$fixed[[2]]
   else
     kresp <- asrtests.obj$asreml.obj$fixed.formula[[2]]    
+  #Check for fixed correlations in supplied asrtests.obj
+  if (!isFixedCorrelOK(asrtests.obj$asreml.obj, allow.fixedcorrelation = allow.fixedcorrelation))
+    warning(paste("The estimated value of one or more correlations in the supplied asreml fit for", kresp,
+                  "is fixed and allow.fixedcorrelation is FALSE"))
   if (is.null(terms))
     stop("In analysing ", kresp, ", must supply terms to be tested")
   else
@@ -2590,8 +2633,28 @@ atLevelsMatch <- function(new, old, call)
   if (is.character(validasrt))
     stop(validasrt)
   
+  #Check IClikelihood options
+  options <- c("none", "REML", "full")
+  ic.lik <- options[check.arg.values(IClikelihood, options)]
+  ic.NA <- data.frame(fixedDF = NA, varDF = NA, AIC = NA, BIC = NA)
+  
+  #Check for fixed correlations in supplied asrtests.obj
+  if (!isFixedCorrelOK(asrtests.obj$asreml.obj, allow.fixedcorrelation = allow.fixedcorrelation))
+  {
+    if (asr4)
+      kresp <- asrtests.obj$asreml.obj$formulae$fixed[[2]]
+    else
+      kresp <- asrtests.obj$asreml.obj$fixed.formula[[2]]
+    warning(paste("The estimated value of one or more correlations in the supplied asreml fit for", kresp,
+                  "is fixed and allow.fixedcorrelation is FALSE"))
+  }
+  
   #find out if any terms have either a devn.fac or a trend.num term 
   #  - (marginality implies cannot be both)
+  if (is.null(terms))
+    stop("The terms argument is NULL")
+  ranterms.obj <- as.terms.object(languageEl(asrtests.obj$asreml.obj$call, which="random"), 
+                                  asrtests.obj$asreml.obj)
   asrtests.old.obj <- asrtests.obj
   term.types <- trend.terms.types(terms = terms, devn.fac = devn.fac, trend.num = trend.num)
   #Check have terms involving devn.fac or trend.num
@@ -2600,6 +2663,9 @@ atLevelsMatch <- function(new, old, call)
   { 
     for (term in terms)
     { 
+      termno <- findterm(term, labels(ranterms.obj))
+      if (termno == 0)
+        stop(paste(term,"is not a random term"))
       factors <- fac.getinTerm(term)
       #Check this term involves a devn fac
       if (!is.null(devn.fac) && any(devn.fac %in%  factors))
@@ -2674,7 +2740,20 @@ atLevelsMatch <- function(new, old, call)
   }
   #Check fixed correlation
   if (!isFixedCorrelOK(asrtests.obj$asreml.obj, allow.fixedcorrelation = allow.fixedcorrelation))
+  {
     asrtests.obj <- asrtests.old.obj
+    if (ic.lik != "none")
+      ic <- infoCriteria(asreml.obj, IClikelihood = ic.lik, 
+                         bound.exclusions = c("F","B","S","C"))
+    else
+      ic <- ic.NA
+    test.summary <- addtoTestSummary(asrtests.old.obj$test.summary, terms = terms, 
+                                     DF=ic$fixedDF, denDF = ic$varDF, 
+                                     p = NA, AIC = ic$AIC, BIC = ic$BIC, 
+                                     action = "Unchanged - fixed correlation")
+    
+    asrtests.obj$test.summary <- test.summary
+  }
   else
     asrtests.obj$wald.tab <- recalcWaldTab(asrtests.obj, denDF = denDF, trace = trace, ...)
   invisible(asrtests.obj)

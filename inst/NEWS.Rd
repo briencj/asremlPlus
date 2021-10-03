@@ -1,5 +1,10 @@
 \name{news}
 \title{News for Package asremlPlus}
+\section{asremlPlus Version 4.3-23 (2021-10-03)}{
+  \itemize{
+  \item{Modify the test for fixed correlation from a test for \code{Fixed} (\code{F}) to cover also correlations that are \code{bound} (\code{B}) or \code{singular} (\code{S}).}
+  \item{Add tests on incoming fits for fixed correlation.}
+}}
 \section{asremlPlus Version 4.3-22 (2021-10-01)}{
   \itemize{
   \item{Support is no longer provided in asremlPlus for versions of ASReml-R prior to version 4.0.}

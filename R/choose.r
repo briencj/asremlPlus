@@ -107,15 +107,13 @@ addtoChooseSummary <- function(choose.summary, term, DF = NA, denDF = NA, p = NA
     stop("Supplied data.frame does not contain all terms in terms.marginality")
 
   #Process DF argument
-#  attr(object, which = "omit.df") <- FALSE
   object <- setdf(object, df = DF, which.df = "DF")
 
   #Process denDF argument
   object <- setdf(object, df = denDF, which.df = "denDF")
   DF <- attr(object, which = "DF")
   denDF <- attr(object, which = "denDF")
-#  omit.df <- attr(object, which = "omit.df")
-  
+
   #perform tests
   sig.terms <- vector("list", length = 0)
   noterms <- dim(terms.marginality)[1]
@@ -329,6 +327,22 @@ addtoChooseSummary <- function(choose.summary, term, DF = NA, denDF = NA, p = NA
   ic.lik <- options[check.arg.values(IClikelihood, options)]
   options <- c("AIC", "BIC") #, "both")
   ic.type <- options[check.arg.values(which.IC, options)]
+  
+  #Check for fixed correlations in supplied asrtests.obj
+  if (!isFixedCorrelOK(asrtests.obj$asreml.obj, allow.fixedcorrelation = allow.fixedcorrelation))
+  {
+    if ("formulae" %in% names(asrtests.obj$asreml.obj))
+      kresp <- asrtests.obj$asreml.obj$formulae$fixed[[2]]
+    else
+    {
+      if ("fixed.formula" %in% names(asrtests.obj$asreml.obj))
+        kresp <- asrtests.obj$asreml.obj$fixed.formula[[2]]
+      else
+        kresp <- NULL
+    }
+    warning(paste("The estimated value of one or more correlations in the supplied asreml fit for", kresp,
+                  "is fixed and allow.fixedcorrelation is FALSE"))
+  }
   
   #Calculate the IC for the incoming fit
   old.IC <- infoCriteria(asrtests.obj$asreml.obj, IClikelihood = ic.lik, 
