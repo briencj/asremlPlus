@@ -1764,8 +1764,8 @@ test_that("linear.transform_WaterRunoff_asreml4", {
                                  cbind(diag(1, nrow = 7), 
                                        matrix(rep(-1, 7), ncol = 1)))))
   #Will get NaNs because differences between every 6th contrast are zero 
-  #because the predictions are additive
-  testthat::expect_warning(diffs.L <- linTransform(diffs.sub, 
+  #because the predictions are additive - has been fixed in 4.3-24
+  testthat::expect_silent(diffs.L <- linTransform(diffs.sub, 
                                                    classify = "Sources:Species",
                                                    linear.transformation = L,
                                                    tables = "none"))
@@ -1780,7 +1780,7 @@ test_that("linear.transform_WaterRunoff_asreml4", {
   
   #More efficient version for manual
   data(WaterRunoff.dat)
-    asreml.options(keep.order = TRUE) #required for asreml4 only
+  asreml.options(keep.order = TRUE) #required for asreml4 only
   current.asr <- asreml(fixed = pH ~ Benches + (Sources * (Type + Species)), 
                         random = ~ Benches:MainPlots,
                         data= WaterRunoff.dat)

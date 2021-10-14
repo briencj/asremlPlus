@@ -48,6 +48,7 @@
              LSDtype = "overall", LSDsupplied = NULL, 
              LSDby = NULL, LSDstatistic = "mean", 
              LSDaccuracy = "maxAbsDeviation", 
+             zero.tolerance = .Machine$double.eps ^ 0.5, 
              response = NULL, response.title = NULL, 
              x.num = NULL, x.fac = NULL, 
              tables = "all", level.length = NA, 
@@ -195,6 +196,9 @@
              calculating the LSD statistics and each assigned LSD and the accuracy is expressed as a 
              proportion of the assigned LSD value. The calculated values are stored in the column named 
              \code{accuracyLSD} in an \code{\link{LSD.frame}}.}
+\item{zero.tolerance}{A \code{\link{numeric}} specifying the value such that if a \code{predicted.value}, 
+             its variance-covariance, or an \code{LSD} is less than it, it will be 
+             considered to be zero.}
 \item{response}{A \code{character} specifying the response variable for the 
                     predictions. It is stored as an attribute to the \code{\link{alldiffs.object}} .}
 \item{response.title}{A \code{character} specifying the title for the response variable 

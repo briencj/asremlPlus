@@ -460,6 +460,13 @@ isFixedCorrelOK.asreml <- function(asreml.obj, allow.fixedcorrelation = TRUE)
   geninv.x
 }
 
+"setToZero" <- function(x, zero.tolerance = .Machine$double.eps ^ 0.5)
+{
+  zeroes <- abs(x) < zero.tolerance
+  if (any(zeroes))
+    x[zeroes] <- 0
+  return(x)
+}
 subset.list <- function(x, select = 1:length(x), ...)
 {
   selx <- select

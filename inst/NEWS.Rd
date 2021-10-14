@@ -1,5 +1,10 @@
 \name{news}
 \title{News for Package asremlPlus}
+\section{asremlPlus Version 4.3-24 (2021-10-14)}{
+  \itemize{
+  \item{Make sure that when \code{predicted.values} and the associated \code{vcov} and \code{sed} in an \code{\link{alldiffs.object}} have values that are close to zero as a result of the limitations of real number calculations, they are set to zero so as to avoid further calculation problems.}
+  \item{Add \code{zero.tolerance} argument to linTransform.alldiffs.}
+}}
 \section{asremlPlus Version 4.3-23 (2021-10-03)}{
   \itemize{
   \item{Modify the test for fixed correlation from a test for \code{Fixed} (\code{F}) to cover also correlations that are \code{bound} (\code{B}) or \code{singular} (\code{S}).}

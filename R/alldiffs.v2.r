@@ -2338,6 +2338,7 @@ redoErrorIntervals.alldiffs <- function(alldiffs.obj, error.intervals = "Confide
                                     LSDtype = "overall", LSDsupplied = NULL, 
                                     LSDby = NULL, LSDstatistic = "mean", 
                                     LSDaccuracy = "maxAbsDeviation",
+                                    zero.tolerance = .Machine$double.eps ^ 0.5, 
                                     response = NULL, response.title = NULL, 
                                     x.num = NULL, x.fac = NULL, 
                                     tables = "all", level.length = NA, 
@@ -2503,16 +2504,21 @@ redoErrorIntervals.alldiffs <- function(alldiffs.obj, error.intervals = "Confide
       #Form predictions projected onto submodel
       lintrans <- alldiffs.obj$predictions
       lintrans$predicted.value <- as.vector(Q.submod %*% lintrans$predicted.value)
+      zeroes <- abs(lintrans$predicted.value) < zero.tolerance
+      if (any(zeroes))
+        lintrans$predicted.value[zeroes] <- 0
       
       # Calculate standard errors and the variance matrix for differences between predictions
       if (!is.null(alldiffs.obj$vcov))
       {
         lintrans.vcov <- Q.submod %*% alldiffs.obj$vcov %*% Q.submod
+        lintrans.vcov <- setToZero(lintrans.vcov, zero.tolerance = zero.tolerance)
         lintrans$standard.error <- as.vector(sqrt(diag(lintrans.vcov)))
         n <- nrow(lintrans.vcov)
         lintrans.sed <- matrix(rep(diag(lintrans.vcov), each = n), nrow = n) + 
           matrix(rep(diag(lintrans.vcov), times = n), nrow = n) - 
           2 * lintrans.vcov
+        lintrans.sed <- setToZero(lintrans.sed, zero.tolerance = zero.tolerance)
         lintrans.sed <- sqrt(lintrans.sed)  
       } else
       {
@@ -2558,6 +2564,8 @@ redoErrorIntervals.alldiffs <- function(alldiffs.obj, error.intervals = "Confide
       lintrans$Combination <- factor(lintrans$Combination, levels = lintrans$Combination)
       lintrans$predicted.value <- as.vector(linear.transformation %*% 
                                               alldiffs.obj$predictions$predicted.value)
+      lintrans$predicted.value <- setToZero(lintrans$predicted.value, 
+                                            zero.tolerance = zero.tolerance)
       lintrans$est.status <- "Estimable"
       lintrans$est.status[is.na(lintrans$predicted.value)] <- "Aliased"
       
@@ -2565,10 +2573,12 @@ redoErrorIntervals.alldiffs <- function(alldiffs.obj, error.intervals = "Confide
       if (!is.null(alldiffs.obj$vcov))
       {
         lintrans.vcov <- linear.transformation %*% alldiffs.obj$vcov %*% t(linear.transformation)
+        lintrans.vcov <- setToZero(lintrans.vcov, zero.tolerance = zero.tolerance)
         lintrans$standard.error <- as.vector(sqrt(diag(lintrans.vcov)))
         n <- nrow(lintrans.vcov)
         lintrans.sed <- matrix(rep(diag(lintrans.vcov), each = n), nrow = n) + 
           matrix(rep(diag(lintrans.vcov), times = n), nrow = n) - 2 * lintrans.vcov
+        lintrans.sed <- setToZero(lintrans.sed, zero.tolerance = zero.tolerance)
         lintrans.sed <- sqrt(lintrans.sed)  
       } else
       {
@@ -2604,7 +2614,7 @@ redoErrorIntervals.alldiffs <- function(alldiffs.obj, error.intervals = "Confide
                                          accuracy.threshold = accuracy.threshold,
                                          LSDtype = LSDtype, LSDsupplied = LSDsupplied, 
                                          LSDby = LSDby, LSDstatistic = LSDstat,
-                                         LSDaccuracy = LSDacc, ...)
+                                         LSDaccuracy = LSDacc, zero.tolerance = zero.tolerance, ...)
  
     #Outut tables according to table.opt
     if (!("none" %in% table.opt))
