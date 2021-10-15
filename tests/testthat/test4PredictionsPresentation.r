@@ -293,6 +293,15 @@ test_that("plotPvalues.asreml4", {
                                       gridspacing = rep(c(3,4), c(4,2)), 
                                       show.sig = TRUE))
 
+  #Test different size, face and colour
+  testthat::expect_silent(plotPvalues(p, x = "X1", y = "X2", 
+                                      gridspacing = rep(c(3,4), c(4,2)), 
+                                      show.sig = TRUE, sig.size = 5, sig.colour = "blue"))
+  testthat::expect_silent(plotPvalues(p, x = "X1", y = "X2", 
+                                      gridspacing = rep(c(3,4), c(4,2)), 
+                                      show.sig = TRUE, sig.size = 5, sig.face = "bold", 
+                                      sig.family = "serif"))
+  
   #Plot with sections
   pdata <- plotPvalues(diffs, sections = "Sources", show.sig = TRUE)
   testthat::expect_equal(nrow(pdata), 400)

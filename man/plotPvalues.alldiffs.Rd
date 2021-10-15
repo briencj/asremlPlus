@@ -18,7 +18,10 @@
 \usage{plotPvalues(object, ...)
 \method{plotPvalues}{alldiffs}(object, sections = NULL, 
             gridspacing = 0, factors.per.grid = 0, 
-            show.sig = FALSE, alpha = 0.10, triangles = "both", 
+            show.sig = FALSE, alpha = 0.10, 
+            sig.size = 3, sig.colour = "black", 
+            sig.face = "plain", sig.family = "",  
+            triangles = "both", 
             title = NULL, axis.labels = TRUE, axis.text.size = 12, 
             sep=",", colours = RColorBrewer::brewer.pal(3, "Set2"), 
             ggplotFuncs = NULL, printPlot = TRUE, 
@@ -56,17 +59,26 @@
              included for \code{alpha} = 0.10.}
  \item{alpha}{A \code{\link{numeric}} giving the significance level for testing 
              pairwise differences; must be 0.05 or 0.10.}
-  \item{triangles}{A \code{character} indicating whether the plot should include the 
+ \item{sig.size}{A \code{\link{numeric}} specifying the size, in pts, of the 
+             significance asterisks.}
+ \item{sig.colour}{A \code{\link{character}} specifying the colour to use for the 
+             significance asterisks.}
+ \item{sig.face}{A \code{\link{character}} specifying the font face for the significance 
+             asterisks (\code{"plain"}, \code{"italic"}, \code{"bold"}, \code{"bold.italic"}).}
+\item{sig.family}{A \code{\link{character}} specifying the font family for the significance 
+             asterisks. The font families that are available depends on the system. For font 
+             families other than the basic Postscript fonts, see the \code{extrafont} package.}
+  \item{triangles}{A \code{\link{character}} indicating whether the plot should include the 
              \code{lower}, \code{upper} or \code{both} traingle(s).}
-\item{title}{A \code{character} string giving the main title for the plot and to which 
+\item{title}{A \code{\link{character}}  string giving the main title for the plot and to which 
               is appended the levels combination of the sectioning factors, if any, for each plot.}
- \item{axis.labels}{A \code{logical} indicating whether a label is to be added to the x- and y-axes. 
+ \item{axis.labels}{A \code{\link{logical}} indicating whether a label is to be added to the x- and y-axes. 
               If TRUE, the label is the comma-separated list of factors whose levels 
               combinations are involved in the prediction differences for which the p-values 
               are calculated.}
  \item{axis.text.size}{A \code{\link{numeric}} giving the size of the \code{labels} on the axes   
                   of the \code{heatmap}.}
- \item{sep}{A \code{character} giving the characters separating the levels of different 
+ \item{sep}{A \code{\link{character}} giving the characters separating the levels of different 
                factors in the row and column names of the \code{p.differences} component. }
  \item{colours}{A vector of of colours to be passed to the \code{ggplot} function 
                 \code{scale\_colour\_gradientn}.}
@@ -76,7 +88,7 @@
                 a \code{\link{ggplot}} function call for each element. 
                 It is passed to \code{ggplot} via \code{\link{plotPvalues.data.frame}} 
                 to be applied in creating the \code{ggplot} object.}
- \item{printPlot}{A \code{logical} indicating whether or not the a plot is to be printed. This would 
+ \item{printPlot}{A \code{\link{logical}} indicating whether or not the a plot is to be printed. This would 
                 be used when just the returned \code{data.frame} is required.}
 \item{sortFactor}{A \code{\link{character}} containing the name of the 
               \code{factor} that indexes the set of predicted values that determines 

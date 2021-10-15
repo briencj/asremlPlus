@@ -1,5 +1,9 @@
 \name{news}
 \title{News for Package asremlPlus}
+\section{asremlPlus Version 4.3-25 (2021-10-15)}{
+  \itemize{
+  \item{Add \code{sig.size}, \code{sig.face} and \code{sig.colour} arguments to plotPvalues.data.frame and plotPvalues.alldiffs.}
+}}
 \section{asremlPlus Version 4.3-24 (2021-10-14)}{
   \itemize{
   \item{Make sure that when \code{predicted.values} and the associated \code{vcov} and \code{sed} in an \code{\link{alldiffs.object}} have values that are close to zero as a result of the limitations of real number calculations, they are set to zero so as to avoid further calculation problems.}

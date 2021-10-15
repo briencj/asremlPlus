@@ -2,6 +2,8 @@
 #+
 "plotPvalues.data.frame" <- function(object, p = "p",  x, y, 
                                      gridspacing = 0, show.sig = FALSE, alpha = 0.10,
+                                     sig.size = 3, sig.colour = "black", 
+                                     sig.face = "plain", sig.family = "",  
                                      triangles = "both", 
                                      title = NULL, axis.labels = NULL, axis.text.size = 12, 
                                      colours = RColorBrewer::brewer.pal(3, "Set2"), 
@@ -51,7 +53,9 @@
       if (alpha == 0.1)
         if (any(object[p] <= alpha & object[p] > 0.05))
           object$sig[(object[p] <= alpha & object[p] > 0.05)] <- "."
-      plt <- plt + geom_text(data=object, aes_string(label="sig"), size=3)
+      plt <- plt + geom_text(data=object, aes_string(label="sig"), 
+                             size=sig.size, colour = sig.colour, 
+                             fontface = sig.face, family = sig.family)
     }
     
     if (gridspacing[1] > 0)
@@ -88,6 +92,8 @@
 "plotPvalues.alldiffs" <- function(object, sections = NULL, 
                                    gridspacing = 0, factors.per.grid = 0, 
                                    show.sig = FALSE, alpha = 0.10, 
+                                   sig.size = 3, sig.colour = "black", 
+                                   sig.face = "plain", sig.family = "",
                                    triangles = "both", 
                                    title = NULL, axis.labels = TRUE, axis.text.size = 12, 
                                    sep=",", colours = RColorBrewer::brewer.pal(3, "Set2"), 
@@ -177,6 +183,8 @@
     if (is.null(title))
       plotPvalues.data.frame(object = p, x = "X1", y = "X2", 
                              gridspacing = gridspacing, show.sig = show.sig, alpha = alpha, 
+                             sig.size = sig.size, sig.colour = sig.colour, 
+                             sig.face = sig.face, sig.family = sig.family, 
                              triangles = triangles, 
                              axis.labels = pairname, colours = colours, 
                              printPlot = printPlot, 
@@ -184,6 +192,8 @@
     else
       plotPvalues.data.frame(object = p, x = "X1", y = "X2",  
                              gridspacing = gridspacing, show.sig = show.sig, alpha = alpha, 
+                             sig.size = sig.size, sig.colour = sig.colour, 
+                             sig.face = sig.face, sig.family = sig.family, 
                              triangles = triangles, 
                              title = title, axis.labels = pairname, 
                              colours = colours, printPlot = printPlot, 
@@ -246,6 +256,8 @@
       if (is.null(title))
         plotPvalues.data.frame(object = psect, x = "X1", y = "X2", 
                                gridspacing = gridspacing, show.sig = show.sig, alpha = alpha, 
+                               sig.size = sig.size, sig.colour = sig.colour, 
+                               sig.face = sig.face, sig.family = sig.family, 
                                triangles = triangles, 
                                title = paste("Plot of p-values for ",
                                              secname," = ",j, sep = ""),
@@ -255,6 +267,8 @@
       else
         plotPvalues.data.frame(object = psect, x = "X1", y = "X2", 
                                gridspacing = gridspacing, show.sig = show.sig, alpha = alpha, 
+                               sig.size = sig.size, sig.colour = sig.colour, 
+                               sig.face = sig.face, sig.family = sig.family, 
                                triangles = triangles, 
                                title = paste(title," - ", secname," = ", j, sep=""),
                                axis.labels = pairname, colours = colours, 

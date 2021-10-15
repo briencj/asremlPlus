@@ -6,7 +6,10 @@
              two factors whose levels specify, for each p-value, which factor levels are 
              being compared.}
 \usage{\method{plotPvalues}{data.frame}(object, p = "p", x, y, 
-            gridspacing = 0, show.sig = FALSE, alpha = 0.10, triangles = "both", 
+            gridspacing = 0, show.sig = FALSE, alpha = 0.10, 
+            sig.size = 3, sig.colour = "black", 
+            sig.face = "plain", sig.family = "",  
+            triangles = "both", 
             title = NULL, axis.labels = NULL, axis.text.size = 12, 
             colours = RColorBrewer::brewer.pal(3, "Set2"), 
             ggplotFuncs = NULL, printPlot = TRUE, ...)}
@@ -35,6 +38,15 @@
              included for \code{alpha} = 0.10.}
  \item{alpha}{A \code{\link{numeric}} giving the significance level for testing 
              pairwise differences; must be 0.05 or 0.10.}
+ \item{sig.size}{A \code{\link{numeric}} specifying the size, in pts, of the 
+             significance asterisks.}
+ \item{sig.colour}{A \code{\link{character}} specifying the colour to use for the 
+             significance asterisks.}
+ \item{sig.face}{A \code{\link{character}} specifying the font face for the significance 
+             asterisks (\code{"plain"}, \code{"italic"}, \code{"bold"}, \code{"bold.italic"}).}
+ \item{sig.family}{A \code{\link{character}} specifying the font family for the significance 
+             asterisks. The font families that are available depends on the system. For font 
+             families other than the basic Postscript fonts, see the \code{extrafont} package.}
  \item{triangles}{A \code{character} indicating whether the plot should include the 
              \code{lower}, \code{upper} or \code{both} traingle(s). Here it is only used 
               to adjust gridlines for the omission of the diagonal.}
