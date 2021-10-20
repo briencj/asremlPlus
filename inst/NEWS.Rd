@@ -1,5 +1,11 @@
 \name{news}
 \title{News for Package asremlPlus}
+\section{asremlPlus Version 4.3-26 (2021-10-21)}{
+  \itemize{
+  \item{Fix bug in false.pos and false.neg for \code{LSDtype} set to \code{supplied} when \code{LSDby} is not \code{NULL}.}
+  \item{Add quantiles 25 (\code{q25}) and 75 (\code{q75}) to the values that \code{LSDstatistic} can take and the exploreLSDs.alldiffs investigates.}
+  \item{Allow for multiple \code{LSDstatistic} values when \code{LSDtype} is \code{factor.combination} and \code{LSDby} is set.}
+}}
 \section{asremlPlus Version 4.3-25 (2021-10-15)}{
   \itemize{
   \item{Add \code{sig.size}, \code{sig.face} and \code{sig.colour} arguments to plotPvalues.data.frame and plotPvalues.alldiffs.}

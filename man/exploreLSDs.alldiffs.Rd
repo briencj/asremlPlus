@@ -20,11 +20,12 @@
 \item{alldiffs.obj}{An \code{\link{alldiffs.object}}.}
 \item{LSDtype}{A \code{\link{character}} string that can be \code{overall} or \code{factor.combinations}. 
               It determines whether the LSD values that are investigated and stored are  
-              (i) the \code{overall} minimum, quantile10, mean, median, quantile90, and maximum of all pairwise LSDs, or 
-              (ii) the minimum, quantile10, mean, median, quantile90, and maximum for the pairwise LSDs for each 
-              \code{factor.combination}, unless there is only one prediction for a \code{factor.combination}, 
-              when notional LSDs are calculated. The \code{LSDtype} specified here does not have to match that 
-              used in the creating the \code{\link{alldiffs.object}}.}
+              (i) the \code{overall} minimum, quantile10, quantile25, mean, median, quantile75, quantile90, 
+              and maximum of all pairwise LSDs, or 
+              (ii) the minimum, quantile10, quantile25, mean, median, quantile75, quantile90, and maximum 
+               for the pairwise LSDs for each \code{factor.combination}, unless there is only one prediction 
+              for a \code{factor.combination}, when notional LSDs are calculated. The \code{LSDtype} 
+              specified here does not have to match that used in the creating the \code{\link{alldiffs.object}}.}
 \item{LSDby}{A \code{\link{character}} (vector) of variables names, being the names of the 
              \code{\link{factor}s} or \code{\link{numeric}s} in the \code{classify} for each 
              combination of which LSD statistics and accuracy are to be computed, as well histograms 
@@ -56,15 +57,15 @@
        and \code{LSD}:  \code{frequencies} is a \code{data.frame} with the frequency distribution of the LSD 
        values; \code{distinct.vals} is a \code{list}, each component of which contains the distinct values 
        of the LSDs after rounding; \code{statistics} is a \code{data.frame} with the minimum, quantile10, 
-       mean, median, quantile90, and maximum of the LSD values; \code{accuracy} is a \code{data.frame} with 
-       the accuracies of the minimum, quantile10, mean, median, quantile90, and maximum of the LSD values 
-       with respect to the values from which these statistics are calculated; \code{per.pred.accuracy} is 
-       a \code{data.frame} with the accuracies of the minimum, quantile10, mean, median, quantile90, and 
-       maximum of the LSD values for a set of predictions when these statistics are used to represent the 
-       LSDs for the comparisons amongst the set of predictions; 
-       \code{LSD} is a square \code{matrix} containing the LSD values for all pairwise comparisons of the 
-       predictions contained in the supplied \code{alldiffs.obj}. The accuracy measure is specified by the 
-       \code{LSDaccuracy} argument.}
+       quantile25, mean, median, quantile75, quantile90, and maximum of the LSD values; \code{accuracy} is 
+       a \code{data.frame} with the accuracies of the minimum, quantile10, quantile25, mean, median, 
+       quantile75, quantile90, and maximum of the LSD values with respect to the values from which these 
+       statistics are calculated; \code{per.pred.accuracy} is a \code{data.frame} with the accuracies of the 
+       minimum, quantile10, quantile25, mean, median, quantile75, quantile90, and maximum of the LSD values 
+       for a set of predictions when these statistics are used to represent the LSDs for the comparisons 
+       amongst the set of predictions; \code{LSD} is a square \code{matrix} containing the LSD values for 
+       all pairwise comparisons of the predictions contained in the supplied \code{alldiffs.obj}. 
+       The accuracy measure is specified by the \code{LSDaccuracy} argument.}
 
 
 \author{Chris Brien}

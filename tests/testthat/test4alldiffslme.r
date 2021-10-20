@@ -415,16 +415,19 @@ test_that("explore_lme4", {
     testthat::expect_equal(names(LSDstat$frequencies), as.character(seq(0.19, 0.41, 0.02)))
     testthat::expect_equal(LSDstat$distinct.vals$`Rain+Basalt`, c(0.204,0.306,0.319))
     testthat::expect_true(all(abs(LSDstat$statistics[1,] - 
-                                    c(3, 0.2049027,0.2252329,0.2814212,0.3065539,0.3163506,0.3187998)) < 1e-05))
+                                    c(3, 0.2049027,0.2252329,0.2557283,0.2814212,
+                                      0.3065539,0.3126769,0.3163506,0.3187998)) < 1e-05))
     testthat::expect_true(all(abs(LSDstat$accuracy[1,] - 
-                                    c(3,0.5558598,0.4154228,0.2719005,0.3315934,0.3522925,0.3572686)) < 1e-05))
+                                    c(3,0.5558598,0.4154228,0.2466349,0.2719005,
+                                      0.3315934,0.3446824,0.3522925,0.3572686)) < 1e-05))
     testthat::expect_true(all(lapply(c("per.pred.accuracy", "LSD"), 
                                      function(k, LSDstat) nrow(LSDstat[[k]]), LSDstat = LSDstat) == 20))
     testthat::expect_equal(rownames(LSDstat$per.pred.accuracy), 
                            as.character(fac.combine(as.list(TS.diffs$predictions[c("Sources","Type")]), 
                                                     combine.levels = TRUE)))
     testthat::expect_true(all(abs(LSDstat$per.pred.accuracy[1,] - 
-                                    c(0.4960954,0.361053,0.2719005,0.3315934,0.3522925,0.3572686)) < 1e-05))
+                                    c(0.4960954,0.361053,0.1987486,0.2719005,
+                                      0.3315934,0.3446824,0.3522925,0.3572686)) < 1e-05))
   }
 })
 

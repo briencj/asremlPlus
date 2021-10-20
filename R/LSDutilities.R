@@ -6,6 +6,30 @@ LSDstat2name <- function(LSDstat)
 getUpperTri <- function(x)
   x <- x[upper.tri(x)]
 
+getLSDstatOpt <- function(LSDstatistic, avLSD, LSDby)
+{
+  LSDstat.options <- c("minimum", "q10", "q25", "mean", "median", "q75", "q90", "maximum")
+  if (length(LSDstatistic) == 0)
+    LSDstat <- "mean"
+  else 
+  {
+    if (length(LSDstatistic) == 1)
+      LSDstat <- LSDstat.options[check.arg.values(LSDstatistic, LSDstat.options)]
+    else
+    {
+      if (avLSD == "factor.combinations")
+      {
+        if (is.null(LSDby))
+          stop("Multiple values for LSDstatistic have been specified so that LSDby must not be NULL")
+        LSDstat <- LSDstat.options[unlist(lapply(LSDstatistic, check.arg.values, options=LSDstat.options))]
+      }
+      else
+        stop(paste("LSDstatistic must contain only one value for LSDtype", avLSD))
+    }
+  }  
+  return(LSDstat)
+}
+
 #Function to make a combined factor of the LSDby factor
 #Convert any non-factors and form levels combination for which a LSDs are required
 fac.LSDcombs.alldiffs <- function(alldiffs.obj, by)
@@ -207,7 +231,7 @@ rm.nazero <- function(ksed, kdif = NULL, retain.zeroLSDs = FALSE, zero.tolerance
   return(accuracyLSD)
 }
 
-#sed and kdif should be vectors that have had NAs and zeroes removed
+#ksed and kdif should be vectors that have had NAs and zeroes removed
 falseSignif <- function(ksed, kdif, assignedLSD, t.value)
 {
   sig.actual <- abs(kdif) >= t.value * ksed
@@ -239,10 +263,20 @@ falseSignif <- function(ksed, kdif, assignedLSD, t.value)
       stats$assignedLSD <- t.value * quantile(ksed, probs = 0.10)
     else
     {
-      if (LSDstatistic == "q90")
-        stats$assignedLSD <- t.value * quantile(ksed, probs = 0.90)
+      if (LSDstatistic == "q25")
+        stats$assignedLSD <- t.value * quantile(ksed, probs = 0.25)
       else
-        stats$assignedLSD <- stats[[LSDstat2name(LSDstatistic)]]
+      {  
+        if (LSDstatistic == "q75")
+          stats$assignedLSD <- t.value * quantile(ksed, probs = 0.75)
+        else
+          {
+            if (LSDstatistic == "q90")
+              stats$assignedLSD <- t.value * quantile(ksed, probs = 0.90)
+            else
+              stats$assignedLSD <- stats[[LSDstat2name(LSDstatistic)]]
+          }
+        }
     }
   }
    
@@ -283,6 +317,11 @@ sliceLSDs <- function(alldiffs.obj, by, t.value, LSDstatistic = "mean", LSDaccur
     #Get the LSDs
     fac.comb <- fac.LSDcombs.alldiffs(alldiffs.obj, by)
     levs <- levels(fac.comb)
+    if (length(LSDstatistic) ==  1)
+      LSDstatistic <- rep(LSDstatistic, length(levs))
+    if (length(levs) != length(LSDstatistic))
+      stop("The length of LSDstatistic should be the sanme as the number of combinations of the LSDby variables")
+    names(LSDstatistic) <- levs
     #loop over LSDby combinations
     LSDs <- lapply(levs, 
                    function(lev, sed, dif, t.value)
@@ -299,7 +338,7 @@ sliceLSDs <- function(alldiffs.obj, by, t.value, LSDstatistic = "mean", LSDaccur
                          names(stats) <- c("c", "minLSD", "meanLSD", "maxLSD", "assignedLSD", "accuracyLSD", 
                                            "false.pos", "false.neg")
                        } else
-                         if (which.stats == "accuracyLSD")
+                         if (which.stats == "evalLSD")
                            stats <- NA
                          else
                            stop("Unknown which.stats option in SliceLSDs")
@@ -314,14 +353,25 @@ sliceLSDs <- function(alldiffs.obj, by, t.value, LSDstatistic = "mean", LSDaccur
                        kdif <- rm.list$kdif
                        if (which.stats == "all")
                          stats <- LSDstats(ksed = ksed, kdif = kdif, t.value, 
-                                           LSDstatistic = LSDstatistic, LSDaccuracy = LSDaccuracy)
+                                           LSDstatistic = LSDstatistic[lev], LSDaccuracy = LSDaccuracy)
                        else
                        {  
-                         if (which.stats == "accuracyLSD")
+                         if (which.stats == "evalLSD")
+                         {
                            stats <- LSDaccmeas(ksed, 
-                                               assignedLSD = alldiffs.obj$LSD$assignedLSD[rownames(alldiffs.obj$LSD) 
-                                                                                          == lev], 
+                                               assignedLSD = 
+                                                 alldiffs.obj$LSD$assignedLSD[
+                                                   rownames(alldiffs.obj$LSD) == lev], 
                                                t.value = t.value, LSDaccuracy = LSDaccuracy)
+                           names(stats) <- "accuracyLSD"
+                           #Calculate the number of false positives and negatives
+                           falsesig <- falseSignif(ksed = ksed, kdif = kdif, 
+                                                   assignedLSD = 
+                                                     alldiffs.obj$LSD$assignedLSD[rownames(alldiffs.obj$LSD) 
+                                                                                == lev], 
+                                                   t.value = t.value)
+                           stats <- c(stats,falsesig)
+                         }
                          else
                            stop("Unknown which.stats option in SliceLSDs")
                        }
@@ -446,12 +496,12 @@ LSDpred.acc <- function(LSD.mat, assignedLSD, LSDaccuracy, t.value = 1,
                           retain.zeroLSDs = FALSE, 
                           zero.tolerance = .Machine$double.eps ^ 0.5) 
 {
-  LSDstat.labs <- c("minimum", "quantile10", "mean", "median", "quantile90", "maximum")
-
+  LSDstat.labs <- c("min", "quant10", "quant25", "mean", "median", "quant75", "quant90", "max")
+  
   #calculate LSD statistics
   c <- length(kLSDs)
-  quants <- quantile(kLSDs, c(0,0.10, 0.50, 0.90, 1))
-  stats <- c(c, quants[1:2], sqrt(mean(kLSDs*kLSDs)), quants[3:5])
+  quants <- quantile(kLSDs, c(0, 0.10, 0.25, 0.50, 0.75, 0.90, 1))
+  stats <- c(c, quants[1:3], sqrt(mean(kLSDs*kLSDs)), quants[4:7])
   names(stats) <- c("c", LSDstat.labs)
   stats <- as.data.frame(as.list(stats))
 
@@ -489,7 +539,7 @@ sliceAll <- function(alldiffs.obj, by, t.value, LSDaccuracy = "maxAbsDeviation",
                      digits = 3, plotHistogram = FALSE, 
                      retain.zeroLSDs = FALSE, zero.tolerance = .Machine$double.eps ^ 0.5)
 {
-  LSDstat.labs <- c("minimum", "quantile10", "mean", "median", "quantile90", "maximum")
+  LSDstat.labs <- c("min", "quant10", "quant25", "mean", "median", "quant75", "quant90", "max")
   
   classify <- attr(alldiffs.obj, which = "classify")
   if (!all(unlist(lapply(by, grepl, x = classify, fixed = TRUE))))
