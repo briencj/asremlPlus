@@ -1474,9 +1474,11 @@ exploreLSDs.alldiffs <- function(alldiffs.obj,  LSDtype = "overall", LSDby = NUL
   }
   
   
-  classify <- attr(alldiffs.obj, which = "classify")
-  if (!all(unlist(lapply(LSDby, grepl, x = classify, fixed = TRUE))))
-    stop("One of the elements of LSDby is not in the classify")
+  if (!all(LSDby %in% names(alldiffs.obj$predictions)))
+    stop("At least one element of LSDby is not in the predictions component of the alldiffs object\n")
+  # classify <- attr(alldiffs.obj, which = "classify")
+  # if (!all(unlist(lapply(LSDby, grepl, x = classify, fixed = TRUE))))
+  #   stop("One of the elements of LSDby is not in the classify")
   
   denom.df <- attr(alldiffs.obj, which = "tdf")
   if (is.null(denom.df))
@@ -2525,24 +2527,26 @@ redoErrorIntervals.alldiffs <- function(alldiffs.obj, error.intervals = "Confide
       if (length(Q) > 1)
         for (k in 2:length(Q))
           Q.submod <- Q.submod + Q[[k]]
-      Q.submod <- projector(Q.submod)
+      Q.submod <- dae::projector(Q.submod)
       
       #Check classify variables
       vars <- fac.getinTerm(classify, rmfunction = TRUE)
       if (!all(vars %in% colnam))
         stop("Not all of the variables in the classify are in the predictions component of the alldiffs object\n")
       #Process the classify to ensure there is a separate term for covariates
+      tmp <- alldiffs.obj$predictions
       facs <- covs <- list()
       for (var in vars)
       {
-        if (is.numeric(alldiffs.obj$predictions[[var]]))
+        if (is.numeric(tmp[[var]]))
           covs <- c(covs, list(var))
         else
           facs <- c(facs, list(var))
       }
       if (length(facs) > 0)
       {
-        full.mod <- fac.formTerm(facs)
+        tmp$fac.comb <- fac.combine(as.list(tmp[unlist(facs)]))
+        full.mod <- "fac.comb"
         if (length(covs) > 0)
         {
           covs <- paste(unlist(covs), collapse = " + ")
@@ -2557,13 +2561,13 @@ redoErrorIntervals.alldiffs <- function(alldiffs.obj, error.intervals = "Confide
       full.mod <- as.formula(paste0("~ ", full.mod))
 
       #Check that submodel is a subspace of the classify space
-      Q <- pstructure(full.mod, grandMean = TRUE, data = alldiffs.obj$predictions)$Q
+      Q <- dae::pstructure(full.mod, grandMean = TRUE, data = tmp)$Q
       Q.class <- Q[[1]]
       if (length(Q) > 1)
         for (k in 2:length(Q))
           Q.class <- Q.class + Q[[k]]
-      Q.class <- projector(Q.class)
-      
+      Q.class <- dae::projector(Q.class)
+
       if (any(abs(Q.submod %*% Q.class - Q.submod) > 1e-08))
         stop("Model space for ", linear.transformation, ", with ", degfree(Q.submod), 
              " DF, is not a subspace of the space for the classify ", classify, 

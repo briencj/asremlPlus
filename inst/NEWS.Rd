@@ -1,5 +1,10 @@
 \name{news}
 \title{News for Package asremlPlus}
+\section{asremlPlus Version 4.3-27 (2021-10-24)}{
+  \itemize{
+  \item{Fix problem in linTransform.alldiffs when the product of the numbers of levels in the classiify factors is large and not all combinations of the levels are observed.}
+  \item{Relax the requirement for \code{LSDby} variable to be in the \code{classify} to beng that they must be in the \code{predictions} component of the \code{alldiffs.obj}.}
+}}
 \section{asremlPlus Version 4.3-26 (2021-10-21)}{
   \itemize{
   \item{Fix bug in false.pos and false.neg for \code{LSDtype} set to \code{supplied} when \code{LSDby} is not \code{NULL}.}

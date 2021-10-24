@@ -297,9 +297,11 @@ sliceLSDs <- function(alldiffs.obj, by, t.value, LSDstatistic = "mean", LSDaccur
                       alpha = 0.05, which.stats = "all", 
                       retain.zeroLSDs = FALSE, zero.tolerance = .Machine$double.eps ^ 0.5)
 {
-  classify <- attr(alldiffs.obj, which = "classify")
-  if (!all(unlist(lapply(by, grepl, x = classify, fixed = TRUE))))
-    stop("One of the elements of LSDby is not in the classify")
+  if (!all(by %in% names(alldiffs.obj$predictions)))
+    stop("At least one element of LSDby is not in the predictions component of the alldiffs object\n")
+#  classify <- attr(alldiffs.obj, which = "classify")
+#  if (!all(unlist(lapply(by, grepl, x = classify, fixed = TRUE))))
+#    stop("One of the elements of LSDby is not in the classify")
   
   denom.df <- attr(alldiffs.obj, which = "tdf")
   if (is.null(denom.df))
@@ -541,9 +543,11 @@ sliceAll <- function(alldiffs.obj, by, t.value, LSDaccuracy = "maxAbsDeviation",
 {
   LSDstat.labs <- c("min", "quant10", "quant25", "mean", "median", "quant75", "quant90", "max")
   
-  classify <- attr(alldiffs.obj, which = "classify")
-  if (!all(unlist(lapply(by, grepl, x = classify, fixed = TRUE))))
-    stop("One of the elements of LSDby is not in the classify")
+  if (!all(by %in% names(alldiffs.obj$predictions)))
+    stop("At least one element of LSDby is not in the predictions component of the alldiffs object\n")
+#  classify <- attr(alldiffs.obj, which = "classify")
+#  if (!all(unlist(lapply(by, grepl, x = classify, fixed = TRUE))))
+#    stop("One of the elements of LSDby is not in the classify")
   
   LSDs <-t.value * alldiffs.obj$sed
   difs <- alldiffs.obj$differences

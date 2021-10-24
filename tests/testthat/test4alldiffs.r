@@ -339,6 +339,33 @@ test_that("LSD_asreml4", {
                                   attr(Var.diffs.by$predictions, which = "LSDvalues")) < 1E-06))
   testthat::expect_true(all(abs(attr(Var.diffs.one$predictions, which = "LSDvalues") - 9.883479) < 1e-05))  
 
+  
+  #Test linTransform with multinested - Nitrogen nested within Variety
+  Oats.dat$Variety <- fac.recast(Oats.dat$Variety, newlevels = c("Victory", "GoldenRain", "Marvellous"), 
+                                 levels.order = c("Victory", "GoldenRain", "Marvellous"))
+  Oats.dat <- cbind(Oats.dat, 
+                    with(Oats.dat, fac.multinested(nesting.fac = Variety, nested.fac = Nitrogen, 
+                                                   fac.prefix = "N")))
+  
+  m2.asr <- do.call(asreml, list(fixed = Yield ~ Variety/(NVictory + NGoldenRain + NMarvellous),
+                                 random = ~ Blocks/Wplots, 
+                                 data = Oats.dat))
+  m2.asrt <- as.asrtests(m2.asr, NULL, NULL)
+  testthat::expect_true(all(m2.asrt$wald.tab$denDF == c(5,10,45,45,45)))
+  testthat::expect_warning(
+    diffs <- predictPlus(m2.asrt$asreml.obj, classify = "Variety:NVictory:NGoldenRain:NMarvellous",
+                         error.intervals = "half", LSDtype = "factor", LSDby = "Variety", 
+                         wald.tab = m2.asrt$wald.tab,
+                         Vmatrix = TRUE, tables = "none"))
+  
+  diffs.chos <- linTransform(diffs, linear.transformation = ~ Variety/NGoldenRain,
+                             error.intervals = "half", LSDtype = "factor", LSDby = "Variety", 
+                             Vmatrix = TRUE, tables = "none")
+  testthat::expect_true(all(diffs.chos$predictions$fac.comb == c(1,17,33,49,65,69,73,77,129,130,131,132)))
+  testthat::expect_equal(sum(is.na(diffs.chos$predictions$upper.halfLeastSignificant.limit)), 8)
+  testthat::expect_true(all(abs(na.omit(diffs.chos$predictions$upper.halfLeastSignificant.limit) - 
+                                  c(87.6841,106.1841,122.3508,132.5174)) < 1e-03))
+  
   #Test for predictPlus with numeric in classify
   mx.asr <- asreml(Yield ~ xNitrogen*Variety, 
                    random=~Blocks/Wplots,
