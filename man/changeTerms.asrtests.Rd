@@ -38,10 +38,14 @@
                after addition of \code{". ~ . -"} and after expansion, specifies the sum 
                of a set of terms to be dropped from the fixed formula. 
                The names must match those in the \code{wald.tab} component of the 
-               \code{asrtests.obj}.}
+               \code{asrtests.obj}. The fixed terms will be reordered so that 
+               single-variable terms come first, followed by two-variable terms and 
+               so on.}
  \item{addFixed}{A single \code{character} string in the form of a formula which, 
                after addition of \code{". ~ . +"} and expansion, specifies the sum 
-               of a set of terms to be added to the fixed formula.}
+               of a set of terms to be added to the fixed formula. 
+               The fixed terms will be reordered so that single-variable terms come 
+               first, followed by two-variable terms and so on.}
  \item{dropRandom}{A single \code{character} string in the form of a formula which, 
                after addition of \code{" ~ . -"} and expansion, specifies the sum 
                of a set of terms to be dropped from the random formula. 

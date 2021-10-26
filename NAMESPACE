@@ -136,7 +136,7 @@ export(addBacktransforms,
        variofaces.asreml)
 exportClasses(alldiffs, asrtests, predictions.frame)
 import(dae, ggplot2)
-importFrom("stats", "as.formula", "fitted", "fitted.values", "formula", "median", 
+importFrom("stats", "as.formula",  "fitted", "fitted.values", "formula", "median", 
                     "model.matrix", "na.omit", "pchisq", "pf", "predict", "pt", "qnorm", "qt", 
                     "quantile", "resid", "rnorm","simulate", "terms", "terms.formula", 
                     "update.formula")

@@ -755,8 +755,9 @@ atLevelsMatch <- function(new, old, call)
 { 
   env <- environment(as.formula(old))
   new <- atLevelsMatch(new, old, call)
-  tmp <- update.formula(as.formula(old), new)
-  out <- formula(terms.formula(tmp, simplify = TRUE, keep.order = keep.order))
+  #update formula expands the formula using keep.order = FALSE (cannot be changed)
+  tmp <- update.formula(as.formula(old), new, keep.order = keep.order) 
+  out <- formula(terms.formula(tmp, keep.order = keep.order))
   environment(out) <- env
   return(out)
 }
@@ -829,9 +830,13 @@ atLevelsMatch <- function(new, old, call)
   
   #Now update formulae
   if (!missing(fixed.)) 
-    languageEl(call, which = "fixed") <- 
-    my.update.formula(as.formula(languageEl(call, which = "fixed")), 
-                      fixed., call = call, keep.order = keep.order)
+  {
+    if (fixed. != ". ~ . ")
+      languageEl(call, which = "fixed") <- 
+        my.update.formula(as.formula(languageEl(call, which = "fixed")), 
+                          fixed., call = call, keep.order = keep.order)
+  }
+
   if (!missing(random.)) 
   {
     if (is.null(random.))

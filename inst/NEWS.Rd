@@ -1,5 +1,9 @@
 \name{news}
 \title{News for Package asremlPlus}
+\section{asremlPlus Version 4.3-28 (2021-10-26)}{
+  \itemize{
+  \item{Fix bug in newfit that re-orders the fixed model because of R limitations.}
+}}
 \section{asremlPlus Version 4.3-27 (2021-10-24)}{
   \itemize{
   \item{Fix problem in linTransform.alldiffs when the product of the numbers of levels in the classiify factors is large and not all combinations of the levels are observed.}

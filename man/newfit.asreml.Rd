@@ -28,7 +28,10 @@
  \item{fixed.}{A character or formula specifying changes to the fixed 
                formula. This is a two-sided formula 
                where "." is substituted for existing components in the 
-               fixed component of \code{asreml.obj$call}.}
+               fixed component of \code{asreml.obj$call}. If changes are 
+               specified, the fixed terms will be reordered so that 
+               single-variable terms come first, followed by two-variable 
+               terms and so on.}
  \item{random.}{A character or formula specifying changes to the random 
                 formula. This is a one-sided formula 
                 where "." is substituted for existing components in the 
