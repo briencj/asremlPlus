@@ -1,8 +1,12 @@
 \name{news}
 \title{News for Package asremlPlus}
+\section{asremlPlus Version 4.3-29 (2021-10-27)}{
+  \itemize{
+  \item{Modify linTransform.alldiffs so that an intercept-only submodel can be fitted.}
+}}
 \section{asremlPlus Version 4.3-28 (2021-10-26)}{
   \itemize{
-  \item{Fix bug in newfit that re-orders the fixed model because of R limitations.}
+  \item{Fix bug in newfit.asreml that re-orders the fixed model because of R limitations.}
 }}
 \section{asremlPlus Version 4.3-27 (2021-10-24)}{
   \itemize{

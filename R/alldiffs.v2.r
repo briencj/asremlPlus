@@ -2478,7 +2478,7 @@ redoErrorIntervals.alldiffs <- function(alldiffs.obj, error.intervals = "Confide
     if (is.null(classify))
       classify <- attr(alldiffs.obj, which = "classify")
     if (is.null(classify))
-      stop("The clssify has been neither set nor is an attribute of the alldiffs.obj")
+      stop("The classify has been neither set nor is an attribute of the alldiffs.obj")
     denom.df <- attr(alldiffs.obj, which = "tdf")
     if (is.null(denom.df))
       warning(paste("The degrees of freedom of the t-distribtion are not available in alldiffs.obj\n",
@@ -2514,9 +2514,9 @@ redoErrorIntervals.alldiffs <- function(alldiffs.obj, error.intervals = "Confide
       #Check that factors in LSDby are in the formula
       term.obj <- as.terms.object(linear.transformation, alldiffs.obj)
       lintrans.fac <- rownames(attr(term.obj, which = "factor"))
-      if (!all(lintrans.fac %in% colnam))
+      if (!is.null(lintrans.fac) && !all(lintrans.fac %in% colnam))
         stop("Some factors in the linear.transformation are not in the predictions component of the alldiffs object\n")
-      if (!all(LSDby %in% lintrans.fac))
+      if (!is.null(lintrans.fac) && !all(LSDby %in% lintrans.fac))
         warning("Some factors in the LSDby are not in the linear.transformation submodel")
       
       #Form projector on predictions for submodel

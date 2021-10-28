@@ -282,7 +282,6 @@ test_that("LSD_asreml4", {
   wald.tab <-  current.asrt$wald.tab
   den.df <- wald.tab[match("Variety", rownames(wald.tab)), "denDF"]
   
-  #Test single factor linear.transform
   Var.pred <- predict(m1.asr, classify="Nitrogen:Variety", vcov=TRUE)
   Var.diffs <- allDifferences(predictions = Var.pred$pvals,
                               classify = "Nitrogen:Variety", 
@@ -290,6 +289,28 @@ test_that("LSD_asreml4", {
   testthat::expect_true(all("LSDtype" %in% names(attributes(Var.diffs))))
   testthat::expect_true(all(attr(Var.diffs, which = "LSDtype") == "overall"))
   testthat::expect_true(all(attr(Var.diffs, which = "LSDstatistic") == "mean"))
+  
+  #Test intercept-only linear.transform
+  Int.diffs <- linTransform(Var.diffs, linear.transformation = ~ 1,
+                            tables = "none")
+  testthat::expect_equal(names(Int.diffs$predictions), 
+                         c("Nitrogen", "Variety", "predicted.value", "standard.error", 
+                           "upper.Confidence.limit", "lower.Confidence.limit", "est.status"))
+  testthat::expect_true(all(abs(Int.diffs$predictions$predicted.value - mean(Oats.dat$Yield)) < 1e-04))
+  testthat::expect_true(all(abs(Int.diffs$predictions$upper.Confidence.limit - 118.7685) < 1e-04))
+  
+  Int.diffs <- linTransform(Var.diffs, linear.transformation = ~ 1,
+                            error.intervals = "half", 
+                            LSDtype = "factor", LSDby = "Nitrogen", 
+                            tables = "none")
+  testthat::expect_equal(names(Int.diffs$predictions), 
+                         c("Nitrogen", "Variety", "predicted.value", "standard.error", 
+                           "upper.halfLeastSignificant.limit", 
+                           "lower.halfLeastSignificant.limit", "est.status"))
+  testthat::expect_true(all(abs(Int.diffs$predictions$predicted.value - mean(Oats.dat$Yield)) < 1e-04))
+  testthat::expect_true(all(is.na(Int.diffs$predictions$upper.Confidence.limit)))
+  
+  #Test single factor linear.transform
   Var.diffs.one <- linTransform(Var.diffs, linear.transformation = ~Nitrogen,
                                 error.intervals = "half", tables = "none")
   testthat::expect_true(all("LSDtype" %in% names(attributes(Var.diffs.one))))

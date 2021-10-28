@@ -111,7 +111,8 @@
                \code{A} and \code{B} being made additive for the \code{\link{factor}s} 
                \code{A} and \code{B}. The submodel space corresponding to \code{A + B} is 
                a subspace of the space \code{A:B}. In this case both the submodel and the 
-               the classify involve only the factors A and B.
+               the classify involve only the factors A and B. To fit an intercept-only 
+               submodel, specify \code{linear.transformation} to be the formula \code{~1}.
                
                If a \code{\link{matrix}} is provided then it will be 
                used to apply the linear transformation to the \code{predictions}. 
