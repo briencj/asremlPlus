@@ -156,9 +156,7 @@
 \item{tables}{A \code{\link{character}} vector containing a combination of 
               \code{none}, \code{predictions}, \code{vcov}, \code{backtransforms}, \code{differences}, 
               \code{p.differences}, \code{sed}, \code{LSD} and \code{all}.  
-              These nominate which components of the \code{\link{alldiffs.object}} to print.
-              Only \code{none}, \code{predictions} and \code{all} apply to \code{method} 
-              \code{Fieller}.}
+              These nominate which components of the \code{\link{alldiffs.object}} to print.}
 \item{pairwise}{A \code{\link{logical}} indicating whether all pairwise differences of the
              \code{predictions} and their standard errors and p-values are to be 
              computed and stored. If \code{tables} is equal to 
@@ -202,7 +200,7 @@
 #### Form the differences for log(RGR) for Salinity
 load(system.file("extdata", "testDiffs.rda", package = "asremlPlus", mustWork = TRUE))
 #### For the ratios for Cl per WU Temperature - use backtransforms of log-predictions
-Preds.ratio.ClUp <- pairdiffsTransform(diffs.ClUp, method = "log",
+Preds.ratio.ClUp <- pairdiffsTransform(diffs.ClUp, 
                                        pairs.factor = "Temperature", 
                                        first.levels = "Hot",
                                        second.levels = "Cool",

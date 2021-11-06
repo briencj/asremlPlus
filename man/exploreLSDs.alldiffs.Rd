@@ -6,9 +6,11 @@
              calculated for all pairwise comparisons of predictions. It then calculates 
              (i) a table of frequencies of the LSD values, (ii) the distinct values of the LSDs 
              after rounding, (iii) various statistics from the LSD values, (iv) a measure of 
-             the accuracy of each of the LSD statistics, (v) the accuracy of each statistic in 
-             representing the LSD values for each prediction and (vi) a matrix containing 
-             the LSD values for comparinbg each pair of predictions. Histograms of the 
+             the accuracy of each of the LSD statistics, (v) the numbers of false positives and 
+             false negatives for each of the LSD statistics if pairwise comparisons are based 
+             on the LSD statistic, (vi) the accuracy of each statistic in 
+             representing the LSD values for each prediction and (vii) a matrix containing 
+             the LSD values for comparing each pair of predictions. Histograms of the 
              frequencies can also be produced.}
 \usage{
 \method{exploreLSDs}{alldiffs}(alldiffs.obj, LSDtype = "overall", LSDby = NULL, 
@@ -33,10 +35,10 @@
              not have to match that used in the creating the \code{\link{alldiffs.object}}.}
 \item{LSDaccuracy}{A \code{\link{character}} nominating one of \code{maxAbsDeviation}, \code{maxDeviation}, 
              \code{q90Deviation} or \code{RootMeanSqDeviation} as the statistic to be calculated as a measure 
-             of the accuracy of an LSD statistic. The option \code{q90Deviation} produces the sample quantile 
-             corresponding to a probability of 0.90. The deviations are the differences between the LSDs used in 
-             calculating an LSD statistic and the LSD statistic and the accuracy is expressed as a 
-             proportion of the value of the LSD statistic.}
+             of the accuracy of an LSD statistic when its values are used as an approximate LSD. The option 
+             \code{q90Deviation} produces the sample quantile corresponding to a probability of 0.90. 
+             The deviations are the differences between a set of LSDs and an LSD statistic calculated from 
+             those LSDs; the accuracy is expressed as a proportion of the value of the LSD statistic.}
 \item{alpha}{A \code{\link{numeric}} specifying the significance level for an LSD to compare a pair of 
             predictions.}
 \item{digits}{A \code{\link{numeric}} specifying the number of significant digits to retain in rounding 
@@ -54,19 +56,52 @@
 }
 \value{A \code{\link{list}} with components 
        \code{frequencies}, \code{distinct.vals}, \code{statistics}, \code{accuracy}, \code{per.pred.accuracy} 
-       and \code{LSD}:  \code{frequencies} is a \code{data.frame} with the frequency distribution of the LSD 
-       values; \code{distinct.vals} is a \code{list}, each component of which contains the distinct values 
-       of the LSDs after rounding; \code{statistics} is a \code{data.frame} with the minimum, quantile10, 
-       quantile25, mean, median, quantile75, quantile90, and maximum of the LSD values; \code{accuracy} is 
-       a \code{data.frame} with the accuracies of the minimum, quantile10, quantile25, mean, median, 
-       quantile75, quantile90, and maximum of the LSD values with respect to the values from which these 
-       statistics are calculated; \code{per.pred.accuracy} is a \code{data.frame} with the accuracies of the 
-       minimum, quantile10, quantile25, mean, median, quantile75, quantile90, and maximum of the LSD values 
-       for a set of predictions when these statistics are used to represent the LSDs for the comparisons 
-       amongst the set of predictions; \code{LSD} is a square \code{matrix} containing the LSD values for 
-       all pairwise comparisons of the predictions contained in the supplied \code{alldiffs.obj}. 
+       and \code{LSD}: 
+       \enumerate{
+       \item{\code{frequencies} is a \code{data.frame} with the frequency distribution of the LSD 
+       values;} 
+       \item{\code{distinct.vals} is a \code{list}, each component of which contains the distinct values 
+       of the LSDs after rounding;} 
+       \item{\code{statistics} is a \code{data.frame} with the minimum, quantile10, 
+       quantile25, mean, median, quantile75, quantile90, and maximum of the LSD values;} 
+       \item{\code{accuracy} is a \code{data.frame} with the accuracies of the minimum, quantile10, 
+       quantile25, mean, median, quantile75, quantile90, and maximum of the LSD values with respect 
+       to the values from which these statistics are calculated;}  
+       \item{\code{false.pos} is a \code{data.frame} with the numbers of false positives for the 
+       pairwise comparisons within each levels-combination of the \code{LSDby} variables when each of 
+       the minimum, quantile10, quantile25, mean, median, quantile75, quantile90, and maximum of 
+       the LSD values is used as an approximate LSD in determining the significance of the pairwise 
+       differences;} 
+       \item{\code{false.neg} is a \code{data.frame} with the numbers of false negatives for the 
+       pairwise comparisons within each levels-combination of the \code{LSDby} variables when each of 
+       the minimum, quantile10, quantile25, mean, median, quantile75, quantile90, and maximum of 
+       the LSD values is used as an approximate LSD in determining the significance of the pairwise 
+       differences;} 
+       \item{\code{per.pred.accuracy} is a \code{data.frame} with the accuracies of the 
+       minimum, quantile10, quantile25, mean, median, quantile75, quantile90, and maximum of the LSD 
+       values for a set of predictions when these statistics are used to represent the LSDs for the 
+       comparisons amongst the set of predictions;} 
+       \item{\code{LSD} is a square \code{matrix} containing the LSD values for 
+       all pairwise comparisons of the predictions contained in the supplied \code{alldiffs.obj}.}
+       }
+       
+       In the \code{statistics}, \code{accuracy}, \code{false.pos} and \code{false.neg} \code{data.frame}s, 
+       \code{c} is the number of pairwise comparisons on which the values in the same row are based.  
        The accuracy measure is specified by the \code{LSDaccuracy} argument.}
 
+\details{The false positives and negatives are computed by comparing, for each pair of predictions 
+       within each levels-combination of the \code{LSDby} variables, the 
+       significance of the pair difference determined using (i) the true LSD that is computed from the 
+       standard error of differences for the pair and (ii) the approximate LSD that is a statistic 
+       computed  from the true LSDs for all pairwise difference within each levels-combination of the 
+       \code{LSDby} variables. The number of false positives is the number of pairwise differences for 
+       which a difference is declared significant using the approximate LSD, but not using the true LSD. 
+       The number of false negatives is the number of pairwise differences for which a difference is 
+       declared nonsignificant using the approximate LSD, but significant using the true LSD.
+       
+       The LSD accuracy for a set of LSDs is a function of the deviations of those LSDs and an LSD 
+       statistic calculated from them; the accuracy is expressed as a proportion of the value of 
+       the LSD statistic.}
 
 \author{Chris Brien}
 \seealso{\code{\link{asremlPlus-package}}, \code{\link{plotLSDs.data.frame}}, \code{\link{plotLSDs.alldiffs}},  

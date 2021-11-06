@@ -1,8 +1,9 @@
 \name{news}
 \title{News for Package asremlPlus}
-\section{asremlPlus Version 4.3-29 (2021-10-27)}{
+\section{asremlPlus Version 4.3-29 (2021-11-06)}{
   \itemize{
   \item{Modify linTransform.alldiffs so that an intercept-only submodel can be fitted.}
+  \item{Revise the manual entry for exploreLSDs.alldiffs and for pairdiffsTransform.alldiffs..}
 }}
 \section{asremlPlus Version 4.3-28 (2021-10-26)}{
   \itemize{

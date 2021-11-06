@@ -2045,7 +2045,7 @@ test_that("ratioTransforms_SystemData_asreml4", {
   diffs.new <- redoErrorIntervals(diffs.ClUp, error.intervals = "half", 
                                   LSDtype = "factor", LSDby = c("Temperature", "Genotype"))
 
-  Preds.ratio.ClUp <- pairdiffsTransform(diffs.new, method = "log",
+  Preds.ratio.ClUp <- pairdiffsTransform(diffs.new, 
                                          pairs.factor = "Temperature", 
                                          first.levels = "Hot",
                                          second.levels = "Cool",
@@ -2070,7 +2070,7 @@ test_that("ratioTransforms_SystemData_asreml4", {
 
   #Reorder the classify and test 
   diffs.new <- renewClassify(diffs.new, newclassify = c("Salinity:Temperature:Genotype"))
-  Preds.ratio.ClUp <- pairdiffsTransform(diffs.new, method = "log",
+  Preds.ratio.ClUp <- pairdiffsTransform(diffs.new, 
                                          pairs.factor = "Temperature", 
                                          first.levels = "Hot",
                                          second.levels = "Cool",
