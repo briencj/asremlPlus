@@ -300,7 +300,14 @@ infoCriteria.asreml <- function(object, DF = NULL,
        which.cF <- !is.na(coefF[, "z ratio"])
        #object$Cfixed is not a matrix and so this does not work 
 #       logdetC <- log(prod(svd(as.matrix(object$Cfixed[which.cF, which.cF]))$d))
-       logdetC <- sum(log(svd(as.matrix(object$Cfixed[which.cF, which.cF]))$d))
+       if (any(which.cF)) 
+         logdetC <- sum(log(svd(as.matrix(object$Cfixed[which.cF, which.cF]))$d))
+       else #all z-ratios are NA
+       {
+         fixedDF <- 0
+         logdetC <- 0
+         warning("The the fixed effects varainces are not estimable - reverting to REML likelihood")
+       } 
      }
     if (is.null(fixedDF))
       fixedDF <- sum(which.cF)

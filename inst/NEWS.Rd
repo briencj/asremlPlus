@@ -1,9 +1,17 @@
 \name{news}
 \title{News for Package asremlPlus}
+\section{asremlPlus Version 4.3-31 (2021-12-06)}{
+  \itemize{
+  \item{Rebuild under R 4.1.2 for new submission.}
+}}
+\section{asremlPlus Version 4.3-30 (2021-11-22)}{
+  \itemize{
+  \item{Put in a trap for fixed-effects variances being inestimable when calculating the full likelihood.}
+}}
 \section{asremlPlus Version 4.3-29 (2021-11-06)}{
   \itemize{
   \item{Modify linTransform.alldiffs so that an intercept-only submodel can be fitted.}
-  \item{Revise the manual entry for exploreLSDs.alldiffs and for pairdiffsTransform.alldiffs..}
+  \item{Revise the manual entry for exploreLSDs.alldiffs and for pairdiffsTransform.alldiffs.}
 }}
 \section{asremlPlus Version 4.3-28 (2021-10-26)}{
   \itemize{

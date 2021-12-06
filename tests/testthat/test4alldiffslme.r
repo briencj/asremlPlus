@@ -335,10 +335,12 @@ test_that("alldiffs_lme4", {
     testthat::expect_equal(sum(!is.na(pdata$p)), 380)
     
     #row and col names cause reshape::melt to throw a warning re type.convert
-    testthat::expect_warning(p <- within(reshape::melt(TS.diffs$p.differences), 
+    p <- TS.diffs$p.differences
+    rownames(p) <- colnames(p) <- NULL #needed because reshape::melt throws a warning re type.convert
+    testthat::expect_silent(p <- within(reshape::melt(p), 
                                          { 
-                                           X1 <- factor(X1, levels=dimnames(TS.diffs$p.differences)[[1]])
-                                           X2 <- factor(X2, levels=levels(X1))
+                                           X1 <- factor(X1, labels=dimnames(TS.diffs$p.differences)[[1]])
+                                           X2 <- factor(X2, labels=levels(X1))
                                          }))
     names(p)[match("value", names(p))] <- "p"
     testthat::expect_silent(plotPvalues(p, x = "X1", y = "X2", 
