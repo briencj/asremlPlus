@@ -1,5 +1,9 @@
 \name{news}
 \title{News for Package asremlPlus}
+\section{asremlPlus Version 4.3-32 (2021-12-21)}{
+  \itemize{
+  \item{Fix bug in chooseModelOnIC result from a change in as.vector for data.frames and lists in R 4.2.0.}
+}}
 \section{asremlPlus Version 4.3-31 (2021-12-06)}{
   \itemize{
   \item{Rebuild under R 4.1.2 for new submission.}

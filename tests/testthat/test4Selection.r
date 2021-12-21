@@ -676,6 +676,7 @@ test_that("Fixedcorrelations_asreml4", {
                              data = PSA.27.dat, maxiter=75))
   m.asrt <- as.asrtests(m.asr, NULL, NULL, label = "Start with all autocorrelation",
                         IClikelihood = "full")
+  m.asrt <- iterate(m.asrt)
   m.asrt <- rmboundary(m.asrt)
   testthat::expect_true(m.asrt$asreml.obj$converge)
   
@@ -748,6 +749,7 @@ test_that("Fixedcorrelations_asreml4", {
   asreml.options(ai.sing = TRUE)
   m1.asrt <- reparamSigDevn(m.asrt, terms = "Position", trend.num = "xPosn", devn.fac = "Position", 
                             allow.fixedcorrelation = TRUE)
+  m1.asrt <- iterate(m1.asrt)
   testthat::expect_equal(m1.asrt$test.summary$action[2], "Changed fixed, random")
   testthat::expect_equal(unname(vpc.char(m1.asrt$asreml.obj)["Lane:Position!Lane!cor"]), "B")
   

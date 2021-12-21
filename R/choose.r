@@ -348,7 +348,7 @@ addtoChooseSummary <- function(choose.summary, term, DF = NA, denDF = NA, p = NA
   old.IC <- infoCriteria(asrtests.obj$asreml.obj, IClikelihood = ic.lik, 
                          bound.exclusions = bound.exclusions, 
                          fixedDF = fixedDF, varDF = varDF, ...)
-  old.IC <- as.vector(old.IC[c("fixedDF", "varDF", "AIC", "BIC")])
+  old.IC <- as.vector(old.IC[c("fixedDF", "varDF", "AIC", "BIC")], mode = "numeric")
   names(old.IC) <- c("DF", "denDF", "AIC", "BIC")
   nlines.test <- nrow(asrtests.obj$test.summary)
   
@@ -411,7 +411,7 @@ addtoChooseSummary <- function(choose.summary, term, DF = NA, denDF = NA, p = NA
     new.IC <- infoCriteria(new.asrtests.obj$asreml.obj, IClikelihood = ic.lik, 
                            bound.exclusions = bound.exclusions, 
                            fixedDF = fixedDF, varDF = varDF, ...)
-    new.IC <- as.vector(new.IC[c("fixedDF", "varDF", "AIC", "BIC")])
+    new.IC <- as.vector(new.IC[c("fixedDF", "varDF", "AIC", "BIC")], mode = "numeric")
     names(new.IC) <- c("DF", "denDF", "AIC", "BIC")
     
     #Extract asreml.objects
