@@ -1,5 +1,9 @@
 \name{news}
 \title{News for Package asremlPlus}
+\section{asremlPlus Version 4.3-33 (2022-04-09)}{
+  \itemize{
+  \item{Add a error if all residual variances are bound.}
+}}
 \section{asremlPlus Version 4.3-32 (2021-12-21)}{
   \itemize{
   \item{Fix bug in chooseModelOnIC result from a change in as.vector for data.frames and lists in R 4.2.0.}

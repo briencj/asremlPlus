@@ -322,7 +322,7 @@ sliceLSDs <- function(alldiffs.obj, by, t.value, LSDstatistic = "mean", LSDaccur
     if (length(LSDstatistic) ==  1)
       LSDstatistic <- rep(LSDstatistic, length(levs))
     if (length(levs) != length(LSDstatistic))
-      stop("The length of LSDstatistic should be the sanme as the number of combinations of the LSDby variables")
+      stop("The length of LSDstatistic should be the same as the number of combinations of the LSDby variables")
     names(LSDstatistic) <- levs
     #loop over LSDby combinations
     LSDs <- lapply(levs, 

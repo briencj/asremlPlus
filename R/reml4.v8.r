@@ -319,7 +319,7 @@ setOldClass("asrtests")
    #print vparameter summary of asreml.obj
    if (any(c("vparametersummary", "key") %in% opt))
    {
-     cat("\n\n####  Summary of the fitting of the variance parameters\n\n")
+     cat("\n\n####  Summary of the fitted variance parameters\n\n")
      print(summary(x$asreml.obj)$varcomp, ...)
    }
    
@@ -895,7 +895,7 @@ atLevelsMatch <- function(new, old, call)
     }
   }
   
-  if(is.null(set.terms))
+  if (is.null(set.terms))
   { 
     if (update)
     {
@@ -1008,6 +1008,18 @@ atLevelsMatch <- function(new, old, call)
     asreml::asreml.options(keep.order = TRUE)
   asreml.new.obj <- eval(call, sys.parent())
   asreml.new.obj$call <- call
+  
+  if (update)
+  {
+    Rterms <- grepl("!R", names(asreml.new.obj$vparameters), fixed = TRUE)
+    Rterms <- names(asreml.new.obj$vparameters)[Rterms]
+    Rterms <- unique(unlist(lapply(Rterms, rmTermDescription)))
+    rterms.chk <- unlist(lapply(Rterms, grepl, names(asreml.new.obj$vparameters), fixed = TRUE)) & 
+      asreml::vpt.char(asreml.new.obj) == "V"
+    if (all(asreml::vpc.char(asreml.new.obj)[rterms.chk] %in% c("F","B","S")))
+      stop("There is no unbound residual variance - perhaps try update = FALSE")
+  }
+  
   #If not converged, issue warning
   if (!asreml.new.obj$converge)
   {
