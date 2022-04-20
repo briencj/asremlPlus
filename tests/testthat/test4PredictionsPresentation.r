@@ -268,7 +268,7 @@ test_that("plotPvalues.asreml4", {
   library(asreml)
   library(asremlPlus)
   library(dae)
-  library(reshape)
+  library(reshape2)
   data(WaterRunoff.dat)
   asreml.options(keep.order = TRUE) #required for asreml4 only
   testthat::expect_output(current.asr <- asreml(fixed = pH ~ Benches + (Sources * (Type + Species)), 
@@ -282,62 +282,66 @@ test_that("plotPvalues.asreml4", {
   testthat::expect_is(diffs, "alldiffs")
   
   p <- diffs$p.differences
-  rownames(p) <- colnames(p) <- NULL
-  p <- within(reshape::melt(p), 
+  p <- within(reshape2::melt(p), 
               { 
-                X1 <- factor(X1, labels=dimnames(diffs$p.differences)[[1]])
-                X2 <- factor(X2, labels=levels(X1))
+                Var1 <- factor(Var1, levels=dimnames(diffs$p.differences)[[1]])
+                Var2 <- factor(Var2, levels=levels(Var1))
               })
-  names(p)[match("value", names(p))] <- "p"
-  testthat::expect_silent(plotPvalues(p, x = "X1", y = "X2", 
+  names(p) <- c("Rows","Columns","p")
+  testthat::expect_silent(plotPvalues(p, x = "Rows", y = "Columns", 
                                       gridspacing = rep(c(3,4), c(4,2)), 
                                       show.sig = TRUE))
 
   #Test different size, face and colour
-  testthat::expect_silent(plotPvalues(p, x = "X1", y = "X2", 
+  testthat::expect_silent(plotPvalues(p, x = "Rows", y = "Columns", 
                                       gridspacing = rep(c(3,4), c(4,2)), 
                                       show.sig = TRUE, sig.size = 5, sig.colour = "blue"))
-  testthat::expect_silent(plotPvalues(p, x = "X1", y = "X2", 
+  testthat::expect_silent(plotPvalues(p, x = "Rows", y = "Columns", 
                                       gridspacing = rep(c(3,4), c(4,2)), 
                                       show.sig = TRUE, sig.size = 5, sig.face = "bold", 
                                       sig.family = "serif"))
   
   #Plot with sections
   pdata <- plotPvalues(diffs, sections = "Sources", show.sig = TRUE)
-  testthat::expect_equal(nrow(pdata), 400)
-  testthat::expect_equal(ncol(pdata), 5)
-  testthat::expect_true(all(c("X1","X2","p","sections1","sections2") %in% names(pdata)))
+  testthat::expect_equal(nrow(pdata$pvalues), 400)
+  testthat::expect_equal(ncol(pdata$pvalues), 5)
+  testthat::expect_true(all(c("Rows","Columns","p","sections1","sections2") %in% names(pdata$pvalues)))
+  testthat::expect_equal(length(pdata$plots), 6)
+  testthat::expect_equal(names(pdata$plots), c("Rainwater","Recycled water","Tap water",
+                                               "Rain+Basalt","Rain+Dolomite","Rain+Quartzite"))
   
   #Plot without sections, but automatic gridspacing
   pupdata <- plotPvalues(diffs, show.sig = TRUE, factors.per.grid = 1)
-  testthat::expect_equal(nrow(pupdata), 400)
-  testthat::expect_equal(ncol(pupdata), 3)
-  testthat::expect_true(all(c("X1","X2","p") %in% names(pupdata)))
-  testthat::expect_equal(sum(!is.na(pupdata$p)), 380)
+  testthat::expect_equal(nrow(pupdata$pvalues), 400)
+  testthat::expect_equal(ncol(pupdata$pvalues), 3)
+  testthat::expect_true(all(c("Rows","Columns","p") %in% names(pupdata$pvalues)))
+  testthat::expect_equal(sum(!is.na(pupdata$pvalues$p)), 380)
+  testthat::expect_equal(length(pupdata$plots), 1)
   
   #Plot without sections, but automatic gridspacing and upper triangle
   pupdata <- plotPvalues(diffs, show.sig = TRUE, factors.per.grid = 1, 
                          triangles = "upper")
-  testthat::expect_equal(nrow(pupdata), 400)
-  testthat::expect_equal(ncol(pupdata), 3)
-  testthat::expect_true(all(c("X1","X2","p") %in% names(pupdata)))
-  testthat::expect_equal(sum(!is.na(pupdata$p)), 190)
+  testthat::expect_equal(nrow(pupdata$pvalues), 400)
+  testthat::expect_equal(ncol(pupdata$pvalues), 3)
+  testthat::expect_true(all(c("Rows","Columns","p") %in% names(pupdata$pvalues)))
+  testthat::expect_equal(sum(!is.na(pupdata$pvalues$p)), 190)
   
   
   #Plot without sections, but manual gridspacing and upper triangle
   pupdata <- plotPvalues(diffs, show.sig = TRUE, gridspacing = rep(c(3,4), c(4,2)), 
                          triangles = "upper")
-  testthat::expect_equal(nrow(pupdata), 400)
-  testthat::expect_equal(ncol(pupdata), 3)
-  testthat::expect_true(all(c("X1","X2","p") %in% names(pupdata)))
-  testthat::expect_equal(sum(!is.na(pupdata$p)), 190)
+  testthat::expect_equal(nrow(pupdata$pvalues), 400)
+  testthat::expect_equal(ncol(pupdata$pvalues), 3)
+  testthat::expect_true(all(c("Rows","Columns","p") %in% names(pupdata$pvalues)))
+  testthat::expect_equal(sum(!is.na(pupdata$pvalues$p)), 190)
   
   #Plot without sections, but manual gridspacing and lower triangle
   pupdata <- plotPvalues(diffs, sections = "Sources", show.sig = TRUE, triangles = "upper")
-  pupdata <- na.omit(pupdata)
-  testthat::expect_equal(nrow(pupdata), 190)
-  testthat::expect_equal(ncol(pupdata), 5)
-  testthat::expect_true(all(c("X1","X2","p","sections1","sections2") %in% names(pupdata)))
+  pupdata$pvalues <- na.omit(pupdata$pvalues)
+  testthat::expect_equal(nrow(pupdata$pvalues), 190)
+  testthat::expect_equal(ncol(pupdata$pvalues), 5)
+  testthat::expect_true(all(c("Rows","Columns","p","sections1","sections2") %in% 
+                                    names(pupdata$pvalues)))
 })
 
 cat("#### Test for plotPvalues.asreml4\n")
@@ -352,21 +356,21 @@ test_that("plotPvalues.asreml4", {
   
   pdata <- plotPvalues(LeafSucculence.diff, gridspacing = 3, show.sig = TRUE, 
                        axis.labels = TRUE)
-  testthat::expect_equal(nrow(pdata), 144)
-  testthat::expect_equal(ncol(pdata), 3)
-  testthat::expect_true(all(c("X1","X2","p") %in% names(pdata)))
+  testthat::expect_equal(nrow(pdata$pvalue), 144)
+  testthat::expect_equal(ncol(pdata$pvalues), 3)
+  testthat::expect_true(all(c("Rows","Columns","p") %in% names(pdata$pvalues)))
   
   pdata <- plotPvalues(LeafSucculence.diff, factors.per.grid = 2, show.sig = TRUE, 
                        axis.labels = TRUE)
-  testthat::expect_equal(nrow(pdata), 144)
-  testthat::expect_equal(ncol(pdata), 3)
-  testthat::expect_true(all(c("X1","X2","p") %in% names(pdata)))
+  testthat::expect_equal(nrow(pdata$pvalues), 144)
+  testthat::expect_equal(ncol(pdata$pvalues), 3)
+  testthat::expect_true(all(c("Rows","Columns","p") %in% names(pdata$pvalues)))
   
   pdata <- plotPvalues(LeafSucculence.diff, sections = c("Depths","Slope"), 
                        show.sig = TRUE, axis.labels = TRUE)
-  testthat::expect_equal(nrow(pdata), 144)
-  testthat::expect_equal(ncol(pdata), 5)
-  testthat::expect_true(all(c("X1","X2","p","sections1","sections2") %in% names(pdata)))
+  testthat::expect_equal(nrow(pdata$pvalues), 144)
+  testthat::expect_equal(ncol(pdata$pvalues), 5)
+  testthat::expect_true(all(c("Rows","Columns","p","sections1","sections2") %in% names(pdata$pvalues)))
   
 })
 

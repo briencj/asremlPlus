@@ -1154,10 +1154,31 @@ test_that("exploreLSDWater4", {
                                   c(0.4855427,0.3540527,0.1953468,0.08749856,
                                     0,-0.02005388,-0.03170473,-0.03931926) < 1e-05)))
   
-  LSD.dat <- plotLSDs(TS.diffs, factors.per.grid = 1)
-  testthat::expect_equal(nrow(LSD.dat),400)
-  testthat::expect_equal(levels(LSD.dat$X1),rownames(TS.diffs$sed))
-  testthat::expect_equal(length(unique(signif(LSD.dat$LSD, digits = 4))), 28)
+  LSDs <- plotLSDs(TS.diffs, factors.per.grid = 1)
+  testthat::expect_equal(nrow(LSDs$LSDs),400)
+  testthat::expect_true(all(names(LSDs$LSD) == c("Rows","Columns","LSDs")))
+  testthat::expect_equal(levels(LSDs$LSDs$Rows),rownames(TS.diffs$sed))
+  testthat::expect_equal(length(unique(signif(LSDs$LSDs$LSDs, digits = 4))), 28)
+  testthat::expect_equal(length(LSDs$plots),1)
+
+  LSDerr <- plotLSDerrors(TS.diffs, factors.per.grid = 1)
+  testthat::expect_equal(length(LSDerr),2)
+  testthat::expect_equal(nrow(LSDerr$LSDresults),400)
+  testthat::expect_true(all(names(LSDerr$LSDresults) == c("Rows","Columns","LSDresults")))
+  testthat::expect_equal(levels(LSDerr$LSDresults$Rows),rownames(TS.diffs$sed))
+  testthat::expect_true(all(LSDerr$LSDresults$LSDresults[1:4] == c("na","FN","Ok","Ok")))
+  testthat::expect_equal(length(LSDerr$plots),1)
+
+  LSDerr <- plotLSDerrors(TS.diffs, sections = "Sources", axis.labels = TRUE)
+  testthat::expect_equal(length(LSDerr),2)
+  testthat::expect_equal(nrow(LSDerr$LSDresults),400)
+  testthat::expect_true(all(names(LSDerr$LSDresults) == c("Rows","Columns","LSDresults","sections1","sections2")))
+  testthat::expect_equal(length(levels(LSDerr$LSDresults$Rows)),4)
+  testthat::expect_equal(length(levels(LSDerr$LSDresults$sections1)),6)
+  testthat::expect_true(all(LSDerr$LSDresults$LSDresults[1:4] == c("na","FN","Ok","Ok")))
+  testthat::expect_equal(length(LSDerr$plots),6)
+  testthat::expect_silent(print(LSDerr$plots[[1]]))
+    
 })
 
 cat("#### Test for exploreLSDs on Oats with asreml4\n")
@@ -1234,11 +1255,14 @@ test_that("exploreLSDOatsr4", {
                                                   combine.levels = TRUE)))
   testthat::expect_true(all(lsd$per.pred.accuracy[1,] < 1e-08))
 
-  LSD.dat <- plotLSDs((Var.diffs))
-  testthat::expect_equal(nrow(LSD.dat),144)
-  testthat::expect_equal(levels(LSD.dat$X1),rownames(Var.diffs$sed))
-  testthat::expect_true(all(abs(na.omit(LSD.dat$LSD) - 21.64642) < 1e-05 | 
-                              abs(na.omit(LSD.dat$LSD) - 17.11869) < 1e-05))
+  LSDs <- plotLSDs((Var.diffs))
+  testthat::expect_equal(length(LSDs),2)
+  testthat::expect_equal(nrow(LSDs$LSDs),144)
+  testthat::expect_true(all(names(LSDs$LSD) == c("Rows","Columns","LSDs")))
+  testthat::expect_equal(levels(LSDs$LSDs$Rows),rownames(Var.diffs$sed))
+  testthat::expect_equal(length(LSDs$plots),1)
+  testthat::expect_true(all(abs(na.omit(LSDs$LSDs$LSDs) - 21.64642) < 1e-05 | 
+                              abs(na.omit(LSDs$LSDs$LSDs) - 17.11869) < 1e-05))
 })  
 
 cat("#### Test for sort.alldiffs on WaterRunoff with asreml4\n")

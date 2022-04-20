@@ -62,6 +62,9 @@ export(addBacktransforms,
        pairdiffsTransform.alldiffs,
        permute.square,
        permute.to.zero.lowertri,
+       plotLSDerrors, 
+       plotLSDerrors.data.frame,
+       plotLSDerrors.alldiffs,
        plotLSDs, 
        plotLSDs.data.frame,
        plotLSDs.alldiffs,
@@ -145,7 +148,7 @@ importFrom("grDevices", "savePlot")
 importFrom("graphics", "hist")
 importFrom("dplyr", "anti_join")
 importFrom("methods", "languageEl", "languageEl<-", "validObject")
-importFrom("reshape", "melt")
+importFrom("reshape2", "melt")
 importFrom("utils", "data", "capture.output", sessionInfo, "tail")
 importFrom("foreach", "foreach", "%do%", "%dopar%")
 importFrom("parallel", "makeCluster", "stopCluster", "detectCores", "nextRNGStream")
@@ -176,6 +179,8 @@ S3method(linTransform, alldiffs)
 S3method(newfit, asreml) 
 S3method(plotPredictions, data.frame)
 S3method(plotPvalues, alldiffs)
+S3method(plotLSDerrors, data.frame)
+S3method(plotLSDerrors, alldiffs)
 S3method(plotLSDs, data.frame)
 S3method(plotLSDs, alldiffs)
 S3method(plotPvalues, data.frame)

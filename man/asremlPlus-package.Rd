@@ -198,6 +198,13 @@
 \code{\link{pairdiffsTransform.alldiffs}} 
        \tab Calculates the differences between nominated pairs of \cr 
        \tab predictions stored in an \code{\link{alldiffs.object}} \cr
+\code{\link{plotLSDerrors.data.frame}}
+       \tab Plots a map of the supplied errors that occur in using the \cr
+       \tab computedLSD values for pairwise differences between \cr
+       \tab predictions. \cr
+\code{\link{plotLSDerrors.alldiffs}}
+       \tab Plots a map of the errors that occur in using the computed \cr
+       \tab LSD values for pairwise differences between predictions. \cr
 \code{\link{plotLSDs.data.frame}}
        \tab Plots a heat map of computed LSD values for pairwise \cr
        \tab differences between predictions. \cr

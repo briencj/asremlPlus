@@ -137,9 +137,14 @@
  \item{\dots}{Provision for passsing arguments to functions called internally - 
             not used at present.}
  }
-\value{A \code{data.frame} with the columns \code{X1}, \code{X2}, \code{p}, \code{sections1} 
-       and \code{sections2}. This {data.frame} is formed from the \code{p.differences} component 
-       of \code{object} and is used in producng the plot.}
+\value{A \code{\link{list}} with components named \code{pvalues} and \code{plots}. 
+       The \code{pvalues} component contains the \code{data.frame} with the columns \code{Rows}, 
+       \code{Columns}, \code{p}, \code{sections1} and \code{sections2}. This {data.frame} is 
+       formed using the \code{sed} component of \code{object} and is used by 
+       \code{\link{plotPvalues.data.frame}} in producng the plot. The \code{plots} 
+       component contains a list of \code{ggplot} objects, one for each plot produced. 
+       Multiple plots are stored in the \code{plots} component if the \code{sections} argument 
+       is set and the plots are are named for the levels combinations of the sections.}
 \author{Chris Brien}
 \seealso{\code{\link{plotPvalues.data.frame}}, \code{\link{allDifferences.data.frame}}, 
          \code{\link{sort.alldiffs}}, \code{\link{subset.alldiffs}}, \code{ggplot}}

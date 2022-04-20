@@ -5,7 +5,7 @@
              predictions that are stored in in a \code{data.frame}. The \code{data.frame} includes 
              two factors whose levels specify, for each LSD value, which combinations of factor 
              levels are being compared.}
-\usage{\method{plotLSDs}{data.frame}(object, LSD = "LSD", x, y, alpha = 0.05, 
+\usage{\method{plotLSDs}{data.frame}(object, LSD = "LSDs", x, y, alpha = 0.05, 
          triangles = "both", gridspacing = 0, 
          title = NULL, axis.labels = NULL, axis.text.size = 12, 
          colours = RColorBrewer::brewer.pal(3, "Set2"), 
@@ -48,7 +48,8 @@
  }
 \value{An object of class "\link{ggplot}", which can be plotted using \code{print} or otherwise manipulated.}
 \author{Chris Brien}
-\seealso{\code{\link{plotLSDs.alldiffs}}, \code{\link{exploreLSDs}}, \code{ggplot}}
+\seealso{\code{\link{plotLSDs.alldiffs}}, \code{\link{plotLSDerrors.alldiffs}}, \code{\link{plotLSDerrors.data.frame}}, \cr
+          \code{\link{exploreLSDs}}, \code{ggplot}}
 \examples{
 ##Subset WaterRunoff data to reduce time to execute
 data(WaterRunoff.dat)
@@ -95,13 +96,13 @@ if (requireNamespace("lmerTest", quietly = TRUE) &
 ## Plot LSD values for predictions obtained using asreml or lmerTest
 if (exists("TS.diffs"))
 {
-  LSD <- within(reshape::melt(TS.diffs$p.differences), 
+  LSD <- within(reshape2::melt(TS.diffs$p.differences), 
               { 
-                X1 <- factor(X1, levels=dimnames(TS.diffs$p.differences)[[1]])
-                X2 <- factor(X2, levels=levels(X1))
+                Var1 <- factor(Var1, levels=dimnames(TS.diffs$p.differences)[[1]])
+                Var2 <- factor(Var2, levels=levels(Var1))
               })
-  names(LSD)[match("value", names(LSD))] <- "LSD"
-  plotLSDs(LSD, x = "X1", y = "X2", gridspacing = rep(c(3,4), c(4,2)))
+  names(LSD) <- c("Rows","Columns","LSDs")
+  plotLSDs(LSD, x = "Rows", y = "Columns", gridspacing = rep(c(3,4), c(4,2)))
 }
 }
 \keyword{hplot}

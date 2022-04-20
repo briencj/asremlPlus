@@ -681,30 +681,30 @@ test_that("Fixedcorrelations_asreml4", {
   testthat::expect_true(m.asrt$asreml.obj$converge)
   
   m1.asrt <- changeModelOnIC(m.asrt, newResidual = "ar1(Lane):Position", label = "Lane autocorrelation", 
-                             allow.fixedcorrelation = FALSE,
+                             allow.fixedcorrelation = FALSE, update = FALSE,
                              IClikelihood = "full")
   testthat::expect_equal(m1.asrt$test.summary$action[2], "Unchanged - fixed correlation")
   testthat::expect_true(grepl("ar1(Lane):ar1(Position)", 
                               as.character(getFormulae(m1.asrt$asreml.obj)$residual)[2], fixed = TRUE))
 
   m2.asrt <- changeModelOnIC(m.asrt, newResidual = "ar1(Lane):Position", label = "Lane autocorrelation", 
-                             allow.fixedcorrelation = TRUE,
+                             allow.fixedcorrelation = TRUE, update = FALSE, 
                              IClikelihood = "full")
   testthat::expect_equal(m2.asrt$test.summary$action[2], "Swapped")
   testthat::expect_true(grepl("ar1(Lane):Position", 
                               as.character(getFormulae(m2.asrt$asreml.obj)$residual)[2], fixed = TRUE))
   
   m3.asrt <- testresidual(m.asrt, terms = "ar1(Lane):Position", label = "Lane autocorrelation", 
-                          simpler = TRUE, allow.fixedcorrelation = FALSE)
+                          simpler = TRUE, allow.fixedcorrelation = FALSE, update = FALSE)
   testthat::expect_equal(m3.asrt$test.summary$action[2], "Unchanged - fixed correlation")
   testthat::expect_true(grepl("ar1(Lane):ar1(Position)", 
                               as.character(getFormulae(m1.asrt$asreml.obj)$residual)[2], fixed = TRUE))
 
   m4.asrt <- testresidual(m.asrt, terms = "ar1(Lane):Position", label = "Lane autocorrelation", 
-                          simpler = TRUE, allow.fixedcorrelation = TRUE)
+                          simpler = TRUE, allow.fixedcorrelation = TRUE, update = FALSE)
   testthat::expect_equal(m4.asrt$test.summary$action[2], "Swapped")
   testthat::expect_true(grepl("ar1(Lane):Position", 
-                              as.character(getFormulae(m2.asrt$asreml.obj)$residual)[2], fixed = TRUE))
+                              as.character(getFormulae(m4.asrt$asreml.obj)$residual)[2], fixed = TRUE))
   
   #Check warning message when supplied asreml.obj has a fixed correlation
   testthat::expect_output(testthat::expect_warning(
@@ -748,13 +748,13 @@ test_that("Fixedcorrelations_asreml4", {
                         IClikelihood = "full")
   asreml.options(ai.sing = TRUE)
   m1.asrt <- reparamSigDevn(m.asrt, terms = "Position", trend.num = "xPosn", devn.fac = "Position", 
-                            allow.fixedcorrelation = TRUE)
+                            allow.fixedcorrelation = TRUE, update = FALSE)
   m1.asrt <- iterate(m1.asrt)
   testthat::expect_equal(m1.asrt$test.summary$action[2], "Changed fixed, random")
   testthat::expect_equal(unname(vpc.char(m1.asrt$asreml.obj)["Lane:Position!Lane!cor"]), "B")
   
   m2.asrt <- reparamSigDevn(m.asrt, terms = "Position", trend.num = "xPosn", devn.fac = "Position", 
-                            allow.fixedcorrelation = FALSE)
+                            allow.fixedcorrelation = FALSE, update = FALSE)
   testthat::expect_equal(m2.asrt$test.summary$action[2], "Unchanged - fixed correlation")
   
   #Test testswapran

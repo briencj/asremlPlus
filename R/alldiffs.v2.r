@@ -1574,7 +1574,6 @@ redoErrorIntervals.alldiffs <- function(alldiffs.obj, error.intervals = "Confide
     stop("Do not try to change LSDtype, LSDby, LSDstatistic, LSDaccuracy, ",
          "avsed.tolerance, accuracy.threshold or alpha using ...")
   
-
   #determine transform arguments
   if (is.null(alldiffs.obj$backtransforms))
   {

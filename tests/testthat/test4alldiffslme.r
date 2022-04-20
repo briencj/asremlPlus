@@ -323,29 +323,29 @@ test_that("alldiffs_lme4", {
   {
     ##Plot p-values based on diffs obtained from predictions using asreml or lme4  
     pdata <- plotPvalues(TS.diffs, gridspacing = rep(c(3,4), c(4,2)), show.sig = TRUE)
-    testthat::expect_equal(nrow(pdata), 400)
-    testthat::expect_equal(ncol(pdata), 3)
-    testthat::expect_true(all(c("X1","X2","p") %in% names(pdata)))
-    testthat::expect_equal(sum(!is.na(pdata$p)), 380)
+    testthat::expect_equal(nrow(pdata$pvalues), 400)
+    testthat::expect_equal(ncol(pdata$pvalues), 3)
+    testthat::expect_true(all(c("Rows","Columns","p") %in% names(pdata$pvalues)))
+    testthat::expect_equal(sum(!is.na(pdata$pvalues$p)), 380)
+    testthat::expect_equal(length(pdata), 2)
+    testthat::expect_equal(length(pdata$plots), 1)
     
     pdata <- plotPvalues(TS.diffs, sections = "Sources", show.sig = TRUE, axis.labels = TRUE)
-    testthat::expect_equal(nrow(pdata), 400)
-    testthat::expect_equal(ncol(pdata), 5)
-    testthat::expect_true(all(c("X1","X2","p","sections1","sections2") %in% names(pdata)))
-    testthat::expect_equal(sum(!is.na(pdata$p)), 380)
+    testthat::expect_equal(nrow(pdata$pvalues), 400)
+    testthat::expect_equal(ncol(pdata$pvalues), 5)
+    testthat::expect_true(all(c("Rows","Columns","p","sections1","sections2") %in% names(pdata$pvalues)))
+    testthat::expect_equal(sum(!is.na(pdata$pvalues$p)), 380)
     
-    #row and col names cause reshape::melt to throw a warning re type.convert
     p <- TS.diffs$p.differences
-    rownames(p) <- colnames(p) <- NULL #needed because reshape::melt throws a warning re type.convert
-    testthat::expect_silent(p <- within(reshape::melt(p), 
+    testthat::expect_silent(p <- within(reshape2::melt(p), 
                                          { 
-                                           X1 <- factor(X1, labels=dimnames(TS.diffs$p.differences)[[1]])
-                                           X2 <- factor(X2, labels=levels(X1))
+                                           Var1 <- factor(Var1, levels=dimnames(TS.diffs$p.differences)[[1]])
+                                           Var2 <- factor(Var2, levels=levels(Var1))
                                          }))
-    names(p)[match("value", names(p))] <- "p"
-    testthat::expect_silent(plotPvalues(p, x = "X1", y = "X2", 
-                                        gridspacing = rep(c(3,4), c(4,2)), 
-                                        show.sig = TRUE))
+  names(p) <- c("Rows","Columns","p")
+  testthat::expect_silent(plotPvalues(p, x = "Rows", y = "Columns", 
+                                      gridspacing = rep(c(3,4), c(4,2)), 
+                                      show.sig = TRUE))
     
     
     ##Recalculate the LSD values for predictions obtained using asreml or lme4  

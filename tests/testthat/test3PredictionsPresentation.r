@@ -234,7 +234,7 @@ test_that("plotPvalues_asreml3", {
   library(asreml, lib.loc = asr3.lib)
   library(asremlPlus)
   library(dae)
-  library(reshape)
+  library(reshape2)
   data(WaterRunoff.dat)
   testthat::expect_output(current.asr <- asreml(fixed = pH ~ Benches + (Sources * (Type + Species)), 
                                                 random = ~ Benches:MainPlots,
@@ -247,14 +247,13 @@ test_that("plotPvalues_asreml3", {
   testthat::expect_is(diffs, "alldiffs")
   
   p <- diffs$p.differences
-  rownames(p) <- colnames(p) <- NULL
-  p <- within(reshape::melt(p), 
+  p <- within(reshape2::melt(p), 
               { 
-                X1 <- factor(X1, labels=dimnames(diffs$p.differences)[[1]])
-                X2 <- factor(X2, labels=levels(X1))
+                Var1 <- factor(Var1, levels=dimnames(diffs$p.differences)[[1]])
+                Var2 <- factor(Var2, levels=levels(Var1))
               })
-  names(p)[match("value", names(p))] <- "p"
-  testthat::expect_silent(plotPvalues(p, x = "X1", y = "X2", 
+  names(p) <- c("Rows","Columns","p")
+  testthat::expect_silent(plotPvalues(p, x = "Rows", y = "Columns", 
                                       gridspacing = rep(c(3,4), c(4,2)), 
                                       show.sig = TRUE))
 
@@ -262,13 +261,13 @@ test_that("plotPvalues_asreml3", {
   pdata <- plotPvalues(diffs, sections = "Sources", show.sig = TRUE)
   testthat::expect_equal(nrow(pdata), 400)
   testthat::expect_equal(ncol(pdata), 5)
-  testthat::expect_true(all(c("X1","X2","p","sections1","sections2") %in% names(pdata)))
+  testthat::expect_true(all(c("Rows","Columns","p","sections1","sections2") %in% names(pdata)))
   
   #Plot without sections, but automatic gridspacing
   pupdata <- plotPvalues(diffs, show.sig = TRUE, factors.per.grid = 1)
   testthat::expect_equal(nrow(pupdata), 400)
   testthat::expect_equal(ncol(pupdata), 3)
-  testthat::expect_true(all(c("X1","X2","p") %in% names(pupdata)))
+  testthat::expect_true(all(c("Rows","Columns","p") %in% names(pupdata)))
   testthat::expect_equal(sum(!is.na(pupdata$p)), 380)
 
   #Plot without sections, but automatic gridspacing and upper triangle
@@ -276,7 +275,7 @@ test_that("plotPvalues_asreml3", {
                          triangles = "upper")
   testthat::expect_equal(nrow(pupdata), 400)
   testthat::expect_equal(ncol(pupdata), 3)
-  testthat::expect_true(all(c("X1","X2","p") %in% names(pupdata)))
+  testthat::expect_true(all(c("Rows","Columns","p") %in% names(pupdata)))
   testthat::expect_equal(sum(!is.na(pupdata$p)), 190)
   
   
@@ -285,7 +284,7 @@ test_that("plotPvalues_asreml3", {
                          triangles = "upper")
   testthat::expect_equal(nrow(pupdata), 400)
   testthat::expect_equal(ncol(pupdata), 3)
-  testthat::expect_true(all(c("X1","X2","p") %in% names(pupdata)))
+  testthat::expect_true(all(c("Rows","Columns","p") %in% names(pupdata)))
   testthat::expect_equal(sum(!is.na(pupdata$p)), 190)
 
   #Plot without sections, but manual gridspacing and lower triangle
@@ -293,7 +292,8 @@ test_that("plotPvalues_asreml3", {
   pupdata <- na.omit(pupdata)
   testthat::expect_equal(nrow(pupdata), 190)
   testthat::expect_equal(ncol(pupdata), 5)
-  testthat::expect_true(all(c("X1","X2","p","sections1","sections2") %in% names(pupdata)))
+  testthat::expect_true(all(c("Rows","Columns","p","sections1","sections2") %in% 
+                                  names(pupdata)))
 })
 
 
@@ -304,7 +304,7 @@ test_that("plotPvalues_asreml3", {
   library(asreml, lib.loc = asr3.lib)
   library(asremlPlus)
   library(dae)
-  library(reshape)
+  library(reshape2)
   LeafSucculence.diff <- readRDS("./data/LeafSucculence.diff")
   LeafSucculence.diff <- LeafSucculence.diff[[1]]
   
@@ -312,19 +312,20 @@ test_that("plotPvalues_asreml3", {
                        axis.labels = TRUE)
   testthat::expect_equal(nrow(pdata), 144)
   testthat::expect_equal(ncol(pdata), 3)
-  testthat::expect_true(all(c("X1","X2","p") %in% names(pdata)))
+  testthat::expect_true(all(c("Rows","Columns","p") %in% names(pdata)))
   
   pdata <- plotPvalues(LeafSucculence.diff, factors.per.grid = 2, show.sig = TRUE, 
                        axis.labels = TRUE)
   testthat::expect_equal(nrow(pdata), 144)
   testthat::expect_equal(ncol(pdata), 3)
-  testthat::expect_true(all(c("X1","X2","p") %in% names(pdata)))
+  testthat::expect_true(all(c("Rows","Columns","p") %in% names(pdata)))
   
   pdata <- plotPvalues(LeafSucculence.diff, sections = c("Depths","Slope"), 
                        show.sig = TRUE, axis.labels = TRUE)
   testthat::expect_equal(nrow(pdata), 144)
   testthat::expect_equal(ncol(pdata), 5)
-  testthat::expect_true(all(c("X1","X2","p","sections1","sections2") %in% names(pdata)))
+  testthat::expect_true(all(c("Rows","Columns","p","sections1","sections2") %in% 
+                                names(pdata)))
   
 })
 
@@ -335,7 +336,7 @@ test_that("factor.combinations_asreml3", {
   library(asreml, lib.loc = asr3.lib)
   library(asremlPlus)
   library(dae)
-  library(reshape)
+  library(reshape2)
   LeafSucculence.diff <- readRDS("./data/LeafSucculence.diff")
   LeafSucculence.diff <- LeafSucculence.diff[[1]]
   
@@ -359,7 +360,7 @@ test_that("recalcLSD.alldiffs_asreml3", {
   library(asreml, lib.loc = asr3.lib)
   library(asremlPlus)
   library(dae)
-  library(reshape)
+  library(reshape2)
   data(WaterRunoff.dat)
   testthat::expect_output(current.asr <- asreml(fixed = pH ~ Benches + (Sources * (Type + Species)), 
                                                 random = ~ Benches:MainPlots,

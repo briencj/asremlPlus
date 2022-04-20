@@ -1,35 +1,37 @@
-\name{plotLSDs.alldiffs}
-\alias{plotLSDs.alldiffs}
-\alias{plotLSDs}
-\title{Plots a heat map of computed LSD values for pairwise differences between predictions.}
-\description{Produces a heat-map plot of the computed  LSD values for pairwise differences between 
-             predictions by multiplying the values stored in the \code{sed} component of an 
-             \code{all.diffs} object by the \code{t}-value for the \code{df} stored in the  
-             \code{tdf} attribute of the object. 
-             This component is generally a matrix whose rows and columns 
+\name{plotLSDerrors.alldiffs}
+\alias{plotLSDerrors.alldiffs}
+\alias{plotLSDerrors}
+\title{Plots a map of the errors that occur in using the computed LSD values for pairwise differences between predictions.}
+\description{Produces a plot of the errors that occur in using the computed  LSD values for 
+             pairwise differences predictions by comparing the result obtained from using the 
+             LSDs stored in the \code{assignedLSD} column of the \code{LSD} component of 
+             the \code{\link{alldiffs.object}} with those computed from the \code{sed} 
+             component using the \code{t}-value for the \code{df} stored in the  \code{tdf} 
+             attribute of the \code{\link{alldiffs.object}}. 
+             The \code{sed} component is generally a matrix whose rows and columns 
              are labelled by the levels of one or more factors, the set of labels being 
              the same for rows and columns. The \code{sections} argument allows multiple 
              plots to be produced, one for each combination of the levels of the factors 
              listed in \code{sections}. Otherwise, a single plot is produced for all 
              observed combinations of the levels of the factors in the \code{classify} 
              attribute for the \code{\link{alldiffs.object}}. The plots are produced using 
-             \code{\link{plotLSDs.data.frame}}. The order of plotting the levels of 
+             \code{\link{plotLSDerrors.data.frame}}. The order of plotting the levels of 
              one of the factors indexing the predictions can be modified using 
              \code{\link{sort.alldiffs}}.
 }
-\usage{plotLSDs(object, ...)
-\method{plotLSDs}{alldiffs}(object, alpha = 0.05, 
-         sections = NULL, gridspacing = 0, factors.per.grid = 0, 
-         triangles = "both", 
-         title = NULL, axis.labels = TRUE, axis.text.size = 12, 
-         sep=",", colours = RColorBrewer::brewer.pal(3, "Set2"), 
-         ggplotFuncs = NULL, printPlot = TRUE, 
-         sortFactor = NULL, sortParallelToCombo = NULL, 
-         sortNestingFactor = NULL, sortOrder = NULL, 
-         decreasing = FALSE, ...)}
+\usage{plotLSDerrors(object, ...)
+\method{plotLSDerrors}{alldiffs}(object, alpha = 0.05, 
+              sections = NULL, gridspacing = 0, factors.per.grid = 0, 
+              triangles = "both", title = NULL, 
+              axis.labels = TRUE, axis.text.size = 12, 
+              sep=",", colours = c("white","blue","red","grey"), 
+              ggplotFuncs = NULL, printPlot = TRUE, 
+              sortFactor = NULL, sortParallelToCombo = NULL, 
+              sortNestingFactor = NULL, sortOrder = NULL, 
+              decreasing = FALSE, ...)}
 \arguments{
- \item{object}{An \code{\link{alldiffs.object}} with an \code{sed} component that is not 
-             \code{NULL}.}
+ \item{object}{An \code{\link{alldiffs.object}} with both \code{LSD} and  
+              \code{sed} components that are not \code{NULL}.}
  \item{alpha}{A \code{\link{numeric}} giving the significance level for the LSD.}
  \item{sections}{A \code{character} listing the names of the factors that are to be used 
                  to break the plot into sections. A separate plot will be produced for 
@@ -68,7 +70,7 @@
                 results of evaluating a \code{\link{ggplot}} function. 
                 It is created by calling the \code{\link{list}} function with 
                 a \code{\link{ggplot}} function call for each element. 
-                It is passed to \code{ggplot} via \code{\link{plotLSDs.data.frame}} 
+                It is passed to \code{ggplot} via \code{\link{plotLSDerrors.data.frame}} 
                 to be applied in creating the \code{ggplot} object.}
  \item{printPlot}{A \code{logical} indicating whether or not the a plot is to be printed. This would 
                 be used when just the returned \code{data.frame} is required.}
@@ -119,16 +121,18 @@
  \item{\dots}{Provision for passsing arguments to functions called internally - 
             not used at present.}
  }
-\value{A \code{\link{list}} with components named \code{LSDs} and \code{plots}. 
-       The \code{LSDs} component contains the \code{data.frame} with the columns \code{Rows}, 
-       \code{Columns}, \code{LSDs}, \code{sections1} and \code{sections2}. This {data.frame} is 
-       formed using the \code{sed} component of \code{object} and is used by 
-       \code{\link{plotLSDs.data.frame}} in producng the plot. The \code{plots} 
+\value{A \code{\link{list}} with components named \code{LSDresults} and \code{plots}. 
+       The \code{LSDresults} component contains the \code{data.frame} with the columns \code{Rows}, 
+       \code{Columns}, \code{LSDresults}, \code{sections1} and \code{sections2}. This \code{data.frame} 
+       is formed using the \code{LSD} and \code{sed} components of \code{object} and is used 
+       by \code{\link{plotLSDerrors.data.frame}} in producng the plots. The \code{plots} 
        component contains a list of \code{ggplot} objects, one for each plot produced. 
        Multiple plots are stored in the \code{plots} component if the \code{sections} argument 
        is set and the plots are are named for the levels combinations of the sections.}
 \author{Chris Brien}
-\seealso{\code{\link{plotLSDs.data.frame}}, \code{\link{exploreLSDs}}, \code{\link{sort.alldiffs}}, \code{\link{subset.alldiffs}}, 
+\seealso{\code{\link{plotLSDerrors.alldiffs}}, \code{\link{plotLSDerrors.data.frame}}, 
+        \code{\link{plotLSDs.data.frame}},  \cr
+        \code{\link{exploreLSDs}}, \code{\link{sort.alldiffs}}, \code{\link{subset.alldiffs}}, 
          \code{ggplot}}
 \examples{
 ##Subset WaterRunoff data to reduce time to execute
@@ -176,9 +180,9 @@ if (requireNamespace("lmerTest", quietly = TRUE) &
 ## Plot LSD values for predictions obtained using asreml or lmerTest
 if (exists("TS.diffs"))
 {
-  plotLSDs(TS.diffs, gridspacing = rep(c(3,4), c(4,2)))
+  plotLSDerrors(TS.diffs, gridspacing = rep(c(3,4), c(4,2)))
 \donttest{
-  plotLSDs(TS.diffs, sections = "Sources", axis.labels = TRUE)
+  plotLSDerrors(TS.diffs, sections = "Sources", axis.labels = TRUE)
 }  
 }
 }

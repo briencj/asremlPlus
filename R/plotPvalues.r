@@ -10,7 +10,7 @@
                                      ggplotFuncs = NULL, printPlot = TRUE, ...)
   #Plots a data.frame of p-values that has columns x, y, p
 { 
-  if (!all(c(p,x,y) %in% names(object)))
+  if (!all(c(x,y,p) %in% names(object)))
     stop("One or more of the columns p, x and y are not in object")
   options <- c("both", "upper", "lower")
   tri.opt <- options[check.arg.values(triangles, options)]
@@ -137,13 +137,14 @@
       object$p.differences[upper.tri(object$p.differences)] <- NA
   }
   p <- object$p.differences
-  rownames(p) <- colnames(p) <- NULL #needed because reshape::melt throws a warning re type.convert
-  p <- within(reshape::melt(p), 
+  p <- within(reshape2::melt(p), 
               { 
-                X1 <- factor(X1, labels=dimnames(object$p.differences)[[1]])
-                X2 <- factor(X2, labels=levels(X1))
+                Var1 <- factor(Var1, labels=dimnames(object$sed)[[1]])
+                Var2 <- factor(Var2, labels=levels(Var1))
               })
-  names(p)[match("value", names(p))] <- "p"
+  #names(p)[match("value", names(p))] <- "p"
+  names(p) <- c("Rows","Columns","p")
+  
 
   #prepare for plotting
   n <- nrow(p)
@@ -167,6 +168,7 @@
   }
   
   #Do plots
+  plts <- list()
   if (is.null(sections))
   { 
     pairname <- NULL
@@ -181,23 +183,23 @@
       gridspacing <- autogridspace(object = object$predictions, plotfacs = facs, 
                                    factors.per.grid = factors.per.grid)
     if (is.null(title))
-      plotPvalues.data.frame(object = p, x = "X1", y = "X2", 
-                             gridspacing = gridspacing, show.sig = show.sig, alpha = alpha, 
-                             sig.size = sig.size, sig.colour = sig.colour, 
-                             sig.face = sig.face, sig.family = sig.family, 
-                             triangles = triangles, 
-                             axis.labels = pairname, colours = colours, 
-                             printPlot = printPlot, 
-                             axis.text.size = axis.text.size, ggplotFuncs = ggplotFuncs)
+      plts[[1]] <- plotPvalues.data.frame(object = p, x = "Rows", y = "Columns", 
+                                          gridspacing = gridspacing, show.sig = show.sig, alpha = alpha, 
+                                          sig.size = sig.size, sig.colour = sig.colour, 
+                                          sig.face = sig.face, sig.family = sig.family, 
+                                          triangles = triangles, 
+                                          axis.labels = pairname, colours = colours, 
+                                          printPlot = printPlot, 
+                                          axis.text.size = axis.text.size, ggplotFuncs = ggplotFuncs)
     else
-      plotPvalues.data.frame(object = p, x = "X1", y = "X2",  
-                             gridspacing = gridspacing, show.sig = show.sig, alpha = alpha, 
-                             sig.size = sig.size, sig.colour = sig.colour, 
-                             sig.face = sig.face, sig.family = sig.family, 
-                             triangles = triangles, 
-                             title = title, axis.labels = pairname, 
-                             colours = colours, printPlot = printPlot, 
-                             axis.text.size = axis.text.size, ggplotFuncs = ggplotFuncs)
+      plts[[1]] <- plotPvalues.data.frame(object = p, x = "Rows", y = "Columns",  
+                                          gridspacing = gridspacing, show.sig = show.sig, alpha = alpha, 
+                                          sig.size = sig.size, sig.colour = sig.colour, 
+                                          sig.face = sig.face, sig.family = sig.family, 
+                                          triangles = triangles, 
+                                          title = title, axis.labels = pairname, 
+                                          colours = colours, printPlot = printPlot, 
+                                          axis.text.size = axis.text.size, ggplotFuncs = ggplotFuncs)
   } else #have sections
   { 
     #Prepare for sectioning
@@ -225,9 +227,9 @@
       return(p)
     }
     
-    p <- facOrg("X1", p, object, facs, sections = sections, pairdiffs = pairdiffs, sep = sep)
+    p <- facOrg("Rows", p, object, facs, sections = sections, pairdiffs = pairdiffs, sep = sep)
     names(p)[match(c("sections"), names(p))] <- "sections1"
-    p <- facOrg("X2", p, object, facs, sections = sections, pairdiffs = pairdiffs, sep = sep)
+    p <- facOrg("Columns", p, object, facs, sections = sections, pairdiffs = pairdiffs, sep = sep)
     names(p)[match(c("sections"), names(p))] <- "sections2"
 
     sect.lev <- levels(p$sections1)
@@ -254,28 +256,28 @@
                                      factors.per.grid = factors.per.grid)
       }
       if (is.null(title))
-        plotPvalues.data.frame(object = psect, x = "X1", y = "X2", 
-                               gridspacing = gridspacing, show.sig = show.sig, alpha = alpha, 
-                               sig.size = sig.size, sig.colour = sig.colour, 
-                               sig.face = sig.face, sig.family = sig.family, 
-                               triangles = triangles, 
-                               title = paste("Plot of p-values for ",
-                                             secname," = ",j, sep = ""),
-                               axis.labels = pairname, colours = colours, 
-                               printPlot = printPlot, 
-                               axis.text.size = axis.text.size, ggplotFuncs = ggplotFuncs)
+        plts[[j]] <- plotPvalues.data.frame(object = psect, x = "Rows", y = "Columns", 
+                                            gridspacing = gridspacing, show.sig = show.sig, alpha = alpha, 
+                                            sig.size = sig.size, sig.colour = sig.colour, 
+                                            sig.face = sig.face, sig.family = sig.family, 
+                                            triangles = triangles, 
+                                            title = paste("Plot of p-values for ",
+                                                          secname," = ",j, sep = ""),
+                                            axis.labels = pairname, colours = colours, 
+                                            printPlot = printPlot, 
+                                            axis.text.size = axis.text.size, ggplotFuncs = ggplotFuncs)
       else
-        plotPvalues.data.frame(object = psect, x = "X1", y = "X2", 
-                               gridspacing = gridspacing, show.sig = show.sig, alpha = alpha, 
-                               sig.size = sig.size, sig.colour = sig.colour, 
-                               sig.face = sig.face, sig.family = sig.family, 
-                               triangles = triangles, 
-                               title = paste(title," - ", secname," = ", j, sep=""),
-                               axis.labels = pairname, colours = colours, 
-                               printPlot = printPlot, 
-                               axis.text.size = axis.text.size, ggplotFuncs = ggplotFuncs)
+        plts[[j]] <- plotPvalues.data.frame(object = psect, x = "Rows", y = "Columns", 
+                                            gridspacing = gridspacing, show.sig = show.sig, alpha = alpha, 
+                                            sig.size = sig.size, sig.colour = sig.colour, 
+                                            sig.face = sig.face, sig.family = sig.family, 
+                                            triangles = triangles, 
+                                            title = paste(title," - ", secname," = ", j, sep=""),
+                                            axis.labels = pairname, colours = colours, 
+                                            printPlot = printPlot, 
+                                            axis.text.size = axis.text.size, ggplotFuncs = ggplotFuncs)
       
     }  
   }
-  invisible(p)
+  invisible(list(pvalues = p, plots = plts))
 }

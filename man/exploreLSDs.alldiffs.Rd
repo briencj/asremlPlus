@@ -104,8 +104,8 @@
        the LSD statistic.}
 
 \author{Chris Brien}
-\seealso{\code{\link{asremlPlus-package}}, \code{\link{plotLSDs.data.frame}}, \code{\link{plotLSDs.alldiffs}},  
-         \code{\link{recalcLSD.alldiffs}}, \cr 
+\seealso{\code{\link{asremlPlus-package}}, \code{\link{plotLSDs.data.frame}}, \code{\link{plotLSDs.alldiffs}}, \cr 
+         \code{\link{plotLSDerrors.alldiffs}}, \code{\link{plotLSDerrors.data.frame}}, \code{\link{recalcLSD.alldiffs}}, \cr 
          \code{\link{redoErrorIntervals.alldiffs}}}
 \examples{
 data(WaterRunoff.dat)
