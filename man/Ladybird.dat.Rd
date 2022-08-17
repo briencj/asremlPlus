@@ -12,7 +12,7 @@ Live, Infected, logitP, Prop are response variables.
 \usage{data(Ladybird.dat)}
 \format{A data.frame containing 72 observations of 10 variables.}
 \source{
-Welham, S. J., Gezan, S. A., Clark, S. J., \& Mead, A. (2015). \emph{Statistical Methods in Biology: Design and Analysis of Experiments and Regression}. Boca Raton: Chapman and Hall/CRC.. 
+Welham, S. J., Gezan, S. A., Clark, S. J., & Mead, A. (2015). \emph{Statistical Methods in Biology: Design and Analysis of Experiments and Regression}. Boca Raton: Chapman and Hall/CRC.. 
 }
 \author{Chris Brien}
 \keyword{datasets}

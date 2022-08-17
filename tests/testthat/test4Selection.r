@@ -702,8 +702,8 @@ test_that("Fixedcorrelations_asreml4", {
 
   m4.asrt <- testresidual(m.asrt, terms = "ar1(Lane):Position", label = "Lane autocorrelation", 
                           simpler = TRUE, allow.fixedcorrelation = TRUE, update = FALSE)
-  testthat::expect_equal(m4.asrt$test.summary$action[2], "Swapped")
-  testthat::expect_true(grepl("ar1(Lane):Position", 
+  testthat::expect_equal(m4.asrt$test.summary$action[2], "Unswapped")
+  testthat::expect_true(grepl("ar1(Lane):ar1(Position)", 
                               as.character(getFormulae(m4.asrt$asreml.obj)$residual)[2], fixed = TRUE))
   
   #Check warning message when supplied asreml.obj has a fixed correlation

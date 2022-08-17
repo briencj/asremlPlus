@@ -76,7 +76,7 @@
          where \code{n} is the number of observations and \code{r} is the rank of the fixed effects 
          design matrix. For \code{REML}, \code{fixedDF = 0}.}
 \references{Verbyla, A. P. (2019). A note on model selection using information criteria for general 
-            linear models estimated using REML. \emph{Australian \& New Zealand Journal of Statistics}, 
+            linear models estimated using REML. \emph{Australian & New Zealand Journal of Statistics}, 
             \bold{61}, 39--50. \doi{10.1111/anzs.12254}.}
 
 \author{Chris Brien}

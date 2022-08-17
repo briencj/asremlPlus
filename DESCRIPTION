@@ -1,6 +1,6 @@
 Package: asremlPlus
-Version: 4.3-34
-Date: 2022-04-20
+Version: 4.3.36
+Date: 2022-08-17
 Title: Augments 'ASReml-R' in Fitting Mixed Models and Packages
         Generally in Exploring Prediction Differences
 Authors@R: person("Chris","Brien", role = c("aut","cre"),
@@ -27,7 +27,7 @@ Description: Assists in automating the selection of terms to include in mixed mo
   predictions for significant terms in tables and graphs. The 'asreml' package provides a 
   computationally efficient algorithm for fitting mixed models using Residual Maximum 
   Likelihood. It is a commercial package that can be purchased from 
-  'VSNi' <https://www.vsni.co.uk/> as 'asreml-R', who will supply a zip file for local 
+  'VSNi' <https://vsni.co.uk/> as 'asreml-R', who will supply a zip file for local 
   installation/updating (see <https://asreml.kb.vsni.co.uk/>). It is not needed for functions that are 
   methods for 'alldiffs'  and 'data.frame' objects. The package 'asremPlus' can also be 
   installed from <http://chris.brien.name/rpackages/>.

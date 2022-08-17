@@ -228,10 +228,10 @@ setOldClass("predictions.frame")
   if (!is.null(vcov))
     vcov <- as.matrix(vcov)
   npred <- nrow(predictions)
-  if ((!is.null(differences) && !("matrix" %in% class(differences))) ||
-      (!is.null(p.differences) && !("matrix" %in% class(p.differences))) || 
-      (!is.null(sed) && !("matrix" %in% class(sed))) || 
-      (!is.null(vcov) && !("matrix" %in% class(vcov))))
+  if ((!is.null(differences) && !(inherits(differences, "matrix"))) ||
+      (!is.null(p.differences) && !(inherits(p.differences, "matrix"))) || 
+      (!is.null(sed) && !(inherits(sed, "matrix"))) || 
+      (!is.null(vcov) && !(inherits(vcov, "matrix"))))
     warning("At least one of differences, p.differences, sed and vcov is not of type matrix")
   #Check dimensions
   if (!all(unlist(lapply(list(differences, p.differences, sed, vcov), 
@@ -432,10 +432,10 @@ addMissingAttr.alldiffs <- function(alldiffs.obj, kattr)
   }
   #Check components that should be matrices
   npred <- nrow(object$predictions)
-  if ((!is.null(object$differences) && !("matrix" %in% class(object$differences))) ||
-      (!is.null(object$p.differences) && !("matrix" %in% class(object$p.differences))) || 
-      (!is.null(object$sed) && !("matrix" %in% class(object$sed))) || 
-      (!is.null(object$vcov) && !("matrix" %in% class(object$vcov))))
+    if ((!is.null(object$differences) && !(inherits(object$differences, "matrix"))) ||
+      (!is.null(object$p.differences) && !(inherits(object$p.differences, "matrix"))) || 
+      (!is.null(object$sed) && !(inherits(object$sed, "matrix"))) || 
+      (!is.null(object$vcov) && !(inherits(object$vcov, "matrix"))))
   {
     isalldiff[1] <- FALSE 
     isalldiff <- c(isalldiff, 
@@ -1057,7 +1057,7 @@ subset.alldiffs <- function(x, subset = rep(TRUE, nrow(x$predictions)),
     x$predictions <- as.data.frame(lapply(x$predictions, 
                                           function(x)
                                           {
-                                            if (class(x) == "factor")
+                                            if (inherits(x, "factor"))
                                               x <- factor(x)
                                             return(x)
                                           }), stringsAsFactors = FALSE)

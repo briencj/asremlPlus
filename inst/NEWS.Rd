@@ -1,11 +1,19 @@
 \name{news}
 \title{News for Package asremlPlus}
+\section{asremlPlus Version 4.3.36 (2022-08-17)}{
+  \itemize{
+  \item{Minor correction for resubmitting to CRAN.}
+}}
+\section{asremlPlus Version 4.3.35 (2022-08-16)}{
+  \itemize{
+  \item{Rebuild under R 4.2.1 for new submission.}
+}}
 \section{asremlPlus Version 4.3-34 (2022-04-20)}{
   \itemize{
   \item{Add functions plotLSDerrors.alldiffs and plotLSDerrors.data.frame.}
   \item{Replace the use of the package \code{reshape} with the use of \code{reshape2}.}
   \item{Replace \code{X1} and \code{X2} with \code{Rows} and \code{Columns} as the default names for the the first two columns of the \code{data.frame} produced by plotPvalues.alldiffs, plotLSDs.alldiffs and plotLSDerrors.alldiffs and provided as input to plotPvalues.data.frame, plotLSDs.data.frame and plotLSDerrors.data.frame.}
-  \item{Change plotPvalues.alldiffs and plotLSDs.alldiffs to return a two component list, one component of which si a \code{data.frame} that contains the statistics to be plotted and the other of which is a \code{list} containing the plots that have be produced as \code{ggplot} objects.}
+  \item{Change plotPvalues.alldiffs and plotLSDs.alldiffs to return a two component list, one component of which is a \code{data.frame} that contains the statistics to be plotted and the other of which is a \code{list} containing the plots that have be produced as \code{ggplot} objects.}
 }}
 \section{asremlPlus Version 4.3-33 (2022-04-09)}{
   \itemize{

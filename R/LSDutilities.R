@@ -40,7 +40,7 @@ fac.LSDcombs.alldiffs <- function(alldiffs.obj, by)
   fac.list <- lapply(fac.list, 
                      function(x) 
                      {
-                       if (class(x)!="factor")
+                       if (!inherits(x, "factor"))
                          x <- factor(x)
                        return(x)
                      })
@@ -60,7 +60,7 @@ addLSDsupplied <- function(alldiffs.obj, LSDsupplied, LSDby, denom.df, alpha)
   {
     if (ncol(LSDsupplied) > 1)
     {
-      if (ncol(LSDsupplied) != length(LSDby)+1 || names(LSDsupplied)[1:length(LSDby)] != LSDby)
+      if (ncol(LSDsupplied) != length(LSDby)+1 || any(names(LSDsupplied)[1:length(LSDby)] != LSDby))
         stop("If LSD supplied as a data.frame with more than one column ", 
              "it should have a column for each element of LSDby followed by a column of LSD values")
       fac.comb <- fac.combine(as.list(alldiffs.obj$predictions[LSDby]), combine.levels = TRUE)

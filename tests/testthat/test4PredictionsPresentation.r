@@ -46,7 +46,8 @@ test_that("predictPlus.asreml4", {
   testthat::expect_warning(current.asr <- asreml(fixed = pH ~ Benches + (Sources * (Type + Species)), 
                                                  random = ~ Benches:MainPlots,
                                                  data= WaterRunoff.dat))
-  testthat::expect_silent(current.asrt <- as.asrtests(current.asr, NULL, NULL))
+  testthat::expect_output(current.asrt <- as.asrtests(current.asr, NULL, NULL),
+                          regexp = "Calculating denominator DF")
   testthat::expect_silent(diffs <- predictPlus(classify = "Sources:Type", 
                                                asreml.obj = current.asr, tables = "none", 
                                                wald.tab = current.asrt$wald.tab, 
