@@ -46,7 +46,13 @@
                The names must match those in the \code{wald.tab} component of the 
                \code{asrtests.obj}.  
                The fixed terms will be reordered so that single-variable terms come 
-               first, followed by two-variable terms and so on.}
+               first, followed by two-variable terms and so on. Note that 
+               multiple terms specified using a single \code{asreml::at} function 
+               can only be dropped as a whole. If the term was specified using 
+               an \code{asreml::at} function with a single level, then it can be 
+               removed and either the level itself or its \code{\link{numeric}} 
+               position in the levels returned by the \code{\link{levels}} function 
+               can be specified.}
  \item{addFixed}{A single \code{character} string in the form of a formula which, 
                after addition of \code{". ~ . +"} and expansion, specifies the sum 
                of a set of terms to be added to the fixed formula. 
@@ -56,7 +62,13 @@
                after addition of \code{" ~ . -"} and expansion, specifies the sum 
                of a set of terms to be dropped from the random formula. 
                The names must match those in the \code{vparameters} component of the 
-               \code{asreml.obj} component in the \code{asrtests.obj}.}
+               \code{asreml.obj} component in the \code{asrtests.obj}. Note that 
+               multiple terms specified using a single \code{asreml::at} function 
+               can only be dropped as a whole. If the term was specified using 
+               an \code{asreml::at} function with a single level, then it can be 
+               removed and either the level itself or its \code{\link{numeric}} 
+               position in the levels returned by the \code{\link{levels}} function 
+               can be specified.}
  \item{addRandom}{A single \code{character} string in the form of a formula which, 
                after addition of \code{" ~ . +"}and expansion, specifies the sum 
                of a set of terms to be added to the random formula.}

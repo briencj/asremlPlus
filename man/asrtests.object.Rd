@@ -21,12 +21,15 @@ a mixed model using \code{asreml}.
                table for the fixed terms produced by \code{wald.asreml}. It has 
                \code{rownames} that corresond to the fixed terms that were 
                fitted and four columns. If denominator degrees of freedom were 
-               calculated then the columns are \code{Df}, \code{denDF}, 
+               calculated then the columns are \code{DF}, \code{denDF}, 
                \code{F.inc}, \code{Pr}; otherwise the columns are \code{Df}, 
                \code{Sum of Sq}, \code{Wald statistic}, and \code{Pr(Chisq)}.
-         \item \code{test.summary}: A \code{data.frame} with columns \code{term}, 
+         \item \code{test.summary}: A \code{data.frame} with columns \code{terms}, 
                 \code{DF}, \code{denDF}, \code{p}, \code{AIC}, \code{BIC} and 
-                \code{action}. Possible codes for \code{action} are: 
+                \code{action}, each row of which summarizes the results of  
+                proposed changes to the fitted model. 
+
+                Possible codes for \code{action} are: 
                 \code{Dropped}, \code{Retained}, \code{Swapped}, \code{Unswapped}, 
                 \code{Unchanged}, \code{Significant}, \code{Nonsignificant}, 
                 \code{Absent}, \code{Added}, \code{Removed} and \code{Boundary}. 

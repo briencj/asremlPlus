@@ -1,5 +1,11 @@
 \name{news}
 \title{News for Package asremlPlus}
+\section{asremlPlus Version 4.3.37 (2022-09-19)}{
+  \itemize{
+  \item{Fix bugs in function newfit.asreml that involves making changes to models that involve  the \code{at} function. This bug affected the functions changeTerms.asrtests, changeModelOnIC.asrtests, rmboundary.asrtests, testswapran.asrtests and testranfix.asrtests. In removing a term that involve a single lewvel of a factor in an at function, it is now possible to specify either the level or the level index.}
+  \item{Modify rmboundary.asrtests to allow the removal of random term for a single level of an \code{at} function when the levels are specified singly in the random model.}
+  \item{Add function addto.test.summary}
+}}
 \section{asremlPlus Version 4.3.36 (2022-08-17)}{
   \itemize{
   \item{Minor correction for resubmitting to CRAN.}

@@ -2,6 +2,7 @@ export(addBacktransforms,
        addBacktransforms.alldiffs,
        addrm.terms.asreml,
        addrm.terms.asrtests,
+       addto.test.summary,
        allDifferences,
        allDifferences.data.frame,
        alldiffs,
@@ -153,7 +154,8 @@ importFrom("utils", "data", "capture.output", sessionInfo, "tail")
 importFrom("foreach", "foreach", "%do%", "%dopar%")
 importFrom("parallel", "makeCluster", "stopCluster", "detectCores", "nextRNGStream")
 importFrom("doParallel", "registerDoParallel")
-importFrom("stringr", "str_split", "str_trim", "str_sub")
+importFrom("stringr", "str_count", "str_length", "str_locate", "str_locate_all", "str_replace", "str_replace_all", 
+           "str_split", "str_sub", "str_trim")
 importFrom("sticky", "sticky")
 S3method(addBacktransforms, alldiffs)
 S3method(allDifferences, data.frame)

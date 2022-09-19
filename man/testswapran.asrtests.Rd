@@ -37,7 +37,13 @@
  \item{oldterms}{Terms, stored as a \code{character}, that are to be removed from the 
                  random model using \code{asreml}. The names of the terms must 
                  match those in the \code{vparameters} component of the \code{asreml.obj} 
-                 component in \code{asrtests.obj}.}
+                 component in \code{asrtests.obj}. Note that 
+                 multiple terms specified using a single \code{asreml::at} function 
+                 can only be dropped as a whole. If the term was specified using 
+                 an \code{asreml::at} function with a single level, then it can be 
+                 removed and either the level itself or its \code{\link{numeric}} 
+                 position in the levels returned by the \code{\link{levels}} function 
+                 can be specified.}
  \item{newterms}{Terms, stored as a \code{character}, that are to be added to the 
                  random model using \code{asreml}.}
  \item{simpler}{A logical indicating whether the new model to be fitted. after the

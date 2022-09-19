@@ -186,10 +186,14 @@ isFixedCorrelOK.asreml <- function(asreml.obj, allow.fixedcorrelation = TRUE)
     terms.obj <- NULL
   else
   {
-    terms.obj <- terms(terms, 
-                       keep.order = T, 
-                       data = eval(languageEl(asreml.obj$call, which="data"), 
-                                   envir = .GlobalEnv), ...)
+    if (is.null(asreml.obj))
+      terms.obj <- terms(terms, 
+                         keep.order = T)
+    else
+      terms.obj <- terms(terms, 
+                         keep.order = T, 
+                         data = eval(languageEl(asreml.obj$call, which="data"), 
+                                     envir = .GlobalEnv), ...)
   }
   return(terms.obj)
 }
@@ -223,14 +227,17 @@ isFixedCorrelOK.asreml <- function(asreml.obj, allow.fixedcorrelation = TRUE)
   { 
     if (rmDescription)
     { 
-      if(substr(term, 1, 2) != "R!")  term <- rmTermDescription(term)
+      if (substr(term, 1, 2) != "R!")  term <- rmTermDescription(term)
       k <- which(sapply(termlist, 
                         FUN=function(kterm, term)
                         { 
                           if (substr(kterm, 1, 2) != "R!")  
                             kterm <- rmTermDescription(kterm)
-                          haveterm <- setequal(fac.getinTerm(term), 
-                                               fac.getinTerm(kterm))
+                          if (grepl("\\:",kterm) && grepl("\\:",term))
+                            haveterm <- setequal(fac.getinTerm(term), 
+                                                 fac.getinTerm(kterm))
+                          else
+                            haveterm <- term == kterm
                         }, 
                         term=term))
     }
@@ -238,8 +245,12 @@ isFixedCorrelOK.asreml <- function(asreml.obj, allow.fixedcorrelation = TRUE)
     { 
       k <- which(sapply(termlist, 
                         FUN=function(kterm, term)
-                        { haveterm <- setequal(fac.getinTerm(term), 
-                                               fac.getinTerm(kterm))
+                        { 
+                          if (grepl("\\:",kterm) && grepl("\\:",term))
+                            haveterm <- setequal(fac.getinTerm(term), 
+                                                 fac.getinTerm(kterm))
+                          else
+                            haveterm <- term == kterm
                         }, 
                         term=term))
     }
@@ -248,12 +259,14 @@ isFixedCorrelOK.asreml <- function(asreml.obj, allow.fixedcorrelation = TRUE)
   return(k)
 }
 
-"fac.getinTerm" <- function(term, rmfunction=FALSE)
+"fac.getinTerm" <- function(term, asreml.obj = NULL, rmfunction=FALSE)
   #function to return the set of factors/variables in a term separated by ':"
 { 
   if (length(term) != 1)
     stop("Multiple terms supplied where only one allowed")
-  vars <- unlist(strsplit(term, ":", fixed=TRUE))
+  t.obj <- as.terms.object(term, asreml.obj)
+  vars <- as.character(parse(text = attr(t.obj, which = "variables")))[-1]
+#  vars <- unlist(strsplit(term, ":", fixed=TRUE))
   if (rmfunction)
     vars <- unlist(lapply(vars, rmFunction))
   return(vars)
@@ -386,6 +399,16 @@ isFixedCorrelOK.asreml <- function(asreml.obj, allow.fixedcorrelation = TRUE)
   names(test.summary) <- which.cols
   class(test.summary) <- c("test.summary", "data.frame")
   return(test.summary)
+}
+
+"addto.test.summary" <- function(test.summary, terms, DF = 1, denDF = NA, 
+                                          p = NA, AIC = NA, BIC = NA,
+                                          action = "Boundary")
+{
+  test.summary <- addtoTestSummary(test.summary = test.summary, terms = terms, 
+                                   DF = DF, denDF = denDF, p = p, AIC = AIC, BIC = BIC,
+                                   action = action)
+  return(test.summary)    
 }
 
 "addtoTestSummary" <- function(test.summary, terms, DF = 1, denDF = NA, 

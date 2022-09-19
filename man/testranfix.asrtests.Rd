@@ -36,7 +36,7 @@
              as a \code{character}. The names of fixed terms must match those in the \code{wald.tab} 
              component of the \code{asrtests.obj}, while the names of random terms must 
              match those in the \code{vparameters} component of the \code{asreml.obj} component 
-             in the \code{asrtests.obj}.}
+             in the \code{asrtests.obj}. }
  \item{alpha}{The significance level for the test.}
  \item{allow.unconverged}{A \code{logical} indicating whether to accept a new model 
                       even when it does not converge. If \code{FALSE}, it will be 
@@ -56,7 +56,13 @@
  \item{checkboundaryonly}{If \code{TRUE} then boundary and singular terms are not removed by 
               \code{\link{rmboundary.asrtests}}; a warning is issued instead.}
  \item{drop.ran.ns}{A \code{logical} indicating whether to drop a random 
-                   term from the model when it is nonsignificant.}
+               term from the model when it is nonsignificant. Note that 
+               multiple terms specified using a single \code{asreml::at} function 
+               will only be dropped as a whole. If the term was specified using 
+               an \code{asreml::at} function with a single level, then it can be 
+               removed and either the level itself or its \code{\link{numeric}} 
+               position in the levels returned by the \code{\link{levels}} function 
+               can be specified in \code{term}.}
  \item{positive.zero}{Indicates whether the hypothesized values for the 
                       variance components being tested are on the boundary 
                       of the parameter space. For example, this is true 
@@ -87,7 +93,13 @@
                     \code{\link{REMLRT.asreml}}. If \code{NULL} then this is determined from 
                     the information in the \code{asreml} object for the two models.}
  \item{drop.fix.ns}{A \code{logical} indicating whether to drop a fixed  
-                   term from the model when it is nonsignificant }
+                   term from the model when it is nonsignificant. Note that 
+               multiple terms specified using a single \code{asreml::at} function 
+               can only be dropped as a whole. If the term was specified using 
+               an \code{asreml::at} function with a single level, then it can be 
+               removed and either the level itself or its \code{\link{numeric}} 
+               position in the levels returned by the \code{\link{levels}} function 
+               can be specified.}
  \item{denDF}{Specifies the method to use in computing approximate denominator 
               degrees of freedom when \code{wald.asreml} is called. Can be \code{none} 
               to suppress the computations, \code{numeric} for numerical methods,

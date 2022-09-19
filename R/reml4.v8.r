@@ -1,5 +1,7 @@
+
 "getTestPvalue.asrtests" <- function(asrtests.obj, label, ...)
 {
+#  k <- tail(which(as.character(asrtests.obj$test.summary$terms)==label),1)
   k <- tail(findterm(label, as.character(asrtests.obj$test.summary$terms)),1)
   if (k == 0)
     stop("Label not found in test.summary of supplied asrtests.obj")
@@ -9,6 +11,7 @@
 
 "getTestEntry.asrtests" <- function(asrtests.obj, label, ...)
 {
+#  k <- tail(which(as.character(asrtests.obj$test.summary$terms)==label),1)
   k <- tail(findterm(label, as.character(asrtests.obj$test.summary$terms)),1)
   if (k == 0)
     stop("Label not found in test.summary of supplied asrtests.obj")
@@ -585,13 +588,14 @@ setOldClass("asrtests")
   }
   k <- unlist(lapply(1:nt, 
                      FUN=function(i, terms, termslist, ignore.suffices=TRUE)
-                     { k <- findterm(terms[i], termslist, rmDescription=ignore.suffices[i])
+                     { 
+                       k <- which(termslist == terms[i])
                        return(k)
                      }, 
                      terms=terms,
                      termslist=gammas, 
                      ignore.suffices=ignore.suffices))
-  if (any(k==0))
+  if (any(length(k)==0))
     stop(paste("Could not find", paste(terms[k==0], collapse=", ")))
   else
   { 
@@ -626,72 +630,112 @@ setOldClass("asrtests")
 
 get.atargs <- function(at.term, dd, always.levels = FALSE)
 {
-  kargs <- strsplit(at.term, "at(", fixed = TRUE)[[1]][2]
-  kargs <- substr(kargs, 1, nchar(kargs)-1)
+  kargs <- stringr::str_replace(at.term, "at\\(", "")
+  #kargs <- strsplit(kargs, "\\:")[[1]][1]
+  kargs <- stringr::str_sub(kargs, 1, stringr::str_length(kargs)-1)
+  #  kargs <- substr(kargs, 1, nchar(kargs)-1)
   kargs <- stringr::str_split(kargs, ",", n = 2)[[1]]
   obj <- kargs[1]
   obj.levs <- levels(dd[[obj]])
   lvls <- stringr::str_trim(kargs[2])
-
-  if (grepl("\"", lvls, fixed = TRUE) | grepl("\'", lvls, fixed = TRUE) |
-      grepl("c(", lvls, fixed = TRUE) | all(!is.na(suppressWarnings(as.numeric(lvls)))))
+  
+  if (grepl("\\\\", lvls) || grepl("\\\\'", lvls) ||
+      grepl("c\\(", lvls) || all(!is.na(suppressWarnings(as.numeric(lvls)))))
     lvls <- eval(parse(text = lvls))
   if (is.character(lvls))
+  { 
+    lvls <- stringr::str_replace_all(lvls, "\"", "")
     lvls <- stringr::str_trim(lvls)
+  }
 
-  if (is.numeric(lvls) & !always.levels)
+  if (is.numeric(lvls))
   {
-    if (any(is.na(suppressWarnings(as.numeric(obj.levs)))))
-      levs.indx <- lvls
-    else
+    if (always.levels)
     {
-      if (all(as.character(lvls) %in% obj.levs))
-        levs.indx <- which(obj.levs %in% as.character(lvls))
-      else
+      levs.indx <- lvls
+      lvls <- obj.levs[levs.indx]
+    } else
+    {
+      if (any(is.na(suppressWarnings(as.numeric(obj.levs)))))
         levs.indx <- lvls
+      else
+      {
+        if (all(as.character(lvls) %in% obj.levs))
+          levs.indx <- which(obj.levs %in% as.character(lvls))
+        else
+          levs.indx <- lvls
+      }
     }
   } else
     levs.indx <- which(obj.levs %in% as.character(lvls))
 
   #Check that levs.indx is legal  
-  if (min(levs.indx) < 0 & max(levs.indx) > length(obj.levs))
-      stop('at has numeric values that are more than the number of levels')
+  if (length(levs.indx) != 0 && (min(levs.indx) < 0 || max(levs.indx) > length(obj.levs)))
+    stop('at has numeric values that are more than the number of levels')
 
   return(list(obj = obj, lvls = lvls, obj.levs = obj.levs, levs.indx = levs.indx))
 }
 
 #The purpose of this function is to make sure that any new "at" term being changed in a formula update
 # matches that in the model that is being updated.
+# new is the term to be added/dropped
+# old is the formula to be updated
 #It assumes that the new "at" term has the actual levels, rather than an index 1:no.levels.
-atLevelsMatch <- function(new, old, call)
+atLevelsMatch <- function(new, old, call, always.levels = TRUE)
 {
   new.ch <- deparse(new)
   new.ch <- paste0(stringr::str_trim(new.ch, side = "left"), collapse = "")
-  if (grepl("at(", new.ch, fixed = TRUE)) #only process if new involves an at
+  if (any(grepl("at\\(", new.ch))) #only process if new involves an at
   {
+    ##Split new into pieces based on whether they are separated by "+"s
     dd <- eval(languageEl(call, which = "data")) #needed for levels
-    new.split <- unlist(strsplit(new.ch, "[-~+*/]"))
+    new.split <- unlist(strsplit(new.ch, "[-~/+]")) #removed * on 17/9/2022
     at.parts <- stringr::str_trim(new.split[unlist(lapply(new.split, grepl, 
-                                                          pattern = "at", fixed = TRUE))])
-    #old.obj <- terms(old)
-    #Find the sets of factors association with terms in old that involve one or more at functions
+                                                          pattern = "at"))])
+    #remove beginning and ending parentheses for multiple random terms
+    at.parts <- sapply(at.parts, function(part)
+    {
+      part.len <- stringr::str_length(part)
+      if (stringr::str_count(part,"\\(") > stringr::str_count(part,"\\)"))
+      { 
+        if (stringr::str_locate(part, "\\(")[1] == 1) #"(" at start?
+          stringr::str_sub(part,1,1) <- ""
+        else
+          stop("Parentheses do not balance in ",part)
+      }
+      if (stringr::str_count(part,"\\(") < stringr::str_count(part,"\\)")) 
+      {
+        if  (any(stringr::str_locate_all(part, "\\)")[[1]] == part.len)) #")" at end?
+          stringr::str_sub(part,part.len,part.len) <- ""
+        else
+          stop("Parentheses do not balance in ",part)
+      }
+      #Also remove parentheses from around a single term
+      part.len <- stringr::str_length(part)
+      if (stringr::str_sub(part,1,1) ==  "(" && stringr::str_sub(part,part.len,part.len) ==  ")")
+        part <- stringr::str_sub(part,2,part.len-1)
+      return(part)
+    })
+    at.parts <- at.parts[grepl("at\\(", at.parts)]
+    
+    ##Find the sets of factors association with terms in old that involve one or more at functions
     at.old.terms <- getTerms.formula(old)
-    at.old.terms <- at.old.terms[grepl("at(", at.old.terms, fixed = TRUE)]
-    at.old.terms.vars <- strsplit(at.old.terms, split = ":")
+    at.old.terms <- at.old.terms[grepl("at\\(", at.old.terms)]
+#    at.old.terms.vars <- strsplit(at.old.terms, split = ":")
+    at.old.terms.vars <- lapply(at.old.terms, fac.getinTerm)
     at.old.terms.vars <- lapply(at.old.terms.vars, 
-                               function(vars) vars <- vars[!grepl("at(", vars, fixed = TRUE)])
+                               function(vars) vars[!grepl("at\\(", vars)])
     names(at.old.terms.vars) <- at.old.terms
     
     #Loop over the pieces of new
     for (piece in at.parts)
     {
-      term.obj <- terms(as.formula(paste0("~", piece)))
       #Find the sets of factors association with terms in new that involve one or more at functions
-      at.new.terms <- stringr::str_trim(unlist(strsplit(piece[length(piece)], split = "+", fixed = TRUE)))
-      at.new.terms <- at.new.terms[grepl("at(", at.new.terms, fixed = TRUE)]
-      at.new.terms.vars <- strsplit(at.new.terms, split = ":")
+      at.new.terms <- stringr::str_trim(unlist(strsplit(piece[length(piece)], split = "\\+")))
+      at.new.terms <- at.new.terms[grepl("at\\(", at.new.terms)]
+      at.new.terms.vars <- lapply(at.new.terms, fac.getinTerm)
       at.new.terms.vars <- lapply(at.new.terms.vars, 
-                                  function(vars) vars <- vars[!grepl("at(", vars, fixed = TRUE)])
+                                  function(vars) vars[!grepl("at\\(", vars)])
       names(at.new.terms.vars) <- at.new.terms
       
       #check if any new terms in this piece have the same non-at variables as an old term
@@ -700,20 +744,22 @@ atLevelsMatch <- function(new, old, call)
         matches <- unlist(lapply(at.old.terms.vars, 
                                  function(old.term, knew.term, at.new.terms.vars){
                                    same <- setequal(at.new.terms.vars[[knew.term]], old.term)
-                                 }, knew.term = kterm, at.new.terms.vars))
+                                   return(same)
+                                 }, knew.term = kterm, at.new.terms.vars = at.new.terms.vars))
         if (any(matches)) #have old term(s) whose non-at vars match kterm; do the at variables match?
         {
           matches <- names(at.old.terms.vars)[matches]
           at.new.term <- fac.getinTerm(kterm)
-          at.new.term <- at.new.term[grepl("at(", at.new.term, fixed = TRUE)]
+          at.new.term <- at.new.term[grepl("at\\(", at.new.term)]
           for (kmatch in matches)
           {
             at.kmatch <- fac.getinTerm(kmatch)
-            at.kmatch <- at.kmatch[grepl("at(", at.kmatch, fixed = TRUE)]
+            at.kmatch <- at.kmatch[grepl("at\\(", at.kmatch)]
             if (at.new.term == at.kmatch) break
-            at.new.args <- get.atargs(at.new.term, dd, always.levels = TRUE)
+            at.new.args <- get.atargs(at.new.term, dd, always.levels = always.levels)
             at.kmatch.args <- get.atargs(at.kmatch, dd)
-            if (at.new.args$obj == at.kmatch.args$obj) #if same var try matching levels
+            #if same var and both have levels, try matching levels
+            if (at.new.args$obj == at.kmatch.args$obj && !(all(is.na(at.new.args$lvls)) || all(is.na(at.kmatch.args$lvls)))) 
             {
               if (all(at.new.args$lvls == at.kmatch.args$lvls))
               {
@@ -721,7 +767,7 @@ atLevelsMatch <- function(new, old, call)
               } else
               {
                 #Check if kmatch is a set of levels indexes & new at is a set of levels
-                if (is.numeric(at.kmatch.args$lvls) & 
+                if (is.numeric(at.kmatch.args$lvls) && 
                     all(as.character(at.new.args$lvls) %in% at.new.args$obj.levs))
                 {
                   #Check that new at levels are those corresponding to the kmatch levels indexes 
@@ -730,14 +776,14 @@ atLevelsMatch <- function(new, old, call)
                     new.ch <- gsub(at.new.term, at.kmatch, new.ch, fixed = TRUE) #now substitute the old at term
                 } else
                 {
-                  # #Check if kmatch is a set of levels & new at is a set of levels indices
-                  # if (all(as.character(at.kmatch.args$lvls) %in% at.kmatch.args$obj.levs) & 
-                  #     is.numeric(at.new.args$lvls))
-                  # {
-                  #   #Check if new at indices correspond to the same levels as kmatch
-                  #   if (setequal(at.new.args$obj.levs[at.new.args$levs.indx], at.kmatch.args$lvls))
-                  #     new.ch <- gsub(at.new.term, at.kmatch, new.ch, fixed = TRUE) #now substitute the old at term
-                  # }
+                  #Check if kmatch is a set of levels & new at is a set of levels indices
+                  if (!always.levels && all(as.character(at.kmatch.args$lvls) %in% at.kmatch.args$obj.levs) && 
+                      is.numeric(at.new.args$lvls))
+                  {
+                    #Check if new at indices correspond to the same levels as kmatch
+                    if (setequal(at.new.args$obj.levs[at.new.args$levs.indx], at.kmatch.args$lvls))
+                      new.ch <- gsub(at.new.term, at.kmatch, new.ch, fixed = TRUE) #now substitute the old at term
+                  }
                 }
               }
             }
@@ -1151,11 +1197,24 @@ atLevelsMatch <- function(new, old, call)
     k <- 1
     while (k <= nbound)
     { 
+      #Check if bound term is in the random formula
+      # term <- rownames(vcomp)[k]
+      # ranterms.obj <- as.terms.object(languageEl(asreml.obj$call, which="random"), 
+      #                                 asreml.obj)
+      # termno <- findterm(term, labels(ranterms.obj))
+      # if (termno <= 0) #must be an R term or not a recognisable G term
       term <- rownames(vcomp)[k]
-      ranterms.obj <- as.terms.object(languageEl(asreml.obj$call, which="random"), 
-                                      asreml.obj)
-      termno <- findterm(term, labels(ranterms.obj))
-      if (termno <= 0) #must be an R term or not a recognisable G term
+      call <- asreml.obj$call
+      if(substr(term, 1, 2) != "R!")  term <- rmTermDescription(term)
+      termform <- atLevelsMatch(new = as.formula(paste("~", term)), 
+                                old = as.formula(languageEl(call, which = "random")), 
+                                call = call)
+      ranterms <- getTerms.formula(call$random)
+      ranforms <- lapply(ranterms, function(term) ran <- as.formula(paste("~",term)))
+      if (!any(sapply(ranforms, 
+                      function(rform, termform) setequal(fac.getinTerm(getTerms.formula(rform)),
+                                                         fac.getinTerm(getTerms.formula(termform))),
+                      termform = termform))) #must be an R term or not a recognisable G term
       { 
         vcomp <- vcomp[-k, ]
         k <- k - 1
@@ -1251,6 +1310,7 @@ atLevelsMatch <- function(new, old, call)
                                      AIC = ic$AIC, BIC = ic$BIC, 
                                      action = "Boundary")
     mod.ran <- as.formula(paste("~ . - ", term, sep=""))
+    # mod.ran <- atLevelsMatch(as.formula(paste("~ . - ", term)), as.formula(languageEl(call, which = "random")), call)
     asreml.obj <- newfit.asreml(asreml.obj, random. = mod.ran, trace = trace, 
                                 update = update, set.terms = set.terms, 
                                 ignore.suffices = ignore.suffices, 
@@ -1707,13 +1767,14 @@ atLevelsMatch <- function(new, old, call)
       }
       #Calc F, if necessary, and p
       if (!is.na(den.df))
-      { if ("denDF" %in% colnames(wald.tab))
-      {
-        if ("F.con" %in% colnames(wald.tab))
-          test.stat <- wald.tab$F.con[termno]
-        else
-          test.stat <- wald.tab$F.inc[termno]
-      }
+      { 
+        if ("denDF" %in% colnames(wald.tab))
+        {
+          if ("F.con" %in% colnames(wald.tab))
+            test.stat <- wald.tab$F.con[termno]
+          else
+            test.stat <- wald.tab$F.inc[termno]
+        }
         else
           test.stat <- wald.tab$'Wald statistic'[termno]/ndf
         p <- 1 - pf(test.stat, ndf, den.df)

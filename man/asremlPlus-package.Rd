@@ -122,6 +122,8 @@
 \cr
 (iv) Model selection \cr\cr
 
+\code{\link{addto.test.summary}}
+       \tab Adds a row to a \code{test.summary} \code{data.frame}. \cr
 \code{\link{changeModelOnIC.asrtests}}
        \tab Uses information criteria to decide whether to change an \cr
        \tab already fitted model. \cr
