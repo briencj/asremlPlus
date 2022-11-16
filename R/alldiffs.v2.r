@@ -1552,6 +1552,41 @@ exploreLSDs.alldiffs <- function(alldiffs.obj,  LSDtype = "overall", LSDby = NUL
   return(LSD.list)
 }
 
+pickLSDstatistics.alldiffs <- function(alldiffs.obj, 
+                                       LSDtype = "overall", LSDby = NULL, 
+                                       alpha = 0.05, digits = 3, 
+                                       retain.zeroLSDs = FALSE, 
+                                       zero.tolerance = .Machine$double.eps ^ 0.5, 
+                                       ...)
+{
+  lsd.errors <- exploreLSDs(alldiffs.obj, LSDtype = LSDtype, LSDby = LSDby, 
+                       retain.zeroLSDs = retain.zeroLSDs, 
+                       zero.tolerance = zero.tolerance, 
+                       ...)
+  lsd.errors <- c(lsd.errors["false.pos"], lsd.errors["false.neg"])
+  lsd.errors$false.pos <- lsd.errors$false.pos[,-1]
+  lsd.errors$false.neg <- lsd.errors$false.neg[,-1]
+  nfalserows <- nrow(lsd.errors$false.neg) 
+  lsdstats <- sapply(1:nfalserows,
+                    function(krow, lsd)
+                    {
+                      #Determine whether there are no pos or neg errors 
+                      no.errors <- lsd$false.pos[krow,] == 0 & lsd$false.neg[krow,] == 0
+                      if (any(no.errors)) #no error
+                        klsd <- colnames(no.errors)[min(which(no.errors))]
+                      else # get the LSD with the min false.pos and, amongst these, the min false.neg
+                      {  
+                        no.pos <- which(lsd$false.pos[krow, ]  == min(lsd$false.pos[krow, ]))
+                        min.neg <- lsd$false.neg[krow, ][no.pos]
+                        klsd <- names(min.neg)[min(which(min.neg == min(min.neg)))]
+                      }
+                      klsd <- gsub("quant", "q", klsd)
+                      return(klsd)
+                    }, lsd = lsd.errors)
+  return(lsdstats)
+}
+
+
 #redoErrorIntervals calls recalcLSD to compute LSD component, which in turn calls allDifferences, but ... does not pass parameters to recalcLSD; 
 #redoErrorIntervals is responsible for setting LSD attributes for alldiffs.obj and predictions.frame;
 #at the end redoErrorIntervals also calls addBackTransforms, but ... does not pass parameters to addBackTransforms

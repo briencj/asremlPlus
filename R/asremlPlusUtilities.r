@@ -20,13 +20,14 @@
 isFixedCorrelOK.asreml <- function(asreml.obj, allow.fixedcorrelation = TRUE)  
 {
   correlOK <- TRUE
+
   if (!allow.fixedcorrelation)
   {
-    vsumm <- summary(asreml.obj)$varcomp
-    vsumm <- vsumm[grepl("!cor", rownames(vsumm), fixed = TRUE),]
-    if (!all(is.na(vsumm)))
+    corrs <- names(vpt.char(asreml.obj))[vpt.char(asreml.obj) %in% c("R", "P")]
+    if (length(corrs) > 0)
     {
-      if (any(vsumm$bound %in% c("F","B","S")))
+      corrs <- vpc.char(asreml.obj)[names(vpc.char(asreml.obj)) %in% corrs]
+      if (length(corrs) >1)
         correlOK <- FALSE
     }
   }  

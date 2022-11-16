@@ -200,6 +200,9 @@
 \code{\link{pairdiffsTransform.alldiffs}} 
        \tab Calculates the differences between nominated pairs of \cr 
        \tab predictions stored in an \code{\link{alldiffs.object}} \cr
+\code{\link{pickLSDstatistics}}
+       \tab Pick LSDstatistics whose values minimize the number of \cr 
+       \tab errors in pairwise comparisons of predictions. \cr
 \code{\link{plotLSDerrors.data.frame}}
        \tab Plots a map of the supplied errors that occur in using the \cr
        \tab computedLSD values for pairwise differences between \cr

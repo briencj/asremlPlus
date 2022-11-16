@@ -2,8 +2,8 @@
 \alias{chooseModel.asrtests}
 \title{Determines and records the set of significant terms using an \code{\link{asrtests.object}}, 
        taking into account the hierarchy or marginality relations of the terms.}
-\description{Performs a series of hypothesis tests taking into account the 
-  marginality of terms. In particular, a term will not be tested if it is 
+\description{Performs a series of hypothesis tests on a set of fixed and/or random terms taking 
+  into account the marginality of terms. In particular, a term will not be tested if it is 
   marginal to (or nested in) one that is significant. For example, if A:B is significant, then 
   neither A nor B will be tested. For a random term, the term is removed from 
   the model fit, any boundary terms are removed using \code{\link{rmboundary.asrtests}} 
@@ -31,7 +31,7 @@
  \item{object}{an \code{\link{asrtests.object}} containing the components (i) \code{asreml.obj},
        (ii) \code{wald.tab}, and (iii) \code{test.summary}.}
  \item{terms.marginality}{A square matrix of ones and zeros with row and column names 
-                being the names of the terms. 
+                being the names of the terms to be tested. 
                The names of fixed terms must match those in the \code{wald.tab} component of the 
                \code{object}, while the names of random terms must match those 
                in the \code{vparameters} component of the 

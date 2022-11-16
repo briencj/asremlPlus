@@ -27,12 +27,15 @@
               (ii) the minimum, quantile10, quantile25, mean, median, quantile75, quantile90, and maximum 
                for the pairwise LSDs for each \code{factor.combination}, unless there is only one prediction 
               for a \code{factor.combination}, when notional LSDs are calculated. The \code{LSDtype} 
-              specified here does not have to match that used in the creating the \code{\link{alldiffs.object}}.}
+              specified here does not have to match that used in the creating the \code{\link{alldiffs.object}}.
+             
+             See \code{\link{LSD.frame}} for further information on how the LSD statistics are calculated.}
 \item{LSDby}{A \code{\link{character}} (vector) of variables names, being the names of the 
-             \code{\link{factor}s} or \code{\link{numeric}s} in the \code{classify} for each 
-             combination of which LSD statistics and accuracy are to be computed, as well histograms 
-             plotted, when \code{LSDtype} is \code{factor.combinatons}. The \code{LSDby} specified here does 
-             not have to match that used in the creating the \code{\link{alldiffs.object}}.}
+             \code{\link{factor}s} or \code{\link{numeric}s} in the \code{classify}; for each 
+             combination of the values the of the \code{\link{factor}s} and \code{\link{numeric}s}, the LSD 
+             statistics and accuracy are computed, as well histograms plotted, when \code{LSDtype} is 
+             \code{factor.combinatons}. The \code{LSDby} specified here does not have to match that used in 
+             the creating the \code{\link{alldiffs.object}}.}
 \item{LSDaccuracy}{A \code{\link{character}} nominating one of \code{maxAbsDeviation}, \code{maxDeviation}, 
              \code{q90Deviation} or \code{RootMeanSqDeviation} as the statistic to be calculated as a measure 
              of the accuracy of an LSD statistic when its values are used as an approximate LSD. The option 
@@ -106,7 +109,7 @@
 \author{Chris Brien}
 \seealso{\code{\link{asremlPlus-package}}, \code{\link{plotLSDs.data.frame}}, \code{\link{plotLSDs.alldiffs}}, \cr 
          \code{\link{plotLSDerrors.alldiffs}}, \code{\link{plotLSDerrors.data.frame}}, \code{\link{recalcLSD.alldiffs}}, \cr 
-         \code{\link{redoErrorIntervals.alldiffs}}}
+         \code{\link{pickLSDstatistics.alldiffs}}, \code{\link{redoErrorIntervals.alldiffs}}}
 \examples{
 data(WaterRunoff.dat)
 

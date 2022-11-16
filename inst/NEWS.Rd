@@ -1,10 +1,27 @@
 \name{news}
 \title{News for Package asremlPlus}
+\section{asremlPlus Version 4.3.41 (2022-11-16)}{
+  \itemize{
+  \item{Revise test for fixed correlation so that allow.fixedcorrelation recognises any correlation term, rather than being restricted to ar1.}
+}}
+\section{asremlPlus Version 4.3.40 (2022-11-16)}{
+  \itemize{
+  \item{Compress pdf files and resubmit to CRAN.}
+}}
+\section{asremlPlus Version 4.3.39 (2022-11-13)}{
+  \itemize{
+  \item{Rebuild for R 4.2.2 and submission to CRAN.}
+}}
+\section{asremlPlus Version 4.3.38 (2022-10-24)}{
+  \itemize{
+  \item{Added function pickLSDstatistics.alldiffs.Rd.}
+  \item{Revise documentation for the arguments \code{LSDtype}, \code{LSDsupplied}, \code{LSDby} and \code{LSDstatistic }.}
+}}
 \section{asremlPlus Version 4.3.37 (2022-09-19)}{
   \itemize{
   \item{Fix bugs in function newfit.asreml that involves making changes to models that involve  the \code{at} function. This bug affected the functions changeTerms.asrtests, changeModelOnIC.asrtests, rmboundary.asrtests, testswapran.asrtests and testranfix.asrtests. In removing a term that involve a single lewvel of a factor in an at function, it is now possible to specify either the level or the level index.}
   \item{Modify rmboundary.asrtests to allow the removal of random term for a single level of an \code{at} function when the levels are specified singly in the random model.}
-  \item{Add function addto.test.summary}
+  \item{Add function addto.test.summary.}
 }}
 \section{asremlPlus Version 4.3.36 (2022-08-17)}{
   \itemize{

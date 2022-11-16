@@ -29,7 +29,7 @@
   if (!inherits(object, "asreml") || is.null(object))
   {
     isasr[1] <- FALSE 
-    isasr <- c(isasr, "\n ",deparse(substitute(object)),"is not of class asreml")
+    isasr <- c(isasr, "\n ",deparse(substitute(object))," is not of class asreml")
   }
   #Check have corresponding asreml version
   if ((asr4 && !"vparameters" %in% names(object)) || 

@@ -75,27 +75,27 @@
              \code{assignedLSD} exceeds the value of \code{accuracy.threshold}. Otherwise, the 
              value of \code{LSDwarning} for a \code{predicted.value} will be \code{FALSE}.}
 \item{LSDtype}{A \code{\link{character}} string that can be \code{overall}, \code{factor.combinations}, 
-              \code{per.prediction} or \code{supplied}. It determines whether the values stored in an 
-              \code{\link{LSD.frame}} are  
-             (i) the \code{overall} number of pairwise comparisons, \code{c}, and the  minimum, mean, 
-              maximum and accuracy of all pairwise LSDs, 
-             (ii) the number of pairwise comparisons, \code{c}, and the minimum, mean, maximum and 
-             acuracy for the pairwise LSDs for each \code{factor.combination}, unless there is only 
-             one prediction for a \code{factor.combination}, when notional LSDs are calculated,  
-             (iii) the \code{per.prediction} number of pairwise comparisons, \code{c}, and the minimum, 
-             mean, maximum and accuracy, based, for each prediction, on all pairwise differences 
+              \code{per.prediction} or \code{supplied}. It determines whether the values stored in a row  
+              of a \code{\link{LSD.frame}} are the values calculated 
+             (i) \code{overall} from the LSD values for all pairwise comparison2, 
+             (ii) the values calculated from the pairwise LSDs for the levels of each 
+             \code{factor.combination}, unless there is only one prediction for a level  of the 
+             \code{factor.combination}, when a notional LSD is calculated,  
+             (iii) \code{per.prediction}, being based, for each prediction, on all pairwise differences 
              involving that prediction, or 
-            (iv) \code{supplied} values of the LSD, specified with the \code{LSDsupplied} argument; these 
-             values are to be placed in the \code{assignedLSD} column of the \code{\link{LSD.frame}} 
-             stored in an \code{\link{alldiffs.object}} so that they can be used in LSD calculations.
-             See \code{\link{LSD.frame}} for further information on the calculation of the values in this 
-             \code{data.frame}.}
+             (iv) as \code{supplied} values of the LSD, specified with the \code{LSDsupplied} argument; 
+             these supplied values are to be placed in the \code{assignedLSD} column of the 
+             \code{\link{LSD.frame}} stored in an \code{\link{alldiffs.object}} so that they can be used 
+             in LSD calculations.
+             
+             See \code{\link{LSD.frame}} for further information on the values in a row of this 
+             \code{data.frame} and how they are calculated.}
 \item{LSDsupplied}{A \code{\link{data.frame}} or a named \code{\link{numeric}} containing a set of \code{LSD} 
              values that correspond to the observed combinations of the values of the \code{LSDby} variables 
              in the \code{\link{predictions.frame}} or a single LSD value that is an overall LSD. 
-             If a \code{\link{data.frame}}, it may have a column for each \code{LSDby} variable and a column 
-             of \code{LSD} values or a single column of \code{LSD} values with rownames being the combinations 
-             of the observed combinations of the values of the \code{LSDby} variables. Any name can be used 
+             If a \code{\link{data.frame}}, it may have (i) a column for the \code{LSDby} variable and a column 
+             of \code{LSD} values or (ii) a single column of \code{LSD} values with rownames being the 
+             combinations of the observed values of the \code{LSDby} variables. Any name can be used 
              for the column of \code{LSD} values; \code{assignedLSD} is sensible, but not obligatory. Otherwise, 
              a \code{\link{numeric}} containing the \code{LSD} values, each of which is named for the observed 
              combination of the values of the \code{LSDby} variables to which it corresponds. (Applying the 
@@ -104,20 +104,23 @@
              will be incorporated into \code{assignedLSD} column of the \code{\link{LSD.frame}} stored as the 
              \code{LSD} component of the \code{\link{alldiffs.object}}.}
 \item{LSDby}{A \code{\link{character}} (vector) of variables names, being the names of the 
-             \code{\link{factor}s} or \code{\link{numeric}s} in the \code{classify} for each 
-             combination of which a mean LSD, minLSD and maxLSD is stored in the \code{LSD} 
-             component of the \code{\link{alldiffs.object}} when \code{LSDtype} is 
+             \code{\link{factor}s} or \code{\link{numeric}s} in the \code{classify}; for each 
+             combination of their levels and values, there will be or is a row in the \code{\link{LSD.frame}} 
+             stored in the \code{LSD} component of the \code{\link{alldiffs.object}} when \code{LSDtype} is 
              \code{factor.combinatons}.}
 \item{LSDstatistic}{A \code{\link{character}} nominating one or more of \code{minmum}, \code{q10}, \code{q25},  
-             \code{mean}, \code{median}, \code{q75}, \code{q90} or \code{maximum} as the value(s) to use in 
-             the calculation of the \code{halfLeastSignificant} \code{error.intervals}. Here \code{q10},  
-             \code{q25}, \code{q75} and \code{q90} indicate the sample quantiles corresponding to 
-             probabilities of 0.1, 0.25, 0.75 and 0.9, the function \code{\link{quantile}} being used to 
-             obtain them. Multiple values are only allowed for \code{LSDtype} set to \code{factor.combination}, 
-             in which case \code{LSDby} must not be \code{NULL} and the number of values must equal the number 
-             of observed combinations of the values of the variables specified by \code{LSDby}. The values of 
-             the nominated statistics are stored in the column named \code{assignedLSD} in an 
-             \code{\link{LSD.frame}}. If \code{LSDstatistic} is \code{NULL} it is reset to \code{mean}.}
+             \code{mean}, \code{median}, \code{q75}, \code{q90} or \code{maximum} as the value(s) to be 
+             stored in the \code{assignedLSD} column in an \code{\link{LSD.frame}}; the values in the 
+             \code{assignedLSD} column are used in computing \code{halfLeastSignificant} \code{error.intervals}. 
+             Here \code{q10},  \code{q25}, \code{q75} and \code{q90} indicate the sample quantiles corresponding 
+             to probabilities of 0.1, 0.25, 0.75 and 0.9 for the group of LSDs from which a single LSD value 
+             is calculated. The function \code{\link{quantile}} is used to obtain them. The \code{mean} LSD is 
+             calculated as the square root of the mean of the squares of the LSDs for the group. The 
+             \code{median} is calculated using the \code{\link{median}} function. Multiple values are only 
+             produced for \code{LSDtype} set to \code{factor.combination}, in which case \code{LSDby} must 
+             not be \code{NULL} and the number of values must equal the number of observed combinations of 
+             the values of the variables specified by \code{LSDby}.  If \code{LSDstatistic} is \code{NULL}, 
+             it is reset to \code{mean}.}
 \item{LSDaccuracy}{A \code{\link{character}} nominating one of \code{maxAbsDeviation}, \code{maxDeviation}, 
              \code{q90Deviation} or \code{RootMeanSqDeviation} as the statistic to be calculated as a measure 
              of the accuracy of \code{assignedLSD}. The option \code{q90Deviation} produces the sample quantile 
@@ -157,11 +160,12 @@
 
 }
 \author{Chris Brien}
-\seealso{\code{\link{as.alldiffs}}, \code{\link{print.alldiffs}}, \code{\link{sort.alldiffs}},  
-         \code{\link{subset.alldiffs}}, \cr
-         \code{\link{allDifferences.data.frame}}, 
-         \code{\link{recalcLSD.alldiffs}},  \code{\link{exploreLSDs.alldiffs}}, \cr 
+\seealso{\code{\link{recalcLSD.alldiffs}},  \code{\link{exploreLSDs.alldiffs}},  
+         \code{\link{pickLSDstatistics.alldiffs}},  \cr
          \code{\link{predictPresent.asreml}},  \code{\link{plotPredictions.data.frame}}, 
+         \code{\link{allDifferences.data.frame}}, \cr
+         \code{\link{as.alldiffs}}, \code{\link{print.alldiffs}}, \code{\link{sort.alldiffs}},  
+         \code{\link{subset.alldiffs}}, \cr
          \code{as.Date}, \code{predict.asreml}}
 \examples{
 data(WaterRunoff.dat)

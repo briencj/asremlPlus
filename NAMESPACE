@@ -63,6 +63,8 @@ export(addBacktransforms,
        pairdiffsTransform.alldiffs,
        permute.square,
        permute.to.zero.lowertri,
+       pickLSDstatistics, 
+       pickLSDstatistics.alldiffs,
        plotLSDerrors, 
        plotLSDerrors.data.frame,
        plotLSDerrors.alldiffs,
@@ -197,6 +199,7 @@ S3method(print, test.summary)
 S3method(print, wald.tab)
 S3method(printFormulae, asreml)
 S3method(pairdiffsTransform, alldiffs)
+S3method(pickLSDstatistics, alldiffs)
 S3method(ratioTransform, alldiffs)
 S3method(recalcWaldTab, asrtests)
 S3method(REMLRT, asreml) 

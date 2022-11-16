@@ -30,53 +30,53 @@
        \code{\link{alldiffs.object}}.
        
        An \code{LSD.frame} always has the eight columns \code{c}, \code{minimumLSD}, \code{meanLSD}, 
-       \code{maximumLSD}, \code{assignedLSD}, \code{accuracyLSD}, \code{false.pos} and 
-       \code{false.neg}.
+       \code{maximumLSD}, \code{assignedLSD}, \code{accuracyLSD}, \code{falsePos} and 
+       \code{falseNeg}.
        \enumerate{
         \item \code{c}: {This gives the number of pairwise coomparison of predictions for the combinations of 
              the factor levels given by the row name. If the row name is \code{overall} then it is for 
              all predictions.}
-        \item \code{minimumLSD, meanLSD, maximumLSD}: {These are computed for either \code{overall}, for 
-             \code{factor.combinations}, \code{per.prediction} or \code{supplied}, as specified by the 
-             \code{LSDtype} argument. 
+        \item \code{minimumLSD, meanLSD, maximumLSD}: {These are computed for either \code{overall}, 
+             \code{factor.combinations}, \code{per.prediction} or \code{supplied} LSD values, as specified by the 
+             \code{LSDtype} argument.  The \code{meanLSD} is calculated using the square root of the mean of 
+             the variances of set of pairwise differences appropriate to the specific \code{LSDtype} argument.
              
              For \code{overall}, the mean, minimum and maximum of the LSDs for all pairwise 
-             comparisons are computed. The mean LSD is calculated using the square root of the mean of 
-             the variances of all pairwise differences. 
+             comparisons are computed.  
              
              If \code{factor.combinations} was specified for 
              \code{LSDtype} when the LSDs were being calculated, then the \code{\link{LSD.frame}} 
-             contains a row for each each levels combination of the \code{\link{factor}s} specified 
-             by \code{LSDby}. The values in a row  are calculated from the variances for all 
-             pairwise differences for each factor combination, unless there is only one prediction 
-             for a \code{factor.combination}, when notional LSDs are calculated that are based 
-             on the standard error of the prediction multiplied by the square root of two. 
-             A  mean LSD is calculated as desribed for \code{overall}, except that 
-             only  the pairwise differences for each levels combination are used.
+             contains a row for each combination of the values of the \code{\link{factor}s} and 
+             \code{\link{numeric}s} specified by \code{LSDby}. The values in a row  are calculated 
+             from the LSD values for the pairwise differences for each combination of the 
+             \code{\link{factor}s} and \code{\link{numeric}s} values, unless there is only one 
+             prediction for a combination, when notional LSDs are calculated that are based on the 
+             standard error of the prediction multiplied by the square root of two. 
              
-             For \code{per.prediction}, the minimum, mean and maximum, based, for each prediction, 
-             on all pairwise differences involving that prediction are computed; the mean value is based on the 
-             square root of the mean of the variances for the pairwise differences.
+             For \code{per.prediction}, the minimum, mean and maximum LSD, based, for each prediction, 
+             on the LSD values for all pairwise differences involving that prediction are computed.
              
              For \code{supplied}, the \code{LSD.frame} is set up based on the setting of \code{LSDby}: 
              a single row with name \code{overall} if \code{LSDby} is \code{NULL} or, if \code{LSDby} 
-             is a list of factor names, rows for each observed levels combination of the listed factors. 
+             is a vector of \code{\link{factor}} and \code{\link{numeric}} names, rows for each observed 
+             combinations of the values of the named \code{\link{factor}s} and \code{\link{numeric}s}. 
              The \code{LSDsupplied} argument is used to provide the values to be stored in the column 
              \code{assignedLSD}.}
          \item \code{assignedLSD}: {The \code{assignedLSD} column contains the values that are assigned for 
              use in calculating \code{halfLeastSignificant} \code{error.intervals}. Its contents are 
              determined by \code{LSDstatistic} and \code{LSDsupplied} arguments. The 
              \code{LSDsupplied} argument allows the direct specification of values to be placed 
-             in the \code{assignedLSD} column of the \code{\link{LSD.frame}}.}
+             in the \code{assignedLSD} column of the \code{\link{LSD.frame}}. The default is to use the 
+             values in the \code{meanLSD} column.}
          \item \code{LSDaccuracy}:{ The \code{LSDaccuracy} gives an indication of the proportion that the 
               correct LSD for a single \code{predicted.value} might deviate from its \code{assignedLSD} value. 
               The contents of the \code{accuracyLSD} column is controlled by the \code{LSDaccuracy} 
               argument.}
-         \item \code{false.pos} and \code{false.neg}: {These columns contain the number of false positives 
+         \item \code{falsePos} and \code{falseNeg}: {These columns contain the number of false positives 
               and negatives if the \code{assignedLSD} value(s) is(are) used to determine the significance 
               of the pairwise predictions differences. Each LSD value in the \code{assignedLSD} 
               column is used to determine the significance of pairwise differences that involve 
-              predictions for the combination of levels given by the row name for the LSD value.}
+              predictions for the combination of values given by the row name for the LSD value.}
       }
        
        See \code{\link{recalcLSD.alldiffs}} for more information.
@@ -103,12 +103,6 @@
   {
     m1.lmer <- lmerTest::lmer(Yield ~ Nitrogen*Variety + (1|Blocks/Wplots),
                               data=Oats.dat)
-    ## Set up a wald.tab
-    int <- as.data.frame(rbind(rep(NA,4)))
-    rownames(int) <- "(Intercept)"
-    wald.tab <- anova(m1.lmer, ddf = "Kenward", type = 1)[,3:6]
-    names(wald.tab) <- names(int) <- c("Df", "denDF", "F.inc", "Pr")
-    wald.tab <- rbind(int, wald.tab)
     #Get predictions
     Var.emm <- emmeans::emmeans(m1.lmer, specs = ~ Nitrogen:Variety)
     Var.preds <- summary(Var.emm)
@@ -118,19 +112,18 @@
                                       interval.names = c("lower.CL", "upper.CL"))
     Var.vcov <- vcov(Var.emm)
     Var.sed <- NULL
-    den.df <- wald.tab[match("Nitrogen:Variety", rownames(wald.tab)), "denDF"]
-    testthat::expect_equal(den.df, 45)
-    
+
     #Set up an alldiffs object, which includes overall LSDs
     Var.diffs <- allDifferences(predictions = Var.preds, classify = "Variety:Nitrogen", 
-                                     sed = Var.sed, vcov = Var.vcov, tdf = den.df,
-                                     sortFactor = "Variety", decreasing = TRUE)
+                                     sed = Var.sed, vcov = Var.vcov, tdf = 45)
   }
 
   if (exists("Var.diffs"))
   {
-    ## Use recalcLSD to get LSDs for within Vaietry differences
-    Var.LSD.diffs <- recalcLSD(Var.diffs, LSDtype = "factor.combinations", LSDby = "Variety")
+    ## Use recalcLSD to get LSDs for within Variety differences
+    Var.LSD.diffs <- recalcLSD(Var.diffs, 
+                               LSDtype = "factor.combinations", LSDby = "Variety")
+    print(Var.LSD.diffs$LSD)
   }
 }
 
