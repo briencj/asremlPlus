@@ -30,7 +30,7 @@
            set.terms = NULL, ignore.suffices = TRUE, 
            bounds = "P", initial.values = NA, ...)}
 \arguments{
- \item{asrtests.obj}{An \code{\link{asrtests.object}} containing the components (i) \code{asreml.obj},
+ \item{asrtests.obj}{An \code{\link{asrtests.object}} containing the components (i) \code{asreml.obj}, 
        (ii) \code{wald.tab}, and (iii) \code{test.summary}.}
  \item{term}{A single model term that is valid in \code{asreml}, stored 
              as a \code{character}. The names of fixed terms must match those in the \code{wald.tab} 

@@ -32,7 +32,7 @@
            set.terms = NULL, ignore.suffices = TRUE, 
            bounds = "P", initial.values = NA, ...)}
 \arguments{
- \item{asrtests.obj}{an \code{\link{asrtests.object}} containing the components (i) \code{asreml.obj},
+ \item{asrtests.obj}{an \code{\link{asrtests.object}} containing the components (i) \code{asreml.obj}, 
        (ii) \code{wald.tab}, and (iii) \code{test.summary}.}
  \item{checkboundaryonly}{If \code{TRUE} then boundary and singular terms are not removed by 
               \code{\link{rmboundary.asrtests}}; a warning is issued instead.}

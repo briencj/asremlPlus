@@ -8,7 +8,7 @@
 \usage{
 \method{getTestEntry}{asrtests}(asrtests.obj, label, ...)}
 \arguments{
- \item{asrtests.obj}{An \code{\link{asrtests.object}} containing the components (i) \code{asreml.obj},
+ \item{asrtests.obj}{An \code{\link{asrtests.object}} containing the components (i) \code{asreml.obj}, 
        (ii) \code{wald.tab}, and (iii) \code{test.summary}.}
  \item{label}{A \code{character} specifying the \code{label} of the test for which  
               the entry is required. If \code{\link{testranfix.asrtests}} was used 

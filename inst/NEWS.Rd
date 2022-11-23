@@ -1,5 +1,9 @@
 \name{news}
 \title{News for Package asremlPlus}
+\section{asremlPlus Version 4.3.42 (2022-11-23)}{
+  \itemize{
+  \item{Add functions makeTPSPlineZMats.data.frame, addSpatialModelOnIC.asrtests and chooseSpatialModelOnIC.asrtests.}
+}}
 \section{asremlPlus Version 4.3.41 (2022-11-16)}{
   \itemize{
   \item{Revise test for fixed correlation so that allow.fixedcorrelation recognises any correlation term, rather than being restricted to ar1.}

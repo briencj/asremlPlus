@@ -15,7 +15,7 @@
               denDF="numeric", dDF.na = "none", 
               dDF.values = NULL, trace = FALSE, ...)}
 \arguments{
- \item{asrtests.obj}{an \code{\link{asrtests.object}} containing the components (i) \code{asreml.obj},
+ \item{asrtests.obj}{an \code{\link{asrtests.object}} containing the components (i) \code{asreml.obj}, 
        (ii) \code{wald.tab}, and (iii) \code{test.summary}.}
  \item{recalc.wald}{A \code{logical} indicating whether to call \code{wald.asreml} to recalculate 
                the pseudoanova table for the model fit stored in the \code{asreml} object 

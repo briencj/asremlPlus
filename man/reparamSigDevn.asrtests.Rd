@@ -22,7 +22,7 @@
                bounds = "P", initial.values = NA,...)
 }
 \arguments{
- \item{asrtests.obj}{an \code{\link{asrtests.object}} containing the components (i) \code{asreml.obj},
+ \item{asrtests.obj}{an \code{\link{asrtests.object}} containing the components (i) \code{asreml.obj}, 
        (ii) \code{wald.tab}, and (iii) \code{test.summary}.}
  \item{terms}{A character string vector giving the random terms that are to be reparameterized.}
  \item{trend.num}{A character string giving the name of the numeric covariate that 

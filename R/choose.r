@@ -267,7 +267,6 @@ addtoChooseSummary <- function(choose.summary, term, DF = NA, denDF = NA, p = NA
                                         ignore.suffices = ignore.suffices, 
                                         bounds = bounds, IClikelihood = IClikelihood, 
                                         initial.values = initial.values, ...)
-    print(current.asrt, which = "test")
     p <- getTestPvalue(current.asrt, label = term)
     #if significant, add to sig term list and work out which can be tested next
     if (!is.na(p)) 

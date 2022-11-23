@@ -1,8 +1,10 @@
 #S3 method generics
 
+addSpatialModelOnIC <- function(asrtests.obj, ...) UseMethod("addSpatialModelOnIC")
 changeModelOnIC <- function(asrtests.obj, ...) UseMethod("changeModelOnIC")
 changeTerms <- function(asrtests.obj, ...) UseMethod("changeTerms")
 chooseModel <- function(object, ...) UseMethod("chooseModel")
+chooseSpatialModelOnIC <- function(asrtests.obj, ...) UseMethod("chooseSpatialModelOnIC")
 getTestEntry <- function(asrtests.obj, ...) UseMethod("getTestEntry")
 getTestPvalue <- function(asrtests.obj, ...) UseMethod("getTestPvalue")
 iterate <- function(asrtests.obj, ...) UseMethod("iterate")
@@ -41,6 +43,7 @@ allDifferences <- function(predictions, ...) UseMethod("allDifferences")
 facCombine <- function(object, ...) UseMethod("facCombine")
 facRecast <- function(object, ...) UseMethod("facRecast")
 facRename <- function(object, ...) UseMethod("facRename")
+makeTPSPlineXZMats <- function(data, ...) UseMethod("makeTPSPlineXZMats")
 plotLSDerrors <- function(object, ...) UseMethod("plotLSDerrors")
 plotLSDs <- function(object, ...) UseMethod("plotLSDs")
 plotPvalues <- function(object, ...) UseMethod("plotPvalues")

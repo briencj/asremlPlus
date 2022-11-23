@@ -39,7 +39,7 @@
           ...)}
 \arguments{
  \item{asrtests.obj}{An \code{\link{asrtests.object}} containing the components 
-       (i) \code{asreml.obj},(ii) \code{wald.tab}, and (iii) \code{test.summary}.}
+       (i) \code{asreml.obj}, (ii) \code{wald.tab}, and (iii) \code{test.summary}.}
  \item{dropFixed}{A single \code{character} string in the form of a formula which, 
                after addition of \code{". ~ . -"} and after expansion, specifies the sum 
                of a set of terms to be dropped from the fixed formula. 

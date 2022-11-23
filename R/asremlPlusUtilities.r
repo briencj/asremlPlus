@@ -23,10 +23,12 @@ isFixedCorrelOK.asreml <- function(asreml.obj, allow.fixedcorrelation = TRUE)
 
   if (!allow.fixedcorrelation)
   {
-    corrs <- names(vpt.char(asreml.obj))[vpt.char(asreml.obj) %in% c("R", "P")]
+    corrs <- names(asreml::vpt.char(asreml.obj))[asreml::vpt.char(asreml.obj) 
+                                                 %in% c("R", "P")]
     if (length(corrs) > 0)
     {
-      corrs <- vpc.char(asreml.obj)[names(vpc.char(asreml.obj)) %in% corrs]
+      corrs <- asreml::vpc.char(asreml.obj)[names(asreml::vpc.char(asreml.obj)) 
+                                            %in% corrs]
       if (length(corrs) >1)
         correlOK <- FALSE
     }
@@ -92,6 +94,34 @@ isFixedCorrelOK.asreml <- function(asreml.obj, allow.fixedcorrelation = TRUE)
     stop("Unable to load asreml, version ", version)
   vers <- getASRemlVersionLoaded()
   invisible(vers)
+}
+
+#Function to check that arguments that come in via the ellipsis are all arguments to the allowed functions
+#Usually funcs should be the current function and any to which ... is allowed to pass arguments
+checkEllipsisArgs <- function(funcs, inargs)
+{
+  inargs <- names(inargs)
+  if (length(inargs))
+  {
+    args <- unique(unlist(lapply(funcs, formalArgs)))
+    args <- args[-match("...", args)]
+    foreignArgs <- inargs[!(inargs %in% args)]
+    if (length(foreignArgs))
+      stop("the argument(s) ", paste0(foreignArgs, collapse = ", "), " are not legal arguments for ", 
+           paste0(paste0("'",funcs, collapse = "', "), "'"))
+  }
+  invisible()
+}
+
+checkNamesInData <- function(Names, data)
+{
+  if (!all(Names %in% names(data)))
+  { 
+    mess <- paste0("The following required columns are not in data: ", #deparse(substitute(data)))
+                   paste0(Names[!(Names %in% names(data))], collapse = ", "), ".\n")
+    stop(mess)
+  }
+  invisible()
 }
 
 "getFormulae.asreml" <- function(asreml.obj, which = c("fixed", "random", "residual"), 

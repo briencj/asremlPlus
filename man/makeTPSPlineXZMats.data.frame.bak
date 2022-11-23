@@ -1,0 +1,80 @@
+\name{makeTPSPlineXZMats.data.frame}
+\alias{makeTPSPlineXZMats.data.frame}
+\alias{makeTPSPlineXZMats}
+\title{Make the objects needed to fit Tensor Product P-splines.}
+\description{Prepares the objects needed for fitting of Tensor Product P-splines (TPPS) 
+       as described by Rodriguez-Alvarez et al. (2018). It must be run prior to fitting 
+       \code{TPPS} models for local spatial variation using 
+       \code{\link{addSpatialModelOnIC.asrtests}} and 
+       \code{\link{chooseSpatialModelOnIC.asrtests}}. The function \code{tpsmmb} 
+       from the \code{R} package \code{TPSbits} authored by Sue Welham (2022) is used 
+       to form the objects. 
+
+}
+\usage{
+\method{makeTPSPlineXZMats}{data.frame}(data, sections = NULL, 
+                  row.covar, col.covar, 
+                  nsegs = NULL, asreml.option = "mbf", ...)
+}
+\arguments{
+ \item{data}{An \code{\link{data.frame}} that holds the data from which the TPPS objects  
+               are to be formed.}
+ \item{sections}{A single \code{character} string that species the name of the column 
+               in the \code{\link{data.frame}} that contains the \code{\link{factor}} 
+               that identifies different sections of the data 
+               to which separate spatial models are to be fitted.}
+ \item{row.covar}{A single \code{character} string nominating a \code{\link{numeric}} 
+               column in the \code{\link{data.frame}} that contains the values of a 
+               covariate indexing the rows of the grid.}
+ \item{col.covar}{A single \code{character} string nominating a \code{\link{numeric}} 
+               column in the \code{\link{data.frame}} that contains the values of a 
+               covariate indexing the columns of the grid.}
+ \item{nsegs}{A pair of \code{\link{numeric}} values giving the number of segments into
+              which the column and row ranges are to be split, respectively (each value 
+              specifies the number of internal knots + 1). If only one number is 
+              specified, that value is used in both dimensions. If not specified, then 
+              (number of unique values - 1) is used in each dimension; for a grid layout 
+              with equal spacing, this gives a knot at each data value.}
+ \item{asreml.option}{A single \code{character} string specifying that the  \code{mbf} 
+              method is to be used to supply externally formed covariate 
+              matrices to \code{asreml}.}
+\item{\dots}{Further arguments passed to \code{tpsmmb} from package \code{TPSbits}.}
+}
+\details{
+The data for experiment can be divided \code{sections} and the same spatial model fitted separately to each. The fit over all of the sections is assessed.
+
+Each combination of a row.covar and a col.covar does not have to specify a single observation; 
+for example, to fit a local spatial variation model to the main units of a split-unit design, 
+each combination would correspond to a main unit and all subunits of the main unit would would 
+have the same combination.
+}
+
+\value{A list of length ?? as described for \code{TPSbits::tpsmmb} with the addition of a 
+       component named \code{data.plus} that holds the \code{\link{data.frame}} containing 
+       the columns required to fit the \code{TPPS} model.}
+
+\references{Rodriguez-Alvarez, M. X., Boer, M. P., van Eeuwijk, F. A., & Eilers, P. H. C. (2018). Correcting for spatial heterogeneity in plant breeding experiments with P-splines. \emph{Spatial Statistics}, \bold{23}, 52-71. 
+
+Welham, S. J. (2022) \code{TPSbits}: \emph{Creates Structures to Enable Fitting and Examination of 2D Tensor-Product Splines using ASReml-R.} Version 1.0.0 \url{https://mmade.org/tpsbits/}} 
+
+\author{Chris Brien}
+
+\seealso{\code{\link{addSpatialModelOnIC.asrtests}}, \code{\link{chooseSpatialModelOnIC.asrtests}}, \code{tpsmmb}}
+\examples{\dontrun{
+
+data(Wheat.dat)
+
+#Add row and column covariates
+Wheat.dat <- within(Wheat.dat, 
+                    {
+                      cColumn <- dae::as.numfac(Column)
+                      cColumn <- cColumn  - mean(unique(cColumn))
+                      cRow <- dae::as.numfac(Row)
+                      cRow <- cRow - mean(unique(cRow))
+                    })
+
+#Set up the matrices
+tps.XZmat <- makeTPSPlineXZMats(wheat.dat, 
+                                row.covar = "cRow", col.covar = "cColumn")
+}}
+\keyword{asreml}

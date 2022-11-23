@@ -10,7 +10,7 @@
 \usage{
 \method{iterate}{asrtests}(asrtests.obj, denDF="numeric", trace = FALSE, ...)}
 \arguments{
- \item{asrtests.obj}{an \code{\link{asrtests.object}} containing the components (i) \code{asreml.obj},
+ \item{asrtests.obj}{an \code{\link{asrtests.object}} containing the components (i) \code{asreml.obj}, 
        (ii) \code{wald.tab}, and (iii) \code{test.summary}.}
  \item{denDF}{Specifies the method to use in computing approximate denominator 
               degrees of freedom when \code{wald.asreml} is called. Can be \code{none} 

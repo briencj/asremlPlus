@@ -1021,6 +1021,9 @@ atLevelsMatch <- function(new, old, call, always.levels = TRUE)
     languageEl(call, which = "R.param") <- gamma.table
   }
   
+  
+  
+  
   #deal with args coming via ...
   tempcall <- list(...)
   if (length(tempcall)) 
@@ -1371,6 +1374,7 @@ atLevelsMatch <- function(new, old, call, always.levels = TRUE)
       stop("constraints has been deprecated in setvarianceterms.asreml - use bounds")
   
   asr4 <- isASRemlVersionLoaded(4, notloaded.fault = TRUE)
+  
   #Check that have a valid object of class asrtests
   validasrt <- validAsrtests(asrtests.obj)  
   if (is.character(validasrt))

@@ -1,5 +1,7 @@
 export(addBacktransforms,
        addBacktransforms.alldiffs,
+       addSpatialModelOnIC.asrtests, 
+       addSpatialModelOnIC, 
        addrm.terms.asreml,
        addrm.terms.asrtests,
        addto.test.summary,
@@ -23,6 +25,8 @@ export(addBacktransforms,
        chooseModel.data.frame,
        choose.model.asreml,
        choose.model.asrtests,
+       chooseSpatialModelOnIC.asrtests,
+       chooseSpatialModelOnIC, 
        estimateV,
        estimateV.asreml,
        exploreLSDs,
@@ -55,6 +59,8 @@ export(addBacktransforms,
        linTransform, 
        linTransform.alldiffs,
        loadASRemlVersion,
+       makeTPSPlineXZMats, 
+       makeTPSPlineXZMats.data.frame,
        newfit,
        newfit.asreml,
        newrcov.asrtests,
@@ -150,7 +156,7 @@ importFrom("RColorBrewer", "brewer.pal")
 importFrom("grDevices", "savePlot")
 importFrom("graphics", "hist")
 importFrom("dplyr", "anti_join")
-importFrom("methods", "languageEl", "languageEl<-", "validObject")
+importFrom("methods", "formalArgs", "languageEl", "languageEl<-", "validObject")
 importFrom("reshape2", "melt")
 importFrom("utils", "data", "capture.output", sessionInfo, "tail")
 importFrom("foreach", "foreach", "%do%", "%dopar%")
@@ -160,12 +166,14 @@ importFrom("stringr", "str_count", "str_length", "str_locate", "str_locate_all",
            "str_split", "str_sub", "str_trim")
 importFrom("sticky", "sticky")
 S3method(addBacktransforms, alldiffs)
+S3method(addSpatialModelOnIC, asrtests)
 S3method(allDifferences, data.frame)
 S3method(changeModelOnIC, asrtests)
 S3method(bootREMLRT, asreml) 
 S3method(changeTerms, asrtests) 
 S3method(chooseModel, asrtests) 
 S3method(chooseModel, data.frame) 
+S3method(chooseSpatialModelOnIC, asrtests)
 S3method(estimateV, asreml) 
 S3method(exploreLSDs, alldiffs) 
 S3method(facCombine, alldiffs)
@@ -180,6 +188,7 @@ S3method(infoCriteria, list)
 S3method(isFixedCorrelOK, asreml) 
 S3method(iterate, asrtests) 
 S3method(linTransform, alldiffs)
+S3method(makeTPSPlineXZMats, data.frame)
 S3method(newfit, asreml) 
 S3method(plotPredictions, data.frame)
 S3method(plotPvalues, alldiffs)
