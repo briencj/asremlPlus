@@ -1,16 +1,15 @@
 \name{addSpatialModelOnIC.asrtests}
 \alias{addSpatialModelOnIC.asrtests}
 \alias{addSpatialModelOnIC}
-\title{Uses information criteria to decide whether to add a model for local spatial variation.}
+\title{Uses information criteria to decide whether to add a spatial model to account for local spatial variation.}
 \description{Adds either a correlation, two-dimensional tensor-product natural cubic 
        smoothing spline (TPNCSS), or a two-dimensional tensor-product penalized P-spline 
-       model for the the local spatial variation exhibited by a response variable measured 
-       on a potentially irregular grid of rows and columns of the units. The data that may be 
-       arranged in sections for each of which there is a grid and for which the model is to 
+       model to account for the the local spatial variation exhibited by a response variable 
+       measured on a potentially irregular grid of rows and columns of the units. The data may 
+       be arranged in sections for each of which there is a grid and for which the model is to 
        be fitted separately. Also, the rows and columns of a grid are not necessarily one 
-       observational unit wide. The model is only added if the information criterion of the 
-       supplied model is decreased with the addition of the model for the local spatial 
-       variation.
+       observational unit wide. The spatial model is only added if the information criterion of 
+       the supplied model is decreased with the addition of the local spatial model.
 
        A row is added for each \code{section} to the \code{test.summary} \code{data.frame} 
        of the \code{\link{asrtests.object}} stating whether or not the new model has been 
@@ -116,13 +115,13 @@
            \code{tpsmmb}.}
 }
 \details{
-The model fit supplied in the \code{asrtests.obj} should not include a model for local spatial variation. All spatial model terms are fitted as fixed or random. Consequently, the residual model does not have to be iid. The improvement in the fit resulting from the addition of a spatial model to the supplied model is evaluated. 
+A fitted spatial model is only returned if it improves the fit over an above that achieved with the model fit supplied in the \code{asrtests.obj}. The model fit supplied in the \code{asrtests.obj} should not include terms that will be included in the local spatial model. All spatial model terms are fitted as fixed or random. Consequently, the residual model does not have to be iid. The improvement in the fit resulting from the addition of a spatial model to the supplied model is evaluated.  
 
-For the \code{corr} spatial model, an exponential model (\code{exp}) is used for each dimension to model the spatial correlation. A series of models are tried, beginning with the addition of row correlation and followed by the addition of column correlation. Only if the model fit is improved is a correlation retained. Finally, the improvment to the fit of a nuggest term is assessed. In this model, the correlation between observation from different rows is the correlation between observations in adjacent rows raised to the power equal to the absolute value of the difference in their \code{row.covar} values; similarly for the correlation in the column dimension. 
+For the \code{corr} spatial model, an exponential model (\code{exp}) is used for each dimension to model the spatial correlation. A series of models are tried, beginning with the addition of row correlation and followed by the addition of column correlation. Only if the model fit is improved is a correlation retained. Finally, if any correlation is retained, the improvment to the fit of a nuggest term is assessed. In this model, the correlation between observations from different rows is the correlation between observations in adjacent rows raised to the power equal to the absolute value of the difference in their \code{row.covar} values; similarly for the correlation in the column dimension. 
 
-The \code{TPNCSS} spatial model is as decribed by Verbyla et al. (2018) and the \code{TPPS} model is as described by Rodriguez-Alvarez et al. (2018).  Each of these models is only fitted if it improves the fit over an above that achieved with the model fit supplied in the \code{asrtests.obj}.
+The \code{TPNCSS} spatial model is as decribed by Verbyla et al. (2018) and the \code{TPPS} model is as described by Rodriguez-Alvarez et al. (2018). The fixed terms for these models are \code{row.covar + col.covar + row.covar:col.covar} and the random terms are \code{spl(row.covar) + spl(col.covar) + dev(row.covar) + dev(col.covar) + spl(row.covar):col.covar + row.covar:spl(col.covar) + spl(row.covar):spl(col.covar)}. The supplied model should not include any of these terms. However, any fixed or random main-effect term for either \code{row.factor} or \code{col.factor} will be removed from the fit.
 
-The \code{TPPS} model is fitted using the function \code{tpsmmb} from the \code{R} package \code{TPSbits} authored by Sue Welham (2022). There are two methods for supplying the spline basis inormation produced by \code{tpsmmb} to \code{asreml}. The \code{grp} method adds the it to the \code{data.frame} holding the information for the analysis. The \code{mbf} method requires the spline basis information to be in the same enviroment as the function that is called to make a fit using \code{asreml}. To this end and prior to invoking the calling function, \code{\link{makeTPSPlineXZMats.data.frame}} must be used produce the \code{\link{data.frame}s}.
+The \code{TPPS} model is fitted using the function \code{tpsmmb} from the \code{R} package \code{TPSbits} authored by Sue Welham (2022). There are two methods for supplying the spline basis information produced by \code{tpsmmb} to \code{asreml}. The \code{grp} method adds the it to the \code{data.frame} holding the information for the analysis. The \code{mbf} method requires the spline basis information to be in the same enviroment as the function that is called to make a fit using \code{asreml}. To this end and prior to invoking the calling function, \code{\link{makeTPSPlineXZMats.data.frame}} must be used produce the \code{\link{data.frame}s}.
 
 All models utlize the function \code{\link{changeModelOnIC.asrtests}} to assess the model fit, the information critera used in assessing the fit being calculated using \code{\link{infoCriteria}}. Arguments from \code{tpsmmb} and \code{\link{changeModelOnIC.asrtests}} can be supplied in calls to \code{addSpatialModelOnIC.asrtests} and will be passed on to the relevant function throught the ellipses argument (\ldots).
 
@@ -130,7 +129,7 @@ All models utlize the function \code{\link{changeModelOnIC.asrtests}} to assess 
 The data for experiment can be divided \code{sections} and the same spatial model fitted separately to each. The fit over all of the sections is assessed.
 
 Each combination of a row.coords and a col.coords does not have to specify a single observation; 
-for example, to fit a local spatial variation model to the main units of a split-unit design, 
+for example, to fit a local spatial model to the main units of a split-unit design, 
 each combination would correspond to a main unit and all subunits of the main unit would would 
 have the same combination.
 }
@@ -138,8 +137,9 @@ have the same combination.
 \value{An \code{\link{asrtests.object}} containing the components (i) \code{asreml.obj},
        (ii) \code{wald.tab}, and (iii) \code{test.summary} for the model whose fit has 
        the smallest information criterion between the supplied and spatial model. The values 
-       of the degrees of freedom and the information criteria are differences between those 
-       of the changed model and those of the model supplied to \code{addSpatialModelOnIC}.}
+       of the degrees of freedom and the information criteria in the \code{test.summary} are 
+       differences between those of the changed model and those of the model supplied to 
+       \code{addSpatialModelOnIC}.}
 
 \references{Rodriguez-Alvarez, M. X., Boer, M. P., van Eeuwijk, F. A., & Eilers, P. H. C. (2018). Correcting for spatial heterogeneity in plant breeding experiments with P-splines. \emph{Spatial Statistics}, \bold{23}, 52-71. 
 

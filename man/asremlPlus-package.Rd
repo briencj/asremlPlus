@@ -97,9 +97,9 @@
 \cr
 (iii) Model modification \cr\cr
 
-\code{\link{addSpatialModelOnIC}}
-      \tab Uses information criteria to decide whether to add a model \cr
-      \tab for local spatial variation. \cr
+\code{\link{addSpatialModelOnIC.asrtests}}
+      \tab Uses information criteria to decide whether to add a spatial \cr
+      \tab model to account for local spatial variation. \cr
 \code{\link{changeTerms.asrtests}}
       \tab Adds and drops the specified sets of terms from one \cr
       \tab or both of the fixed  or random model and/or replaces the \cr
@@ -142,9 +142,9 @@
        \tab in a \code{data.frame}, taking into account the marginality  \cr 
        \tab relations of terms and recording the tests used in a \cr
        \tab \code{data.frame}. \cr
-\code{\link{chooseSpatialModelOnIC}}
+\code{\link{chooseSpatialModelOnIC.asrtests}}
        \tab Uses information criteria to choose the best fitting \cr 
-       \tab model for local spatial variation. \cr
+       \tab spatial model for accounting for local spatial variation. \cr
 \code{\link{getTestPvalue.asrtests}}
        \tab Gets the p-value for a test recorded in the test.summary \cr
        \tab data.frame of an \code{\link{asrtests.object}}.  \cr

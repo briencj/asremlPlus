@@ -202,29 +202,26 @@ chooseSpatialModelOnIC.asrtests <- function(asrtests.obj, trySpatial = "all",
     # spatial.IC <- lapply(spatial.asrts, function(asrt) infoCriteria(asrt$asreml.obj))
     # spatial.IC <- do.call(rbind, spatial.IC)
     
-    #If required, select the best fit
-    if (return.opt == "best")
-    {   
-      spatial.comp <- round(spatial.IC[[which.IC]], digits = 3)
-      names(spatial.comp) <- rownames(spatial.IC)
-      if (any((spatial.comp - spatial.comp["nonspatial"]) < -1e-03))
-      {
-        min.asrt <- which.min(spatial.comp[-1])
-        if (length(min.asrt) > 1)
-        {
-          #pick one in the order given below
-          if ("TPNCSS" %in% names(min.asrt)) min.asrt <- min.asrt["TPNCSS"]
-          if ("corr" %in% names(min.asrt)) min.asrt <- min.asrt["corr"]
-          if ("TPPS" %in% names(min.asrt)) min.asrt <- min.asrt["TPPS"]
-        }
-        #Get the best astests.obj
-        spatial.asrts <- tmp.asrts[names(min.asrt)]
-      }
+    spatial.comp <- round(spatial.IC[[which.IC]], digits = 3)
+    names(spatial.comp) <- rownames(spatial.IC)
+    min.asrt <- which.min(spatial.comp)
+    if (length(min.asrt) > 1)
+    {
+      #pick one in the order given below
+      if ("nonspatial" %in% names(min.asrt)) min.asrt <- min.asrt["nonspatial"]
+      if ("TPNCSS" %in% names(min.asrt)) min.asrt <- min.asrt["TPNCSS"]
+      if ("corr" %in% names(min.asrt)) min.asrt <- min.asrt["corr"]
+      if ("TPPS" %in% names(min.asrt)) min.asrt <- min.asrt["TPPS"]
     }
-  }
-  return(list(asrts = spatial.asrts, spatial.IC = spatial.IC))
+    #If only best, get the best astests.obj
+    if (return.opt == "best")
+      spatial.asrts <- tmp.asrts[names(min.asrt)]
+    
+  } 
+  return(list(asrts = spatial.asrts, spatial.IC = spatial.IC, 
+              best = names(min.asrt), best.AIC = spatial.comp[min.asrt]))
 }
-
+  
 fitCorrMod <- function(asrtests.obj, sections = NULL,
                        row.covar = "cRow", col.covar = "cCol", 
                        allow.unconverged = TRUE, allow.fixedcorrelation = TRUE,
@@ -373,7 +370,7 @@ fitTPNCSSMod <- function(asrtests.obj, sections = NULL,
   if (nsect == 1)
   { 
     sect.fac <- NULL
-    fix.terms <- paste0(row.covar, " + ", col.covar)
+    fix.terms <- paste0(row.covar, " + ", col.covar, " + ", row.covar, ":", col.covar)
   }
   else
   { 

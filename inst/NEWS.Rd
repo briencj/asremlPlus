@@ -1,5 +1,10 @@
 \name{news}
 \title{News for Package asremlPlus}
+\section{asremlPlus Version 4.3.43 (2022-11-30)}{
+  \itemize{
+  \item{Fix bugs in choosing the best spatial model in chooseSpatialModelOnIC.asrtests. Add components \code{best.spatial} and \code{best.spatial.AIC} to the value returned by chooseSpatialModelOnIC.asrtests.}
+  \item{Add linear-row-by-linearcolumn-covariates interaction to the model fitted for TPNCSS option of addSpatialModelOnIC.asrtests and chooseSpatialModelOnIC.asrtests.}
+}}
 \section{asremlPlus Version 4.3.42 (2022-11-23)}{
   \itemize{
   \item{Add functions makeTPSPlineZMats.data.frame, addSpatialModelOnIC.asrtests and chooseSpatialModelOnIC.asrtests.}
