@@ -87,8 +87,9 @@
               adds only fixed covariate to \code{data} and stores the random covariates 
               externally.}
  \item{tpps4mbf.obj}{An object made with \code{\link{makeTPSPlineXZMats.data.frame}} and 
-              which contains the spline basis information, extra to that created by 
-              \code{\link{makeTPSPlineXZMats.data.frame}}, that is needed to fit a 
+              which contains the spline basis information, that is extra to the 
+              \code{\link{data.frame}s} created by \cr\code{\link{makeTPSPlineXZMats.data.frame}} 
+              in the environment in which it is called and that is needed to fit a 
               \code{TPPS} model using the \code{mbf} method of \code{asreml}.}
  \item{allow.unconverged}{A \code{logical} indicating whether to accept a new model 
               even when it does not converge. If \code{FALSE} and the fit of the new 
@@ -135,7 +136,7 @@ For the \code{corr} spatial model, an exponential model (\code{exp}) is used for
 
 The \code{TPNCSS} spatial model is as decribed by Verbyla et al. (2018) and the \code{TPPS} model is as described by Rodriguez-Alvarez et al. (2018).  The fixed terms for these models are \code{row.covar + col.covar + row.covar:col.covar} and the random terms \code{spl(row.covar) + spl(col.covar) + dev(row.covar) + dev(col.covar) + spl(row.covar):col.covar + row.covar:spl(col.covar) + spl(row.covar):spl(col.covar)}. The supplied model should not include any of these terms. However, any fixed or random main-effect term for either \code{row.factor} or \code{col.factor} will be removed from the fit.
 
-The \code{TPPS} model is fitted using the function \code{tpsmmb} from the \code{R} package \code{TPSbits} authored by Sue Welham (2022). There are two methods for supplying the spline basis information produced by \code{tpsmmb} to \code{asreml}. The \code{grp} method adds the it to the \code{data.frame} holding the information for the analysis. The \code{mbf} method requires the spline basis information to be in the same enviroment as the function that is called to make a fit using \code{asreml}. To this end and prior to invoking the calling function, \code{\link{makeTPSPlineXZMats.data.frame}} must be used produce the \code{\link{data.frame}s}.
+The \code{TPPS} model is fitted using the function \code{tpsmmb} from the \code{R} package \code{TPSbits} authored by Sue Welham (2022). There are two methods for supplying the spline basis information produced by \code{tpsmmb} to \code{asreml}. The \code{grp} method adds the it to the \code{data.frame} holding the information for the analysis. The \code{mbf} method requires the spline basis information to be in the same environment as the function that is called to make a fit using \code{asreml}. To this end, and prior to invoking the calling function, \code{\link{makeTPSPlineXZMats.data.frame}} must be used produce the \code{\link{data.frame}s}.
 
 All models utlize the function \code{\link{changeModelOnIC.asrtests}} to assess the model fit, the information critera used in assessing the fit being calculated using \code{\link{infoCriteria}}. Arguments from \code{tpsmmb} and \code{\link{changeModelOnIC.asrtests}} can be supplied in calls to \code{chooseSpatialModelOnIC.asrtests} and will be passed on to the relevant function throught the ellipses argument (\ldots).
 

@@ -1,5 +1,11 @@
 \name{news}
 \title{News for Package asremlPlus}
+\section{asremlPlus Version 4.3.44 (2022-12-07)}{
+  \itemize{
+  \item{Implement asreml.opt = "mbf" for multiple sections.}
+  \item{Fix bug in testing for fixed correlations that meant they were not always detected.}
+  \item{Stop crashing of changeTerms.asrtests and ChangeModelOnIC.asrtests when rmboundary.asrtests unable to remove singular terms.}
+}}
 \section{asremlPlus Version 4.3.43 (2022-11-30)}{
   \itemize{
   \item{Fix bugs in choosing the best spatial model in chooseSpatialModelOnIC.asrtests. Add components \code{best.spatial} and \code{best.spatial.AIC} to the value returned by chooseSpatialModelOnIC.asrtests.}

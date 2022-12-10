@@ -25,11 +25,12 @@ isFixedCorrelOK.asreml <- function(asreml.obj, allow.fixedcorrelation = TRUE)
   {
     corrs <- names(asreml::vpt.char(asreml.obj))[asreml::vpt.char(asreml.obj) 
                                                  %in% c("R", "P")]
-    if (length(corrs) > 0)
+    if (length(corrs) > 0) #have a correlation
     {
       corrs <- asreml::vpc.char(asreml.obj)[names(asreml::vpc.char(asreml.obj)) 
                                             %in% corrs]
-      if (length(corrs) >1)
+      #      if (length(corrs) >1)
+      if (any(corrs %in% c("F", "B", "S")))
         correlOK <- FALSE
     }
   }  

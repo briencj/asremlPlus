@@ -398,7 +398,8 @@ addtoChooseSummary <- function(choose.summary, term, DF = NA, denDF = NA, p = NA
                                     dropFixed = dropFixed, addFixed = addFixed, 
                                     dropRandom = dropRandom,  addRandom = addRandom, 
                                     newResidual = newResidual, label = label, 
-                                    allow.unconverged = TRUE, allow.fixedcorrelation = TRUE, 
+                                    allow.unconverged = allow.unconverged, 
+                                    allow.fixedcorrelation = allow.fixedcorrelation, 
                                     checkboundaryonly = checkboundaryonly, 
                                     trace = trace, update = update, denDF = denDF, 
                                     set.terms = set.terms, ignore.suffices = ignore.suffices, 
@@ -406,7 +407,6 @@ addtoChooseSummary <- function(choose.summary, term, DF = NA, denDF = NA, p = NA
                                     IClikelihood = IClikelihood, 
                                     bound.exclusions = bound.exclusions,  
                                     ...)
-    
     #Obtain IC for new model
     new.IC <- infoCriteria(new.asrtests.obj$asreml.obj, IClikelihood = ic.lik, 
                            bound.exclusions = bound.exclusions, 
@@ -419,70 +419,76 @@ addtoChooseSummary <- function(choose.summary, term, DF = NA, denDF = NA, p = NA
     new.asreml.obj <- new.asrtests.obj$asreml.obj
     
     change <- FALSE
+    action <- getTestEntry(new.asrtests.obj, label = label)$action 
     diff.IC <- new.IC - old.IC
     #check convergence
-    if (!allow.unconverged && (!asreml.obj$converge | !new.asreml.obj$converge))
-    {
-      if (!asreml.obj$converge)
+    # if (!allow.unconverged && (!asreml.obj$converge | !new.asreml.obj$converge))
+    # {
+    #   if (!asreml.obj$converge)
+    #   {
+    #     if (!new.asreml.obj$converge)
+    #     {
+    #       action <- "Unchanged - both unconverged"
+    #       change <- FALSE
+    #     } else
+    #     {
+    #       action <- "Swappped - old unconverged"
+    #       change <- TRUE
+    #     }
+    #   } else
+    #   {
+    #     action <- "Unchanged - new unconverged"
+    #     change <- FALSE
+    #   }
+    # } else
+    # {
+    #Check fixed correlation
+      if (grepl("Unchanged - fixed correlation", action))
       {
-        if (!new.asreml.obj$converge)
+        #new.asrtests.obj <- asrtests.obj
+        change <- FALSE
+      } else
+      {
+        if (grepl("Unchanged", action))
         {
-          action <- "Unchanged - both unconverged"
+          #new.asrtests.obj <- asrtests.obj
           change <- FALSE
         } else
         {
-          action <- "Swappped - old unconverged"
-          change <- TRUE
-        }
-      } else
-      {
-        action <- "Unchanged - new unconverged"
-        change <- FALSE
-      }
-    } else
-    {
-      #Check fixed correlation
-      if (!isFixedCorrelOK(new.asreml.obj, allow.fixedcorrelation = allow.fixedcorrelation))
-      {
-        action <- "Unchanged - fixed correlation"
-        change <- FALSE
-      } else
-      {
-        #Make the comparison
-        action <- "Unswapped"
-        if ((ic.type == "AIC" & diff.IC["AIC"] < 0) || 
-            (ic.type == "BIC" & diff.IC["BIC"] < 0))
-        {
-          change <- TRUE
-          action <- "Swapped"
-        }
-        
-        #check convergence, when it is allowed
-        if (allow.unconverged)
-        {
-          if (!asreml.obj$converge && !new.asreml.obj$converge)
+          if ((ic.type == "AIC" & diff.IC["AIC"] < 0) || 
+              (ic.type == "BIC" & diff.IC["BIC"] < 0))
           {
-            action <- paste(action, " - both unconverged", sep="")
-          } else
+            change <- TRUE
+            action <- "Swapped"
+          }
+          
+          #check convergence, when it is allowed
+          if (allow.unconverged)
           {
-            if (!asreml.obj$converge)
-              action <- paste(action, " - old unconverged", sep="")
-            else
+            if (!asreml.obj$converge && !new.asreml.obj$converge)
             {
-              if (!new.asreml.obj$converge)
-                action <- paste(action, " - new unconverged", sep="")
+              action <- paste(action, " - both unconverged", sep="")
+            } else
+            {
+              if (!asreml.obj$converge)
+                action <- paste(action, " - old unconverged", sep="")
+              else
+              {
+                if (!new.asreml.obj$converge)
+                  action <- paste(action, " - new unconverged", sep="")
+              }
             }
           }
         }
       }
-    }
+ #   }
 
     #I don't check that removing a boundary term will result in convergence here as is done
     #in, for example, testresidual.asrtests
     if (change)
       asrtests.obj <- new.asrtests.obj
     
-    #Modify action to reflect model selection
+    #Modify action to reflect model selection, except for fixed correlation
     test.summary <- new.asrtests.obj$test.summary
     krows <- (nlines.test+1):nrow(test.summary)
     k <- krows[test.summary$terms[krows] == label & 

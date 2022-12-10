@@ -663,6 +663,7 @@ fitTPSModSect <- function(tspl.asrt, mat, sect.fac, row.factor, col.factor,
                                            paste0("dev(",row.covar,")"), 
                                            paste0("dev(",col.covar,")"))),
                                          collapse = " + "),
+                                       dropRandom = drop.ran, 
                                        mbf = mbf.lis,
                                        label = lab,
                                        allow.unconverged = allow.unconverged, 
@@ -722,7 +723,7 @@ fitTPPSMod <- function(asrtests.obj, sections = NULL,
   #Get data for mbf 
   if (asreml.opt == "mbf")
   {
-    stop("Sorry, but the mbf setting of asreml.opt is not functioning yet - use grp setting.")
+    #stop('Sorry, but the mbf setting of asreml.opt is not functioning yet - use asreml.opt = "grp".')
     assign("tps.XZmat", tpps4mbf.obj)
     #Build the data.frame to be used in the analysis
     dat <- lapply(tpps4mbf.obj, function(mat) mat$data.plus)
