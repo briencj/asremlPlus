@@ -13,16 +13,16 @@ test_that("chickpea_estimateV_asreml4", {
   asreml.options(design = TRUE)
   asreml.obj <- asreml(fixed = Biomass.plant ~ Lines * TRT + Smarthouse/(vLanes + vPos), 
                        random = ~Smarthouse:Zone + Smarthouse:spl(vLanes), 
-                       residual = ~Smarthouse:ar1(Lane):ar1(Position), 
+                       residual = ~idv(Smarthouse):ar1(Lane):ar1(Position), 
                        data = chkpeadat, trace = FALSE)
   
   #'## estimate with fixed spline - no G terms in V matrix
   Vnospl <- estimateV(asreml.obj, fixed.spline.terms = "Smarthouse:spl(vLanes)")
   
   # Form variance matrix based on estimated variance parameters
-  V <- kronecker(mat.ar1(asreml.obj$vparameters[4], length(levels(chkpeadat$Lane))),
-                 mat.ar1(asreml.obj$vparameters[5], length(levels(chkpeadat$Position))))
-  V <- asreml.obj$sigma2 * kronecker(diag(1,2), V)
+  V <- kronecker(mat.ar1(asreml.obj$vparameters[5], length(levels(chkpeadat$Lane))),
+                 mat.ar1(asreml.obj$vparameters[6], length(levels(chkpeadat$Position))))
+  V <- asreml.obj$vparameters[4] * kronecker(diag(1,2), V)
   testthat::expect_false(any(abs(Vnospl - V) > 1e-08))
   
   #Estimate G and R separately

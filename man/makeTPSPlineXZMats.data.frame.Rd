@@ -14,7 +14,9 @@
 \usage{
 \method{makeTPSPlineXZMats}{data.frame}(data, sections = NULL, 
                   row.covar, col.covar, 
-                  nsegs = NULL, asreml.option = "mbf", ...)
+                  nsegs = NULL, nestorder = c(1,1), 
+                  degree = c(3,3), difforder = c(2,2),
+                  asreml.option = "mbf", ...)
 }
 \arguments{
  \item{data}{An \code{\link{data.frame}} that holds the data from which the TPPS objects  
@@ -26,7 +28,7 @@
  \item{row.covar}{A single \code{character} string nominating a \code{\link{numeric}} 
                column in the \code{\link{data.frame}} that contains the values of a 
                covariate indexing the rows of the grid.}
- \item{col.covar}{A single \code{character} string nominating a \code{\link{numeric}} 
+ \item{col.covar}{A single \code{\link{character}} string nominating a \code{\link{numeric}} 
                column in the \code{\link{data.frame}} that contains the values of a 
                covariate indexing the columns of the grid.}
  \item{nsegs}{A pair of \code{\link{numeric}} values giving the number of segments into
@@ -35,6 +37,15 @@
               specified, that value is used in both dimensions. If not specified, then 
               (number of unique values - 1) is used in each dimension; for a grid layout 
               with equal spacing, this gives a knot at each data value.}
+ \item{nestorder}{A \code{\link{character}} of length 2. The order of nesting for column 
+              and row dimensions, respectively; default=1 (no nesting). A value of 2 
+              generates a spline with half the number of segments in that dimension, etc. 
+              The number of segments in each direction must be a multiple of the order 
+              of nesting.}
+ \item{degree}{A \code{\link{character}}  of length 2. The degree of polynomial spline to 
+              be used for column and row dimensions respectively; default=3.}
+ \item{difforder}{A \code{\link{character}} of length 2. The order of differencing for 
+              column and row dimensions, respectively; default=2.}
  \item{asreml.option}{A single \code{character} string specifying that the  \code{mbf} 
               method is to be used to supply externally formed covariate 
               matrices to \code{asreml}.}

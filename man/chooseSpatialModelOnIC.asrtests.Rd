@@ -31,7 +31,8 @@
                        sections = NULL, 
                        row.covar = "cRow", col.covar = "cCol", 
                        row.factor = NULL, col.factor = NULL, 
-                       nsegs = NULL, asreml.option = "mbf",  
+                       nsegs = NULL, nestorder = c(1,1), 
+                       asreml.option = "mbf",  
                        tpps4mbf.obj = NULL, 
                        allow.unconverged = FALSE, 
                        allow.fixedcorrelation = FALSE,
@@ -43,7 +44,7 @@
        (i) \code{asreml.obj}, (ii) \code{wald.tab}, and (iii) \code{test.summary}.}
  \item{trySpatial}{A \code{character} string nominating the types of spatial 
                model whose fits are to be assessed. Possible values are \code{corr}, 
-               \code{TPNCSS} and \code{TPPS}.}
+               \code{TPNCSS}, \code{TPPcS} and \code{TPP1LS}.}
  \item{sections}{A single \code{character} string that species the name of the column 
                in the \code{\link{data.frame}} that contains the \code{\link{factor}} 
                that identifies different sections of the data 
@@ -76,6 +77,11 @@
               specified, that value is used in both dimensions. If not specified, then 
               (number of unique values - 1) is used in each dimension; for a grid layout 
               with equal spacing, this gives a knot at each data value.}
+ \item{nestorder}{A \code{\link{character}} of length 2. The order of nesting for column 
+              and row dimensions, respectively; default=1 (no nesting). A value of 2 
+              generates a spline with half the number of segments in that dimension, etc. 
+              The number of segments in each direction must be a multiple of the order 
+              of nesting.}
  \item{asreml.option}{A single \code{character} string specifying whether the \code{grp} or 
               \code{mbf} methods are to be used to supply externally formed covariate 
               matrices to \code{asreml}. If the \code{mbf} methods is to be used, then 
@@ -134,9 +140,9 @@ A fitted spatial model is only returned if it improves the fit over an above tha
 
 For the \code{corr} spatial model, an exponential model (\code{exp}) is used for each dimension to model the spatial correlation. A series of models are tried, beginning with the addition of row correlation and followed by the addition of column correlation. Only if the model fit is improved is a correlation retained. Finally, if any correlation is retained, the improvment to the fit of a nuggest term is assessed. In this model, the correlation between observations from different rows is the correlation between observations in adjacent rows raised to the power equal to the absolute value of the difference in their \code{row.covar} values; similarly for the correlation in the column dimension. 
 
-The \code{TPNCSS} spatial model is as decribed by Verbyla et al. (2018) and the \code{TPPS} model is as described by Rodriguez-Alvarez et al. (2018).  The fixed terms for these models are \code{row.covar + col.covar + row.covar:col.covar} and the random terms \code{spl(row.covar) + spl(col.covar) + dev(row.covar) + dev(col.covar) + spl(row.covar):col.covar + row.covar:spl(col.covar) + spl(row.covar):spl(col.covar)}. The supplied model should not include any of these terms. However, any fixed or random main-effect term for either \code{row.factor} or \code{col.factor} will be removed from the fit.
+The tensor-product natural-cubic-smoothing-spline \code{TPNCSS} spatial model is as decribed by Verbyla et al. (2018), the tensor-product penalized-cubic-spline \code{TPPCS} model is as described by Rodriguez-Alvarez et al. (2018), and the tensor-product, first-difference-penalty, linear spline \code{TPP1LS} model that is amongst those described by Piepho, Boer and Williams (2022).  The fixed terms for these models are \code{row.covar + col.covar + row.covar:col.covar} and the random terms \code{spl(row.covar) + spl(col.covar) + dev(row.covar) + dev(col.covar) + spl(row.covar):col.covar + row.covar:spl(col.covar) + spl(row.covar):spl(col.covar)}. The supplied model should not include any of these terms. However, any fixed or random main-effect term for either \code{row.factor} or \code{col.factor} will be removed from the fit.
 
-The \code{TPPS} model is fitted using the function \code{tpsmmb} from the \code{R} package \code{TPSbits} authored by Sue Welham (2022). There are two methods for supplying the spline basis information produced by \code{tpsmmb} to \code{asreml}. The \code{grp} method adds the it to the \code{data.frame} holding the information for the analysis. The \code{mbf} method requires the spline basis information to be in the same environment as the function that is called to make a fit using \code{asreml}. To this end, and prior to invoking the calling function, \code{\link{makeTPSPlineXZMats.data.frame}} must be used produce the \code{\link{data.frame}s}.
+The \code{TPPcS} and \code{TPP1LS} models are fitted using the function \code{tpsmmb} from the \code{R} package \code{TPSbits} authored by Sue Welham (2022). There are two methods for supplying the spline basis information produced by \code{tpsmmb} to \code{asreml}. The \code{grp} method adds the it to the \code{data.frame} holding the information for the analysis. The \code{mbf} method requires the spline basis information to be in the same environment as the function that is called to make a fit using \code{asreml}. To this end, and prior to invoking the calling function, \code{\link{makeTPSPlineXZMats.data.frame}} must be used produce the \code{\link{data.frame}s}.
 
 All models utlize the function \code{\link{changeModelOnIC.asrtests}} to assess the model fit, the information critera used in assessing the fit being calculated using \code{\link{infoCriteria}}. Arguments from \code{tpsmmb} and \code{\link{changeModelOnIC.asrtests}} can be supplied in calls to \code{chooseSpatialModelOnIC.asrtests} and will be passed on to the relevant function throught the ellipses argument (\ldots).
 
@@ -160,7 +166,9 @@ have the same combination.
        The \code{best.spatial} component is a character giving the name of the best spatial model, 
        and \code{best.spatial.AIC} gives the value of its \code{AIC}.}
 
-\references{Rodriguez-Alvarez, M. X., Boer, M. P., van Eeuwijk, F. A., & Eilers, P. H. C. (2018). Correcting for spatial heterogeneity in plant breeding experiments with P-splines. \emph{Spatial Statistics}, \bold{23}, 52-71. 
+\references{Piepho, H.-P., Boer, M. P., & Williams, E. R. (2022). Two-dimensional P-spline smoothing for spatial analysis of plant breeding trials. \emph{Biometrical Journal}, \bold{64}, 835-857.
+
+Rodriguez-Alvarez, M. X., Boer, M. P., van Eeuwijk, F. A., & Eilers, P. H. C. (2018). Correcting for spatial heterogeneity in plant breeding experiments with P-splines. \emph{Spatial Statistics}, \bold{23}, 52-71. 
 
 Verbyla, A. P., De Faveri, J., Wilkie, J. D., & Lewis, T. (2018). Tensor Cubic Smoothing Splines in Designed Experiments Requiring Residual Modelling. \emph{Journal of Agricultural, Biological and Environmental Statistics}, \bold{23(4)}, 478-508.
 

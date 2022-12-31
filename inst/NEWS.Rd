@@ -1,9 +1,10 @@
 \name{news}
 \title{News for Package asremlPlus}
-\section{asremlPlus Version 4.3.44 (2022-12-07)}{
+\section{asremlPlus Version 4.3.44 (2022-12-31)}{
   \itemize{
-  \item{Implement asreml.opt = "mbf" for multiple sections.}
+  \item{Add arguments \code{nestorder}, \code{degree} and \code{difforder} to functions addSpatialModelOnIC.asrtests and  makeTPSPlineXZMats.data.frame, as well as argument \code{nestorder} to chooseSpatialModelOnIC.asrtests. Add the option \code{TPLV} to the argument \code{trySpatial} from chooseSpatialModelOnIC.asrtests to allow a linear spatial model with first-order penalty to be fitted.}
   \item{Fix bug in testing for fixed correlations that meant they were not always detected.}
+  \item{Fix error in changeModelsonIC.asrtests in the action when the model is \code{Unswapped} - it was being reported as  \code{Changed random}.}  
   \item{Stop crashing of changeTerms.asrtests and ChangeModelOnIC.asrtests when rmboundary.asrtests unable to remove singular terms.}
 }}
 \section{asremlPlus Version 4.3.43 (2022-11-30)}{

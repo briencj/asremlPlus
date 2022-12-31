@@ -460,7 +460,8 @@ addtoChooseSummary <- function(choose.summary, term, DF = NA, denDF = NA, p = NA
           {
             change <- TRUE
             action <- "Swapped"
-          }
+          } else
+            action <- "Unswapped"
           
           #check convergence, when it is allowed
           if (allow.unconverged)

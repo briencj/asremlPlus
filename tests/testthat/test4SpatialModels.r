@@ -14,28 +14,28 @@ test_that("Wheat_spatial_models_asreml4", {
   data(Wheat.dat)
   
   #Add row and column covariates
-  Wheat.dat <- within(Wheat.dat, 
-                      {
-                        cColumn <- dae::as.numfac(Column)
-                        cColumn <- cColumn  - mean(unique(cColumn))
-                        cRow <- dae::as.numfac(Row)
-                        cRow <- cRow - mean(unique(cRow))
-                      })
+  tmp.dat <- within(Wheat.dat, 
+                    {
+                      cColumn <- dae::as.numfac(Column)
+                      cColumn <- cColumn  - mean(unique(cColumn))
+                      cRow <- dae::as.numfac(Row)
+                      cRow <- cRow - mean(unique(cRow))
+                    })
   
   #Fit initial model - Row and column random
-  current.asr <- asreml(yield ~ Rep + WithinColPairs + Variety, 
-                        random = ~ Row + Column,
-                        data=Wheat.dat)
+  current.asr <- do.call(asreml, 
+                         list(yield ~ Rep + WithinColPairs + Variety, 
+                              random = ~ Row + Column,
+                              data=tmp.dat))
   info <- infoCriteria(current.asr)
   testthat::expect_equal(info$varDF, 3)
   testthat::expect_lt(abs(info$AIC - 1400.719), 0.10)
-  
   
   #Create an asrtests object, removing boundary terms
   init.asrt <- as.asrtests(current.asr, NULL, NULL, 
                            label = "Random Row and Column effects")
   init.asrt <- rmboundary(init.asrt)
-  
+
   # Try TPPS model
   current.asrt <- addSpatialModelOnIC(init.asrt, spatial.model = "TPPS", 
                                       row.covar = "cRow", col.covar = "cColumn",
@@ -55,15 +55,17 @@ test_that("Wheat_spatial_models_asreml4", {
   testthat::expect_lt(abs(info$AIC - 1302.258), 0.10)
   
   # Try TPPS model using mbf
-  tps <- makeTPSPlineXZMats(Wheat.dat, row.covar = "cRow", col.covar = "cColumn")
-  current.asrt <- addSpatialModelOnIC(init.asrt, spatial.model = "TPPS", 
-                                      row.covar = "cRow", col.covar = "cColumn",
-                                      row.factor = "Row", col.factor = "Column",
-                                      asreml.option = "mbf", tpps4mbf.obj = tps, 
-                                      update = FALSE)
-  info <- infoCriteria(current.asrt$asreml.obj)
-  testthat::expect_equal(info$varDF, 6)
-  testthat::expect_lt(abs(info$AIC - 1302.258), 0.10)
+  tps <- makeTPSPlineXZMats(tmp.dat, row.covar = "cRow", col.covar = "cColumn")
+  testthat::expect_error(
+    current.asrt <- addSpatialModelOnIC(init.asrt, spatial.model = "TPPS", 
+                                        row.covar = "cRow", col.covar = "cColumn",
+                                        row.factor = "Row", col.factor = "Column",
+                                        asreml.option = "mbf", tpps4mbf.obj = tps, 
+                                        update = FALSE), 
+    regexp = 'Sorry, but the mbf setting of asreml.opt is not functioning yet')
+#  info <- infoCriteria(current.asrt$asreml.obj)
+#  testthat::expect_equal(info$varDF, 6)
+#  testthat::expect_lt(abs(info$AIC - 1302.258), 0.10)
   
   # Try TPNCSS model
   current.asrt <- addSpatialModelOnIC(init.asrt, spatial.model = "TPNCSS", 
@@ -87,23 +89,24 @@ test_that("Wheat_spatial_models_asreml4", {
                                           row.factor = "Row", col.factor = "Column",
                                           asreml.option = "grp")
   testthat::expect_equal(length(spatial.asrts$asrts), 1)
-  testthat::expect_equal(names(spatial.asrts$asrts), "TPPS")
-  testthat::expect_true(all(rownames(spatial.asrts$spatial.IC) == c("nonspatial", "corr", "TPNCSS", "TPPS")))
+  testthat::expect_equal(names(spatial.asrts$asrts), "TPPCS")
+  testthat::expect_true(all(rownames(spatial.asrts$spatial.IC) == c("nonspatial", "corr", "TPNCSS", "TPPCS")))
   testthat::expect_true(all(abs(spatial.asrts$spatial.IC$AIC - c(1400.719, 1399.628, 1329.024, 1302.258)) < 0.10))
   
   #Fit two models and return both
-  spatial.asrts <- chooseSpatialModelOnIC(init.asrt, trySpatial = c("TPN", "TPP"), 
+  spatial.asrts <- chooseSpatialModelOnIC(init.asrt, trySpatial = c("TPN", "TPPC"), 
                                           row.covar = "cRow", col.covar = "cColumn",
                                           row.factor = "Row", col.factor = "Column",
                                           asreml.option = "grp", return.asrts = "all")
   testthat::expect_equal(length(spatial.asrts$asrts), 2)
-  testthat::expect_equal(names(spatial.asrts$asrts), c("TPNCSS", "TPPS"))
-  testthat::expect_true(all(rownames(spatial.asrts$spatial.IC) == c("nonspatial", "TPNCSS", "TPPS")))
+  testthat::expect_equal(names(spatial.asrts$asrts), c("TPNCSS", "TPPCS"))
+  testthat::expect_true(all(rownames(spatial.asrts$spatial.IC) == c("nonspatial", "TPNCSS", "TPPCS")))
   testthat::expect_true(all(abs(spatial.asrts$spatial.IC$AIC - c(1400.719, 1329.024, 1302.258)) < 0.10))
   
   #Fit initial model - Row and column fixed
-  current.asr <- asreml(yield ~ Rep + WithinColPairs + Row + Column + Variety, 
-                        data=Wheat.dat)
+  current.asr <- do.call(asreml, 
+                         list(yield ~ Rep + WithinColPairs + Row + Column + Variety, 
+                              data=tmp.dat))
   info <- infoCriteria(current.asr)
   testthat::expect_equal(info$varDF, 1)
   testthat::expect_lt(abs(info$AIC - 1191.179), 0.10)
@@ -113,7 +116,7 @@ test_that("Wheat_spatial_models_asreml4", {
                            label = "Random Row and Column effects")
   init.asrt <- rmboundary(init.asrt)
   
-  # Try at TPNCSS model with fixed Row and Column
+  # Try a TPNCSS model with fixed Row and Column
   current.asrt <- addSpatialModelOnIC(init.asrt, spatial.model = "TPNCSS", 
                                       row.covar = "cRow", col.covar = "cColumn",
                                       row.factor = "Row", col.factor = "Column",
@@ -150,12 +153,16 @@ test_that("chickpea_spatial_mod_asreml4", {
   library(asremlPlus)
   
   data(chkpeadat)
-  chkpeadat$vMPosn <- as.numfac(fac.recast(chkpeadat$Mainplot, newlevels = rep(1:11, times = 4)))
-  chkpeadat$vMPosn <- with(chkpeadat, vMPosn - mean(unique(vMPosn)))
+  tmp.dat <- within(chkpeadat, 
+                    {
+                      vMPosn <- as.numfac(fac.recast(Mainplot, newlevels = rep(1:11, times = 4)))
+                      vMPosn <- vMPosn - mean(unique(vMPosn))
+                    })
   asreml.options(design = TRUE)
-  current.asr <- asreml(fixed = Biomass.plant ~ Smarthouse + Lines * TRT, 
-                        random = ~Smarthouse:Zone/Mainplot, 
-                        data = chkpeadat)
+  current.asr <- do.call(asreml, 
+                         list(fixed = Biomass.plant ~ Smarthouse + Lines * TRT, 
+                              random = ~Smarthouse:Zone/Mainplot, 
+                              data = tmp.dat))
   
   #Create an asrtests object, removing boundary terms
   init.asrt <- as.asrtests(current.asr, NULL, NULL, IClikelihood = "full", 

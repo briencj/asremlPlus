@@ -24,7 +24,9 @@
                     sections = NULL, 
                     row.covar = "cRow", col.covar = "cCol", 
                     row.factor = NULL, col.factor = NULL, 
-                    nsegs = NULL, asreml.option = "mbf",  tpps4mbf.obj = NULL, 
+                    nsegs = NULL, nestorder = c(1,1), 
+                    degree = c(3,3), difforder = c(2,2),
+                    asreml.option = "mbf",  tpps4mbf.obj = NULL, 
                     allow.unconverged = FALSE, allow.fixedcorrelation = FALSE,
                     checkboundaryonly = FALSE, update = FALSE, 
                     IClikelihood = "full", which.IC = "AIC", ...)
@@ -67,6 +69,15 @@
               specified, that value is used in both dimensions. If not specified, then 
               (number of unique values - 1) is used in each dimension; for a grid layout 
               with equal spacing, this gives a knot at each data value.}
+ \item{nestorder}{A \code{\link{character}} of length 2. The order of nesting for column 
+              and row dimensions, respectively; default=1 (no nesting). A value of 2 
+              generates a spline with half the number of segments in that dimension, etc. 
+              The number of segments in each direction must be a multiple of the order 
+              of nesting.}
+ \item{degree}{A \code{\link{character}}  of length 2. The degree of polynomial spline to 
+              be used for column and row dimensions respectively; default=3.}
+ \item{difforder}{A \code{\link{character}} of length 2. The order of differencing for 
+              column and row dimensions, respectively; default=2.}
  \item{asreml.option}{A single \code{character} string specifying whether the \code{grp} or 
               \code{mbf} methods are to be used to supply externally formed covariate 
               matrices to \code{asreml}. If the \code{mbf} methods is to be used, then 
@@ -119,7 +130,7 @@ A fitted spatial model is only returned if it improves the fit over an above tha
 
 For the \code{corr} spatial model, an exponential model (\code{exp}) is used for each dimension to model the spatial correlation. A series of models are tried, beginning with the addition of row correlation and followed by the addition of column correlation. Only if the model fit is improved is a correlation retained. Finally, if any correlation is retained, the improvment to the fit of a nuggest term is assessed. In this model, the correlation between observations from different rows is the correlation between observations in adjacent rows raised to the power equal to the absolute value of the difference in their \code{row.covar} values; similarly for the correlation in the column dimension. 
 
-The \code{TPNCSS} spatial model is as decribed by Verbyla et al. (2018) and the \code{TPPS} model is as described by Rodriguez-Alvarez et al. (2018). The fixed terms for these models are \code{row.covar + col.covar + row.covar:col.covar} and the random terms are \code{spl(row.covar) + spl(col.covar) + dev(row.covar) + dev(col.covar) + spl(row.covar):col.covar + row.covar:spl(col.covar) + spl(row.covar):spl(col.covar)}. The supplied model should not include any of these terms. However, any fixed or random main-effect term for either \code{row.factor} or \code{col.factor} will be removed from the fit.
+The \code{TPNCSS} spatial model is as decribed by Verbyla et al. (2018) and the \code{TPPS} model is as described by Rodriguez-Alvarez et al. (2018). However, for the \code{TPPS} model, the degree of the polynomial  and the order of differcing can be varied. The defaults of 3 and 2, respectively, fit a cubic spline with second order differencing, while setting the dgree and order of differencing will fit a linear variance model (Piepho, Boer and Williams, 2022) The fixed terms for these models are \code{row.covar + col.covar + row.covar:col.covar} and the random terms are \code{spl(row.covar) + spl(col.covar) + dev(row.covar) + dev(col.covar) + spl(row.covar):col.covar + row.covar:spl(col.covar) + spl(row.covar):spl(col.covar)}. The supplied model should not include any of these terms. However, any fixed or random main-effect term for either \code{row.factor} or \code{col.factor} will be removed from the fit.
 
 The \code{TPPS} model is fitted using the function \code{tpsmmb} from the \code{R} package \code{TPSbits} authored by Sue Welham (2022). There are two methods for supplying the spline basis information produced by \code{tpsmmb} to \code{asreml}. The \code{grp} method adds the it to the \code{data.frame} holding the information for the analysis. The \code{mbf} method requires the spline basis information to be in the same enviroment as the function that is called to make a fit using \code{asreml}. To this end and prior to invoking the calling function, \code{\link{makeTPSPlineXZMats.data.frame}} must be used produce the \code{\link{data.frame}s}.
 
@@ -141,7 +152,9 @@ have the same combination.
        differences between those of the changed model and those of the model supplied to 
        \code{addSpatialModelOnIC}.}
 
-\references{Rodriguez-Alvarez, M. X., Boer, M. P., van Eeuwijk, F. A., & Eilers, P. H. C. (2018). Correcting for spatial heterogeneity in plant breeding experiments with P-splines. \emph{Spatial Statistics}, \bold{23}, 52-71. 
+\references{Piepho, H.-P., Boer, M. P., & Williams, E. R. (2022). Two-dimensional P-spline smoothing for spatial analysis of plant breeding trials. \emph{Biometrical Journal}, \bold{64}, 835-857.
+
+Rodriguez-Alvarez, M. X., Boer, M. P., van Eeuwijk, F. A., & Eilers, P. H. C. (2018). Correcting for spatial heterogeneity in plant breeding experiments with P-splines. \emph{Spatial Statistics}, \bold{23}, 52-71. 
 
 Verbyla, A. P., De Faveri, J., Wilkie, J. D., & Lewis, T. (2018). Tensor Cubic Smoothing Splines in Designed Experiments Requiring Residual Modelling. \emph{Journal of Agricultural, Biological and Environmental Statistics}, \bold{23(4)}, 478-508.
 

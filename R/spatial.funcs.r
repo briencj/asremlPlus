@@ -2,13 +2,15 @@
 
 checkTrySpatial <- function(trySpatial)
 {
-  trySpat.opts <- c("none", "corr", "TPNCSS", "TPPS", "all")
+  trySpat.opts <- c("none", "corr", "TPNCSS", "TPPCS", "TPP1LS", "all")
   trySpatial <- trySpat.opts[unlist(lapply(trySpatial, check.arg.values, options=trySpat.opts))]
   
   if (length(intersect(trySpatial, trySpat.opts)) == 0)
     stop("trySpatial must be one of ", paste0(trySpat.opts, collapse = ", "))
+  if ("TPP1LS" %in% trySpatial)
+    stop("TPP1LS is not yet available in asremlPlus. Sorry.")
   if ("all" %in% trySpatial)
-    trySpatial <- c("corr", "TPNCSS", "TPPS")
+    trySpatial <- c("corr", "TPNCSS", "TPPCS")
   if ("none" %in% trySpatial && length(trySpatial) > 1)
     trySpatial <= "none"
   return(trySpatial)
@@ -26,7 +28,7 @@ calc.nsect <- function(dat, sections)
     }
   } else #Sections is NULL
     nsect <- 1
-
+  
   return(nsect)
 }
 
@@ -34,7 +36,9 @@ addSpatialModelOnIC.asrtests <- function(asrtests.obj, spatial.model = "TPPS",
                                          sections = NULL, 
                                          row.covar = "cRow", col.covar = "cCol", 
                                          row.factor = NULL, col.factor = NULL, 
-                                         nsegs = NULL, asreml.option = "mbf", tpps4mbf.obj = NULL,  
+                                         nsegs = NULL, nestorder = c(1, 1), 
+                                         degree = c(3,3), difforder = c(2,2), 
+                                         asreml.option = "mbf", tpps4mbf.obj = NULL,  
                                          allow.unconverged = FALSE, allow.fixedcorrelation = FALSE,
                                          checkboundaryonly = FALSE, update = FALSE, 
                                          IClikelihood = "full", which.IC = "AIC", 
@@ -43,7 +47,7 @@ addSpatialModelOnIC.asrtests <- function(asrtests.obj, spatial.model = "TPPS",
   #Deal with arguments for tpsmmb and changeModelOnIC
   inargs <- list(...)
   checkEllipsisArgs(c("tpsmmb","changeModelOnIC", "asreml"), inargs)
-
+  
   asr4 <- isASRemlVersionLoaded(4, notloaded.fault = TRUE)
   #Check that have a valid object of class asrtests
   validasrt <- validAsrtests(asrtests.obj)  
@@ -57,7 +61,7 @@ addSpatialModelOnIC.asrtests <- function(asrtests.obj, spatial.model = "TPPS",
   #Check IClikelihood options
   options <- c("REML", "full")
   ic.lik <- options[check.arg.values(IClikelihood, options)]
-
+  
   options <- c("AIC", "BIC") #, "both")
   ic.type <- options[check.arg.values(which.IC, options)]
   
@@ -68,7 +72,7 @@ addSpatialModelOnIC.asrtests <- function(asrtests.obj, spatial.model = "TPPS",
   #Check asreml.option
   options <- c("mbf", "grp")
   asreml.opt <- options[check.arg.values(asreml.option, options)]
-
+  
   asreml::asreml.options(extra = 5, ai.sing = TRUE, fail = "soft")
   spatial.asrts <- list()
   
@@ -99,7 +103,9 @@ addSpatialModelOnIC.asrtests <- function(asrtests.obj, spatial.model = "TPPS",
     spatial.asrt <- fitTPPSMod(asrtests.obj, sections = sections, 
                                row.covar = row.covar, col.covar = col.covar, 
                                row.factor = row.factor, col.factor = col.factor, 
-                               nsegs = nsegs, asreml.opt = asreml.opt, 
+                               nsegs = nsegs, nestorder = nestorder, 
+                               degree = degree, difforder = difforder,
+                               asreml.opt = asreml.opt, 
                                tpps4mbf.obj = tpps4mbf.obj,
                                allow.unconverged = allow.unconverged, 
                                allow.fixedcorrelation = allow.fixedcorrelation,
@@ -115,7 +121,8 @@ chooseSpatialModelOnIC.asrtests <- function(asrtests.obj, trySpatial = "all",
                                             sections = NULL, 
                                             row.covar = "cRow", col.covar = "cCol", 
                                             row.factor = NULL, col.factor = NULL, 
-                                            nsegs = NULL, asreml.option = "mbf", tpps4mbf.obj = NULL, 
+                                            nsegs = NULL, nestorder = c(1, 1), 
+                                            asreml.option = "mbf", tpps4mbf.obj = NULL, 
                                             allow.unconverged = FALSE, allow.fixedcorrelation = FALSE,
                                             checkboundaryonly = FALSE, update = FALSE, 
                                             IClikelihood = "full", which.IC = "AIC", 
@@ -182,19 +189,37 @@ chooseSpatialModelOnIC.asrtests <- function(asrtests.obj, trySpatial = "all",
                                                 IClikelihood = ic.lik, which.IC = ic.type, 
                                                 ...)
     
-    #Fit a residual spatial model involving TPPS
-    if ("TPPS" %in% trySpatial)
-      spatial.asrts[["TPPS"]] <- fitTPPSMod(asrtests.obj, sections = sections, 
-                                            row.covar = row.covar, col.covar = col.covar, 
-                                            row.factor = row.factor, col.factor = col.factor, 
-                                            nsegs = nsegs, asreml.opt = asreml.opt, 
-                                            tpps4mbf.obj = tpps4mbf.obj,
-                                            allow.unconverged = allow.unconverged, 
-                                            allow.fixedcorrelation = allow.fixedcorrelation,
-                                            checkboundaryonly = checkboundaryonly, 
-                                            update = update, 
-                                            IClikelihood = ic.lik, which.IC = ic.type, 
-                                            ...)
+    #Fit a residual spatial model involving TPPCS
+    if ("TPPCS" %in% trySpatial)
+      spatial.asrts[["TPPCS"]] <- fitTPPSMod(asrtests.obj, sections = sections, 
+                                             row.covar = row.covar, col.covar = col.covar, 
+                                             row.factor = row.factor, col.factor = col.factor, 
+                                             nsegs = nsegs, nestorder = nestorder, 
+                                             degree = c(3,3), difforder = c(2,2), 
+                                             asreml.opt = asreml.opt, 
+                                             tpps4mbf.obj = tpps4mbf.obj,
+                                             allow.unconverged = allow.unconverged, 
+                                             allow.fixedcorrelation = allow.fixedcorrelation,
+                                             checkboundaryonly = checkboundaryonly, 
+                                             update = update, 
+                                             IClikelihood = ic.lik, which.IC = ic.type, 
+                                             ...)
+    
+    #Fit a residual spatial model involving TPP1LS
+    if ("TPP1LS" %in% trySpatial)
+      spatial.asrts[["TPP1LS"]] <- fitTPPSMod(asrtests.obj, sections = sections, 
+                                              row.covar = row.covar, col.covar = col.covar, 
+                                              row.factor = row.factor, col.factor = col.factor, 
+                                              nsegs = nsegs, nestorder = nestorder, 
+                                              degree = c(1,1), difforder = c(1,1), 
+                                              asreml.opt = asreml.opt, 
+                                              tpps4mbf.obj = tpps4mbf.obj,
+                                              allow.unconverged = allow.unconverged, 
+                                              allow.fixedcorrelation = allow.fixedcorrelation,
+                                              checkboundaryonly = checkboundaryonly, 
+                                              update = update, 
+                                              IClikelihood = ic.lik, which.IC = ic.type, 
+                                              ...)
     
     asrt.names <- c("nonspatial", names(spatial.asrts))
     tmp.asrts <- c(list(nonspatial = asrtests.obj), spatial.asrts)
@@ -211,7 +236,7 @@ chooseSpatialModelOnIC.asrtests <- function(asrtests.obj, trySpatial = "all",
       if ("nonspatial" %in% names(min.asrt)) min.asrt <- min.asrt["nonspatial"]
       if ("TPNCSS" %in% names(min.asrt)) min.asrt <- min.asrt["TPNCSS"]
       if ("corr" %in% names(min.asrt)) min.asrt <- min.asrt["corr"]
-      if ("TPPS" %in% names(min.asrt)) min.asrt <- min.asrt["TPPS"]
+      if ("TPPCS" %in% names(min.asrt)) min.asrt <- min.asrt["TPPCS"]
     }
     #If only best, get the best astests.obj
     if (return.opt == "best")
@@ -221,7 +246,7 @@ chooseSpatialModelOnIC.asrtests <- function(asrtests.obj, trySpatial = "all",
   return(list(asrts = spatial.asrts, spatial.IC = spatial.IC, 
               best = names(min.asrt), best.AIC = spatial.comp[min.asrt]))
 }
-  
+
 fitCorrMod <- function(asrtests.obj, sections = NULL,
                        row.covar = "cRow", col.covar = "cCol", 
                        allow.unconverged = TRUE, allow.fixedcorrelation = TRUE,
@@ -236,7 +261,7 @@ fitCorrMod <- function(asrtests.obj, sections = NULL,
   checkNamesInData(c(sections, row.covar, col.covar), dat.in)
   
   nsect <- calc.nsect(dat.in, sections)
-
+  
   #Loop over the sections
   corr.asrt <- asrtests.obj
   for (i in 1:nsect)
@@ -363,7 +388,7 @@ fitTPNCSSMod <- function(asrtests.obj, sections = NULL,
   if (any(facs %in% names(asrtests.obj$asreml.obj$vparameters)))
     drop.ran <- paste(facs[facs %in% names(asrtests.obj$asreml.obj$vparameters)], 
                       collapse = " + ")
-
+  
   nsect <- calc.nsect(dat.in, sections)
   
   #spatial using tensor NCS splines
@@ -423,11 +448,13 @@ fitTPNCSSMod <- function(asrtests.obj, sections = NULL,
 #'### Function to create spline basis matrices and data for TPS splines
 makeTPSPlineXZMats.data.frame <- function(data, sections = NULL, 
                                           row.covar, col.covar, 
-                                          nsegs = NULL, asreml.option = "mbf", 
-                                         ...)
+                                          nsegs = NULL, nestorder = c(1, 1), 
+                                          degree = c(3,3), difforder = c(2,2),
+                                          asreml.option = "mbf", 
+                                          ...)
 {
   stub = "xx"
-
+  
   #Check that named columns are in the data
   checkNamesInData(c(sections, row.covar, col.covar), data)
   
@@ -444,9 +471,15 @@ makeTPSPlineXZMats.data.frame <- function(data, sections = NULL,
   inargs <- list(...)
   checkEllipsisArgs(c("tpsmmb"), inargs)
   
-  #Check nsegs
+  #Check nsegs, nestorder, degree and difforder
   if (length(nsegs) > 2)
-    stop("nsegs must specify no more than 2 values")
+    stop("nsegs must specify no more than 2 values, one for each of the row and column dimensions")
+  if (length(nestorder) != 2)
+    stop("nestorder must specify 2 values, one for each of the row and column dimensions")
+  if (length(degree) != 2)
+    stop("degree must specify 2 values, one for each of the row and column dimensions")
+  if (length(difforder) != 2)
+    stop("difforder must specify 2 values, one for each of the row and column dimensions")
   
   #Check asreml.option
   options <- "mbf"
@@ -470,6 +503,8 @@ makeTPSPlineXZMats.data.frame <- function(data, sections = NULL,
                                             rowcoordinates = rowcoordinates, 
                                             data = dat.rc, 
                                             stub = stub, nsegments = nsegments, 
+                                            nestorder = nestorder, 
+                                            degree = degree, difforder = difforder,
                                             asreml = asreml.opt, 
                                             ...)
                            Zmat.names <- paste0(paste0(c("BcZ", "BrZ", "BcrZ"),stub), ".df")
@@ -486,6 +521,8 @@ makeTPSPlineXZMats.data.frame <- function(data, sections = NULL,
                              rowcoordinates = row.covar, 
                              data = dat.rc, 
                              stub = stub, nsegments = nsegs, 
+                             nestorder = nestorder, 
+                             degree = degree, difforder = difforder,
                              asreml = asreml.opt, 
                              ...))
     Zmat.names <- paste0(paste0(c("BcZ", "BrZ", "BcrZ"),stub), ".df")
@@ -521,7 +558,9 @@ makeTPSPlineXZMats.data.frame <- function(data, sections = NULL,
 
 addPSdesign.mat <- function(dat, sections = NULL, nsect = 1, 
                             row.coords, col.coords, 
-                            nsegs = NULL, asreml.opt = "grp", stub = "xx", 
+                            nsegs = NULL, nestorder = c(1, 1), 
+                            degree = c(3,3), difforder = c(2,2), 
+                            asreml.opt = "grp", stub = "xx", 
                             ...)
 {
   if (nsect != 1)
@@ -540,6 +579,8 @@ addPSdesign.mat <- function(dat, sections = NULL, nsect = 1,
                                             rowcoordinates = rowcoordinates, 
                                             data = data, 
                                             stub = stub, nsegments = nsegments, 
+                                            nestorder = nestorder, 
+                                            degree = degree, difforder = difforder,
                                             asreml = asreml.opt, 
                                             ...)
                            return(XZ.mat)
@@ -556,6 +597,8 @@ addPSdesign.mat <- function(dat, sections = NULL, nsect = 1,
                              rowcoordinates = row.coords, 
                              data = dat, 
                              stub = stub, nsegments = nsegs, 
+                             nestorder = nestorder, 
+                             degree = degree, difforder = difforder,
                              asreml = asreml.opt, 
                              ...))
   }
@@ -631,7 +674,7 @@ fitTPSModSect <- function(tspl.asrt, mat, sect.fac, row.factor, col.factor,
                           IClikelihood = "full", which.IC = "AIC", ...)
 {
   inargs <- list(...)
-
+  
   #Are row.factor and col.factor already in the model?
   facs <- c(row.factor, col.factor)
   drop.fix <- NULL
@@ -644,7 +687,7 @@ fitTPSModSect <- function(tspl.asrt, mat, sect.fac, row.factor, col.factor,
       drop.ran <- paste(facs[facs %in% names(tspl.asrt$asreml.obj$vparameters)], 
                         collapse = " + ")
   }
-
+  
   if (asreml.opt == "mbf")
   {
     mbf.lis <- mat$mbflist
@@ -711,7 +754,9 @@ fitTPSModSect <- function(tspl.asrt, mat, sect.fac, row.factor, col.factor,
 fitTPPSMod <- function(asrtests.obj, sections = NULL, 
                        row.covar = "cRow", col.covar = "cCol", 
                        row.factor = NULL, col.factor = NULL, 
-                       nsegs = NULL, asreml.opt = "mbf", 
+                       nsegs = NULL, nestorder = c(1, 1), 
+                       degree = c(3,3), difforder = c(2,2), 
+                       asreml.opt = "mbf", 
                        tpps4mbf.obj = NULL, 
                        allow.unconverged = TRUE, allow.fixedcorrelation = TRUE,
                        checkboundaryonly = FALSE, update = TRUE, 
@@ -719,11 +764,11 @@ fitTPPSMod <- function(asrtests.obj, sections = NULL,
                        ...)
 { 
   stub = "xx"
-  
+
   #Get data for mbf 
   if (asreml.opt == "mbf")
   {
-    #stop('Sorry, but the mbf setting of asreml.opt is not functioning yet - use asreml.opt = "grp".')
+    stop('Sorry, but the mbf setting of asreml.opt is not functioning yet - use asreml.opt = "grp".')
     assign("tps.XZmat", tpps4mbf.obj)
     #Build the data.frame to be used in the analysis
     dat <- lapply(tpps4mbf.obj, function(mat) mat$data.plus)
@@ -740,7 +785,6 @@ fitTPPSMod <- function(asrtests.obj, sections = NULL,
     if (is.symbol(dat.in))
       dat.in <- eval(dat.in)
     checkNamesInData(c(sections, row.covar, col.covar, row.factor, col.factor), dat.in)
-    
     nsect <- calc.nsect(dat.in, sections)
     
     #Make sure that row covar is not centred so that tpsmmb does not create a faulty index
@@ -758,13 +802,19 @@ fitTPPSMod <- function(asrtests.obj, sections = NULL,
     if (!is.null(col.factor) && nlevels(dat.in[[col.factor]]) != length(unique(dat.in[[col.covar]])))
       stop(col.factor, " does not have the same number of levels as there are values of ", col.covar)
     
+    #Remove any previous Tensor Spline basis columns from the dat.in
+    if (any(grepl("TP\\.", names(dat.in))) || any(grepl("TP\\_", names(dat.in))))
+      dat.in <- dat.in[,-c(grep("TP\\.", names(dat.in)), grep("TP\\_", names(dat.in)))]
+    
     #Spatial local spatial model using tensor P-splines with the grp option 
     rc.cols <- c(sections, row.covar, col.covar)
     dat.rc <- dat.in[rc.cols]
     dat.rc <- unique(dat.rc)
     tps.XZmat <- addPSdesign.mat(dat.rc, sections = sections, nsect = nsect, 
                                  row.coords = row.covar, col.coords = col.covar, 
-                                 nsegs = nsegs, asreml.opt = "grp", 
+                                 nsegs = nsegs, nestorder = nestorder, 
+                                 degree = degree, difforder = difforder,
+                                 asreml.opt = "grp", 
                                  stub = "xx", ...)
     
     #Build the data.frame to be used in the analysis
@@ -778,10 +828,6 @@ fitTPPSMod <- function(asrtests.obj, sections = NULL,
       dat <- lapply(tps.XZmat, function(mat) mat$data)
       dat <- do.call(rbind, dat)
     }
-    
-    #Remove any previous Tensor Spline basis columns from the dat.in
-    if (any(grepl("TP\\.", names(dat.in))) || any(grepl("TP\\_", names(dat.in))))
-      dat.in <- dat.in[,-c(grep("TP\\.", names(dat.in)), grep("TP\\_", names(dat.in)))]
     dat <- merge(dat.in, dat, all.x = TRUE, by = rc.cols, sort = FALSE)
     
     #Adjust the grp columns for merging
@@ -805,7 +851,7 @@ fitTPPSMod <- function(asrtests.obj, sections = NULL,
   asreml.obj <- asreml::update.asreml(asreml.obj, data = dat)
   tspl.asrt <- as.asrtests(asreml.obj = asreml.obj, NULL, NULL, 
                            IClikelihood = "full", label = "Change to new data.frame with TPS bits")
-
+  
   #Fit spatial TPPS to sections
   for (i in 1:nsect)
   {

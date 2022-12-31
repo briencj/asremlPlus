@@ -306,7 +306,7 @@ infoCriteria.asreml <- function(object, DF = NULL,
        {
          fixedDF <- 0
          logdetC <- 0
-         warning("The the fixed effects varainces are not estimable - reverting to REML likelihood")
+         warning("The fixed effects variances are not estimable - reverting to REML likelihood")
        } 
      }
     if (is.null(fixedDF))
