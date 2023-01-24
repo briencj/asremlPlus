@@ -8,7 +8,7 @@ checkTrySpatial <- function(trySpatial)
   if (length(intersect(trySpatial, trySpat.opts)) == 0)
     stop("trySpatial must be one of ", paste0(trySpat.opts, collapse = ", "))
   if ("TPP1LS" %in% trySpatial)
-    stop("TPP1LS is not yet available in asremlPlus. Sorry.")
+    stop("TPP1LS is not yet available in asremlPlus. Sorry.") #Bug in tpsmmb for this - waiting for Sue
   if ("all" %in% trySpatial)
     trySpatial <- c("corr", "TPNCSS", "TPPCS")
   if ("none" %in% trySpatial && length(trySpatial) > 1)
@@ -30,6 +30,84 @@ calc.nsect <- function(dat, sections)
     nsect <- 1
   
   return(nsect)
+}
+
+addSpatialModel.asrtests <- function(asrtests.obj, spatial.model = "TPPS", 
+                                     sections = NULL, 
+                                     row.covar = "cRow", col.covar = "cCol", 
+                                     row.factor = NULL, col.factor = NULL, 
+                                     nsegs = NULL, nestorder = c(1, 1), 
+                                     degree = c(3,3), difforder = c(2,2), 
+                                     asreml.option = "mbf", tpps4mbf.obj = NULL,  
+                                     allow.unconverged = FALSE, allow.fixedcorrelation = FALSE,
+                                     checkboundaryonly = FALSE, update = FALSE, 
+                                     IClikelihood = "full", ...)
+{    
+  #Deal with arguments for tpsmmb and changeModelOnIC
+  inargs <- list(...)
+  checkEllipsisArgs(c("tpsmmb","changeModelOnIC", "asreml"), inargs)
+  
+  asr4 <- isASRemlVersionLoaded(4, notloaded.fault = TRUE)
+  #Check that have a valid object of class asrtests
+  validasrt <- validAsrtests(asrtests.obj)  
+  if (is.character(validasrt))
+    stop(validasrt)
+  
+  #Check IClikelihood options
+  options <- c("REML", "full")
+  ic.lik <- options[check.arg.values(IClikelihood, options)]
+  
+  #Check nsegs
+  if (length(nsegs) > 2)
+    stop("nsegs must specify no more than 2 values")
+  
+  #Check spatial.model options
+  options <- c("corr", "TPNCSS", "TPPS")
+  spatial.mod <- options[check.arg.values(spatial.model, options)]
+  
+  #Check asreml.option
+  options <- c("mbf", "grp")
+  asreml.opt <- options[check.arg.values(asreml.option, options)]
+  
+  asreml::asreml.options(extra = 5, ai.sing = TRUE, fail = "soft")
+  spatial.asrts <- list()
+  
+  #Fit a local spatial model involving correlated effects
+  if ("corr" %in% spatial.mod)
+    spatial.asrt <- fitCorrMod(asrtests.obj, sections = sections, 
+                               row.covar = row.covar, col.covar = col.covar, 
+                               allow.unconverged = allow.unconverged, 
+                               allow.fixedcorrelation = allow.fixedcorrelation,
+                               checkboundaryonly = checkboundaryonly, 
+                               update = update, chooseOnIC = FALSE, 
+                               IClikelihood = ic.lik, ...)
+  #Fit a local spatial model involving TPNCSS
+  if ("TPNCSS" %in% spatial.mod)
+    spatial.asrt <- fitTPNCSSMod(asrtests.obj, sections = sections, 
+                                 row.covar = row.covar, col.covar = col.covar, 
+                                 row.factor = row.factor, col.factor = col.factor, 
+                                 allow.unconverged = allow.unconverged, 
+                                 allow.fixedcorrelation = allow.fixedcorrelation,
+                                 checkboundaryonly = checkboundaryonly, 
+                                 update = update, chooseOnIC = FALSE, 
+                                 IClikelihood = "full", ...)
+  
+  #Fit a residual spatial model involving TPPS
+  if ("TPPS" %in% spatial.mod)
+    spatial.asrt <- fitTPPSMod(asrtests.obj, sections = sections, 
+                               row.covar = row.covar, col.covar = col.covar, 
+                               row.factor = row.factor, col.factor = col.factor, 
+                               nsegs = nsegs, nestorder = nestorder, 
+                               degree = degree, difforder = difforder,
+                               asreml.opt = asreml.opt, 
+                               tpps4mbf.obj = tpps4mbf.obj,
+                               allow.unconverged = allow.unconverged, 
+                               allow.fixedcorrelation = allow.fixedcorrelation,
+                               checkboundaryonly = checkboundaryonly, 
+                               update = update, chooseOnIC = FALSE, 
+                               IClikelihood = ic.lik, ...)
+  
+  return(spatial.asrt)  
 }
 
 addSpatialModelOnIC.asrtests <- function(asrtests.obj, spatial.model = "TPPS", 
@@ -83,7 +161,7 @@ addSpatialModelOnIC.asrtests <- function(asrtests.obj, spatial.model = "TPPS",
                                allow.unconverged = allow.unconverged, 
                                allow.fixedcorrelation = allow.fixedcorrelation,
                                checkboundaryonly = checkboundaryonly, 
-                               update = update, 
+                               update = update, chooseOnIC = TRUE, 
                                IClikelihood = ic.lik, which.IC = ic.type, 
                                ...)
   #Fit a local spatial model involving TPNCSS
@@ -94,7 +172,7 @@ addSpatialModelOnIC.asrtests <- function(asrtests.obj, spatial.model = "TPPS",
                                  allow.unconverged = allow.unconverged, 
                                  allow.fixedcorrelation = allow.fixedcorrelation,
                                  checkboundaryonly = checkboundaryonly, 
-                                 update = update, 
+                                 update = update, chooseOnIC = TRUE, 
                                  IClikelihood = ic.lik, which.IC = ic.type, 
                                  ...)
   
@@ -110,11 +188,44 @@ addSpatialModelOnIC.asrtests <- function(asrtests.obj, spatial.model = "TPPS",
                                allow.unconverged = allow.unconverged, 
                                allow.fixedcorrelation = allow.fixedcorrelation,
                                checkboundaryonly = checkboundaryonly, 
-                               update = update, 
+                               update = update, chooseOnIC = TRUE, 
                                IClikelihood = ic.lik, which.IC = ic.type, 
                                ...)
   
   return(spatial.asrt)  
+}
+
+calcSpatialICs <- function(spatial.asrt, spatial.mod, spatial.IC)
+{
+  tests.cols <- c("DF","denDF","AIC","BIC")
+  tests <- spatial.asrt$test.summary
+  if (spatial.mod == "corr")
+    tests.sp <- tests[grepl(" exp", tests$terms),]
+  else
+    tests.sp <- tests[grepl("Try tensor", tests$terms),]
+  
+  if (nrow(tests.sp) < 1 || !any(grepl("wapped", tests.sp$action))) #spatial not fitted
+  {
+    tests.sp <- as.data.frame(matrix(rep(NA, 5), nrow = 1))
+    names(tests.sp) <- c(tests.cols, "loglik")
+  } else
+  {
+    tests.sp <- tests.sp[grepl("wapped", tests.sp$action), tests.cols]
+    tests.sp$loglik <- 0
+    if (spatial.mod == "corr" && any(grepl("Try units term", tests$terms)))
+    {  
+      tests.unit <- getTestEntry(spatial.asrt,"Try units term")[ ,tests.cols]
+      tests.unit$loglik <- 0
+      tests.sp <- rbind(tests.sp, tests.unit)
+    }
+  }
+  names(tests.sp)[1:2] <- c("fixedDF","varDF")
+  tests.sp <- as.data.frame(t(as.matrix(colSums(rbind(spatial.IC[1,],tests.sp)), nrow = 1)))
+  rownames(tests.sp) <- spatial.mod
+  tests.sp$loglik <- with(tests.sp, -0.5 * (AIC - 2 * (fixedDF + varDF)))
+  spatial.IC <- rbind(spatial.IC,tests.sp)
+  
+  return(spatial.IC)
 }
 
 chooseSpatialModelOnIC.asrtests <- function(asrtests.obj, trySpatial = "all", 
@@ -162,35 +273,47 @@ chooseSpatialModelOnIC.asrtests <- function(asrtests.obj, trySpatial = "all",
   if ("none" %in% trySpatial)
   {
     spatial.asrts <- list(nonspatial = asrtests.obj)
-    spatial.IC <- infoCriteria(asrtests.obj)
+    spatial.IC <- infoCriteria(asrtests.obj, IClikelihood = ic.lik)
   } else #fit a spatial model
   {
     asreml::asreml.options(extra = 5, ai.sing = TRUE, fail = "soft")
     spatial.asrts <- list()
+    spatial.IC <- infoCriteria(asrtests.obj$asreml.obj, IClikelihood = ic.lik)
+    spatial.IC <- spatial.IC[-match("NBound", names(spatial.IC))]
+    rownames(spatial.IC) <- "nonspatial"
     #Fit a local spatial model involving correlated effects
     if ("corr" %in% trySpatial)
+    { 
       spatial.asrts[["corr"]] <- fitCorrMod(asrtests.obj, sections = sections, 
                                             row.covar = row.covar, col.covar = col.covar, 
                                             allow.unconverged = allow.unconverged, 
                                             allow.fixedcorrelation = allow.fixedcorrelation,
                                             checkboundaryonly = checkboundaryonly, 
-                                            update = update, 
+                                            update = update, chooseOnIC = TRUE, 
                                             IClikelihood = ic.lik, which.IC = ic.type, 
                                             ...)
+      spatial.IC <- calcSpatialICs(spatial.asrt = spatial.asrts[["corr"]] , spatial.mod = "corr", 
+                                   spatial.IC = spatial.IC)
+    }
     #Fit a local spatial model involving TPNCSS
     if ("TPNCSS" %in% trySpatial)
+    { 
       spatial.asrts[["TPNCSS"]] <- fitTPNCSSMod(asrtests.obj, sections = sections, 
                                                 row.covar = row.covar, col.covar = col.covar, 
                                                 row.factor = row.factor, col.factor = col.factor, 
                                                 allow.unconverged = allow.unconverged, 
                                                 allow.fixedcorrelation = allow.fixedcorrelation,
                                                 checkboundaryonly = checkboundaryonly, 
-                                                update = update, 
+                                                update = update, chooseOnIC = TRUE, 
                                                 IClikelihood = ic.lik, which.IC = ic.type, 
                                                 ...)
+      spatial.IC <- calcSpatialICs(spatial.asrt = spatial.asrts[["TPNCSS"]] , spatial.mod = "TPNCSS", 
+                                   spatial.IC = spatial.IC)
+    }
     
     #Fit a residual spatial model involving TPPCS
     if ("TPPCS" %in% trySpatial)
+    { 
       spatial.asrts[["TPPCS"]] <- fitTPPSMod(asrtests.obj, sections = sections, 
                                              row.covar = row.covar, col.covar = col.covar, 
                                              row.factor = row.factor, col.factor = col.factor, 
@@ -201,12 +324,16 @@ chooseSpatialModelOnIC.asrtests <- function(asrtests.obj, trySpatial = "all",
                                              allow.unconverged = allow.unconverged, 
                                              allow.fixedcorrelation = allow.fixedcorrelation,
                                              checkboundaryonly = checkboundaryonly, 
-                                             update = update, 
+                                             update = update, chooseOnIC = TRUE, 
                                              IClikelihood = ic.lik, which.IC = ic.type, 
                                              ...)
+      spatial.IC <- calcSpatialICs(spatial.asrt = spatial.asrts[["TPPCS"]] , spatial.mod = "TPPCS", 
+                                   spatial.IC = spatial.IC)
+    }
     
     #Fit a residual spatial model involving TPP1LS
     if ("TPP1LS" %in% trySpatial)
+    { 
       spatial.asrts[["TPP1LS"]] <- fitTPPSMod(asrtests.obj, sections = sections, 
                                               row.covar = row.covar, col.covar = col.covar, 
                                               row.factor = row.factor, col.factor = col.factor, 
@@ -217,16 +344,14 @@ chooseSpatialModelOnIC.asrtests <- function(asrtests.obj, trySpatial = "all",
                                               allow.unconverged = allow.unconverged, 
                                               allow.fixedcorrelation = allow.fixedcorrelation,
                                               checkboundaryonly = checkboundaryonly, 
-                                              update = update, 
+                                              update = update, chooseOnIC = TRUE, 
                                               IClikelihood = ic.lik, which.IC = ic.type, 
                                               ...)
+      spatial.IC <- calcSpatialICs(spatial.asrt = spatial.asrts[["TPP1LS"]] , spatial.mod = "TPP1LS", 
+                                   spatial.IC = spatial.IC)
+    }
     
-    asrt.names <- c("nonspatial", names(spatial.asrts))
-    tmp.asrts <- c(list(nonspatial = asrtests.obj), spatial.asrts)
-    spatial.IC <- infoCriteria(lapply(tmp.asrts, function(asrt) asrt$asreml.obj))
-    # spatial.IC <- lapply(spatial.asrts, function(asrt) infoCriteria(asrt$asreml.obj))
-    # spatial.IC <- do.call(rbind, spatial.IC)
-    
+    #Find min AIC and, if multiple mins, select in specified order
     spatial.comp <- round(spatial.IC[[which.IC]], digits = 3)
     names(spatial.comp) <- rownames(spatial.IC)
     min.asrt <- which.min(spatial.comp)
@@ -234,23 +359,26 @@ chooseSpatialModelOnIC.asrtests <- function(asrtests.obj, trySpatial = "all",
     {
       #pick one in the order given below
       if ("nonspatial" %in% names(min.asrt)) min.asrt <- min.asrt["nonspatial"]
-      if ("TPNCSS" %in% names(min.asrt)) min.asrt <- min.asrt["TPNCSS"]
-      if ("corr" %in% names(min.asrt)) min.asrt <- min.asrt["corr"]
       if ("TPPCS" %in% names(min.asrt)) min.asrt <- min.asrt["TPPCS"]
+      if ("TPNCSS" %in% names(min.asrt)) min.asrt <- min.asrt["TPNCSS"]
+      if ("TPP1LS" %in% names(min.asrt)) min.asrt <- min.asrt["TPPCS"]
+      if ("corr" %in% names(min.asrt)) min.asrt <- min.asrt["corr"]
     }
-    #If only best, get the best astests.obj
+    #If return only best, get the best asrtests.obj
     if (return.opt == "best")
-      spatial.asrts <- tmp.asrts[names(min.asrt)]
+      spatial.asrts <- c(list(nonspatial = asrtests.obj), spatial.asrts)[names(min.asrt)]
     
   } 
   return(list(asrts = spatial.asrts, spatial.IC = spatial.IC, 
-              best = names(min.asrt), best.AIC = spatial.comp[min.asrt]))
+              best.spatial.mod = names(min.asrt), 
+              best.spatial.IC = spatial.comp[min.asrt]))
 }
 
 fitCorrMod <- function(asrtests.obj, sections = NULL,
                        row.covar = "cRow", col.covar = "cCol", 
                        allow.unconverged = TRUE, allow.fixedcorrelation = TRUE,
                        checkboundaryonly = FALSE, update = TRUE, 
+                       chooseOnIC = TRUE, 
                        IClikelihood = "full", which.IC = "AIC", 
                        ...)
 {
@@ -275,15 +403,25 @@ fitCorrMod <- function(asrtests.obj, sections = NULL,
       ran.term <- paste0("at(", sections, ", ",i, "):", ran.term)
       lab <- paste0(lab, " for ", sections, " ",i)
     }
-    corr.asrt <- changeModelOnIC(corr.asrt, 
-                                 addRandom = ran.term, label = lab, 
-                                 allow.unconverged = allow.unconverged, 
-                                 allow.fixedcorrelation = allow.fixedcorrelation,
-                                 checkboundaryonly = checkboundaryonly, 
-                                 update = update, 
-                                 IClikelihood = IClikelihood, 
-                                 which.IC = which.IC, 
-                                 ...)
+    if (chooseOnIC)
+      corr.asrt <- changeModelOnIC(corr.asrt, 
+                                   addRandom = ran.term, label = lab, 
+                                   allow.unconverged = allow.unconverged, 
+                                   allow.fixedcorrelation = allow.fixedcorrelation,
+                                   checkboundaryonly = checkboundaryonly, 
+                                   update = update, 
+                                   IClikelihood = IClikelihood, 
+                                   which.IC = which.IC, 
+                                   ...)
+    else
+      corr.asrt <- changeTerms(corr.asrt, 
+                               addRandom = ran.term, label = lab, 
+                               allow.unconverged = allow.unconverged, 
+                               allow.fixedcorrelation = allow.fixedcorrelation,
+                               checkboundaryonly = checkboundaryonly, 
+                               update = update, 
+                               IClikelihood = IClikelihood, ...)
+    
     result <- getTestEntry(corr.asrt, label = lab)$action
     
     #Try row exp in current section
@@ -300,16 +438,27 @@ fitCorrMod <- function(asrtests.obj, sections = NULL,
       if (nsect > 1)
         ran.term <- paste0("at(", sections, ", ",i, "):", ran.term)
       
-      corr.asrt <- changeModelOnIC(corr.asrt, 
-                                   addRandom = ran.term, 
-                                   dropRandom = last.term, label = lab, 
-                                   allow.unconverged = allow.unconverged, 
-                                   allow.fixedcorrelation = allow.fixedcorrelation,
-                                   checkboundaryonly = checkboundaryonly, 
-                                   update = update, 
-                                   IClikelihood = IClikelihood, 
-                                   which.IC = which.IC, 
-                                   ...)
+      if (chooseOnIC)
+        corr.asrt <- changeModelOnIC(corr.asrt, 
+                                     addRandom = ran.term, 
+                                     dropRandom = last.term, label = lab, 
+                                     allow.unconverged = allow.unconverged, 
+                                     allow.fixedcorrelation = allow.fixedcorrelation,
+                                     checkboundaryonly = checkboundaryonly, 
+                                     update = update, 
+                                     IClikelihood = IClikelihood, 
+                                     which.IC = which.IC, 
+                                     ...)
+      else
+        corr.asrt <- changeTerms(corr.asrt, 
+                                 addRandom = ran.term, 
+                                 dropRandom = last.term, label = lab, 
+                                 allow.unconverged = allow.unconverged, 
+                                 allow.fixedcorrelation = allow.fixedcorrelation,
+                                 checkboundaryonly = checkboundaryonly, 
+                                 update = update, 
+                                 IClikelihood = IClikelihood, ...)
+      
       if (!(grepl("Unswapped", getTestEntry(corr.asrt, label = lab)$action, 
                   fixed = TRUE)))
         last.term <- ran.term
@@ -318,15 +467,25 @@ fitCorrMod <- function(asrtests.obj, sections = NULL,
       ran.term <- paste0("exp(", row.covar, "):", col.covar)
       if (nsect > 1)
         ran.term <- paste0("at(", sections, ", ",i, "):", ran.term)
-      corr.asrt <- changeModelOnIC(corr.asrt, 
-                                   addRandom = ran.term, label = lab, 
-                                   allow.unconverged = allow.unconverged, 
-                                   allow.fixedcorrelation = allow.fixedcorrelation,
-                                   checkboundaryonly = checkboundaryonly, 
-                                   update = update, 
-                                   IClikelihood = IClikelihood, 
-                                   which.IC = which.IC, 
-                                   ...)
+      if (chooseOnIC)
+        corr.asrt <- changeModelOnIC(corr.asrt, 
+                                     addRandom = ran.term, label = lab, 
+                                     allow.unconverged = allow.unconverged, 
+                                     allow.fixedcorrelation = allow.fixedcorrelation,
+                                     checkboundaryonly = checkboundaryonly, 
+                                     update = update, 
+                                     IClikelihood = IClikelihood, 
+                                     which.IC = which.IC, 
+                                     ...)
+      else
+        corr.asrt <- changeTerms(corr.asrt, 
+                                 addRandom = ran.term, label = lab, 
+                                 allow.unconverged = allow.unconverged, 
+                                 allow.fixedcorrelation = allow.fixedcorrelation,
+                                 checkboundaryonly = checkboundaryonly, 
+                                 update = update, 
+                                 IClikelihood = IClikelihood, ...)
+      
       if (!(grepl("Unswapped", getTestEntry(corr.asrt, label = lab)$action, 
                   fixed = TRUE)))
       { 
@@ -343,7 +502,8 @@ fitCorrMod <- function(asrtests.obj, sections = NULL,
       ran.term <- "units"
       if (nsect > 1)
         ran.term <- paste0("at(", sections, ", ",i, "):", ran.term)
-      corr.asrt <- changeModelOnIC(corr.asrt,
+      if (chooseOnIC)
+        corr.asrt <- changeModelOnIC(corr.asrt,
                                    addRandom = ran.term, label = lab,
                                    allow.unconverged = allow.unconverged, 
                                    allow.fixedcorrelation = allow.fixedcorrelation,
@@ -352,6 +512,15 @@ fitCorrMod <- function(asrtests.obj, sections = NULL,
                                    IClikelihood = IClikelihood, 
                                    which.IC = which.IC, 
                                    ...)
+      else
+        corr.asrt <- changeTerms(corr.asrt,
+                                 addRandom = ran.term, label = lab,
+                                 allow.unconverged = allow.unconverged, 
+                                 allow.fixedcorrelation = allow.fixedcorrelation,
+                                 checkboundaryonly = checkboundaryonly, 
+                                 update = update, 
+                                 IClikelihood = IClikelihood, ...)
+      
     }
   }
   
@@ -364,6 +533,7 @@ fitTPNCSSMod <- function(asrtests.obj, sections = NULL,
                          nsegs = NULL, 
                          allow.unconverged = TRUE, allow.fixedcorrelation = TRUE,
                          checkboundaryonly = FALSE, update = TRUE, 
+                         chooseOnIC = TRUE, 
                          IClikelihood = "full", which.IC = "AIC", 
                          ...)
 { 
@@ -404,7 +574,7 @@ fitTPNCSSMod <- function(asrtests.obj, sections = NULL,
     fix.terms <- paste(paste0(sect.fac, c(row.covar, col.covar)), collapse = " + ")
   }
   
-  #Construct terms with sections
+  #Construct random terms without sections
   spl.row <- paste0("spl(", row.covar, ")")
   spl.col <- paste0("spl(", col.covar, ")")
   spl.terms <- c(spl.row, spl.col, 
@@ -412,32 +582,44 @@ fitTPNCSSMod <- function(asrtests.obj, sections = NULL,
                  paste0(spl.row, ":", col.covar), paste0(row.covar, ":", spl.col), 
                  paste0(spl.row, ":", spl.col))
   
-  #Add the fixed terms
-  tspl.asrt <- changeTerms(asrtests.obj, 
-                           addFixed = fix.terms, 
-                           dropFixed = drop.fix, 
-                           dropRandom = drop.ran, 
-                           IClikelihood = "full", 
-                           label = paste0("Add linear ",  row.covar, 
-                                          " & ", col.covar, "terms")) 
-  
   for (i in 1:nsect)
   {
     if (nsect > 1) 
+    { 
       sect.fac <- paste0("at(", sections, ", ", i, "):")
-    lab <- paste0("Try tensor NCS splines for ", sections, " ",i)
+      lab <- paste0("Try tensor NCS splines for ", sections, " ",i)
+    } else
+      lab <- paste0("Try tensor NCS splines")
     #Fit TPNCSS to a section 
-    tspl.asrt <- changeModelOnIC(tspl.asrt, 
-                                 addRandom = paste(sect.fac, spl.terms, 
-                                                   collapse = " + "), 
-                                 label = lab, 
-                                 allow.unconverged = allow.unconverged, 
-                                 allow.fixedcorrelation = allow.fixedcorrelation,
-                                 checkboundaryonly = checkboundaryonly, 
-                                 update = update, 
-                                 IClikelihood = IClikelihood, 
-                                 which.IC = which.IC, 
-                                 ...)
+    if (chooseOnIC)
+      tspl.asrt <- changeModelOnIC(asrtests.obj, 
+                                   addFixed = fix.terms, 
+                                   dropFixed = drop.fix, 
+                                   dropRandom = drop.ran, 
+                                   addRandom = paste(sect.fac, spl.terms, 
+                                                     collapse = " + "), 
+                                   label = lab, 
+                                   allow.unconverged = allow.unconverged, 
+                                   allow.fixedcorrelation = allow.fixedcorrelation,
+                                   checkboundaryonly = checkboundaryonly, 
+                                   update = update, 
+                                   IClikelihood = IClikelihood, 
+                                   which.IC = which.IC, 
+                                   ...)
+    else
+      tspl.asrt <- changeTerms(asrtests.obj, 
+                               addFixed = fix.terms, 
+                               dropFixed = drop.fix, 
+                               dropRandom = drop.ran, 
+                               addRandom = paste(sect.fac, spl.terms, 
+                                                 collapse = " + "), 
+                               label = lab, 
+                               allow.unconverged = allow.unconverged, 
+                               allow.fixedcorrelation = allow.fixedcorrelation,
+                               checkboundaryonly = checkboundaryonly, 
+                               update = update, 
+                               IClikelihood = IClikelihood, ...)
+    
     tspl.asrt <- rmboundary(tspl.asrt)
   }
   
@@ -670,6 +852,7 @@ fitTPSModSect <- function(tspl.asrt, mat, sect.fac, row.factor, col.factor,
                           row.covar, col.covar, lab, 
                           asreml.opt = "mbf", stub = stub, 
                           allow.unconverged = TRUE, allow.fixedcorrelation = TRUE,
+                          chooseOnIC = TRUE, 
                           checkboundaryonly = FALSE, update = TRUE, 
                           IClikelihood = "full", which.IC = "AIC", ...)
 {
@@ -691,59 +874,110 @@ fitTPSModSect <- function(tspl.asrt, mat, sect.fac, row.factor, col.factor,
   if (asreml.opt == "mbf")
   {
     mbf.lis <- mat$mbflist
-    tspl.asrt <- do.call(changeModelOnIC, 
-                         args = c(list(tspl.asrt,
-                                       addFixed = paste(paste0(
-                                         sect.fac,
-                                         c("TP.CR.2", "TP.CR.3", "TP.CR.4")),
-                                         collapse = " + "),
-                                       dropFixed = drop.fix, 
-                                       addRandom = paste(paste0(
-                                         sect.fac,
-                                         c("TP.C.1:mbf(TP.row)", "TP.C.2:mbf(TP.row)",
-                                           "TP.R.1:mbf(TP.col)", "TP.R.2:mbf(TP.col)",
-                                           "mbf(TP.CxR)", 
-                                           paste0("dev(",row.covar,")"), 
-                                           paste0("dev(",col.covar,")"))),
-                                         collapse = " + "),
-                                       dropRandom = drop.ran, 
-                                       mbf = mbf.lis,
-                                       label = lab,
-                                       allow.unconverged = allow.unconverged, 
-                                       allow.fixedcorrelation = allow.fixedcorrelation,
-                                       checkboundaryonly = checkboundaryonly, 
-                                       update = update, 
-                                       IClikelihood = IClikelihood, 
-                                       which.IC = which.IC), 
-                                  inargs))
+    if (chooseOnIC)
+      tspl.asrt <- do.call(changeModelOnIC, 
+                           args = c(list(tspl.asrt,
+                                         addFixed = paste(paste0(
+                                           sect.fac,
+                                           c("TP.CR.2", "TP.CR.3", "TP.CR.4")),
+                                           collapse = " + "),
+                                         dropFixed = drop.fix, 
+                                         addRandom = paste(paste0(
+                                           sect.fac,
+                                           c("TP.C.1:mbf(TP.row)", "TP.C.2:mbf(TP.row)",
+                                             "TP.R.1:mbf(TP.col)", "TP.R.2:mbf(TP.col)",
+                                             "mbf(TP.CxR)", 
+                                             paste0("dev(",row.covar,")"), 
+                                             paste0("dev(",col.covar,")"))),
+                                           collapse = " + "),
+                                         dropRandom = drop.ran, 
+                                         mbf = mbf.lis,
+                                         label = lab,
+                                         allow.unconverged = allow.unconverged, 
+                                         allow.fixedcorrelation = allow.fixedcorrelation,
+                                         checkboundaryonly = checkboundaryonly, 
+                                         update = update, 
+                                         IClikelihood = IClikelihood, 
+                                         which.IC = which.IC), 
+                                    inargs))
+    else
+      tspl.asrt <- do.call(changeTerms, 
+                           args = c(list(tspl.asrt,
+                                         addFixed = paste(paste0(
+                                           sect.fac,
+                                           c("TP.CR.2", "TP.CR.3", "TP.CR.4")),
+                                           collapse = " + "),
+                                         dropFixed = drop.fix, 
+                                         addRandom = paste(paste0(
+                                           sect.fac,
+                                           c("TP.C.1:mbf(TP.row)", "TP.C.2:mbf(TP.row)",
+                                             "TP.R.1:mbf(TP.col)", "TP.R.2:mbf(TP.col)",
+                                             "mbf(TP.CxR)", 
+                                             paste0("dev(",row.covar,")"), 
+                                             paste0("dev(",col.covar,")"))),
+                                           collapse = " + "),
+                                         dropRandom = drop.ran, 
+                                         mbf = mbf.lis,
+                                         label = lab,
+                                         allow.unconverged = allow.unconverged, 
+                                         allow.fixedcorrelation = allow.fixedcorrelation,
+                                         checkboundaryonly = checkboundaryonly, 
+                                         update = update, IClikelihood = IClikelihood), 
+                                    inargs))
   } else #grp
   {
     grp <- mat$grp
-    tspl.asrt <- do.call(changeModelOnIC, 
-                         args = c(list(tspl.asrt, 
-                                       addFixed = paste(paste0(
-                                         sect.fac, 
-                                         c("TP.CR.2", "TP.CR.3", "TP.CR.4")), 
-                                         collapse = " + "),
-                                       dropFixed = drop.fix, 
-                                       addRandom = paste(paste0(
-                                         sect.fac, 
-                                         c("grp(TP.C.1_frow)", "grp(TP.C.2_frow)", 
-                                           "grp(TP.R.1_fcol)", "grp(TP.R.2_fcol)",
-                                           "grp(TP_fcol_frow)", 
-                                           paste0("dev(",row.covar,")"), 
-                                           paste0("dev(",col.covar,")"))), 
-                                         collapse = " + "),
-                                       dropRandom = drop.ran, 
-                                       group = grp,
-                                       label = lab, 
-                                       allow.unconverged = allow.unconverged, 
-                                       allow.fixedcorrelation = allow.fixedcorrelation,
-                                       checkboundaryonly = checkboundaryonly, 
-                                       update = update, 
-                                       IClikelihood = IClikelihood, 
-                                       which.IC = which.IC), 
-                                  inargs))
+    if (chooseOnIC)
+      tspl.asrt <- do.call(changeModelOnIC, 
+                           args = c(list(tspl.asrt, 
+                                         addFixed = paste(paste0(
+                                           sect.fac, 
+                                           c("TP.CR.2", "TP.CR.3", "TP.CR.4")), 
+                                           collapse = " + "),
+                                         dropFixed = drop.fix, 
+                                         addRandom = paste(paste0(
+                                           sect.fac, 
+                                           c("grp(TP.C.1_frow)", "grp(TP.C.2_frow)", 
+                                             "grp(TP.R.1_fcol)", "grp(TP.R.2_fcol)",
+                                             "grp(TP_fcol_frow)", 
+                                             paste0("dev(",row.covar,")"), 
+                                             paste0("dev(",col.covar,")"))), 
+                                           collapse = " + "),
+                                         dropRandom = drop.ran, 
+                                         group = grp,
+                                         label = lab, 
+                                         allow.unconverged = allow.unconverged, 
+                                         allow.fixedcorrelation = allow.fixedcorrelation,
+                                         checkboundaryonly = checkboundaryonly, 
+                                         update = update, 
+                                         IClikelihood = IClikelihood, 
+                                         which.IC = which.IC), 
+                                    inargs))
+    else
+      tspl.asrt <- do.call(changeTerms, 
+                           args = c(list(tspl.asrt, 
+                                         addFixed = paste(paste0(
+                                           sect.fac, 
+                                           c("TP.CR.2", "TP.CR.3", "TP.CR.4")), 
+                                           collapse = " + "),
+                                         dropFixed = drop.fix, 
+                                         addRandom = paste(paste0(
+                                           sect.fac, 
+                                           c("grp(TP.C.1_frow)", "grp(TP.C.2_frow)", 
+                                             "grp(TP.R.1_fcol)", "grp(TP.R.2_fcol)",
+                                             "grp(TP_fcol_frow)", 
+                                             paste0("dev(",row.covar,")"), 
+                                             paste0("dev(",col.covar,")"))), 
+                                           collapse = " + "),
+                                         dropRandom = drop.ran, 
+                                         group = grp,
+                                         label = lab, 
+                                         allow.unconverged = allow.unconverged, 
+                                         allow.fixedcorrelation = allow.fixedcorrelation,
+                                         checkboundaryonly = checkboundaryonly, 
+                                         update = update), 
+                                    inargs))
+    
   }
   return(tspl.asrt)
 }
@@ -760,6 +994,7 @@ fitTPPSMod <- function(asrtests.obj, sections = NULL,
                        tpps4mbf.obj = NULL, 
                        allow.unconverged = TRUE, allow.fixedcorrelation = TRUE,
                        checkboundaryonly = FALSE, update = TRUE, 
+                       chooseOnIC = TRUE, 
                        IClikelihood = "full", which.IC = "AIC",
                        ...)
 { 
@@ -873,6 +1108,7 @@ fitTPPSMod <- function(asrtests.obj, sections = NULL,
                                allow.fixedcorrelation = allow.fixedcorrelation,
                                checkboundaryonly = checkboundaryonly, 
                                update = update, 
+                               chooseOnIC = chooseOnIC, 
                                IClikelihood = IClikelihood, 
                                which.IC = which.IC, 
                                ...)

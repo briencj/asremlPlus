@@ -17,7 +17,7 @@
               For \code{\link{changeModelOnIC.asrtests}}, the \code{label} will be the value of 
               the \code{label} argument. Other arguments will be relevant for other 
               test and change functions.}
- \item{\dots}{provision for passsing arguments to functions called internally - 
+ \item{\dots}{provision for passing arguments to functions called internally - 
             not used at present.}
 }
 \value{A one-line \code{data.frame} containing the entry.

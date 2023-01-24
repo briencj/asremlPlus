@@ -4,27 +4,24 @@
 \title{Uses information criteria to choose the best fitting spatial model for accounting for local spatial variation.}
 \description{For a response variable measured on a potentially irregular grid of rows and 
        columns of the units, uses information criteria to decide whether to add to the fitted 
-       model stored in the supplied \code{\link{asrtests.object}} either a correlation, 
-       two-dimensional tensor-product natural cubic smoothing spline (TPNCSS), or a 
-       two-dimensional tensor-product penalized P-spline model to account for the local 
-       spatial variation. The models to be selected from can be reduced to a subset of these 
-       three models. The data that be arranged in sections for each of which there is a grid 
-       and for which the model is to be fitted separately. Also, the rows and columns of a 
-       grid are not necessarily one observational unit wide. The spatial model is only added 
-       if the information criterion of the supplied model is decreased with the addition of 
-       the local spatial model.
+       model stored in the supplied \code{\link{asrtests.object}} either a two-dimensional 
+       exponential correlation model, a two-dimensional tensor-product natural cubic smoothing 
+       spline model (TPNCSS), a two-dimensional tensor-product penalized P-spline model (TPPCS) 
+       model, or a two-dimensional tensor-product penalized linear spline model with 
+       first-difference penalties (TPP1LS) to account for the local spatial variation. The models 
+       from which to select can be reduced to a subset of these four models. The data can be 
+       arranged in sections, for each of which there is a grid and for which the model is to 
+       be fitted separately. Also, the rows and columns of a grid are not necessarily one 
+       observational unit wide. The spatial model is only added if the information criterion 
+       of the supplied model is decreased with the addition of the local spatial model.
 
-       A row is added to the \code{test.summary} \code{data.frame} of the 
+       One or more rows is added to the \code{test.summary} \code{data.frame} of the 
        \code{\link{asrtests.object}}, for each \code{section} and each spatial model, 
        stating whether or not the new model has been swapped for a model in which the 
-       spatial model has been add to the  supplied model. Convergence in fitting the 
+       spatial model has been added to the  supplied model. Convergence in fitting the 
        model is checked and a note included in the \code{action} if there was not. 
        All components of the \code{\link{asrtests.object}} are updated to exhibit the 
        differences between the supplied and any new model.
-
-       To obtain a list of the information criteria for a set of models use 
-       \code{\link{changeTerms.asrtests}} with \code{IClikelihood} set to 
-       \code{REML} or \code{full}, or use \code{\link{infoCriteria.asreml}}.
 }
 \usage{
 \method{chooseSpatialModelOnIC}{asrtests}(asrtests.obj, trySpatial = "all", 
@@ -44,7 +41,7 @@
        (i) \code{asreml.obj}, (ii) \code{wald.tab}, and (iii) \code{test.summary}.}
  \item{trySpatial}{A \code{character} string nominating the types of spatial 
                model whose fits are to be assessed. Possible values are \code{corr}, 
-               \code{TPNCSS}, \code{TPPcS} and \code{TPP1LS}.}
+               \code{TPNCSS}, \code{TPPCS}, and \code{TPP1LS}.}
  \item{sections}{A single \code{character} string that species the name of the column 
                in the \code{\link{data.frame}} that contains the \code{\link{factor}} 
                that identifies different sections of the data 
@@ -142,11 +139,11 @@ For the \code{corr} spatial model, an exponential model (\code{exp}) is used for
 
 The tensor-product natural-cubic-smoothing-spline \code{TPNCSS} spatial model is as decribed by Verbyla et al. (2018), the tensor-product penalized-cubic-spline \code{TPPCS} model is as described by Rodriguez-Alvarez et al. (2018), and the tensor-product, first-difference-penalty, linear spline \code{TPP1LS} model that is amongst those described by Piepho, Boer and Williams (2022).  The fixed terms for these models are \code{row.covar + col.covar + row.covar:col.covar} and the random terms \code{spl(row.covar) + spl(col.covar) + dev(row.covar) + dev(col.covar) + spl(row.covar):col.covar + row.covar:spl(col.covar) + spl(row.covar):spl(col.covar)}. The supplied model should not include any of these terms. However, any fixed or random main-effect term for either \code{row.factor} or \code{col.factor} will be removed from the fit.
 
-The \code{TPPcS} and \code{TPP1LS} models are fitted using the function \code{tpsmmb} from the \code{R} package \code{TPSbits} authored by Sue Welham (2022). There are two methods for supplying the spline basis information produced by \code{tpsmmb} to \code{asreml}. The \code{grp} method adds the it to the \code{data.frame} holding the information for the analysis. The \code{mbf} method requires the spline basis information to be in the same environment as the function that is called to make a fit using \code{asreml}. To this end, and prior to invoking the calling function, \code{\link{makeTPSPlineXZMats.data.frame}} must be used produce the \code{\link{data.frame}s}.
+The \code{TPPCS} and \code{TPP1LS} models are fitted using the function \code{tpsmmb} from the \code{R} package \code{TPSbits} authored by Sue Welham (2022). There are two methods for supplying the spline basis information produced by \code{tpsmmb} to \code{asreml}. The \code{grp} method adds the it to the \code{data.frame} holding the information for the analysis. The \code{mbf} method requires the spline basis information to be in the same environment as the function that is called to make a fit using \code{asreml}. To this end, and prior to invoking the calling function, \code{\link{makeTPSPlineXZMats.data.frame}} must be used produce the \code{\link{data.frame}s}.
 
 All models utlize the function \code{\link{changeModelOnIC.asrtests}} to assess the model fit, the information critera used in assessing the fit being calculated using \code{\link{infoCriteria}}. Arguments from \code{tpsmmb} and \code{\link{changeModelOnIC.asrtests}} can be supplied in calls to \code{chooseSpatialModelOnIC.asrtests} and will be passed on to the relevant function throught the ellipses argument (\ldots).
 
-The data for experiment can be divided \code{sections} and the same spatial model fitted separately to each. The fit over all of the sections is assessed.
+The data for experiment can be divided into \code{sections} and an attempt to fit the same spatial model to each is made. The fit may differ for each of the \code{sections}, but the fit over all of the \code{sections} is assessed.
 
 Each combination of a row.coords and a col.coords does not have to specify a single observation; 
 for example, to fit a local spatial model to the main units of a split-unit design, 
@@ -155,16 +152,22 @@ have the same combination.
 }
 
 \value{A \code{\link{list}} containing four components: (i) \code{asrts}, (ii) \code{spatial.IC}, 
-       (iii) \code{best.spatial}, and (iv) \code{best.spatial.AIC}. The 
-       component \code{asrts} itself holds a  \code{\link{list}} of one or more 
-       \code{\link{asrtests.object}}s. Each \code{\link{asrtests.object}} contains the components 
-       (i) \code{asreml.obj}, (ii) \code{wald.tab}, and (iii) \code{test.summary} for the 
-       chosen model, either the best overall or, for each spatial model, the best out of the 
-       supplied model and the spatial model. The \code{spatial.IC} component holds a 
-       \code{\link{data.frame}} with the values of the information criterion resulting from the 
-       comparison of each model with the supplied model. 
-       The \code{best.spatial} component is a character giving the name of the best spatial model, 
-       and \code{best.spatial.AIC} gives the value of its \code{AIC}.}
+       (iii) \code{best.spatial.mod}, and (iv) \code{best.spatial.IC}. 
+       
+       The component \code{asrts} itself holds a  \code{\link{list}} of one or more 
+       \code{\link{asrtests.object}}s, either the best overall out of the supplied model and 
+       the spatial models, or, for each spatial model, the best out of the supplied model 
+       and that spatial model. Each \code{\link{asrtests.object}} contains the components:  
+       (i) \code{asreml.obj}, (ii) \code{wald.tab}, and (iii) \code{test.summary}. 
+       
+       The \code{spatial.IC} component holds a \code{\link{data.frame}} with summary of the 
+       values of the information criteria for the supplied model and those resulting from  
+       adding the spatial model to the supplied model (if the spatial model did not fit, then 
+       all values will be \code{NA}). 
+       
+       The \code{best.spatial} component is a character giving the name of the best spatial 
+       model, and \code{best.spatial.AIC} gives the value of its \code{AIC}.
+}
 
 \references{Piepho, H.-P., Boer, M. P., & Williams, E. R. (2022). Two-dimensional P-spline smoothing for spatial analysis of plant breeding trials. \emph{Biometrical Journal}, \bold{64}, 835-857.
 
@@ -176,12 +179,13 @@ Welham, S. J. (2022) \code{TPSbits}: \emph{Creates Structures to Enable Fitting 
 
 \author{Chris Brien}
 
-\seealso{\code{\link{addSpatialModelOnIC.asrtests}}, \code{\link{as.asrtests}}, \code{\link{rmboundary.asrtests}}, 
+\seealso{\code{\link{as.asrtests}}, \code{\link{rmboundary.asrtests}}, 
+         \code{\link{addSpatialModelOnIC.asrtests}}, \code{\link{addSpatialModel.asrtests}}, ,
          \code{\link{testranfix.asrtests}}, \cr 
          \code{\link{testresidual.asrtests}}, 
          \code{\link{newfit.asreml}}, \code{\link{reparamSigDevn.asrtests}}, 
          \code{\link{chooseModel.asrtests}}, \cr 
-         \code{\link{changeTerms.asrtests}}, \code{\link{infoCriteria.asreml}}}
+         \code{\link{changeModelOnIC.asrtests}}, \code{\link{infoCriteria.asreml}}}
 \examples{\dontrun{
 
 data(Wheat.dat)

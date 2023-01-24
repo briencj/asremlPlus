@@ -1,5 +1,6 @@
 #S3 method generics
 
+addSpatialModel <- function(asrtests.obj, ...) UseMethod("addSpatialModel")
 addSpatialModelOnIC <- function(asrtests.obj, ...) UseMethod("addSpatialModelOnIC")
 changeModelOnIC <- function(asrtests.obj, ...) UseMethod("changeModelOnIC")
 changeTerms <- function(asrtests.obj, ...) UseMethod("changeTerms")

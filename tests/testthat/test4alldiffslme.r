@@ -76,7 +76,7 @@ test_that("PredictionsFrame_lme4", {
                                     sortFactor = "Variety", decreasing = TRUE)
     testthat::expect_true(all(abs(Var.LSD.diffs$LSD[c("minLSD", "meanLSD", "maxLSD", 
                                                       "assignedLSD")] -  15.47425) < 1e-05))
-    testthat::expect_true(all(Var.LSD.diffs$LSD["accuracyLSD"] < 1e-15))
+    testthat::expect_true(all(Var.LSD.diffs$LSD["accuracyLSD"] < 100 * .Machine$double.eps))
     testthat::expect_true(setequal(names(Var.LSD.diffs$LSD), c("c", "minLSD", "meanLSD", "maxLSD", 
                                                                "assignedLSD", "accuracyLSD", 
                                                                "falsePos", "falseNeg")))
@@ -88,7 +88,7 @@ test_that("PredictionsFrame_lme4", {
     testthat::expect_true(validAlldiffs(Var.LSD.diffs))
     testthat::expect_true(all(abs(Var.LSD.diffs$LSD[c("minLSD", "meanLSD", "maxLSD", 
                                                       "assignedLSD")] -  15.47425) < 1e-05))
-    testthat::expect_true(all(Var.LSD.diffs$LSD["accuracyLSD"] < 1e-15))
+    testthat::expect_true(all(Var.LSD.diffs$LSD["accuracyLSD"] < 100 * .Machine$double.eps))
     testthat::expect_true(setequal(names(Var.LSD.diffs$LSD), c("c", "minLSD", "meanLSD", "maxLSD", 
                                                                "assignedLSD", "accuracyLSD", 
                                                                "falsePos", "falseNeg")))

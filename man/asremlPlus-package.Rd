@@ -97,6 +97,9 @@
 \cr
 (iii) Model modification \cr\cr
 
+\code{\link{addSpatialModel.asrtests}}
+      \tab Adds, to a supplied model, a spatial model that accounts for \cr
+      \tab local spatial variation.      \cr
 \code{\link{addSpatialModelOnIC.asrtests}}
       \tab Uses information criteria to decide whether to add a spatial \cr
       \tab model to account for local spatial variation. \cr

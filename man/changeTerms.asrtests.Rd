@@ -15,7 +15,7 @@
        and a note included in the action if there was not. All components of 
        the \code{\link{asrtests.object}} are updated.
 
-       To only change the terms based on the information 
+       To only change the terms based on a comparison  of information 
        criteria use \code{\link{changeModelOnIC.asrtests}}.
 
 }

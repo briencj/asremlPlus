@@ -1,35 +1,39 @@
-\name{addSpatialModelOnIC.asrtests}
-\alias{addSpatialModelOnIC.asrtests}
-\alias{addSpatialModelOnIC}
-\title{Uses information criteria to decide whether to add a spatial model to account for local spatial variation.}
+\name{addSpatialModel.asrtests}
+\alias{addSpatialModel.asrtests}
+\alias{addSpatialModel}
+\title{Adds, to a supplied model, a spatial model that accounts for local spatial variation.}
 \description{Adds either a correlation, two-dimensional tensor-product natural cubic 
        smoothing spline (TPNCSS), or a two-dimensional tensor-product penalized P-spline 
-       model (TPPS) to account for the the local spatial variation exhibited by a response variable 
+       model (TPPS) to account for the local spatial variation exhibited by a response variable 
        measured on a potentially irregular grid of rows and columns of the units. The data may 
-       be arranged in sections for each of which there is a grid and for which the model is to 
+       be arranged in sections, for each of which there is a grid and for which the model is to 
        be fitted separately. Also, the rows and columns of a grid are not necessarily one 
-       observational unit wide. The spatial model is only added if the information criterion of 
-       the supplied model is decreased with the addition of the local spatial model.
+       observational unit wide.
+       
+       No hypothesis testing or comparison of information criteria is made. To only change 
+       the terms based on a comparison  of information criteria use 
+       \code{\link{chooseSpatialModelOnIC.asrtests}}.
+       
+       The model fit supplied in the \code{asrtests.obj} should not include terms that will 
+       be included in the local spatial model. All spatial model terms are fitted as fixed or 
+       random. Consequently, the residual model does not have to be iid.
 
-       A row is added for each \code{section} to the \code{test.summary} \code{data.frame} 
-       of the \code{\link{asrtests.object}} stating whether or not the new model has been 
-       swapped for a model in which the spatial model has been add to the  supplied model. 
-       Convergence and the occurrence of fixed correlations in fitting the 
+       One or more rows is added for each \code{section} to the \code{test.summary} 
+       \code{data.frame}. Convergence and the occurrence of fixed correlations in fitting the 
        model is checked and a note included in the \code{action} if there was not. 
-       All components of the \code{\link{asrtests.object}} are updated to exhibit the 
-       differences between the supplied and the new model, if a spatial model is added.
+       All components of the \code{\link{asrtests.object}} are updated for the new model.
 }
 \usage{
-\method{addSpatialModelOnIC}{asrtests}(asrtests.obj, spatial.model = "TPPS", 
-                    sections = NULL, 
-                    row.covar = "cRow", col.covar = "cCol", 
-                    row.factor = NULL, col.factor = NULL, 
-                    nsegs = NULL, nestorder = c(1,1), 
-                    degree = c(3,3), difforder = c(2,2),
-                    asreml.option = "mbf",  tpps4mbf.obj = NULL, 
-                    allow.unconverged = FALSE, allow.fixedcorrelation = FALSE,
-                    checkboundaryonly = FALSE, update = FALSE, 
-                    IClikelihood = "full", which.IC = "AIC", ...)
+\method{addSpatialModel}{asrtests}(asrtests.obj, spatial.model = "TPPS", 
+                sections = NULL, 
+                row.covar = "cRow", col.covar = "cCol", 
+                row.factor = NULL, col.factor = NULL, 
+                nsegs = NULL, nestorder = c(1,1), 
+                degree = c(3,3), difforder = c(2,2),
+                asreml.option = "mbf",  tpps4mbf.obj = NULL, 
+                allow.unconverged = FALSE, allow.fixedcorrelation = FALSE,
+                checkboundaryonly = FALSE, update = FALSE, 
+                IClikelihood = "full", ...)
 }
 \arguments{
  \item{asrtests.obj}{An \code{\link{asrtests.object}} containing the components 
@@ -82,7 +86,7 @@
               \code{mbf} methods are to be used to supply externally formed covariate 
               matrices to \code{asreml}. If the \code{mbf} methods is to be used, then 
               \code{\link{makeTPSPlineXZMats.data.frame}} must be used before calling 
-              \code{addSpatialModelOnIC.asrtests}. Compared to the \code{mbf} method, 
+              \code{addSpatialModel.asrtests}. Compared to the \code{mbf} method, 
               the \code{grp} method creates large \code{asreml} objects, but is faster. 
               The \code{grp} method adds columns to the 
               \code{\link{data.frame}} containing the \code{data}; the \code{mbf} method 
@@ -115,26 +119,26 @@
               \code{asreml} in which the only changes from the previous call are that 
               (i) models are modifed as specified and 
               (ii) modifications specified via \code{\dots} are made.}
- \item{which.IC}{A \code{character} specifying the information criterion to be used in 
-                   selecting the best model. Possible values are \code{AIC} and 
-                   \code{BIC}. The values of the criterion for supplied model must 
-                   exceed that for changed model for the changed model to be returned.}
- \item{IClikelihood}{A \code{character} specifying whether Restricted Maximum Likelihood 
-                   (\code{REML}) or the full likelihood (\code{full}) are to be used in 
-                   calculating the information criteria.}
+ \item{IClikelihood}{A \code{character} that controls both the occurence and the type 
+                    of likelihood for information criterion in the \code{test.summary} 
+                    of the new \code{\link{asrtests.object}}. If \code{none}, none are 
+                    included. Otherwise, if \code{REML}, then the AIC and BIC based 
+                    on the Restricted Maximum Likelihood are included; if \code{full}, 
+                    then the AIC and BIC based on the full likelihood are included. 
+                    (See also \code{\link{infoCriteria.asreml}}.)}
 \item{\dots}{Further arguments passed to \code{\link{changeModelOnIC.asrtests}}, \code{asreml} and 
            \code{tpsmmb}.}
 }
 \details{
-A fitted spatial model is only returned if it improves the fit over and above that of achieved with the model fit supplied in the \code{asrtests.obj}. To fit the spatial model without any hypothoses testing or comparison of informtion criteria use \code{\link{addSpatialModel.asrtests}}. The model fit supplied in the \code{asrtests.obj} should not include terms that will be included in the local spatial model. All spatial model terms are fitted as fixed or random. Consequently, the residual model does not have to be iid.  
+The model to which the spatial mdoels is to be added is supplied in the \code{asrtests.obj}. It should not include terms that will be included in the local spatial model. All spatial model terms are fitted as fixed or random. Consequently, the residual model does not have to be iid. The improvement in the fit resulting from the addition of a spatial model to the supplied model is evaluated.  
 
-For the \code{corr} spatial model, an exponential model (\code{exp}) is used for each dimension to model the spatial correlation. A series of models are tried, beginning with the addition of row correlation and followed by the addition of column correlation. Only if the model fit is improved is a correlation retained. Finally, if any correlation is retained, the improvment to the fit of a nuggest term is assessed. In this model, the correlation between observations from different rows is the correlation between observations in adjacent rows raised to the power equal to the absolute value of the difference in their \code{row.covar} values; similarly for the correlation in the column dimension. 
+For the \code{corr} spatial model, an exponential model (\code{exp}) is used for each dimension to model the spatial correlation. A series of models are tried, beginning with the addition of row correlation and followed by the addition of column correlation. Only if the model fit is improved is a correlation retained. Finally, if any correlation term is retained, the improvment to the fit of a nuggest term is assessed. In this model, the correlation between observations from different rows is the correlation between observations in adjacent rows raised to the power equal to the absolute value of the difference in their \code{row.covar} values; similarly for the correlation in the column dimension. 
 
 The \code{TPNCSS} spatial model is as decribed by Verbyla et al. (2018) and the \code{TPPS} model is as described by Rodriguez-Alvarez et al. (2018). However, for the \code{TPPS} model, the degree of the polynomial  and the order of differencing can be varied. The defaults of 3 and 2, respectively, fit a cubic spline with second order differencing, while setting both the degree and order of differencing to 1 will fit a type of linear variance model (Piepho, Boer and Williams, 2022) The fixed terms for these models are \code{row.covar + col.covar + row.covar:col.covar} and the random terms are \code{spl(row.covar) + spl(col.covar) + dev(row.covar) + dev(col.covar) + spl(row.covar):col.covar +}\cr \code{row.covar:spl(col.covar) + spl(row.covar):spl(col.covar)}. The supplied model should not include any of these terms. However, any fixed or random main-effect term for either \code{row.factor} or \code{col.factor} will be removed from the fit.
 
 The \code{TPPS} model is fitted using the function \code{tpsmmb} from the \code{R} package \code{TPSbits} authored by Sue Welham (2022). There are two methods for supplying the spline basis information produced by \code{tpsmmb} to \code{asreml}. The \code{grp} method adds the it to the \code{data.frame} holding the information for the analysis. The \code{mbf} method requires the spline basis information to be in the same enviroment as the function that is called to make a fit using \code{asreml}. To this end and prior to invoking the calling function, \code{\link{makeTPSPlineXZMats.data.frame}} must be used produce the \code{\link{data.frame}s}.
 
-All models utlize the function \code{\link{changeModelOnIC.asrtests}} to assess the model fit, the information critera used in assessing the fit being calculated using \code{\link{infoCriteria}}. Arguments from \code{tpsmmb} and \code{\link{changeModelOnIC.asrtests}} can be supplied in calls to \code{addSpatialModelOnIC.asrtests} and will be passed on to the relevant function through the ellipses argument (\ldots).
+All models utlize the function \code{\link{changeTerms.asrtests}} to fit the spatial model. Arguments from \code{tpsmmb} and \code{\link{changeTerms.asrtests}} can be supplied in calls to \code{addSpatialModel.asrtests} and will be passed on to the relevant function through the ellipses argument (\ldots).
 
 The data for experiment can be divided \code{sections} and the same spatial model fitted separately to each. The fit over all of the sections is assessed.
 
@@ -145,11 +149,9 @@ have the same combination.
 }
 
 \value{An \code{\link{asrtests.object}} containing the components (i) \code{asreml.obj},
-       (ii) \code{wald.tab}, and (iii) \code{test.summary} for the model whose fit has 
-       the smallest information criterion between the supplied and spatial model. The values 
-       of the degrees of freedom and the information criteria in the \code{test.summary} are 
-       differences between those of the changed model and those of the model supplied to 
-       \code{addSpatialModelOnIC}.}
+       (ii) \code{wald.tab}, and (iii) \code{test.summary} for the model that includes the 
+       spatial model, unless the spatial model fails to be fitted when \code{allow.unconverged} 
+       and/or \code{allow.fixedcorrelation} is set to \code{FALSE}.}
 
 \references{Piepho, H.-P., Boer, M. P., & Williams, E. R. (2022). Two-dimensional P-spline smoothing for spatial analysis of plant breeding trials. \emph{Biometrical Journal}, \bold{64}, 835-857.
 
@@ -162,11 +164,11 @@ Welham, S. J. (2022) \code{TPSbits}: \emph{Creates Structures to Enable Fitting 
 \author{Chris Brien}
 
 \seealso{\code{\link{as.asrtests}}, \code{\link{rmboundary.asrtests}}, 
-         \code{\link{testranfix.asrtests}}, \code{\link{testresidual.asrtests}}, \cr
+         \code{\link{addSpatialModelOnIC.asrtests}}, \code{\link{testranfix.asrtests}}, \cr
+         \code{\link{testresidual.asrtests}}, 
          \code{\link{newfit.asreml}}, \code{\link{reparamSigDevn.asrtests}}, 
-         \code{\link{addSpatialModel.asrtests}}, \cr 
-         \code{\link{changeModelOnIC.asrtests}}, \code{\link{chooseSpatialModelOnIC.asrtests}}, 
-         \code{\link{changeModelOnIC.asrtests}}, \cr
+         \code{\link{changeTerms.asrtests}}, \cr 
+         \code{\link{chooseSpatialModelOnIC.asrtests}}, \code{\link{changeTerms.asrtests}}, 
          \code{\link{infoCriteria.asreml}}}
 \examples{\dontrun{
 
@@ -191,10 +193,10 @@ current.asrt <- as.asrtests(current.asr, NULL, NULL,
                             label = "Random Row and Column effects")
 current.asrt <- rmboundary(current.asrt)
 
-current.asrt <- addSpatialModelOnIC(current.asrt, spatial.model = "TPPS", 
-                                    row.covar = "cRow", col.covar = "cColumn",
-                                    row.factor = "Row", col.factor = "Column",
-                                    asreml.option = "grp")
+current.asrt <- addSpatialModel(current.asrt, spatial.model = "TPPS", 
+                                row.covar = "cRow", col.covar = "cColumn",
+                                row.factor = "Row", col.factor = "Column",
+                                asreml.option = "grp")
 infoCriteria(current.asrt$asreml.obj)
 }}
 \keyword{asreml}
