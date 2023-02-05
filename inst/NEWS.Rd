@@ -1,5 +1,9 @@
 \name{news}
 \title{News for Package asremlPlus}
+\section{asremlPlus Version 4.3.46 (2023-02-05)}{
+  \itemize{
+  \item{Fix bug in testing whether an ar1 fit has been achieved  in addSpatialModel.asrtests and chooseSpatialModelOnIC.asrtests.}
+}}
 \section{asremlPlus Version 4.3.45 (2023-01-24)}{
   \itemize{
   \item{Modify system tests to cater for for M1Mac numerical accuracy.}

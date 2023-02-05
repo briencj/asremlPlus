@@ -214,7 +214,7 @@ calcSpatialICs <- function(spatial.asrt, spatial.mod, spatial.IC)
     tests.sp$loglik <- 0
     if (spatial.mod == "corr" && any(grepl("Try units term", tests$terms)))
     {  
-      tests.unit <- getTestEntry(spatial.asrt,"Try units term")[ ,tests.cols]
+      tests.unit <- tests[grepl("Try units term", tests$terms), tests.cols]
       tests.unit$loglik <- 0
       tests.sp <- rbind(tests.sp, tests.unit)
     }
@@ -292,7 +292,7 @@ chooseSpatialModelOnIC.asrtests <- function(asrtests.obj, trySpatial = "all",
                                             update = update, chooseOnIC = TRUE, 
                                             IClikelihood = ic.lik, which.IC = ic.type, 
                                             ...)
-      spatial.IC <- calcSpatialICs(spatial.asrt = spatial.asrts[["corr"]] , spatial.mod = "corr", 
+      spatial.IC <- calcSpatialICs(spatial.asrt = spatial.asrts[["corr"]], spatial.mod = "corr", 
                                    spatial.IC = spatial.IC)
     }
     #Fit a local spatial model involving TPNCSS
@@ -361,7 +361,7 @@ chooseSpatialModelOnIC.asrtests <- function(asrtests.obj, trySpatial = "all",
       if ("nonspatial" %in% names(min.asrt)) min.asrt <- min.asrt["nonspatial"]
       if ("TPPCS" %in% names(min.asrt)) min.asrt <- min.asrt["TPPCS"]
       if ("TPNCSS" %in% names(min.asrt)) min.asrt <- min.asrt["TPNCSS"]
-      if ("TPP1LS" %in% names(min.asrt)) min.asrt <- min.asrt["TPPCS"]
+      if ("TPP1LS" %in% names(min.asrt)) min.asrt <- min.asrt["TPP1LS"]
       if ("corr" %in% names(min.asrt)) min.asrt <- min.asrt["corr"]
     }
     #If return only best, get the best asrtests.obj
@@ -428,7 +428,7 @@ fitCorrMod <- function(asrtests.obj, sections = NULL,
     lab <- "Try row exp"
     if (nsect > 1)
       lab <- paste0(lab, " for ", sections, " ",i)
-    if (!grepl("Unswapped", result))
+    if (!grepl("Unswapped", result) && !grepl("Unchanged", result)) #col ar1 fitted
     { 
       corr.term <- TRUE
       last.term <- ran.term
@@ -459,10 +459,10 @@ fitCorrMod <- function(asrtests.obj, sections = NULL,
                                  update = update, 
                                  IClikelihood = IClikelihood, ...)
       
-      if (!(grepl("Unswapped", getTestEntry(corr.asrt, label = lab)$action, 
-                  fixed = TRUE)))
+      if (!(grepl("Unswapped", getTestEntry(corr.asrt, label = lab)$action)) && 
+          !(grepl("Unchanged", getTestEntry(corr.asrt, label = lab)$action)))
         last.term <- ran.term
-    } else
+    } else #no col ar1
     { 
       ran.term <- paste0("exp(", row.covar, "):", col.covar)
       if (nsect > 1)
@@ -486,13 +486,14 @@ fitCorrMod <- function(asrtests.obj, sections = NULL,
                                  update = update, 
                                  IClikelihood = IClikelihood, ...)
       
-      if (!(grepl("Unswapped", getTestEntry(corr.asrt, label = lab)$action, 
-                  fixed = TRUE)))
+      result <- getTestEntry(corr.asrt, label = lab)$action
+      if (!grepl("Unswapped", result) && !grepl("Unchanged", result))
       { 
         corr.term <- TRUE
         last.term <- ran.term
       }
     }
+
     #Try for units term
     if (corr.term)
     {

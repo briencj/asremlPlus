@@ -1,6 +1,6 @@
 Package: asremlPlus
-Version: 4.3.45
-Date: 2023-01-24
+Version: 4.3.46
+Date: 2023-02-05
 Title: Augments 'ASReml-R' in Fitting Mixed Models and Packages
         Generally in Exploring Prediction Differences
 Authors@R: person("Chris","Brien", role = c("aut","cre"),
