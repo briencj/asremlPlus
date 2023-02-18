@@ -40,8 +40,10 @@
  \item{asrtests.obj}{An \code{\link{asrtests.object}} containing the components 
        (i) \code{asreml.obj}, (ii) \code{wald.tab}, and (iii) \code{test.summary}.}
  \item{trySpatial}{A \code{character} string nominating the types of spatial 
-               model whose fits are to be assessed. Possible values are \code{corr}, 
-               \code{TPNCSS}, \code{TPPCS}, and \code{TPP1LS}.}
+               model whose fits are to be assessed. Possible values are \code{none}, 
+               \code{corr}, \code{TPNCSS}, \code{TPPCS}, and \code{TPP1LS}. 
+               If set to \code{none}, then just the supplied nonspatial model and 
+               the information about its information criteria will be returned.}
  \item{sections}{A single \code{character} string that species the name of the column 
                in the \code{\link{data.frame}} that contains the \code{\link{factor}} 
                that identifies different sections of the data 

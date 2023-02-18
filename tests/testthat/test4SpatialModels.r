@@ -35,7 +35,16 @@ test_that("Wheat_spatial_models_asreml4", {
   init.asrt <- as.asrtests(current.asr, NULL, NULL, IClikelihood = "full", 
                            label = "Random Row and Column effects")
   init.asrt <- rmboundary(init.asrt)
-
+  
+  # Try call with illegal argument
+  testthat::expect_error(
+    current.asrt <- addSpatialModelOnIC(init.asrt, spatial.model = "TPPS", 
+                                        row.covar = "cRow", col.covar = "cColumn",
+                                        row.factor = "Row", col.factor = "Column",
+                                        nsect = 2,
+                                        asreml.option = "grp"), 
+    regexp = "the argument\\(s\\) nsect are not legal arguments for 'changeModelOnIC', 'asreml'")
+  
   # Try TPPS model
   current.asrt <- addSpatialModelOnIC(init.asrt, spatial.model = "TPPS", 
                                       row.covar = "cRow", col.covar = "cColumn",
@@ -54,8 +63,37 @@ test_that("Wheat_spatial_models_asreml4", {
   testthat::expect_equal(info$varDF, 6)
   testthat::expect_lt(abs(info$AIC - 1644.007), 0.10)
   
+  #Test makeTPSPlineXZMats with grp
+  tps <- makeTPSPlineXZMats(tmp.dat, row.covar = "cRow", col.covar = "cColumn", 
+                            asreml.option = "grp")
+  testthat::expect_true(all(names(tps[[1]]) == c("data","mbflist","BcZ.df","BrZ.df",
+                                                 "BcrZ.df","dim","trace","grp","data.plus")))
+  testthat::expect_true(all(names(tps[[1]]$data.plus[,1:19]) == 
+                              c("cRow","cColumn","Rep","Row","Column", 
+                                "WithinColPairs","Variety","yield","TP.col","TP.row",
+                                "TP.CxR","TP.C.1","TP.C.2","TP.R.1","TP.R.2", 
+                                "TP.CR.1","TP.CR.2","TP.CR.3","TP.CR.4")))
+  testthat::expect_true(all(grepl("TP\\.",names(tps[[1]]$data.plus[,20:50]))))
+  testthat::expect_true(all(grepl("TP\\_",names(tps[[1]]$data.plus)[81:ncol(tps[[1]]$data.plus)])))
+  
+  #Test trapping of illegal nsect argument
+  testthat::expect_error(
+    tps <- makeTPSPlineXZMats(tmp.dat, row.covar = "cRow", col.covar = "cColumn", nsect = 2, 
+                              asreml.option = "grp"),
+    regexp = "the argument\\(s\\) nsect are not legal arguments for 'tpsmmb'")
+  
+                        
   # Try TPPS model using mbf
   tps <- makeTPSPlineXZMats(tmp.dat, row.covar = "cRow", col.covar = "cColumn")
+  testthat::expect_true(all(names(tps[[1]]) == c("data","mbflist","BcZ.df","BrZ.df",
+                                                 "BcrZ.df","dim","trace","data.plus")))
+  
+  testthat::expect_true(all(names(tps[[1]]$data.plus) == 
+                              c("cRow","cColumn","Rep","Row","Column", 
+                                "WithinColPairs","Variety","yield","TP.col","TP.row",
+                                "TP.CxR","TP.C.1","TP.C.2","TP.R.1","TP.R.2", 
+                                "TP.CR.1","TP.CR.2","TP.CR.3","TP.CR.4")))
+  
   testthat::expect_error(
     current.asrt <- addSpatialModelOnIC(init.asrt, spatial.model = "TPPS", 
                                         row.covar = "cRow", col.covar = "cColumn",
@@ -230,6 +268,15 @@ test_that("nonfit_spatial_models_asreml4", {
                            label = "Row and Column trends")
   init.asrt <- rmboundary(init.asrt)
   
+  #Test for trySpatial = "none"
+  spatial.asrts <- chooseSpatialModelOnIC(init.asrt, trySpatial = "none")
+  testthat::expect_true(all(names(spatial.asrts) == 
+                              c("asrts","spatial.IC","best.spatial.mod","best.spatial.IC")))
+  testthat::expect_equal(names(spatial.asrts$asrts), "nonspatial")
+  testthat::expect_equal(spatial.asrts$best.spatial.mod, "nonspatial")
+  testthat::expect_true(abs(spatial.asrts$best.spatial.IC - 892.861) < 1e-04)
+  testthat::expect_true(abs(spatial.asrts$spatial.IC$AIC - 892.861) < 1e-04)
+  
   #Fit two models and return both - neither fits
   spatial.asrts <- chooseSpatialModelOnIC(init.asrt, trySpatial = c("TPN", "TPPC"), 
                                           row.covar = "cRow", col.covar = "cCol",
@@ -295,7 +342,24 @@ test_that("chickpea_spatial_mod_asreml4", {
   init.asrt <- as.asrtests(current.asr, NULL, NULL, IClikelihood = "full", 
                            label = "Random Lane and Position effects")
   init.asrt <- rmboundary(init.asrt)
-  
+
+  #Test makeTPSPlineXZMats with sections and grp
+  tps <- makeTPSPlineXZMats(tmp.dat, sections = "Smarthouse", 
+                            row.covar = "vLanes", col.covar = "vMPosn",
+                            asreml.option = "grp")
+  testthat::expect_true(all(names(tps) == c("SW","SE")))
+  testthat::expect_true(all(names(tps[[1]]) == c("data","mbflist","BcZ.df","BrZ.df",
+                                                 "BcrZ.df","dim","trace","grp","data.plus")))
+  testthat::expect_true(all(names(tps[[1]]$data.plus[,1:19]) == 
+                              c("Smarthouse", "vLanes","vMPosn","Lane","Position","Zone","vPos",
+                                "Mainplot","Subplot","Lines","TRT","Rep",
+                                "X100.SW","Biomass.plant","Pods.plant","Filled.pods.plant", 
+                                "Empty.pods.plant","Seed.No.plant","Seed.weight.plant")))
+  testthat::expect_true(all(grepl("TP\\.",names(tps[[1]]$data.plus[,20:100]))))
+  testthat::expect_true(all(grepl("TP\\_",names(tps[[1]]$data.plus)[101:ncol(tps[[1]]$data.plus)])))
+  testthat::expect_equal(tps[[1]]$grp$TP.C.1_frow[1], tps[[1]]$grp$All[1])
+  testthat::expect_equal(length(tps[[1]]$grp$All), 334)
+    
   # Try TPPS model with Mainplots and two Smarthouses
   current.asrt <- addSpatialModelOnIC(init.asrt, spatial.model = "TPPS", 
                                       sections = "Smarthouse", 

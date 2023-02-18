@@ -64,6 +64,9 @@
 \code{\link{is.predictions.frame}}
       \tab A single-line function that tests whether an object is \cr 
       \tab of classes \code{\link{predictions.frame}} and \code{\link{data.frame}}.   \cr
+\code{\link{makeTPSPlineXZMats.data.frame}}
+      \tab Make the spline basis matrices and data needed to fit \cr 
+      \tab Tensor Product P-splines. \cr
 \code{\link{print.alldiffs}}
       \tab Prints the values in an \code{\link{alldiffs.object}} in a nice format. \cr
 \code{\link{print.asrtests}}

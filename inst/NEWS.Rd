@@ -1,8 +1,14 @@
 \name{news}
 \title{News for Package asremlPlus}
+\section{asremlPlus Version 4.3.47 (2023-02-17)}{
+  \itemize{
+  \item{Tidy up code for trySpatial = "none".}
+  \item{Revise makeTPSPlineXZMats.data.frame to cover \code{asreml.opt} set to \code{grp}.}
+  \item{Fix bug in plotLSDerrors when LSDs have beeen computed for  \code{LSDtype} set to \code{factor.combinations.}}
+}}
 \section{asremlPlus Version 4.3.46 (2023-02-05)}{
   \itemize{
-  \item{Fix bug in testing whether an ar1 fit has been achieved  in addSpatialModel.asrtests and chooseSpatialModelOnIC.asrtests.}
+  \item{Fix bug in testing whether an ar1 fit has been achieved in addSpatialModel.asrtests and chooseSpatialModelOnIC.asrtests.}
 }}
 \section{asremlPlus Version 4.3.45 (2023-01-24)}{
   \itemize{

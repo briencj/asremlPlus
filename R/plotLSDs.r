@@ -366,6 +366,7 @@
                                           ...)
   #Plots a matrix of LSD-values or, when  predictions are for combinations of two 
   #factors, produces a plot for each levels combination of  nominated section factors 
+  #
   #object is an all.diffs object with sed from which to calculate the LSDs
   #title is a character string giving the plot main title
 { 
@@ -409,12 +410,12 @@
     rownames(LSDresults) <- colnames(LSDresults) <- rownames(object$sed)
   } else
   {
+    LSDresults <- matrix(nrow = nrow(object$sed), ncol = ncol(object$sed))
     for (lev in rownames(LSDapprox))
     {
-      LSDresults <- matrix(nrow = nrow(object$sed), ncol = ncol(object$sed))
       rownames(LSDresults) <- colnames(LSDresults) <- rownames(object$sed)
-      kcells <- grepl(lev, rownames(LSDresults), fixed = TRUE)
-      LSDresults[kcells, kcells] <- LSDapprox[rownames(LSDapprox) == lev,1]
+      kcells <- grep(lev, rownames(LSDresults), fixed = TRUE)
+      LSDresults[kcells, kcells] <- as.vector(LSDapprox[rownames(LSDapprox) == lev,1])
     }
   }
   diag(LSDresults) <- NA

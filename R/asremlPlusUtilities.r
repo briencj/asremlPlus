@@ -16,6 +16,9 @@
   return(kopt)
 }
 
+#Function to allow testing for NULL when objects of length > 1 are possible
+is.allnull <- function(x) all(is.null(x))
+
 #Check for fixed correlations
 isFixedCorrelOK.asreml <- function(asreml.obj, allow.fixedcorrelation = TRUE)  
 {
@@ -99,12 +102,18 @@ isFixedCorrelOK.asreml <- function(asreml.obj, allow.fixedcorrelation = TRUE)
 
 #Function to check that arguments that come in via the ellipsis are all arguments to the allowed functions
 #Usually funcs should be the current function and any to which ... is allowed to pass arguments
-checkEllipsisArgs <- function(funcs, inargs)
+checkEllipsisArgs <- function(funcs, inargs, pkg = NULL)
 {
   inargs <- names(inargs)
   if (length(inargs))
   {
-    args <- unique(unlist(lapply(funcs, formalArgs)))
+    if (is.null(pkg))
+      args <- unique(unlist(lapply(funcs, formalArgs)))
+    else
+      args <- unique(unlist(lapply(funcs, 
+                                   function(func) 
+                                     formalArgs(getFunction(func, 
+                                                            where = rlang::ns_env(pkg))))))
     args <- args[-match("...", args)]
     foreignArgs <- inargs[!(inargs %in% args)]
     if (length(foreignArgs))

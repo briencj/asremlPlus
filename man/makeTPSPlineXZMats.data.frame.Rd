@@ -1,15 +1,17 @@
 \name{makeTPSPlineXZMats.data.frame}
 \alias{makeTPSPlineXZMats.data.frame}
 \alias{makeTPSPlineXZMats}
-\title{Make the objects needed to fit Tensor Product P-splines.}
+\title{Make the spline basis matrices and data needed to fit Tensor Product P-splines.}
 \description{Prepares the objects needed for fitting of Tensor Product P-splines (TPPS) 
-       as described by Rodriguez-Alvarez et al. (2018). It must be run prior to fitting 
-       \code{TPPS} models for local spatial variation using 
+       as described by Rodriguez-Alvarez et al. (2018). When \code{asreml.option}  is 
+       set to \code{mbf}, \code{makeTPSPlineXZMats.data.frame} must be run prior to 
+       fitting \code{TPPS} models for local spatial variation using 
        \code{\link{addSpatialModelOnIC.asrtests}} and 
-       \code{\link{chooseSpatialModelOnIC.asrtests}}. The function \code{tpsmmb} 
-       from the \code{R} package \code{TPSbits} authored by Sue Welham (2022) is used 
-       to form the objects. 
-
+       \code{\link{chooseSpatialModelOnIC.asrtests}}. The spline basis matrices are 
+       created in the parent environment of \code{makeTPSPlineXZMats.data.frame} 
+       when it is called. If the \code{grp} is to be used to supply the basis 
+       functions  to asreml-R, then this function need not be called; the spatial 
+       spline fitting functions will set up the basis functions. 
 }
 \usage{
 \method{makeTPSPlineXZMats}{data.frame}(data, sections = NULL, 
@@ -19,13 +21,13 @@
                   asreml.option = "mbf", ...)
 }
 \arguments{
- \item{data}{An \code{\link{data.frame}} that holds the data from which the TPPS objects  
-               are to be formed.}
+ \item{data}{An \code{\link{data.frame}} that holds the spline bases for a section. 
+             It is indexed by columns named \code{col} and \code{row}.}
  \item{sections}{A single \code{character} string that species the name of the column 
                in the \code{\link{data.frame}} that contains the \code{\link{factor}} 
                that identifies different sections of the data 
                to which separate spatial models are to be fitted.}
- \item{row.covar}{A single \code{character} string nominating a \code{\link{numeric}} 
+ \item{row.covar}{A single \code{\link{character}} string nominating a \code{\link{numeric}} 
                column in the \code{\link{data.frame}} that contains the values of a 
                covariate indexing the rows of the grid.}
  \item{col.covar}{A single \code{\link{character}} string nominating a \code{\link{numeric}} 
@@ -46,24 +48,91 @@
               be used for column and row dimensions respectively; default=3.}
  \item{difforder}{A \code{\link{character}} of length 2. The order of differencing for 
               column and row dimensions, respectively; default=2.}
- \item{asreml.option}{A single \code{character} string specifying that the  \code{mbf} 
-              method is to be used to supply externally formed covariate 
-              matrices to \code{asreml}.}
+ \item{asreml.option}{A single \code{character} string whose value may be \code{mbf} or 
+              \code{grp}, indicating the  method is to be used to supply externally 
+              formed covariate matrices to \code{asreml}.}
 \item{\dots}{Further arguments passed to \code{tpsmmb} from package \code{TPSbits}.}
 }
 \details{
-The data for experiment can be divided \code{sections} and the same spatial model fitted separately to each. The fit over all of the sections is assessed.
+The objects are formed using the function \code{tpsmmb} from the \code{R} package \code{TPSbits} 
+authored by Sue Welham (2022). 
 
-Each combination of a row.covar and a col.covar does not have to specify a single observation; 
-for example, to fit a local spatial variation model to the main units of a split-unit design, 
-each combination would correspond to a main unit and all subunits of the main unit would would 
-have the same combination.
+Each combination of a \code{row.covar} and a \code{col.covar} does not have to specify a 
+single observation; for example, to fit a local spatial variation model to the main units 
+of a split-unit design, each combination would correspond to a main unit and all subunits 
+of the main unit would would have the same combination.
+
+The data for experiment can be divided \code{sections} and the spline bases and associated 
+data will be produced for each section. If there is more than one \code{sections}, then a 
+\code{\link{list}} is returned that has a component for each section. The component for 
+a section contains:
 }
 
-\value{A list of length 8 as described for \code{TPSbits::tpsmmb}, but with the last component, 
+\value{A \code{\link{list}} of length equal to the number of sections is produced. Each of 
+       these components is a \code{\link{list}} with 8 or 9 compnents. 
        named \code{data.plus}, being the input \code{\link{data.frame}} to which has been added 
        the columns required to fit the \code{TPPS} model (the \code{\link{data.frame}} stored 
-       in the \code{data} component holds only the covariates from \code{data}).}
+       in the \code{data} component holds only the covariates from \code{data}).
+       
+       List of length 8 or 9 (according to the \code{asreml.option}).
+ \enumerate{
+    \item \code{data} = the input data frame augmented with structures required 
+          to fit tensor product splines in \code{asreml-R}. This data frame can be used
+          to fit the TPS model.
+
+         Added columns:
+       \itemize{
+       \item \code{TP.col}, \code{TP.row} = column and row coordinates
+       \item \code{TP.CxR} = combined index for use with smooth x smooth term
+       \item \code{TP.C.n} for n=1:{diff.c} = X parts of column spline for use
+             in random model (where diff.c is the order of column differencing)
+       \item \code{TP.R.n} for n=1:{diff.r} = X parts of row spline for use in
+             random model (where diff.r is the order of row differencing)
+       \item \code{TP.CR.n} for n=1:{(diff.c*diff.r)} = interaction between the
+             two X parts for use in fixed model. The first variate is 
+             a constant term which should be omitted from the model when the constant 
+             (1) is present. If all elements areincluded in the model then the 
+             constant term should be omitted,eg. 
+             \code{y ~ -1 + TP.CR.1 + TP.CR.2 + TP.CR.3 + TP.CR.4 + other terms...}
+       \item when \code{asreml="grp"} or \code{"sepgrp"}, the spline basis 
+             functions are also added into the data frame. Column numbers for each
+             term are given in the \code{grp} list structure.
+       }
+   \item \code{mbflist} = list that can be used in call to asreml (so long as Z 
+          matrix data frames extracted with right names, eg BcZ<stub>.df)
+   \item \code{BcZ.df} = mbf data frame mapping onto smooth part of column
+          spline, last column (labelled \code{TP.col}) gives column index
+   \item \code{BrZ.df} = mbf data frame mapping onto smooth part of row spline,
+         last column (labelled \code{TP.row}) gives row index
+   \item \code{BcrZ.df} = mbf data frame mapping onto smooth x smooth term, last
+         column (labelled \code{TP.CxR}) maps onto col x row combined index
+   \item \code{dim} = list structure, holding dimension values relating to the
+         model:
+     \enumerate{
+       \item \code{"diff.c"} = order of differencing used in column dimension
+       \item \code{"nbc"} = number of random basis functions in column dimension
+       \item \code{"nbcn"} = number of nested random basis functions in column dimension
+              used in smooth x smooth term
+       \item \code{"diff.r"} = order of differencing used in column dimension
+       \item \code{"nbr"} = number of random basis functions in column dimension
+       \item \code{"nbrn"} = number of nested random basis functions in column dimension
+              used in smooth x smooth term
+       }
+  \item \code{trace} = list of trace values for ZGZ' for the random TPspline
+        terms, where Z is the design matrix and G is the known diagonal variance
+        matrix derived from eigenvalues. This can  be used to rescale the spline 
+        design matrix (or equivalently variance components).
+  \item \code{grp} = list structure, only added for setting \code{asreml="grp"}. 
+        For \code{asreml="grp"}, provides column indexes for each of the 5 
+        random components of the 2D splines in \code{data.plus}. Dimensions of 
+        the components can be derived from the values in the \code{dim} item.  
+  \item \code{data.plus} = the input \code{\link{data.frame}} to which has been  
+       added the columns required to fit tensor product splines in \code{asreml-R}. 
+       This \code{\link{data.frame}} can be used to fit the TPS model.  
+       FOr multiple \code{sections}, this \code{\link{data.frame}} will occur 
+       in the component for each section.
+ }
+}
 
 \references{Rodriguez-Alvarez, M. X., Boer, M. P., van Eeuwijk, F. A., & Eilers, P. H. C. (2018). Correcting for spatial heterogeneity in plant breeding experiments with P-splines. \emph{Spatial Statistics}, \bold{23}, 52-71. 
 
