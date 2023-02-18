@@ -747,12 +747,12 @@ conformTPSSections <- function(tps.XZmat)
 }
 
 #'### Function to create spline basis matrices and data for TPS splines
-makeTPSPlineXZMats.data.frame <- function(data, sections = NULL, 
-                                          row.covar, col.covar, 
-                                          nsegs = NULL, nestorder = c(1, 1), 
-                                          degree = c(3,3), difforder = c(2,2),
-                                          asreml.option = "mbf", 
-                                          ...)
+makeTPPSplineMats.data.frame <- function(data, sections = NULL, 
+                                           row.covar, col.covar, 
+                                           nsegs = NULL, nestorder = c(1, 1), 
+                                           degree = c(3,3), difforder = c(2,2),
+                                           asreml.option = "mbf", 
+                                           ...)
 {
   stub = "xx"
   
@@ -1062,7 +1062,7 @@ fitTPPSMod <- function(asrtests.obj, sections = NULL,
 { 
 
   inargs <- list(...)
-  checkEllipsisArgs("makeTPSPlineXZMats.data.frame", inargs)
+  checkEllipsisArgs("makeTPPSplineMats.data.frame", inargs)
   checkEllipsisArgs("tpsmmb", inargs, pkg = "asremlPlus")
   
   stub = "xx"
@@ -1094,7 +1094,7 @@ fitTPPSMod <- function(asrtests.obj, sections = NULL,
       stop(col.factor, " does not have the same number of levels as there are values of ", col.covar)
     
     nsect <- calc.nsect(dat.in, sections)
-    tps.XZmat <- makeTPSPlineXZMats(dat.in, sections = sections, 
+    tps.XZmat <- makeTPPSplineMats(dat.in, sections = sections, 
                                     row.covar = row.covar, col.covar = col.covar,
                                     nsegs = nsegs, nestorder = nestorder,
                                     degree = degree, difforder = difforder,

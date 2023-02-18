@@ -61,8 +61,8 @@ export(addBacktransforms,
        linTransform, 
        linTransform.alldiffs,
        loadASRemlVersion,
-       makeTPSPlineXZMats, 
-       makeTPSPlineXZMats.data.frame,
+       makeTPPSplineMats, 
+       makeTPPSplineMats.data.frame,
        newfit,
        newfit.asreml,
        newrcov.asrtests,
@@ -192,7 +192,7 @@ S3method(infoCriteria, list)
 S3method(isFixedCorrelOK, asreml) 
 S3method(iterate, asrtests) 
 S3method(linTransform, alldiffs)
-S3method(makeTPSPlineXZMats, data.frame)
+S3method(makeTPPSplineMats, data.frame)
 S3method(newfit, asreml) 
 S3method(plotPredictions, data.frame)
 S3method(plotPvalues, alldiffs)

@@ -1,5 +1,9 @@
 \name{news}
 \title{News for Package asremlPlus}
+\section{asremlPlus Version 4.3.48 (2023-02-18)}{
+  \itemize{
+  \item{Rename makeTPSPlineXZMats.data.frame to makeTPPSplineMats.data.frame.}
+}}
 \section{asremlPlus Version 4.3.47 (2023-02-17)}{
   \itemize{
   \item{Tidy up code for trySpatial = "none".}

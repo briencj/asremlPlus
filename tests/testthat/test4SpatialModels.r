@@ -63,9 +63,9 @@ test_that("Wheat_spatial_models_asreml4", {
   testthat::expect_equal(info$varDF, 6)
   testthat::expect_lt(abs(info$AIC - 1644.007), 0.10)
   
-  #Test makeTPSPlineXZMats with grp
-  tps <- makeTPSPlineXZMats(tmp.dat, row.covar = "cRow", col.covar = "cColumn", 
-                            asreml.option = "grp")
+  #Test makeTPPSplineMats with grp
+  tps <- makeTPPSplineMats(tmp.dat, row.covar = "cRow", col.covar = "cColumn", 
+                             asreml.option = "grp")
   testthat::expect_true(all(names(tps[[1]]) == c("data","mbflist","BcZ.df","BrZ.df",
                                                  "BcrZ.df","dim","trace","grp","data.plus")))
   testthat::expect_true(all(names(tps[[1]]$data.plus[,1:19]) == 
@@ -78,13 +78,13 @@ test_that("Wheat_spatial_models_asreml4", {
   
   #Test trapping of illegal nsect argument
   testthat::expect_error(
-    tps <- makeTPSPlineXZMats(tmp.dat, row.covar = "cRow", col.covar = "cColumn", nsect = 2, 
-                              asreml.option = "grp"),
+    tps <- makeTPPSplineMats(tmp.dat, row.covar = "cRow", col.covar = "cColumn", nsect = 2, 
+                               asreml.option = "grp"),
     regexp = "the argument\\(s\\) nsect are not legal arguments for 'tpsmmb'")
   
-                        
+  
   # Try TPPS model using mbf
-  tps <- makeTPSPlineXZMats(tmp.dat, row.covar = "cRow", col.covar = "cColumn")
+  tps <- makeTPPSplineMats(tmp.dat, row.covar = "cRow", col.covar = "cColumn")
   testthat::expect_true(all(names(tps[[1]]) == c("data","mbflist","BcZ.df","BrZ.df",
                                                  "BcrZ.df","dim","trace","data.plus")))
   
@@ -101,9 +101,9 @@ test_that("Wheat_spatial_models_asreml4", {
                                         asreml.option = "mbf", tpps4mbf.obj = tps, 
                                         update = FALSE), 
     regexp = 'Sorry, but the mbf setting of asreml.opt is not functioning yet')
-#  info <- infoCriteria(current.asrt$asreml.obj)
-#  testthat::expect_equal(info$varDF, 6)
-#  testthat::expect_lt(abs(info$AIC - 1302.258), 0.10)
+  #  info <- infoCriteria(current.asrt$asreml.obj)
+  #  testthat::expect_equal(info$varDF, 6)
+  #  testthat::expect_lt(abs(info$AIC - 1302.258), 0.10)
   
   # Try TPNCSS model
   current.asrt <- addSpatialModelOnIC(init.asrt, spatial.model = "TPNCSS", 
@@ -209,7 +209,7 @@ test_that("Wheat_spatial_models_asreml4", {
   facs <- c("Row", "Column")
   testthat::expect_false(any(facs %in% rownames(current.asrt$wald.tab)) &&
                            any(facs %in% names(current.asrt$asreml.obj$vparameters)))
-
+  
   #Fit all models with Row and Column fixed and return all
   spatial.asrts <- chooseSpatialModelOnIC(init.asrt, trySpatial = c("corr", "TPN", "TPPC"), 
                                           row.covar = "cRow", col.covar = "cColumn",
@@ -342,11 +342,11 @@ test_that("chickpea_spatial_mod_asreml4", {
   init.asrt <- as.asrtests(current.asr, NULL, NULL, IClikelihood = "full", 
                            label = "Random Lane and Position effects")
   init.asrt <- rmboundary(init.asrt)
-
-  #Test makeTPSPlineXZMats with sections and grp
-  tps <- makeTPSPlineXZMats(tmp.dat, sections = "Smarthouse", 
-                            row.covar = "vLanes", col.covar = "vMPosn",
-                            asreml.option = "grp")
+  
+  #Test makeTPPSplineMats with sections and grp
+  tps <- makeTPPSplineMats(tmp.dat, sections = "Smarthouse", 
+                             row.covar = "vLanes", col.covar = "vMPosn",
+                             asreml.option = "grp")
   testthat::expect_true(all(names(tps) == c("SW","SE")))
   testthat::expect_true(all(names(tps[[1]]) == c("data","mbflist","BcZ.df","BrZ.df",
                                                  "BcrZ.df","dim","trace","grp","data.plus")))
@@ -359,7 +359,7 @@ test_that("chickpea_spatial_mod_asreml4", {
   testthat::expect_true(all(grepl("TP\\_",names(tps[[1]]$data.plus)[101:ncol(tps[[1]]$data.plus)])))
   testthat::expect_equal(tps[[1]]$grp$TP.C.1_frow[1], tps[[1]]$grp$All[1])
   testthat::expect_equal(length(tps[[1]]$grp$All), 334)
-    
+  
   # Try TPPS model with Mainplots and two Smarthouses
   current.asrt <- addSpatialModelOnIC(init.asrt, spatial.model = "TPPS", 
                                       sections = "Smarthouse", 
@@ -370,7 +370,7 @@ test_that("chickpea_spatial_mod_asreml4", {
                        IClikelihood = "full")
   testthat::expect_true(all(info$varDF == c(3,11)))
   testthat::expect_true(all(abs(info$AIC - c(4289.513, 4001.819)) < 0.10))
-
+  
   # Try TPPS model with Lanes x Positions and two Smarthouses
   current.asrt <- addSpatialModelOnIC(init.asrt, spatial.model = "TPPS", 
                                       sections = "Smarthouse", 

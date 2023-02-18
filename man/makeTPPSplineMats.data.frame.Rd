@@ -1,20 +1,21 @@
-\name{makeTPSPlineXZMats.data.frame}
-\alias{makeTPSPlineXZMats.data.frame}
-\alias{makeTPSPlineXZMats}
+\name{makeTPPSplineMats.data.frame}
+\alias{makeTPPSplineMats.data.frame}
+\alias{makeTPPSplineMats}
 \title{Make the spline basis matrices and data needed to fit Tensor Product P-splines.}
-\description{Prepares the objects needed for fitting of Tensor Product P-splines (TPPS) 
+\description{Prepares the fixed and random sP-spline basis matrices, and associated 
+       ifnormation, that are needed for fitting of Tensor Product P-splines (TPPS) 
        as described by Rodriguez-Alvarez et al. (2018). When \code{asreml.option}  is 
-       set to \code{mbf}, \code{makeTPSPlineXZMats.data.frame} must be run prior to 
+       set to \code{mbf}, \code{makeTPPSplineMats.data.frame} must be run prior to 
        fitting \code{TPPS} models for local spatial variation using 
        \code{\link{addSpatialModelOnIC.asrtests}} and 
        \code{\link{chooseSpatialModelOnIC.asrtests}}. The spline basis matrices are 
-       created in the parent environment of \code{makeTPSPlineXZMats.data.frame} 
+       created in the parent environment of \code{makeTPPSplineMats.data.frame} 
        when it is called. If the \code{grp} is to be used to supply the basis 
        functions  to asreml-R, then this function need not be called; the spatial 
        spline fitting functions will set up the basis functions. 
 }
 \usage{
-\method{makeTPSPlineXZMats}{data.frame}(data, sections = NULL, 
+\method{makeTPPSplineMats}{data.frame}(data, sections = NULL, 
                   row.covar, col.covar, 
                   nsegs = NULL, nestorder = c(1,1), 
                   degree = c(3,3), difforder = c(2,2),
@@ -155,7 +156,7 @@ Wheat.dat <- within(Wheat.dat,
                     })
 
 #Set up the matrices
-tps.XZmat <- makeTPSPlineXZMats(wheat.dat, 
+tps.XZmat <- makeTPPSplineMats(wheat.dat, 
                                 row.covar = "cRow", col.covar = "cColumn")
 }}
 \keyword{asreml}

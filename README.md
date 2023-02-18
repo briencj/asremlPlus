@@ -3,7 +3,7 @@
 [![Project Status: Active:  The project has reached a stable, usable state and is being actively developed.](http://www.repostatus.org/badges/latest/active.svg)](http://www.repostatus.org/#active)
 [![minimal R version](https://img.shields.io/badge/R%3E%3D-2.10.0-6666ff.svg)](https://cran.r-project.org/)
 [![CRAN_Status_Badge](http://www.r-pkg.org/badges/version/asremlPlus)](https://cran.r-project.org/package=asremlPlus)
-[![packageversion](https://img.shields.io/badge/Package%20version-4.3.47-orange.svg?style=flat-square)](/commits/master)
+[![packageversion](https://img.shields.io/badge/Package%20version-4.3.48-orange.svg?style=flat-square)](/commits/master)
 [![Last-changedate](https://img.shields.io/badge/last%20change-2023--02--18-yellowgreen.svg)](/commits/master)
 [![Licence](https://img.shields.io/github/license/mashape/apistatus.svg)](http://choosealicense.com/licenses/mit/)
 [![Downloads](https://cranlogs.r-pkg.org/badges/last-week/asremlPlus)](commits/master)
@@ -80,8 +80,19 @@ For a list of the functions for each group, see the help for `asremlPlus-package
   
 To use those functon in `asremlPlus` that are methods for `asreml` or `asrtests` objects, you must have a licensed version of the package `asreml`. It provides a computationally efficient algorithm for fitting mixed models using Residual Maximum Likelihood. It can be purchased from 'VSNi' <http://www.vsni.co.uk/> as `asreml-R`, who will supply a zip file for local installation/updating.
   
-  It also imports [dae](<https://CRAN.R-project.org/package=dae>), [ggplot2](<https://CRAN.R-project.org/package=ggplot2>), `stats`, `methods`, `utils`, [reshape](<https://CRAN.R-project.org/package=reshape>), [plyr](<https://CRAN.R-project.org/package=plyr>), [dplyr](<https://CRAN.R-project.org/package=dplyr>), [stringr](<https://CRAN.R-project.org/package=stringr>), [RColorBrewer](<https://CRAN.R-project.org/package=RColorBrewer>), `grDevices`, 
-[foreach](<https://CRAN.R-project.org/package=foreach>), [parallel](<https://CRAN.R-project.org/package=parallel>), [doParallel](<https://CRAN.R-project.org/package=doParallel>).
+  It also imports [dae](<https://CRAN.R-project.org/package=dae>), [doParallel](<https://CRAN.R-project.org/package=doParallel>), [dplyr](<https://CRAN.R-project.org/package=dplyr>), [foreach](<https://CRAN.R-project.org/package=foreach>), [ggplot2](<https://CRAN.R-project.org/package=ggplot2>), 
+'graphics',
+`grDevices`, 
+`methods`, 
+[parallel](<https://CRAN.R-project.org/package=parallel>), 
+[plyr](<https://CRAN.R-project.org/package=plyr>),
+[RColorBrewer](<https://CRAN.R-project.org/package=RColorBrewer>), 
+[reshape](<https://CRAN.R-project.org/package=reshape>), 
+[rlang](<https://CRAN.R-project.org/package=rlang>), 
+`stats`, 
+[sticky](<https://CRAN.R-project.org/package=sticky>), 
+[stringr](<https://CRAN.R-project.org/package=stringr>), 
+`utils`.
 
 ## License
 

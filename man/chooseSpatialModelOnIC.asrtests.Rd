@@ -84,16 +84,17 @@
  \item{asreml.option}{A single \code{character} string specifying whether the \code{grp} or 
               \code{mbf} methods are to be used to supply externally formed covariate 
               matrices to \code{asreml}. If the \code{mbf} methods is to be used, then 
-              \code{\link{makeTPSPlineXZMats.data.frame}} must be used before calling 
+              \code{\link{makeTPPSplineMats.data.frame}} must be used before calling 
               \code{addSpatialModelOnIC.asrtests}. Compared to the \code{mbf} method, 
               the \code{grp} method creates large \code{asreml} objects, but is faster. 
               The \code{grp} method adds columns to the 
               \code{\link{data.frame}} containing the \code{data}; the \code{mbf} method 
               adds only fixed covariate to \code{data} and stores the random covariates 
               externally.}
- \item{tpps4mbf.obj}{An object made with \code{\link{makeTPSPlineXZMats.data.frame}} and 
+ \item{tpps4mbf.obj}{An object made with \code{\link{makeTPPSplineMats.data.frame}} and 
               which contains the spline basis information, that is extra to the 
-              \code{\link{data.frame}s} created by \cr\code{\link{makeTPSPlineXZMats.data.frame}} 
+              \code{\link{data.frame}s} created by\cr 
+              \code{\link{makeTPPSplineMats.data.frame}} 
               in the environment in which it is called and that is needed to fit a 
               \code{TPPS} model using the \code{mbf} method of \code{asreml}.}
  \item{allow.unconverged}{A \code{logical} indicating whether to accept a new model 
@@ -141,7 +142,7 @@ For the \code{corr} spatial model, an exponential model (\code{exp}) is used for
 
 The tensor-product natural-cubic-smoothing-spline \code{TPNCSS} spatial model is as decribed by Verbyla et al. (2018), the tensor-product penalized-cubic-spline \code{TPPCS} model is as described by Rodriguez-Alvarez et al. (2018), and the tensor-product, first-difference-penalty, linear spline \code{TPP1LS} model that is amongst those described by Piepho, Boer and Williams (2022).  The fixed terms for these models are \code{row.covar + col.covar + row.covar:col.covar} and the random terms \code{spl(row.covar) + spl(col.covar) + dev(row.covar) + dev(col.covar) + spl(row.covar):col.covar + row.covar:spl(col.covar) + spl(row.covar):spl(col.covar)}. The supplied model should not include any of these terms. However, any fixed or random main-effect term for either \code{row.factor} or \code{col.factor} will be removed from the fit.
 
-The \code{TPPCS} and \code{TPP1LS} models are fitted using the function \code{tpsmmb} from the \code{R} package \code{TPSbits} authored by Sue Welham (2022). There are two methods for supplying the spline basis information produced by \code{tpsmmb} to \code{asreml}. The \code{grp} method adds the it to the \code{data.frame} holding the information for the analysis. The \code{mbf} method requires the spline basis information to be in the same environment as the function that is called to make a fit using \code{asreml}. To this end, and prior to invoking the calling function, \code{\link{makeTPSPlineXZMats.data.frame}} must be used produce the \code{\link{data.frame}s}.
+The \code{TPPCS} and \code{TPP1LS} models are fitted using the function \code{tpsmmb} from the \code{R} package \code{TPSbits} authored by Sue Welham (2022). There are two methods for supplying the spline basis information produced by \code{tpsmmb} to \code{asreml}. The \code{grp} method adds the it to the \code{data.frame} holding the information for the analysis. The \code{mbf} method requires the spline basis information to be in the same environment as the function that is called to make a fit using \code{asreml}. To this end, and prior to invoking the calling function, \code{\link{makeTPPSplineMats.data.frame}} must be used produce the \code{\link{data.frame}s}.
 
 All models utlize the function \code{\link{changeModelOnIC.asrtests}} to assess the model fit, the information critera used in assessing the fit being calculated using \code{\link{infoCriteria}}. Arguments from \code{tpsmmb} and \code{\link{changeModelOnIC.asrtests}} can be supplied in calls to \code{chooseSpatialModelOnIC.asrtests} and will be passed on to the relevant function throught the ellipses argument (\ldots).
 
