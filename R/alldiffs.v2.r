@@ -2089,6 +2089,12 @@ redoErrorIntervals.alldiffs <- function(alldiffs.obj, error.intervals = "Confide
     diag(alldiffs.obj$sed) <- NA_real_
   }
   
+  #Check that differences are consistent with predictions
+  pred.diff <- outer(predictions$predicted.value, predictions$predicted.value, "-")
+  if (any(na.omit(abs(pred.diff-alldiffs.obj$differences)) > .Machine$double.eps ^ 0.5))
+    stop("The differnces in the differences component of the alldiffs object ",
+         "are inconsistent with the predictions in the predictions component")
+  
   #Ensure that the columns of predictions are in the same order as the classify 
   class <- unlist(strsplit(classify, ":", fixed = TRUE))
   if (!all(class == names(alldiffs.obj$predictions)[1:length(class)]))

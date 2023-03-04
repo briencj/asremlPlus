@@ -88,6 +88,10 @@
              \code{\link{LSD.frame}} stored in an \code{\link{alldiffs.object}} so that they can be used 
              in LSD calculations.
              
+             If \code{LSDtype} is \code{NULL} (the default), the \code{LSDtype} attribute of the 
+             \code{alldiffs.obj} will be used; it is also \code{NULL}, then the \code{LSDtype} will 
+             be set to \code{overall}.
+             
              See \code{\link{LSD.frame}} for further information on the values in a row of this 
              \code{data.frame} and how they are calculated.}
 \item{LSDsupplied}{A \code{\link{data.frame}} or a named \code{\link{numeric}} containing a set of \code{LSD} 

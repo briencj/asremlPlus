@@ -1,5 +1,10 @@
 \name{news}
 \title{News for Package asremlPlus}
+\section{asremlPlus Version 4.3.49 (2023-03-3)}{
+  \itemize{
+  \item{Add the argument \code{useIntervals} to plotLSDerror.alldiffs.}
+  \item{Fix a bug in plotLSDerrors that resulted in not being able to determine which LSDs in the LSD component apply to the pairwise comparisons. It resulted in all comparisons being shown as \code{n.a.}.}
+}}
 \section{asremlPlus Version 4.3.48 (2023-02-18)}{
   \itemize{
   \item{Rename makeTPSPlineXZMats.data.frame to makeTPPSplineMats.data.frame.}
@@ -16,7 +21,7 @@
 }}
 \section{asremlPlus Version 4.3.45 (2023-01-24)}{
   \itemize{
-  \item{Modify system tests to cater for for M1Mac numerical accuracy.}
+  \item{Modify system tests to cater for M1Mac numerical accuracy.}
   \item{Fix bug in which the setting of IClikelihood was not being passed to infoCriteria calls in chooseSpatialModelOnIC.asrtests, resulting in always reporting the \code{REML} likelihood.}
   \item{Change that \code{spatial.IC} component of the \code{list} returned by chooseSpatialModelOnIC.asrtests to contains the information criteria for each spatial model that is fitted. Also, rename the components \code{best} and \code{best.AIC} to \code{best.spatial.mod} and \code{best.spatial.IC}.}
   \item{Fix bug in reporting the likelihood when a TPNCSS model does not fit.}

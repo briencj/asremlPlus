@@ -20,7 +20,7 @@
              \code{\link{sort.alldiffs}}.
 }
 \usage{plotLSDerrors(object, ...)
-\method{plotLSDerrors}{alldiffs}(object, alpha = 0.05, 
+\method{plotLSDerrors}{alldiffs}(object, alpha = 0.05, useIntervals = FALSE, 
               sections = NULL, gridspacing = 0, factors.per.grid = 0, 
               triangles = "both", title = NULL, 
               axis.labels = TRUE, axis.text.size = 12, 
@@ -33,6 +33,18 @@
  \item{object}{An \code{\link{alldiffs.object}} with both \code{LSD} and  
               \code{sed} components that are not \code{NULL}.}
  \item{alpha}{A \code{\link{numeric}} giving the significance level for the LSD.}
+ \item{useIntervals}{A \code{\link{logical}} indicating whether to use the interval limits 
+              stored in the \code{predictions} component of \code{object}, instead of
+              the LSDs stored in the \code{LSD} component, for determining whether 
+              pairs of predictions are significantly different. It allows a check of how 
+              the \code{error.intervals} in the \code{predictions} component will perform 
+              if they are used for all pairwise predictions comparisons, whereas the 
+              comparisons to which the LSDs apply 
+              may be restricted by the setting of the \code{LSDby} attribute of 
+              \code{object}. There is no restriction on the \code{error.intervals} that 
+              can be used. However, the limits for them must be in columns 
+              in the \code{predictions} component of \code{object} and their names 
+              must end with \code{.limits} and begin with \code{lower.} and \code{upper.}}
  \item{sections}{A \code{character} listing the names of the factors that are to be used 
                  to break the plot into sections. A separate plot will be produced for 
                  each observed combination of the levels of these factors.}

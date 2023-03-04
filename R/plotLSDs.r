@@ -355,21 +355,27 @@
   invisible(plt)
 }
 
-"plotLSDerrors.alldiffs" <- function(object, alpha = 0.05, sections = NULL, 
-                                          gridspacing = 0, factors.per.grid = 0, 
-                                          triangles = "both", 
-                                          title = NULL, axis.labels = TRUE, axis.text.size = 12, 
-                                          sep=",", colours = c("white","blue","red","grey"), 
-                                          ggplotFuncs = NULL, printPlot = TRUE, 
-                                          sortFactor = NULL, sortParallelToCombo = NULL, 
-                                          sortNestingFactor = NULL, sortOrder = NULL, decreasing = FALSE, 
-                                          ...)
+"plotLSDerrors.alldiffs" <- function(object, alpha = 0.05, useIntervals = FALSE, 
+                                     sections = NULL, 
+                                     gridspacing = 0, factors.per.grid = 0, 
+                                     triangles = "both", 
+                                     title = NULL, axis.labels = TRUE, axis.text.size = 12, 
+                                     sep=",", colours = c("white","blue","red","grey"), 
+                                     ggplotFuncs = NULL, printPlot = TRUE, 
+                                     sortFactor = NULL, sortParallelToCombo = NULL, 
+                                     sortNestingFactor = NULL, sortOrder = NULL, decreasing = FALSE, 
+                                     ...)
   #Plots a matrix of LSD-values or, when  predictions are for combinations of two 
   #factors, produces a plot for each levels combination of  nominated section factors 
   #
   #object is an all.diffs object with sed from which to calculate the LSDs
   #title is a character string giving the plot main title
 { 
+  #The seperator between the levels of the factors that form the rownames of the LSD component
+  #is assumed to be a "," - see fac.LSDcombs.alldiffs.
+  #Set sep.levs in case it is decided to allow the user to specify the seperator
+  sep.levs = ","
+  
   show.sig = FALSE #leave here in case want to indicate significant differences 
   # - would need to add p.differences to data.frame.
   #Check that a valid object of class alldiffs
@@ -399,30 +405,67 @@
   if (is.null(denom.df))
     stop(paste("The degrees of freedom of the t-distribtion are not available in alldiffs.obj\n",
                "- LSDs cannot be calculated"))
-  t.value = qt(1-alpha/2, denom.df) 
-  LSDapprox <- object$LSD["assignedLSD"]
-  LSDactual <- t.value * object$sed
+  sig.actual <- object$p.differences <= alpha
   
-  #Expand LSDapprox into an LSDresults matrix that is the same size as sed 
-  if (rownames(LSDapprox)[1] == "overall")
-  {
-    LSDresults <- matrix(LSDapprox[1,1], nrow = nrow(object$sed), ncol = ncol(object$sed))
-    rownames(LSDresults) <- colnames(LSDresults) <- rownames(object$sed)
+  if (!useIntervals)
+  {  
+    LSDapprox <- object$LSD["assignedLSD"]
+    #Expand LSDapprox into an LSDresults matrix that is the same size as sed 
+    if (rownames(LSDapprox)[1] == "overall")
+    {
+      LSDresults <- matrix(LSDapprox[1,1], nrow = nrow(object$sed), ncol = ncol(object$sed))
+      rownames(LSDresults) <- colnames(LSDresults) <- rownames(object$sed)
+    } else
+    {
+      nr <- nrow(object$sed)
+      #Retrieve the LSDby attribute
+      LSDby <- attr(object, which = "LSDby")
+      if (is.null(LSDby))
+        stop("The LSDby attribute of the supplied alldiffs.object is NULL")
+
+      fac.combs.sed <- fac.combine(as.list(object$predictions[LSDby]), combine.levels = TRUE, 
+                                   sep =sep)
+      LSDresults <- matrix(nrow = nr, ncol = ncol(object$sed))
+      
+      for (lev in rownames(LSDapprox))
+      {
+        rownames(LSDresults) <- colnames(LSDresults) <- rownames(object$sed)
+        kcells <- fac.combs.sed == lev
+        if (!any(kcells))
+          stop("No elements of the sed component of object correspond to the LSD for ",lev)
+        LSDresults[kcells, kcells] <- as.vector(LSDapprox[rownames(LSDapprox) == lev,1])
+      }
+    }
+    diag(LSDresults) <- NA
+    sig.approx <- abs(object$differences) >= LSDresults
   } else
   {
-    LSDresults <- matrix(nrow = nrow(object$sed), ncol = ncol(object$sed))
-    for (lev in rownames(LSDapprox))
-    {
-      rownames(LSDresults) <- colnames(LSDresults) <- rownames(object$sed)
-      kcells <- grep(lev, rownames(LSDresults), fixed = TRUE)
-      LSDresults[kcells, kcells] <- as.vector(LSDapprox[rownames(LSDapprox) == lev,1])
-    }
+    #Find the intervals
+    preds <- object$predictions
+    lims <- names(preds)[grep(".limit", names(preds))]
+    if (length(lims) > 2)
+      stop("There are more than two columns whose names end with .limit")
+    lims <- c(lower = lims[grep("lower.", lims)], upper = lims[grep("upper", lims)])
+    #Calculate significances using the intervals
+    sig.approx <- apply(preds, MARGIN = 1, 
+                        FUN = function(irow, preds, lims) 
+                        {
+                          apply(preds, MARGIN = 1, 
+                                FUN = function(jrow, irow, lims)
+                                {
+                                  reslt <- (irow[lims["lower"]] >= jrow[lims["upper"]] | 
+                                              irow[lims["upper"]] <= jrow[lims["lower"]])
+                                  return(reslt)
+                                }, irow = irow, lims = lims)
+                        }, 
+                        preds = preds, lims = lims, simplify = FALSE)
+    sig.approx <- do.call(rbind, sig.approx)
+    diag(sig.approx) <- NA
+    rownames(sig.approx) <- colnames(sig.approx) <- rownames(object$p.differences)
+    LSDresults <- sig.approx
   }
-  diag(LSDresults) <- NA
   
   #Determine the veracity of using the assigned LSDs
-  sig.actual <- abs(object$differences) >= LSDactual
-  sig.approx <- abs(object$differences) >= LSDresults
   falsepos <- !sig.actual & sig.approx
   falseneg <- sig.actual & !sig.approx
   LSDresults[!is.na(LSDresults)] <- "Ok"
@@ -546,7 +589,7 @@
       psect <- LSDres.dat[LSDres.dat$sections1==j & LSDres.dat$sections2==j, ]
       if (factors.per.grid > 0)
       {
-        objsect <- object$predictions[object$predictions$sections == j,]
+        objsect <- object$predictions[object$predictions[sections] == j,]
         gridspacing <- autogridspace(object = objsect, plotfacs = pairdiffs, 
                                      factors.per.grid = factors.per.grid)
       }
