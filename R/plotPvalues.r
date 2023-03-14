@@ -28,7 +28,7 @@
     labs <- sort(levels(object[[x]]))
     #  if (any(labs != sort(levels(object[[y]]))))
     #    stop("The row and column labels of differences are not the same")
-    plt <- ggplot(object, aes_string(x = x, y = y, fill=p)) +
+    plt <- ggplot(object, aes(x = .data[[!!x]], y = .data[[!!y]], fill=.data[[!!p]])) +
       geom_tile() +
       scale_fill_gradientn(colours=colours, 
                            values = c(0, 0.001, 0.01, 0.05, 0.10, 1), 
@@ -53,7 +53,7 @@
       if (alpha == 0.1)
         if (any(object[p] <= alpha & object[p] > 0.05))
           object$sig[(object[p] <= alpha & object[p] > 0.05)] <- "."
-      plt <- plt + geom_text(data=object, aes_string(label="sig"), 
+      plt <- plt + geom_text(data=object, aes(label=.data[["sig"]]), 
                              size=sig.size, colour = sig.colour, 
                              fontface = sig.face, family = sig.family)
     }

@@ -30,7 +30,7 @@
     labs <- sort(levels(object[[x]]))
     #  if (any(labs != sort(levels(object[[y]]))))
     #    stop("The row and column labels of differences are not the same")
-    plt <- ggplot(object, aes_string(x = x, y = y, fill=LSD)) +
+    plt <- ggplot(object, aes(x = .data[[!!x]], y = .data[[!!y]], fill=.data[[!!LSD]])) +
       geom_tile() +
       scale_fill_gradientn(colours=colours) + #, 
  #                          values = c(0, 0.001, 0.01, 0.05, 0.10, 1), 
@@ -55,7 +55,7 @@
 #       if (alpha == 0.1)
 #         if (any(object[p] <= alpha & object[p] > 0.05))
 #           object$sig[(object[p] <= alpha & object[p] > 0.05)] <- "."
-#       plt <- plt + geom_text(data=object, aes_string(label="sig"), size=3)
+#       plt <- plt + geom_text(data=object, aes(label=.data[["sig"]]), size=3)
 #     }
     
     if (gridspacing[1] > 0)
@@ -309,7 +309,7 @@
     labs <- sort(levels(object[[x]]))
     #  if (any(labs != sort(levels(object[[y]]))))
     #    stop("The row and column labels of differences are not the same")
-    plt <- ggplot(object, aes_string(x = x, y = y, fill=LSDresults)) +
+    plt <- ggplot(object, aes(x = .data[[!!x]], y = .data[[!!y]], fill=.data[[!!LSDresults]])) +
       geom_tile() +
       scale_fill_manual(values=cols) + 
       labs(x=axis.labels, y=axis.labels, title=title) + 
@@ -319,7 +319,7 @@
             plot.title=element_text(face="bold"),
             panel.grid = element_blank(),
             legend.position = "right", 
-            legend.key = element_rect(colour = "black", size = 1),
+            legend.key = element_rect(colour = "black", linewidth = 1),
             legend.key.height=unit(2,"lines"), legend.key.width=unit(1.5,"lines"), 
             aspect.ratio = 1) +
       guides(fill=guide_legend(title = "LSD results"))

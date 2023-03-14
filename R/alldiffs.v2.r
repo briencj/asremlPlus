@@ -73,11 +73,11 @@
   return(ispredframe)
 }
 
-"as.predictions.frame" <- function(data, predictions = NULL, se = NULL, 
+"as.predictions.frame" <- function(data, classify = NULL, predictions = NULL, se = NULL, 
                                    est.status = NULL, interval.type = NULL, 
                                    interval.names = NULL)
 {
-  #Check interval.typ argument
+  #Check interval.type argument
   int.type <-NULL
   if (!is.null(interval.type))
   {
@@ -86,21 +86,38 @@
   }
   
   ## Modify data to be compatible with a predictions.frame
+  # Convert any characters to factors
+  if (!is.null(classify))
+  {
+    vars <- fac.getinTerm(classify, rmfunction=TRUE)
+    data[vars] <- cbind(lapply(vars, 
+                               function(x, dat)
+                               {
+                                 var <- dat[[x]]
+                                 if (is.character(var))
+                                   var <- factor(var, levels = unique(var))
+                                 return(var)
+                               }, dat = data))
+  }
+  #If necessary, set the name of the column conating the predictions
   if (!is.null(predictions))
   {
     if (!any(c("predicted.value", "backtransformed.predictions") %in% names(data)))
       names(data)[match(predictions, names(data))] <- c("predicted.value")
   }
+  #Check name of se column
   if (!is.null(se))
   {
     if (!("standard.error" %in% names(data)))
       names(data)[match(se, names(data))] <- c("standard.error")
   }
+  #Check for est.status column
   if (!is.null(est.status))
   {
     if (!("est.status" %in% names(data)))
       names(data)[match(est.status, names(data))] <- c("est.status")
   }
+  #Deal with columns containing limits for error intervals
   if (!is.null(int.type))
   {
     if (length(interval.names) != 2)
@@ -282,8 +299,9 @@ setOldClass("predictions.frame")
                           tdf = NULL, alpha = 0.05, sortFactor = NULL, sortOrder = NULL)
 { 
   #Change asreml4 names to asreml3 names
-  predictions <- as.predictions.frame(predictions, se = "std.error", est.status = "status")
-
+  predictions <- as.predictions.frame(predictions, classify = classify, 
+                                      se = "std.error", est.status = "status")
+  
   p <- makeAlldiffs(predictions = predictions, vcov = vcov, 
                     differences = differences, p.differences = p.differences, 
                     sed = sed, LSD = LSD, backtransforms = backtransforms, 
@@ -365,6 +383,21 @@ addMissingAttr.alldiffs <- function(alldiffs.obj, kattr)
   if (!is.null(alldiffs.obj$backtransforms))
     attributes(alldiffs.obj$backtransforms) <- newattr$back
   return(alldiffs.obj)
+}
+
+#Function to check that the classify variables are the initial variables in a predictions.frame 
+"getClassifyVars" <- function(classify)
+{ 
+  class.nam <- unlist(strsplit(classify, "\\:"))
+  return(class.nam)
+}
+
+checkClassifyVars.predictions.frame <- function(predictions, classify.names)
+{
+  if (!all(classify.names %in% names(predictions)))
+    stop("The predictions data.frame does not have a column for each of the following variables", 
+         "in the classify \n", paste0(setdiff(classify.names, predictions), collapse = ", "))
+  invisible()
 }
 
 "validAlldiffs" <- function(object)
@@ -658,13 +691,15 @@ makePredictionLabels <- function(predictions, classify, response = NULL,
   }
   nfac <- length(factors)
   #Check all factors in classify are in predictions
-  if (length(setdiff (factors, names(predictions))) != 0)
+  if (length(setdiff(factors, names(predictions))) != 0)
   { 
     if (!is.null(response))
       stop("For ",response,
-           ", there are factors in the classify argument that do not have columns in alldiffs.obj$predictions")
+           ", the following  factors in the classify argument do not have columns in alldiffs.obj$predictions:\n",
+           paste0(setdiff(factors, names(predictions)), collapse = ", "))
     else
-      stop("There are factors in the classify argument that do not have columns in alldiffs.obj$predictions")
+      stop("The following  factors in the classify argument do not have columns in alldiffs.obj$predictions:\n",
+           paste0(setdiff(factors, names(predictions)), collapse = ", "))
   }
   #Make sure only one of the numeric and factor that are parallel
   if ((!is.null(x.num) && x.num %in% factors) && (!is.null(x.fac) && x.fac %in% factors))
@@ -687,7 +722,7 @@ makePredictionLabels <- function(predictions, classify, response = NULL,
       { 
         kk <- kk + 1
         pred.faclist[[kk]] <- predictions[[k]]
-        if (is.numeric(pred.faclist[[kk]]))
+        if (is.numeric(pred.faclist[[kk]]) || is.character(pred.faclist[[kk]]))
           pred.faclist[[kk]] <- factor(pred.faclist[[kk]])
         names(pred.faclist)[kk] <- pred.names[k]
       }
@@ -1159,15 +1194,21 @@ sort.predictions.frame <- function(x, decreasing = FALSE, classify, sortFactor =
     if ("sortWithinVals" %in% names(tempcall))
       stop("sortWithinVals has been deprecated in sort.predictions.frame - use sortParallelToCombo")
   
+  #Change asreml4 names to asreml3 names, if necessary
+  if (inherits(x, what = "asreml.predict") && !inherits(x, what = "predictions.frame"))
+    x <- as.predictions.frame(x, classify = classify, 
+                              se = "std.error", est.status = "status")
+  
   #Check that a valid predictions 
   validPredictionsFrame <- validPredictionsFrame(x)  
   if (is.character(validPredictionsFrame))
     stop(validPredictionsFrame)
   
-  class.names <-  fac.getinTerm(classify)
+  class.names <-  getClassifyVars(classify)
   if (!all(class.names %in% names(x)))
-    stop(paste("The predictions data.frame does not have a column for each variable", 
-               "in the classify stored with alldiffs", sep = " "))
+    stop("The predictions data.frame does not have a column for the following variables ", 
+         "in the classify stored with alldiffs\n",  
+         paste0(setdiff(class.names, names(x)), collapse = ", "))
   nclassify <- length(class.names)
   if (nclassify < 1)
     stop("Cannot find the classify variables")
@@ -1533,7 +1574,7 @@ exploreLSDs.alldiffs <- function(alldiffs.obj,  LSDtype = "overall", LSDby = NUL
                      false.pos = allstats$false.pos, false.neg = allstats$false.neg, 
                      per.pred.accuracy = predacc, LSD = LSDs)
     if (plotHistogram)
-      print(ggplot(LSD.dat, aes_string(x = "LSD")) + geom_histogram(breaks = breaks) + theme_bw())
+      print(ggplot(LSD.dat, aes(x = .data[["LSD"]])) + geom_histogram(breaks = breaks) + theme_bw())
   } else #factor.combinations
   {
     LSD.list <- sliceAll(alldiffs.obj, by = LSDby, t.value = t.value, LSDaccuracy = LSDacc, 
@@ -2007,7 +2048,8 @@ redoErrorIntervals.alldiffs <- function(alldiffs.obj, error.intervals = "Confide
   
   #Change asreml4 names to asreml3 names
   preds.attr <- attributes(predictions)
-  predictions <- as.predictions.frame(predictions, se = "std.error", est.status = "status")
+  predictions <- as.predictions.frame(predictions, classify = classify, 
+                                      se = "std.error", est.status = "status")
   preds.attr$names <- attr(predictions, which = "names")
   attributes(predictions) <- preds.attr
   predictions <- renameAttr(predictions, 
@@ -2096,12 +2138,12 @@ redoErrorIntervals.alldiffs <- function(alldiffs.obj, error.intervals = "Confide
          "are inconsistent with the predictions in the predictions component")
   
   #Ensure that the columns of predictions are in the same order as the classify 
-  class <- unlist(strsplit(classify, ":", fixed = TRUE))
-  if (!all(class == names(alldiffs.obj$predictions)[1:length(class)]))
+  class.names <- getClassifyVars(classify)
+  if (!all(class.names == names(alldiffs.obj$predictions)[1:length(class.names)]))
   {
-    rest <- names(alldiffs.obj$predictions)[(length(class)+1):ncol(alldiffs.obj$predictions)]
+    rest <- names(alldiffs.obj$predictions)[(length(class.names)+1):ncol(alldiffs.obj$predictions)]
     preds.attr <- attributes(alldiffs.obj$predictions)
-    alldiffs.obj$predictions <- cbind(alldiffs.obj$predictions[class],
+    alldiffs.obj$predictions <- cbind(alldiffs.obj$predictions[class.names],
                                       alldiffs.obj$predictions[rest])
     rownames(alldiffs.obj$predictions) <- NULL
     attr(alldiffs.obj$predictions, which = "heading") <- preds.attr$heading

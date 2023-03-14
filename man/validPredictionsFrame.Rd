@@ -15,7 +15,9 @@ validPredictionsFrame(object)}
 
 
 \author{Chris Brien}
-\seealso{\code{\link{predictions.frame}}, \code{\link{validAsrtests}}, \code{\link{validAlldiffs}}}
+\seealso{\code{\link{predictions.frame}}, \code{\link{is.predictions.frame}}, 
+         \code{\link{as.predictions.frame}}, \cr 
+         \code{\link{validAsrtests}}, \code{\link{validAlldiffs}}}
 \examples{
   data(Oats.dat)
   

@@ -3292,13 +3292,13 @@ atLevelsMatch <- function(new, old, call, always.levels = TRUE)
     if (scheme.opt == "black")
       pred.plot <-  pred.plot + theme_bw() +
                          theme(panel.grid.major = element_line(colour = "grey95", 
-                                    size = 0.5), 
+                                    linewidth= 0.5), 
                                panel.grid.minor = element_line(colour = "grey98", 
-                                    size = 0.5))
+                                    linewidth = 0.5))
     if (n.non.x == 1)
     { 
       pred.plot <-  pred.plot + 
-                       aes_string(x = vars[1], y = y) + 
+                       aes(x = .data[[!!vars[1]]], y = .data[[!!y]]) + 
                        scale_fill_manual(values=cbPalette) + 
                        theme(axis.text.x=element_text(angle=90, hjust=1))
       if (scheme.opt == "black")
@@ -3308,10 +3308,12 @@ atLevelsMatch <- function(new, old, call, always.levels = TRUE)
       if (intervals)
       { 
         if (scheme.opt == "black")
-            pred.plot <- pred.plot + geom_errorbar(aes_string(ymin=ylow, ymax=yupp),   
+          pred.plot <- pred.plot + geom_errorbar(aes(ymin=.data[[!!ylow]], 
+                                                     ymax=.data[[!!yupp]]),   
                                         linetype = "solid", colour = "black") 
         else
-            pred.plot <- pred.plot + geom_errorbar(aes_string(ymin=ylow, ymax=yupp),   
+            pred.plot <- pred.plot + geom_errorbar(aes(ymin=.data[[!!ylow]], 
+                                                       ymax=.data[[!!yupp]]),   
                                         linetype = "solid", colour = cbPalette[5]) 
         if (interval.annotate)
         {
@@ -3328,7 +3330,7 @@ atLevelsMatch <- function(new, old, call, always.levels = TRUE)
     if (n.non.x == 2)
     { 
       pred.plot <-  pred.plot + 
-                       aes_string(x = vars[1], y = y) + 
+                       aes(x = .data[[!!vars[1]]], y = .data[[!!y]]) + 
                        scale_fill_manual(values=cbPalette) + 
                        facet_grid(as.formula(paste("~ ",vars[2],sep=""))) + 
                        theme(axis.text.x=element_text(angle=90, hjust=1))
@@ -3343,10 +3345,12 @@ atLevelsMatch <- function(new, old, call, always.levels = TRUE)
                              factor(non.x.lev[length(non.x.lev)], levels = non.x.lev))
         names(annot) <- c(vars[1], y, vars[2])
         if (scheme.opt == "black")
-          pred.plot <- pred.plot + geom_errorbar(aes_string(ymin=ylow, ymax=yupp),   
+          pred.plot <- pred.plot + geom_errorbar(aes(ymin=.data[[!!ylow]], 
+                                                     ymax=.data[[!!yupp]]),   
                                       linetype = "solid", colour = "black") 
         else
-          pred.plot <- pred.plot + geom_errorbar(aes_string(ymin=ylow, ymax=yupp),   
+          pred.plot <- pred.plot + geom_errorbar(aes(ymin=.data[[!!ylow]], 
+                                                     ymax=.data[[!!yupp]]),   
                                         linetype = "solid", colour = cbPalette[5]) 
         if (nos.lev[2] > 6)
            pred.plot <- pred.plot +
@@ -3374,7 +3378,7 @@ atLevelsMatch <- function(new, old, call, always.levels = TRUE)
     if (n.non.x == 3)
     { 
       pred.plot <-  pred.plot + 
-                       aes_string(x = vars[1], y = y) + 
+                       aes(x = .data[[!!vars[1]]], y = .data[[!!y]]) + 
                        scale_fill_manual(values=cbPalette) + 
                        facet_grid(as.formula(paste(vars[3]," ~ ",vars[2],sep=""))) + 
                        theme(axis.text.x=element_text(angle=90, hjust=1))
@@ -3395,10 +3399,12 @@ atLevelsMatch <- function(new, old, call, always.levels = TRUE)
                             factor(non.x.lev2[length(non.x.lev2)], levels = non.x.lev2))
         names(annot) <- c(vars[1], y, vars[c(3,2)])
         if (scheme.opt == "black")
-          pred.plot <- pred.plot + geom_errorbar(aes_string(ymin=ylow, ymax=yupp),   
+          pred.plot <- pred.plot + geom_errorbar(aes(ymin=.data[[!!ylow]], 
+                                                     ymax=.data[[!!yupp]]),   
                                       linetype = "solid", colour = "black") 
         else
-          pred.plot <- pred.plot + geom_errorbar(aes_string(ymin=ylow, ymax=yupp),   
+          pred.plot <- pred.plot + geom_errorbar(aes(ymin=.data[[!!ylow]], 
+                                                     ymax=.data[[!!yupp]]),   
                                         linetype = "solid", colour = cbPalette[5]) 
         
         if (interval.annotate)
@@ -3443,14 +3449,14 @@ atLevelsMatch <- function(new, old, call, always.levels = TRUE)
     if (scheme.opt == "black")
       pred.plot <-  pred.plot + theme_bw() +
                          theme(panel.grid.major = element_line(colour = "grey95", 
-                                    size = 0.5), 
+                                    linewidth = 0.5), 
                                panel.grid.minor = element_line(colour = "grey98", 
-                                    size = 0.5))
+                                    linewidth = 0.5))
     #If no non.x.terms ignore single & multiple
     if (n.non.x == 0)
     { 
       pred.plot <-  pred.plot + 
-                       aes_string(x = x.var, y = y) + 
+                       aes(x = .data[[!!x.var]], y = y) + 
                        scale_colour_manual(values=cbPalette) + 
                        scale_shape_manual(values=symb) + 
                        geom_point(shape = symb[7])
@@ -3461,10 +3467,12 @@ atLevelsMatch <- function(new, old, call, always.levels = TRUE)
       if (intervals)
       { 
         if (scheme.opt == "black")
-          pred.plot <-  pred.plot + geom_errorbar(aes_string(ymin=ylow, ymax=yupp),  
+          pred.plot <-  pred.plot + geom_errorbar(aes(ymin=.data[[!!ylow]], 
+                                                      ymax=.data[[!!yupp]]),  
                                       linetype = "solid", colour = "black", width=int.width) 
         else
-          pred.plot <-  pred.plot + geom_errorbar(aes_string(ymin=ylow, ymax=yupp),  
+          pred.plot <-  pred.plot + geom_errorbar(aes(ymin=.data[[!!ylow]], 
+                                                      ymax=.data[[!!yupp]]),  
                                       linetype = "solid", colour = cbPalette[5], width=int.width) 
         
         if (interval.annotate)
@@ -3485,10 +3493,11 @@ atLevelsMatch <- function(new, old, call, always.levels = TRUE)
       if (n.non.x == 1)
       { 
         if (scheme.opt == "black")
-          pred.plot <-  pred.plot + aes_string(x = x.var, y = y, 
+          pred.plot <-  pred.plot + aes(x = .data[[!!x.var]], y = .data[[!!y]], 
                                       linetype=non.x.terms, shape=non.x.terms)
         else
-          pred.plot <-  pred.plot + aes_string(x = x.var, y = y, colour = non.x.terms, 
+          pred.plot <-  pred.plot + aes(x = .data[[!!x.var]], y = .data[[!!y]], 
+                                        colour = non.x.terms, 
                                       linetype=non.x.terms, shape=non.x.terms) 
         pred.plot <-  pred.plot + 
                          labs(colour=non.x.terms, linetype=non.x.terms, shape=non.x.terms) +
@@ -3499,7 +3508,7 @@ atLevelsMatch <- function(new, old, call, always.levels = TRUE)
         if (intervals)
         { 
           pred.plot <- pred.plot + 
-                         geom_errorbar(aes_string(ymin=ylow, ymax=yupp),   
+                         geom_errorbar(aes(ymin=.data[[!!ylow]], ymax=.data[[!!yupp]]),   
                                        linetype = "solid", position = position_dodge(1))
           if (interval.annotate)
           {
@@ -3519,7 +3528,7 @@ atLevelsMatch <- function(new, old, call, always.levels = TRUE)
     { if (n.non.x == 1)
       { 
       pred.plot <- pred.plot + 
-                         aes_string(x = x.var, y = y) +
+                         aes(x = .data[[!!x.var]], y = .data[[!!y]]) +
                          scale_colour_manual(values=cbPalette) + 
                          scale_shape_manual(values=symb) + 
                          geom_point(shape = symb[7])  + 
@@ -3535,10 +3544,12 @@ atLevelsMatch <- function(new, old, call, always.levels = TRUE)
                                factor(non.x.lev[length(non.x.lev)], levels = non.x.lev))
           names(annot) <- c(x.var, y, non.x.terms)
           if (scheme.opt == "black")
-            pred.plot <- pred.plot + geom_errorbar(aes_string(ymin=ylow, ymax=yupp),   
+            pred.plot <- pred.plot + geom_errorbar(aes(ymin=.data[[!!ylow]], 
+                                                       ymax=.data[[!!yupp]]),   
                                         linetype = "solid", colour = "black", width=int.width) 
           else
-            pred.plot <- pred.plot + geom_errorbar(aes_string(ymin=ylow, ymax=yupp),   
+            pred.plot <- pred.plot + geom_errorbar(aes(ymin=.data[[!!ylow]], 
+                                                       ymax=.data[[!!yupp]]),   
                                         linetype = "solid", colour = cbPalette[5], width=int.width) 
           pred.plot <- pred.plot + 
                           geom_text(data = annot, label = "Error bars are", 
@@ -3558,7 +3569,7 @@ atLevelsMatch <- function(new, old, call, always.levels = TRUE)
       if (n.non.x == 2)
       { 
         pred.plot <- pred.plot + 
-                         aes_string(x = x.var, y = y) +
+                         aes(x = .data[[!!x.var]], y = .data[[!!y]]) +
                          scale_colour_manual(values=cbPalette) + 
                          scale_shape_manual(values=symb) + 
                          geom_point(shape = symb[7]) +
@@ -3580,10 +3591,12 @@ atLevelsMatch <- function(new, old, call, always.levels = TRUE)
                                factor(non.x.lev2[length(non.x.lev2)], levels = non.x.lev2))
           names(annot) <- c(x.var, y, non.x.terms)
           if (scheme.opt == "black")
-            pred.plot <- pred.plot + geom_errorbar(aes_string(ymin=ylow, ymax=yupp),   
+            pred.plot <- pred.plot + geom_errorbar(aes(ymin=.data[[!!ylow]], 
+                                                       ymax=.data[[!!yupp]]),   
                                         linetype = "solid", colour = "black", width=int.width) 
           else
-            pred.plot <- pred.plot + geom_errorbar(aes_string(ymin=ylow, ymax=yupp),   
+            pred.plot <- pred.plot + geom_errorbar(aes(ymin=.data[[!!ylow]], 
+                                                       ymax=.data[[!!yupp]]),   
                                         linetype = "solid", colour = cbPalette[5], width=int.width) 
           
           if (interval.annotate)

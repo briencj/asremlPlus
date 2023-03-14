@@ -1,5 +1,15 @@
 \name{news}
 \title{News for Package asremlPlus}
+\section{asremlPlus Version 4.3.50 (2023-03-9)}{
+  \itemize{
+  \item{Add \code{classify} argument to as.predictions.frame, checking that variables in the  \code{classify} are in the \code{predictions.frame} and conversion of any variables in the \code{classify} that are not factor to factors.}
+  \item{Update ggplot2 functions to use tidy evaluation.}
+  \item{Fix internal anomaly causing a Note on CRAN.}
+}}
+\section{asremlPlus Version 4.3.48 (2023-02-18)}{
+  \itemize{
+  \item{Rename makeTPSPlineXZMats.data.frame to makeTPPSplineMats.data.frame.}
+}}
 \section{asremlPlus Version 4.3.49 (2023-03-3)}{
   \itemize{
   \item{Add the argument \code{useIntervals} to plotLSDerror.alldiffs.}
@@ -109,7 +119,7 @@
 \section{asremlPlus Version 4.3-27 (2021-10-24)}{
   \itemize{
   \item{Fix problem in linTransform.alldiffs when the product of the numbers of levels in the classiify factors is large and not all combinations of the levels are observed.}
-  \item{Relax the requirement for \code{LSDby} variable to be in the \code{classify} to beng that they must be in the \code{predictions} component of the \code{alldiffs.obj}.}
+  \item{Relax the requirement for \code{LSDby} variable to be in the \code{classify} to being that they must be in the \code{predictions} component of the \code{alldiffs.obj}.}
 }}
 \section{asremlPlus Version 4.3-26 (2021-10-21)}{
   \itemize{

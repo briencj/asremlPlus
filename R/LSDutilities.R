@@ -646,7 +646,7 @@ sliceAll <- function(alldiffs.obj, by, t.value, LSDaccuracy = "maxAbsDeviation",
                         return(kLSDs)
                       }, LSDs = LSDs)
     LSD.dat <- do.call(rbind, LSD.dat)
-    plt <- ggplot(LSD.dat, aes_string(x = "LSD")) + 
+    plt <- ggplot(LSD.dat, aes(x = .data[["LSD"]])) + 
       geom_histogram(breaks = breaks) + 
       theme_bw() + 
       facet_grid(rows = eval(parse(text="vars(Combination)")))

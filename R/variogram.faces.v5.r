@@ -440,11 +440,11 @@
   
   p <- ggplot(data=face.1) +
     theme_bw() +
-    geom_line(aes_string(x= fac1, y = "observed"), size=1) +
-    geom_point(aes_string(x= fac1, y = "observed"), size=3) +
-    geom_line(aes_string(x=fac1, y = "X2.5."), colour="red") +
-    geom_line(aes_string(x=fac1, y = "X97.5."), colour="red") +
-    geom_line(aes_string(x=fac1, y = "X50."), colour="blue") +
+    geom_line(aes(x = .data[[!!fac1]], y = .data[["observed"]]), linewidth=1) +
+    geom_point(aes(x = .data[[!!fac1]], y = .data[["observed"]]), size=3) +
+    geom_line(aes(x = .data[[!!fac1]], y = .data[["X2.5."]]), colour = "red") +
+    geom_line(aes(x = .data[[!!fac1]], y = .data[["X97.5."]]), colour = "red") +
+    geom_line(aes(x = .data[[!!fac1]], y = .data[["X50."]]), colour = "blue") +
     labs(title = paste("Variogram face of",restype,"for",fac1,sep=" "), 
          x = paste(fac1,"differences", sep=" "),y=NULL)
   if (!is.null(fac.sec))
@@ -453,11 +453,11 @@
   
   p <- ggplot(data=face.2) +
     theme_bw() +
-    geom_line(aes_string(x= fac2, y = "observed"), size=1) +
-    geom_point(aes_string(x= fac2, y = "observed"), size=3) +
-    geom_line(aes_string(x=fac2, y = "X2.5."), colour="red") +
-    geom_line(aes_string(x=fac2, y = "X97.5."), colour="red") +
-    geom_line(aes_string(x=fac2, y = "X50."), colour="blue") +
+    geom_line(aes(x = .data[[!!fac2]], y = .data[["observed"]]), linewidth=1) +
+    geom_point(aes(x = .data[[!!fac2]], y = .data[["observed"]]), size=3) +
+    geom_line(aes(x = .data[[!!fac2]], y = .data[["X2.5."]]), colour = "red") +
+    geom_line(aes(x = .data[[!!fac2]], y = .data[["X97.5."]]), colour = "red") +
+    geom_line(aes(x = .data[[!!fac2]], y = .data[["X50."]]), colour = "blue") +
     labs(title = paste("Variogram face of",restype,"for",fac2,sep=" "), 
          x = paste(fac2,"differences", sep=" "), y=NULL)
   if (!is.null(fac.sec))
@@ -855,11 +855,11 @@
   #Do plots
   p <- ggplot(data=face.1) +
     theme_bw() +
-    geom_line(aes_string(x= fac1, y = "observed"), size=1) +
-    geom_point(aes_string(x= fac1, y = "observed"), size=3) +
-    geom_line(aes_string(x=fac1, y = "X2.5."), colour="red") +
-    geom_line(aes_string(x=fac1, y = "X97.5."), colour="red") +
-    geom_line(aes_string(x=fac1, y = "X50."), colour="blue") +
+    geom_line(aes(x = .data[[!!fac1]], y = .data[["observed"]]), linewidth=1) +
+    geom_point(aes(x = .data[[!!fac1]], y = .data[["observed"]]), size=3) +
+    geom_line(aes(x = .data[[!!fac1]], y = .data[["X2.5."]]), colour = "red") +
+    geom_line(aes(x = .data[[!!fac1]], y = .data[["X97.5."]]), colour = "red") +
+    geom_line(aes(x = .data[[!!fac1]], y = .data[["X50."]]), colour = "blue") +
     labs(title = paste("Variogram face of",restype,"for",fac1,sep=" "), 
          x = paste(fac1,"differences", sep=" "),y=NULL)
   if (!is.null(fac.sec))
@@ -868,11 +868,11 @@
   
   p <- ggplot(data=face.2) +
     theme_bw() +
-    geom_line(aes_string(x= fac2, y = "observed"), size=1) +
-    geom_point(aes_string(x= fac2, y = "observed"), size=3) +
-    geom_line(aes_string(x=fac2, y = "X2.5."), colour="red") +
-    geom_line(aes_string(x=fac2, y = "X97.5."), colour="red") +
-    geom_line(aes_string(x=fac2, y = "X50."), colour="blue") +
+    geom_line(aes(x = .data[[!!fac2]], y = .data[["observed"]]), linewidth=1) +
+    geom_point(aes(x = .data[[!!fac2]], y = .data[["observed"]]), size=3) +
+    geom_line(aes(x = .data[[!!fac2]], y = .data[["X2.5."]]), colour = "red") +
+    geom_line(aes(x = .data[[!!fac2]], y = .data[["X97.5."]]), colour = "red") +
+    geom_line(aes(x = .data[[!!fac2]], y = .data[["X50."]]), colour = "blue") +
     labs(title = paste("Variogram face of",restype,"for",fac2,sep=" "), 
          x = paste(fac2,"differences", sep=" "), y=NULL)
   if (!is.null(fac.sec))

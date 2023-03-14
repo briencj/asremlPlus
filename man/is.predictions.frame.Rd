@@ -8,7 +8,7 @@
 }
 \value{A \code{logical}.}
 \author{Chris Brien}
-\seealso{\code{\link{asremlPlus-package}}, \code{\link{predictions.frame}},  \code{\link{is.predictions.frame}}, \code{\link{as.predictions.frame}}}
+\seealso{\code{\link{asremlPlus-package}}, \code{\link{predictions.frame}},  \code{\link{validPredictionsFrame}}, \code{\link{as.predictions.frame}}}
 \examples{
   data(Oats.dat)
   

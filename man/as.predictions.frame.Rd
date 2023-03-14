@@ -6,12 +6,19 @@
              \code{class} \code{\link{predictions.frame}} to it, and renaming the columns containing 
              the  \code{predictions}, \code{se}, \code{est.status} and \code{error.intervals}.}
 
-\usage{as.predictions.frame(data, predictions = NULL, se = NULL, est.status = NULL, 
+\usage{as.predictions.frame(data, classify = NULL, 
+                     predictions = NULL, se = NULL, est.status = NULL, 
                      interval.type = NULL, interval.names = NULL)}
 \arguments{
  \item{data}{A \code{\link{data.frame}} containing columns giving the variables that uniquely index 
                     the predicted values and columns with the predicted values, their standard errors 
                     and, optionally, their estimation status (\code{est.status}).}
+ \item{classify}{A \code{\link{character}} string giving the variables that 
+                    define the margins of the multiway table that was predicted. 
+                    Multiway tables are specified by forming an interaction type 
+                    term from the classifying variables, that is, separating the 
+                    variable names with the \code{:} operator. For predicting the overall 
+                    mean, the \code{classify} is set to "\code{(Intercept)}".}
  \item{predictions}{A \code{\link{character}} giving the name of the column in \code{data} that 
                     contains the predicted values. This column will be renamed to 
                     \code{predicted.value}.}
@@ -37,8 +44,9 @@
 
 
 \author{Chris Brien}
-\seealso{\code{\link{asremlPlus-package}}, \code{\link{predictions.frame}},  \code{\link{is.predictions.frame}}, 
-          \code{\link{as.predictions.frame}}}
+\seealso{\code{\link{asremlPlus-package}}, \code{\link{predictions.frame}},  
+          \code{\link{is.predictions.frame}}, \code{\link{predictions.frame}}, \cr 
+          \code{\link{validPredictionsFrame}}}
 \examples{
   data(Oats.dat)
   

@@ -20,7 +20,7 @@
 is.allnull <- function(x) all(is.null(x))
 
 #Check for fixed correlations
-isFixedCorrelOK.asreml <- function(asreml.obj, allow.fixedcorrelation = TRUE)  
+isFixedCorrelOK.asreml <- function(asreml.obj, allow.fixedcorrelation = TRUE, ...)  
 {
   correlOK <- TRUE
 
