@@ -142,14 +142,16 @@ test_that("Wheat_spatial_models_asreml4", {
   testthat::expect_true(all(abs(spatial.asrts$spatial.IC$AIC - c(1720.891, 1639.792, 1644.007)) < 0.10))
   
   #Fit all models with Row and Column random and return all
-  spatial.asrts <- chooseSpatialModelOnIC(init.asrt, trySpatial = c("corr", "TPN", "TPPC"), 
+  spatial.asrts <- chooseSpatialModelOnIC(init.asrt, trySpatial = c("corr", "TPN", "TPPC", "TPP1"), 
                                           row.covar = "cRow", col.covar = "cColumn",
                                           row.factor = "Row", col.factor = "Column",
                                           asreml.option = "grp", return.asrts = "all")
-  testthat::expect_equal(length(spatial.asrts$asrts), 3)
-  testthat::expect_equal(names(spatial.asrts$asrts), c("corr", "TPNCSS", "TPPCS"))
-  testthat::expect_true(all(rownames(spatial.asrts$spatial.IC) == c("nonspatial", "corr", "TPNCSS", "TPPCS")))
-  testthat::expect_true(all(abs(spatial.asrts$spatial.IC$AIC - c(1720.891, 1719.136, 1639.792, 1644.007)) < 0.10))
+  testthat::expect_equal(length(spatial.asrts$asrts), 4)
+  testthat::expect_equal(names(spatial.asrts$asrts), c("corr", "TPNCSS", "TPPCS", "TPP1LS"))
+  testthat::expect_true(all(rownames(spatial.asrts$spatial.IC) == 
+                              c("nonspatial", "corr", "TPNCSS", "TPPCS", "TPP1LS")))
+  testthat::expect_true(all(abs(spatial.asrts$spatial.IC$AIC[-5] - c(1720.891, 1719.136, 1639.792, 1644.007)) < 0.10))
+  testthat::expect_true(is.na(spatial.asrts$spatial.IC$AIC[5])) #TPP!LS does not fit
   
   #Check that calculated spatial.IC is the same as those for models fitted using addSpatialModel
   spatialEach.asrts <- list()
@@ -162,14 +164,15 @@ test_that("Wheat_spatial_models_asreml4", {
                                                   row.covar = "cRow", col.covar = "cColumn",
                                                   row.factor = "Row", col.factor = "Column",
                                                   asreml.option = "grp")
-  # spatialEach.asrts[["TPP1LS"]] <- addSpatialModel(init.asrt, spatial.model = "TPPS", 
-  #                                                  row.covar = "cRow", col.covar = "cColumn",
-  #                                                  row.factor = "Row", col.factor = "Column",
-  #                                                  degree = 1, difforder = 1, 
-  #                                                  asreml.option = "grp")
+  spatialEach.asrts[["TPP1LS"]] <- addSpatialModel(init.asrt, spatial.model = "TPPS", 
+                                                   row.covar = "cRow", col.covar = "cColumn",
+                                                   row.factor = "Row", col.factor = "Column",
+                                                   degree = c(1,1), difforder = c(1,1),
+                                                   asreml.option = "grp")
   infoEach <- lapply(spatialEach.asrts, function(asrt) infoCriteria(asrt$asreml.obj, IClikelihood = "full"))
-  testthat::expect_true(all.equal(spatial.asrts$spatial.IC[-1,], do.call(rbind, infoEach)[,-3], 
+  testthat::expect_true(all.equal(spatial.asrts$spatial.IC[-c(1,5),], do.call(rbind, infoEach)[1:3,-3], 
                                   tolerance = 1e-05))
+  testthat::expect_true(all.equal(infoEach$TPP1LS$AIC, 1720.891, tolerance = 1e-05))
   
   #Fit initial model - Row and column fixed
   current.asr <- do.call(asreml, 
@@ -211,14 +214,16 @@ test_that("Wheat_spatial_models_asreml4", {
                            any(facs %in% names(current.asrt$asreml.obj$vparameters)))
   
   #Fit all models with Row and Column fixed and return all
-  spatial.asrts <- chooseSpatialModelOnIC(init.asrt, trySpatial = c("corr", "TPN", "TPPC"), 
+  spatial.asrts <- chooseSpatialModelOnIC(init.asrt, trySpatial = "all", 
                                           row.covar = "cRow", col.covar = "cColumn",
                                           row.factor = "Row", col.factor = "Column",
                                           asreml.option = "grp", return.asrts = "all")
-  testthat::expect_equal(length(spatial.asrts$asrts), 3)
-  testthat::expect_equal(names(spatial.asrts$asrts), c("corr", "TPNCSS", "TPPCS"))
-  testthat::expect_true(all(rownames(spatial.asrts$spatial.IC) == c("nonspatial", "corr", "TPNCSS", "TPPCS")))
-  testthat::expect_true(all(abs(spatial.asrts$spatial.IC$AIC - c(1690.964, 1687.705, 1639.792, 1644.007)) < 0.10))
+  testthat::expect_equal(length(spatial.asrts$asrts), 4)
+  testthat::expect_equal(names(spatial.asrts$asrts), c("corr", "TPNCSS", "TPPCS", "TPP1LS"))
+  testthat::expect_true(all(rownames(spatial.asrts$spatial.IC) == 
+                              c("nonspatial", "corr", "TPNCSS", "TPPCS", "TPP1LS")))
+  testthat::expect_true(all(abs(spatial.asrts$spatial.IC$AIC[-5] - 
+                                  c(1690.964, 1687.705, 1639.792, 1644.007)) < 0.10))
   
   #Check that calculated spatial.IC is the same as those for models fitted using addSpatialModel
   spatialEach.asrts <- list()
@@ -231,13 +236,65 @@ test_that("Wheat_spatial_models_asreml4", {
                                                   row.covar = "cRow", col.covar = "cColumn",
                                                   row.factor = "Row", col.factor = "Column",
                                                   asreml.option = "grp")
-  # spatialEach.asrts[["TPP1LS"]] <- addSpatialModel(init.asrt, spatial.model = "TPPS", 
-  #                                                  row.covar = "cRow", col.covar = "cColumn",
-  #                                                  row.factor = "Row", col.factor = "Column",
-  #                                                  degree = 1, difforder = 1, 
-  #                                                  asreml.option = "grp")
+  spatialEach.asrts[["TPP1LS"]] <- addSpatialModel(init.asrt, spatial.model = "TPPS",
+                                                   row.covar = "cRow", col.covar = "cColumn",
+                                                   row.factor = "Row", col.factor = "Column",
+                                                   degree = c(1,1), difforder = c(1,1),
+                                                   asreml.option = "grp")
   infoEach <- lapply(spatialEach.asrts, function(asrt) infoCriteria(asrt$asreml.obj, IClikelihood = "full"))
-  testthat::expect_true(all.equal(spatial.asrts$spatial.IC[-1,], do.call(rbind, infoEach)[,-3]))
+  testthat::expect_true(all.equal(spatial.asrts$spatial.IC[-c(1,5),], do.call(rbind, infoEach)[1:3,-3]))
+  testthat::expect_true(is.na(spatial.asrts$spatial.IC$AIC[5])) #TPP1LS does not fit
+})
+
+cat("#### Test for barley03 spatial models with asreml4\n")
+test_that("barely_spatial_models_asreml4", {
+  skip_if_not_installed("asreml")
+  skip_on_cran()
+  library(asreml)
+  library(asremlPlus)
+  
+  #This data is for the Durban 2003 barley data sited in Piepho, Boer and Williams (2022)
+  data("barley.dat")
+  
+  #Fit initial model - Row and column random
+  current.asr <- do.call(asreml, 
+                         list(yield ~ rep + gen, 
+                              random = ~ row + col,
+                              data=barley.dat))
+  info <- infoCriteria(current.asr, IClikelihood = "full")
+  testthat::expect_equal(info$varDF, 3)
+  testthat::expect_lt(abs(info$AIC - -484.1135), 0.10)
+  
+  #Create an asrtests object, removing boundary terms
+  init.asrt <- as.asrtests(current.asr, NULL, NULL, IClikelihood = "full", 
+                           label = "Random row and col effects")
+  init.asrt <- rmboundary(init.asrt)
+  
+  spatialEach.asrts <- list()
+  spatialEach.asrts[["corr"]] <- addSpatialModel(init.asrt, spatial.model = "corr", 
+                                                 row.covar = "crow", col.covar = "ccol")
+  spatialEach.asrts[["TPNCSS"]] <- addSpatialModel(init.asrt, spatial.model = "TPN", 
+                                                   row.covar = "crow", col.covar = "ccol",
+                                                   row.factor = "row", col.factor = "col")
+  spatialEach.asrts[["TPPCS"]] <- addSpatialModel(init.asrt, spatial.model = "TPPS", 
+                                                  row.covar = "crow", col.covar = "ccol",
+                                                  row.factor = "row", col.factor = "col",
+                                                  asreml.option = "grp")
+  spatialEach.asrts[["TPP1LS"]] <- addSpatialModel(init.asrt, spatial.model = "TPPS", 
+                                                   row.covar = "crow", col.covar = "ccol",
+                                                   row.factor = "row", col.factor = "col",
+                                                   degree = c(1,1), difforder = c(1,1),
+                                                   asreml.option = "grp")
+  infoEach <- lapply(spatialEach.asrts, function(asrt) infoCriteria(asrt$asreml.obj, 
+                                                                    IClikelihood = "full"))
+  (infoEach <- do.call(rbind, infoEach))
+  testthat::expect_true(all.equal(infoEach$AIC, c(-528.7878, -484.1135, -484.1135, -646.7571), 
+                                  tolerance = 1e-05))
+  infoEach <- lapply(spatialEach.asrts, function(asrt) infoCriteria(asrt$asreml.obj, 
+                                                                    IClikelihood = "REML"))
+  (infoEach <- do.call(rbind, infoEach))
+  testthat::expect_true(all.equal(infoEach$AIC, c(-170.8376, -155.6740, -155.6740, -230.1942), 
+                                  tolerance = 1e-05))
 })
 
 cat("#### Test for nonfitting spatial models with asreml4\n")

@@ -1,5 +1,11 @@
 \name{news}
 \title{News for Package asremlPlus}
+\section{asremlPlus Version 4.3.51 (2023-04-03)}{
+  \itemize{
+  \item{Fix bug in fitting P-splines when difforder is one.}
+  \item{Change infoCriteria to use the deviance in calculating information criteria for \code{family} set to asr_binomial or asr_poisson.}
+  \item{Add the argument \code{transform.function} to addBacktransforms.alldiffs, allDifferences.data.frame, predictPlus.asreml and predictPresent.asreml so that \code{predictions} and \code{error.intervals} on the scale of the \code{transform.function} can be backtransformed.}
+}}
 \section{asremlPlus Version 4.3.50 (2023-03-9)}{
   \itemize{
   \item{Add \code{classify} argument to as.predictions.frame, checking that variables in the  \code{classify} are in the \code{predictions.frame} and conversion of any variables in the \code{classify} that are not factor to factors.}

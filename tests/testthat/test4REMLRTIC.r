@@ -264,6 +264,52 @@ test_that("IC_wheat94_asreml4", {
   
 })
 
+cat("#### Test for IC with GLM on budworm using asreml4\n")
+test_that("IC_budworm_asreml4", {
+  skip_if_not_installed("asreml")
+  skip_on_cran()
+  library(asreml)
+  library(asremlPlus)
+  ##  1. the data - the MASS budworm data from function dose.p
+  ##     in 'grouped' binomial format
+  df <- data.frame(ldose = rep(0:5, 2),
+                   numdead = c(1, 4, 9, 13, 18, 20, 0, 2, 6, 10, 12, 16),
+                   sex = factor(rep(c("M", "F"), c(6, 6))),
+                   N=rep(20,12))
+  df$numalive <- df$N-df$numdead
+  df$p <- df$numdead/df$N
+  
+  
+  as0 <- asreml(p ~ ldose, data=df, family=asr_binomial(total=N))
+  as1 <- asreml(p ~ ldose + sex, data=df, family=asr_binomial(total=N))
+  
+  # asreml AIC agrees with glm
+  info <- infoCriteria(list(as0, as1))
+  testthat::expect_true(all(abs(info$AIC - c(20.98403, 12.75706)) < 1e-05))
+  testthat::expect_true(all(abs(info[1, ] - c(2, 0, 0, 20.98403, 21.95385, -8.492016)) < 1e-05))
+#  testthat::expect_true(is.na(info[1, 6]))
+  #test deviance & AIC diff
+  testthat::expect_true(abs(-(as0$deviance - as1$deviance) - 10.22697) < 1e-05)
+  testthat::expect_true(abs(with(info, loglik[1] - loglik[2])*(-2) - 10.22697) < 1e-05)
+  testthat::expect_true(abs(with(info, AIC[1] - AIC[2]) - 8.226968) < 1e-05)
+
+  ## 2. binary/bernoulli format: 
+  # convert number alive and number dead to a set of 1/0 observations at each dose
+  df.bin1 <- data.frame(ldose=rep(df$ldose, df$numdead), sex=rep(df$sex, df$numdead),
+                        y=rep(rep(1, nrow(df)), df$numdead))
+  df.bin2 <- data.frame(ldose=rep(df$ldose, df$numalive), sex=rep(df$sex, df$numalive),
+                        y=rep(rep(0, nrow(df)), df$numalive))
+  df.bin <- rbind(df.bin1, df.bin2)
+  
+  # asreml shows AIC lowest for dose model (compared to dose +sex)
+  bin.as0 <- asreml(y ~ ldose, data=df.bin, family=asr_binomial())
+  bin.as1 <- asreml(y ~ ldose + sex, data=df.bin, family=asr_binomial())
+  info <- infoCriteria(list(bin.as0, bin.as1))
+  #test deviance & AIC diff
+  testthat::expect_true(abs(-(bin.as0$deviance - bin.as1$deviance) - 10.22697) < 1e-05)
+  testthat::expect_true(abs(with(info, AIC[1] - AIC[2]) - 8.226968) < 1e-05)
+})
+
 cat("#### Test for getFormulae with wheat94 using asreml4\n")
 test_that("Formulae_wheat94_asreml4", {
   skip_if_not_installed("asreml")

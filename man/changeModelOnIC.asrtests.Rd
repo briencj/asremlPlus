@@ -135,12 +135,19 @@
                     If any of the bounds are equal to NA then they are 
                     left unchanged for those terms.}
  \item{which.IC}{A \code{character} specifying the information criterion to be used in 
-                   selecting the best model. Possible values are \code{AIC} and 
-                   \code{BIC}. The values of the criterion for supplied model must 
-                   exceed that for changed model for the changed model to be returned.}
+              selecting the best model. Possible values are \code{AIC} and 
+              \code{BIC}. The values of the criterion for supplied model must 
+              exceed that for changed model for the changed model to be returned.}
  \item{IClikelihood}{A \code{character} specifying whether Restricted Maximum Likelihood 
                    (\code{REML}) or the full likelihood (\code{full}) are to be used in 
-                   calculating the information criteria.}
+                   calculating the information criteria for \code{family} set to 
+                   \code{asr_gaussian}. For \code{family} set to \code{asr_binomial} or 
+                   \code{asr_poisson} and with \code{dispersion} set to 1, the 
+                   \code{deviance} is extracted from \code{object} and used to calculate 
+                   the AIC and BIC (as suggested by Damian Collins); the setting of 
+                   \code{IClikelihood} is ignored and the log-likelihood set to \code{NA}. 
+                   The information criteria are not valid for other settings of 
+                   \code{family} and \code{dispersion}.}
  \item{fixedDF}{A \code{numeric} giving the number of estimated fixed parameters. If
                     \code{NULL} then this is determined from the information in 
                     \code{asreml.obj}.}

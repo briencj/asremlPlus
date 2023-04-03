@@ -30,7 +30,14 @@
                     be excluded.}
  \item{IClikelihood}{A \code{character} specifying whether Restricted Maximum Likelihood 
                    (\code{REML}) or the full likelihood (\code{full}) are to be used in 
-                   calculating the information criteria.}
+                   calculating the information criteria for \code{family} set to 
+                   \code{asr_gaussian}. For \code{family} set to \code{asr_binomial} or 
+                   \code{asr_poisson} and with \code{dispersion} set to 1, the 
+                   \code{deviance} is extracted from \code{object} and used to calculate 
+                   the AIC and BIC (as suggested by Damian Collins); the setting of 
+                   \code{IClikelihood} is ignored and the log-likelihood set to \code{NA}. 
+                   The information criteria are not valid for other settings of 
+                   \code{family} and \code{dispersion}.}
  \item{fixedDF}{A \code{numeric} giving the number of estimated fixed parameters. If
                     \code{NULL} then this is determined from the information in 
                     \code{object}. For \code{object} a \code{list} only a single value 
@@ -45,10 +52,12 @@
  \item{\dots}{Provision for passsing arguments to functions called internally - 
             not used at present.}
 }
-\value{A \code{data.frame} containing the numbers of estimated fixed (fixedDF) and variance (varDF) parameters, the 
-       number of bound parameters (NBound), AIC, BIC and the value of the log-likelihood (loglik). If \code{object} 
-       is a \code{list} and its components are named, then those names will be used to set the 
-       \code{rownames} of the \code{data.frame}.}
+\value{A \code{\link{data.frame}} containing the numbers of estimated fixed (fixedDF) and variance (varDF) 
+       parameters, the number of bound parameters (NBound), AIC, BIC and the value of the 
+       log-likelihood (loglik). All elements of the \code{\link{data.frame}} will be set to \code{NA} 
+       for the invalid combinations of family and dispersion as noted in the \code{IClikelihood} argument. 
+       If \code{object} is a \code{list} and its components are named, then those names will be used to 
+       set the \code{rownames} of the \code{data.frame}.}
 \details{The variance degrees of freedom (varDF) are the number of number of variance parameters that 
          have been estimated, excluding those whose estimates have a code for \code{bound} 
          specified in \code{bound.exclusions}. If \code{varDF} is not \code{NULL}, the supplied value 

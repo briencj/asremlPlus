@@ -230,12 +230,15 @@ pairdiffsTransform.alldiffs <- function(alldiffs.obj, pairs.factor, first.levels
   attr(alldiffs.obj, which = "alpha") <- alpha
 
   #get transform attributes from backtransforms
-  transform.power = 1; offset <- 0; scale <- 1
+  transform.power <- 1; offset <- 0; scale <- 1; transform.function <- "identity"
   if (!is.null(alldiffs.obj$backtransforms))
   {
-    transform.power = attr(alldiffs.obj$backtransforms, which = "transform.power")
-    offset = attr(alldiffs.obj$backtransforms, which = "offset")
-    scale = attr(alldiffs.obj$backtransforms, which = "scale")
+    transform.power <- attr(alldiffs.obj$backtransforms, which = "transform.power")
+    offset <- attr(alldiffs.obj$backtransforms, which = "offset")
+    scale <- attr(alldiffs.obj$backtransforms, which = "scale")
+    transform.function <- attr(alldiffs.obj$backtransforms, which = "transform.function")
+    if (is.null(transform.function))
+      transform.function <- identity
   } 
   
   sortFactor <- attr(alldiffs.obj, which = "sortFactor")

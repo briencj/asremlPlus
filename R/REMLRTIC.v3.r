@@ -225,103 +225,134 @@ infoCriteria.asreml <- function(object, DF = NULL,
   if (is.character(validasr))
     stop(validasr)
   
-  #Check IClikelihood option
-  options <- c("REML", "full")
-  loglik.opt <- options[check.arg.values(IClikelihood, options)] 
-  
-  if (loglik.opt == "full" & !asr4)
-    stop("The full likelihood option has not been implemented for asreml-R version 3")
-  
-  #Get bound values
-  if (asr4)
+  call.args <- rlang::call_match(object$call, fn = asreml::asreml,  defaults = TRUE)
+  #Check which of a Gaussian, GLM or other distribution/model
+  if ("asr_gaussian" == rlang::call_name(call.args$family))
   {
-    bound <- asreml::vpc.char(object)
-  }
-  else
-  {
-    bound <- names(object$gammas.con)
-    names(bound) <- names(object$gammas)
-  }
-  NBound <- NA
-  if (asr4)
-  {
-    if (!(length(bound.exclusions) > 0) & !all(bound.exclusions %in% c("F","B","S","C")))
-      warning("A code other than F, B S or C has been specified in bound.exclusions")
-    Bound <- bound  %in% bound.exclusions
-  } else #asr3
-  {
-    #Check bound.exclusions
-    if (!(length(bound.exclusions) > 0) & !all(bound.exclusions %in% c("F","B","S","C")))
+    #Check IClikelihood option
+    options <- c("REML", "full")
+    loglik.opt <- options[check.arg.values(IClikelihood, options)] 
+    
+    if (loglik.opt == "full" & !asr4)
+      stop("The full likelihood option has not been implemented for asreml-R version 3")
+    
+    #Get bound values
+    if (asr4)
     {
-      stop("At least one bound.type is not one of those allowed with ASReml-R version 3")
+      bound <- asreml::vpc.char(object)
     }
     else
     {
-      bound.exclusions3 <- c("Fixed","Boundary","Singular","Constrained")
-      bound.exclusions3 <- bound.exclusions3[bound.exclusions %in% c("F","B","S","C")]
-      Bound <- bound  %in% bound.exclusions3
+      bound <- names(object$gammas.con)
+      names(bound) <- names(object$gammas)
     }
-  }
-  NBound <- sum(Bound)
-  Bound <- names(bound)[Bound]
-  #Calculate the varDF
-  if (is.null(DF) & is.null(varDF))
+    NBound <- NA
+    if (asr4)
+    {
+      if (!(length(bound.exclusions) > 0) & !all(bound.exclusions %in% c("F","B","S","C")))
+        warning("A code other than F, B S or C has been specified in bound.exclusions")
+      Bound <- bound  %in% bound.exclusions
+    } else #asr3
+    {
+      #Check bound.exclusions
+      if (!(length(bound.exclusions) > 0) & !all(bound.exclusions %in% c("F","B","S","C")))
+      {
+        stop("At least one bound.type is not one of those allowed with ASReml-R version 3")
+      }
+      else
+      {
+        bound.exclusions3 <- c("Fixed","Boundary","Singular","Constrained")
+        bound.exclusions3 <- bound.exclusions3[bound.exclusions %in% c("F","B","S","C")]
+        Bound <- bound  %in% bound.exclusions3
+      }
+    }
+    NBound <- sum(Bound)
+    Bound <- names(bound)[Bound]
+    #Calculate the varDF
+    if (is.null(DF) & is.null(varDF))
+    {
+      varDF <- length(bound)
+      varDF <- varDF - NBound
+      if (NBound > 0)
+        warning(paste("The following bound terms were discounted:\n", 
+                      paste(Bound, collapse = ", ")))
+    } else
+    {
+      if (is.null(varDF))
+        varDF <- DF
+      if (NBound > 0)
+        warning(paste("The following bound terms were not discounted:\n", 
+                      paste(Bound, collapse = ", ")))
+    }
+    #If full likelihood, calculate logdetC and fixedDF
+    if (loglik.opt == "full")
+    {
+      if (asr4)
+      {
+        asreml::asreml.options(Cfixed = TRUE, gammaPar=FALSE)
+        if (is.null(object$Cfixed)) 
+          object <- asreml::update.asreml(object, maxit=1)
+        coefF <- summary(object, coef=TRUE)$coef.fixed
+        which.cF <- !is.na(coefF[, "z.ratio"])
+        #      logdetC <- log(prod(svd(as.matrix(object$Cfixed[which.cF, which.cF]))$d))
+        logdetC <- sum(log(svd(as.matrix(object$Cfixed[which.cF, which.cF]))$d))
+      } else #asr3
+      {
+        if (is.null(object$Cfixed)) 
+          object <- asreml::update.asreml(object, maxit=1, Cfixed = TRUE)
+        coefF <- summary(object, all=TRUE)$coef.fixed
+        which.cF <- !is.na(coefF[, "z ratio"])
+        #object$Cfixed is not a matrix and so this does not work 
+        #       logdetC <- log(prod(svd(as.matrix(object$Cfixed[which.cF, which.cF]))$d))
+        if (any(which.cF)) 
+          logdetC <- sum(log(svd(as.matrix(object$Cfixed[which.cF, which.cF]))$d))
+        else #all z-ratios are NA
+        {
+          fixedDF <- 0
+          logdetC <- 0
+          warning("The fixed effects variances are not estimable - reverting to REML likelihood")
+        } 
+      }
+      if (is.null(fixedDF))
+        fixedDF <- sum(which.cF)
+    } else #REML
+    {
+      fixedDF <- 0
+      logdetC <- 0
+    }
+    logREML <- object$loglik
+    loglik <- logREML - logdetC/2
+    #calculate AIC and BIC
+    AIC <- -2 * loglik + 2 * (fixedDF + varDF)
+    BIC <- -2 * loglik + (fixedDF + varDF) * log(object$nedf+fixedDF)
+    info <- data.frame(fixedDF, varDF, NBound, AIC, BIC, loglik)
+  } else #family that is not gaussian 
   {
-    varDF <- length(bound)
-    varDF <- varDF - NBound
-    if (NBound > 0)
-      warning(paste("The following bound terms were discounted:\n", 
-                    paste(Bound, collapse = ", ")))
-  } else
-  {
-    if (is.null(varDF))
-      varDF <- DF
-    if (NBound > 0)
-      warning(paste("The following bound terms were not discounted:\n", 
-                    paste(Bound, collapse = ", ")))
-  }
-  #If full likelihood, calculate logdetC and fixedDF
-  if (loglik.opt == "full")
-  {
-     if (asr4)
-     {
-      asreml::asreml.options(Cfixed = TRUE, gammaPar=FALSE)
-      if (is.null(object$Cfixed)) 
-        object <- asreml::update.asreml(object, maxit=1)
-      coefF <- summary(object, coef=TRUE)$coef.fixed
-      which.cF <- !is.na(coefF[, "z.ratio"])
-#      logdetC <- log(prod(svd(as.matrix(object$Cfixed[which.cF, which.cF]))$d))
-      logdetC <- sum(log(svd(as.matrix(object$Cfixed[which.cF, which.cF]))$d))
-     } else #asr3
-     {
-       if (is.null(object$Cfixed)) 
-         object <- asreml::update.asreml(object, maxit=1, Cfixed = TRUE)
+    info <- data.frame(NA, NA, NA, NA, NA, NA)
+    call.fam <- rlang::call_match(call.args$family, 
+                                  fn = rlang::call_fn(call.args$family),  
+                                  defaults = TRUE)
+    distn <- rlang::call_name(call.fam)
+    #use deviance for asr_binomial and asr_poison - suggested by Damian Collins
+    if (distn %in% c("asr_binomial", "asr_poisson") && call.fam$dispersion == 1)
+    {
+      if (asr4)
+        coefF <- summary(object, coef=TRUE)$coef.fixed
+     else #asr3
        coefF <- summary(object, all=TRUE)$coef.fixed
-       which.cF <- !is.na(coefF[, "z ratio"])
-       #object$Cfixed is not a matrix and so this does not work 
-#       logdetC <- log(prod(svd(as.matrix(object$Cfixed[which.cF, which.cF]))$d))
-       if (any(which.cF)) 
-         logdetC <- sum(log(svd(as.matrix(object$Cfixed[which.cF, which.cF]))$d))
-       else #all z-ratios are NA
-       {
-         fixedDF <- 0
-         logdetC <- 0
-         warning("The fixed effects variances are not estimable - reverting to REML likelihood")
-       } 
-     }
-    if (is.null(fixedDF))
-      fixedDF <- sum(which.cF)
-  } else #REML
-  {
-    fixedDF <- 0
-    logdetC <- 0
+     which.cF <- !is.na(coefF[, "z.ratio"])
+     fixedDF <- sum(which.cF)
+     #The deviance is, by definition +ve and is -2 * loglik
+     #asreml appears to store - deviance so that it is 2 * loglik 
+     AIC <- - object$deviance + (2 * fixedDF)
+     BIC <- - object$deviance + fixedDF * log(object$nedf+fixedDF)
+     info <- data.frame(fixedDF, 0, 0, AIC, BIC, (-object$deviance)/(-2))
+     
+    } else
+      warning("infoCriteria are not available for ", distn, " with dispersion equal to ", call.fam$dispersion, "; they have been set to NA.")
+    names(info) <- c("fixedDF", "varDF", "NBound", "AIC", "BIC", "loglik")
   }
-  logREML <- object$loglik
-  loglik <- logREML - logdetC/2
-  #calculate AIC and BIC
-	AIC <- -2 * loglik + 2 * (fixedDF + varDF)
-	BIC <- -2 * loglik + (fixedDF + varDF) * log(object$nedf+fixedDF)
-	return(data.frame(fixedDF, varDF, NBound, AIC, BIC, loglik))
+  return(info)
 }
 
 

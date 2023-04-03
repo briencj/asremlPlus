@@ -39,6 +39,7 @@
                graphics.device = NULL, interval.annotate = TRUE,
                titles = NULL, colour.scheme = "colour", save.plots = FALSE, 
                transform.power = 1, offset = 0, scale = 1, 
+               transform.function = "identity", 
                tables = "all", level.length = NA, 
                sortFactor = NULL, sortParallelToCombo = NULL, 
                sortNestingFactor = NULL, sortOrder = NULL, 
@@ -305,6 +306,29 @@
               control the plotting and output of the \code{predictions} and 
               \code{backtransforms}. The backtransformation will, after backtransforming 
                for any power transformation and then subtracting the offset, divide by the \code{scale}.}
+ \item{transform.function}{A \code{\link{character}} giving the name of a function that 
+              specifies the scale on which the predicted values are defined. This may be the 
+              result of a transformation of the data using the function or the use of the 
+              function as a link function in the fitting of a generalized linear (mixed) 
+              model (GL(M)M). The possible \code{transform.function}s are 
+              \code{identity}, \code{log}, \code{inverse}, \code{sqrt}, \code{logit}, 
+              \code{probit}, and \code{cloglog}.  The \code{predicted.values} and 
+              \code{error.intervals}, if not \code{StandardError} intervals, will be 
+              back-transformed using the inverse fucntion of the \code{transform.function}. 
+              The \code{standard.error} column will be set to \code{NA}, unless (i) 
+              \code{asreml} returns columns named \code{transformed.value} and 
+              \code{approx.se}, as well as those called \code{predicted.values} and 
+              \code{standard.error} (such as when a GLM is fitted) and 
+              (ii) the values in \code{transformed.value} are equal to those obtained by 
+              backtransforming the \code{predicted.value}s using the inverse function 
+              of the \code{transform.function}. Then, the \code{approx.se} values will be 
+              saved in the \code{standard.error} column of the \code{backtransforms} 
+              component of the returned \code{alldiffs.obj}. Also, the 
+              \code{transformed.value} and \code{approx.se} columns are removed from both 
+              the \code{predictions} and \code{backtransforms} components of the 
+              \code{alldiffs.obj}. Note that the values that end up in the \code{standard errors} 
+              column are approximate for the backtransformed values and are not used in 
+              calculating \code{error.intervals}.}
 \item{tables}{A \code{character vector} containing a combination of 
               \code{predictions}, \code{vcov}, \code{backtransforms}, 
               \code{differences}, \code{p.differences}, \code{sed}, 

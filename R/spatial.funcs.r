@@ -7,10 +7,8 @@ checkTrySpatial <- function(trySpatial)
   
   if (length(intersect(trySpatial, trySpat.opts)) == 0)
     stop("trySpatial must be one of ", paste0(trySpat.opts, collapse = ", "))
-  if ("TPP1LS" %in% trySpatial)
-    stop("TPP1LS is not yet available in asremlPlus. Sorry.") #Bug in tpsmmb for this - waiting for Sue
   if ("all" %in% trySpatial)
-    trySpatial <- c("corr", "TPNCSS", "TPPCS")
+    trySpatial <- c("corr", "TPNCSS", "TPPCS", "TPP1LS")
   if ("none" %in% trySpatial && length(trySpatial) > 1)
     trySpatial <= "none"
   return(trySpatial)
@@ -912,6 +910,7 @@ makeTPPSplineMats.data.frame <- function(data, sections = NULL,
 
 fitTPSModSect <- function(tspl.asrt, mat, sect.fac, row.factor, col.factor, 
                           row.covar, col.covar, lab, 
+                          degree = c(3,3), difforder = c(2,2), 
                           asreml.opt = "mbf", stub = stub, 
                           allow.unconverged = TRUE, allow.fixedcorrelation = TRUE,
                           chooseOnIC = TRUE, 
@@ -932,114 +931,68 @@ fitTPSModSect <- function(tspl.asrt, mat, sect.fac, row.factor, col.factor,
       drop.ran <- paste(facs[facs %in% names(tspl.asrt$asreml.obj$vparameters)], 
                         collapse = " + ")
   }
+
+  nfixterms <- difforder[1] * difforder[2] 
+  if (nfixterms > 1)
+    fix.ch <- paste(paste0(sect.fac, paste0("TP.CR.", 2:nfixterms)), collapse = " + ")
+  else
+    fix.ch <- NULL
+  
+  if (chooseOnIC)
+    fitfunc <- changeModelOnIC
+  else
+    fitfunc <- changeTerms
   
   if (asreml.opt == "mbf")
   {
     mbf.lis <- mat$mbflist
-    if (chooseOnIC)
-      tspl.asrt <- do.call(changeModelOnIC, 
-                           args = c(list(tspl.asrt,
-                                         addFixed = paste(paste0(
-                                           sect.fac,
-                                           c("TP.CR.2", "TP.CR.3", "TP.CR.4")),
-                                           collapse = " + "),
-                                         dropFixed = drop.fix, 
-                                         addRandom = paste(paste0(
-                                           sect.fac,
-                                           c("TP.C.1:mbf(TP.row)", "TP.C.2:mbf(TP.row)",
-                                             "TP.R.1:mbf(TP.col)", "TP.R.2:mbf(TP.col)",
-                                             "mbf(TP.CxR)", 
-                                             paste0("dev(",row.covar,")"), 
-                                             paste0("dev(",col.covar,")"))),
-                                           collapse = " + "),
-                                         dropRandom = drop.ran, 
-                                         mbf = mbf.lis,
-                                         label = lab,
-                                         allow.unconverged = allow.unconverged, 
-                                         allow.fixedcorrelation = allow.fixedcorrelation,
-                                         checkboundaryonly = checkboundaryonly, 
-                                         update = update, 
-                                         IClikelihood = IClikelihood, 
-                                         which.IC = which.IC), 
-                                    inargs))
-    else
-      tspl.asrt <- do.call(changeTerms, 
-                           args = c(list(tspl.asrt,
-                                         addFixed = paste(paste0(
-                                           sect.fac,
-                                           c("TP.CR.2", "TP.CR.3", "TP.CR.4")),
-                                           collapse = " + "),
-                                         dropFixed = drop.fix, 
-                                         addRandom = paste(paste0(
-                                           sect.fac,
-                                           c("TP.C.1:mbf(TP.row)", "TP.C.2:mbf(TP.row)",
-                                             "TP.R.1:mbf(TP.col)", "TP.R.2:mbf(TP.col)",
-                                             "mbf(TP.CxR)", 
-                                             paste0("dev(",row.covar,")"), 
-                                             paste0("dev(",col.covar,")"))),
-                                           collapse = " + "),
-                                         dropRandom = drop.ran, 
-                                         mbf = mbf.lis,
-                                         label = lab,
-                                         allow.unconverged = allow.unconverged, 
-                                         allow.fixedcorrelation = allow.fixedcorrelation,
-                                         checkboundaryonly = checkboundaryonly, 
-                                         update = update, IClikelihood = IClikelihood), 
-                                    inargs))
+    ran.ch <- paste(paste0(sect.fac,  
+                           c(paste0("TP.C.",1:difforder[1],":mbf(TP.row)"),  
+                             paste0("TP.R.",1:difforder[2],":mbf(TP.col)"), 
+                             "mbf(TP.CxR)", 
+                             paste0("dev(",row.covar,")"), 
+                             paste0("dev(",col.covar,")"))), 
+                    collapse = " + ")
+    tspl.asrt <- do.call(fitfunc, 
+                         args = c(list(tspl.asrt,
+                                       addFixed = fix.ch,
+                                       dropFixed = drop.fix, 
+                                       addRandom = ran.ch,
+                                       dropRandom = drop.ran, 
+                                       mbf = mbf.lis,
+                                       label = lab,
+                                       allow.unconverged = allow.unconverged, 
+                                       allow.fixedcorrelation = allow.fixedcorrelation,
+                                       checkboundaryonly = checkboundaryonly, 
+                                       update = update, 
+                                       IClikelihood = IClikelihood, 
+                                       which.IC = which.IC), 
+                                  inargs))
   } else #grp
   {
     grp <- mat$grp
-    if (chooseOnIC)
-      tspl.asrt <- do.call(changeModelOnIC, 
-                           args = c(list(tspl.asrt, 
-                                         addFixed = paste(paste0(
-                                           sect.fac, 
-                                           c("TP.CR.2", "TP.CR.3", "TP.CR.4")), 
-                                           collapse = " + "),
-                                         dropFixed = drop.fix, 
-                                         addRandom = paste(paste0(
-                                           sect.fac, 
-                                           c("grp(TP.C.1_frow)", "grp(TP.C.2_frow)", 
-                                             "grp(TP.R.1_fcol)", "grp(TP.R.2_fcol)",
-                                             "grp(TP_fcol_frow)", 
-                                             paste0("dev(",row.covar,")"), 
-                                             paste0("dev(",col.covar,")"))), 
-                                           collapse = " + "),
-                                         dropRandom = drop.ran, 
-                                         group = grp,
-                                         label = lab, 
-                                         allow.unconverged = allow.unconverged, 
-                                         allow.fixedcorrelation = allow.fixedcorrelation,
-                                         checkboundaryonly = checkboundaryonly, 
-                                         update = update, 
-                                         IClikelihood = IClikelihood, 
-                                         which.IC = which.IC), 
-                                    inargs))
-    else
-      tspl.asrt <- do.call(changeTerms, 
-                           args = c(list(tspl.asrt, 
-                                         addFixed = paste(paste0(
-                                           sect.fac, 
-                                           c("TP.CR.2", "TP.CR.3", "TP.CR.4")), 
-                                           collapse = " + "),
-                                         dropFixed = drop.fix, 
-                                         addRandom = paste(paste0(
-                                           sect.fac, 
-                                           c("grp(TP.C.1_frow)", "grp(TP.C.2_frow)", 
-                                             "grp(TP.R.1_fcol)", "grp(TP.R.2_fcol)",
-                                             "grp(TP_fcol_frow)", 
-                                             paste0("dev(",row.covar,")"), 
-                                             paste0("dev(",col.covar,")"))), 
-                                           collapse = " + "),
-                                         dropRandom = drop.ran, 
-                                         group = grp,
-                                         label = lab, 
-                                         allow.unconverged = allow.unconverged, 
-                                         allow.fixedcorrelation = allow.fixedcorrelation,
-                                         checkboundaryonly = checkboundaryonly, 
-                                         update = update), 
-                                    inargs))
-    
+    ran.ch <- paste(paste0(sect.fac,  
+                           c(paste0("grp(TP.C.",1:difforder[1],"_frow)"),  
+                             paste0("grp(TP.R.",1:difforder[2],"_fcol)"), 
+                             "grp(TP_fcol_frow)", 
+                             paste0("dev(",row.covar,")"), 
+                             paste0("dev(",col.covar,")"))), 
+                    collapse = " + ")
+    tspl.asrt <- do.call(fitfunc, 
+                         args = c(list(tspl.asrt, 
+                                       addFixed = fix.ch,
+                                       dropFixed = drop.fix, 
+                                       addRandom = ran.ch,
+                                       dropRandom = drop.ran, 
+                                       group = grp,
+                                       label = lab, 
+                                       allow.unconverged = allow.unconverged, 
+                                       allow.fixedcorrelation = allow.fixedcorrelation,
+                                       checkboundaryonly = checkboundaryonly, 
+                                       update = update, 
+                                       IClikelihood = IClikelihood, 
+                                       which.IC = which.IC), 
+                                  inargs))
   }
   return(tspl.asrt)
 }
@@ -1124,6 +1077,7 @@ fitTPPSMod <- function(asrtests.obj, sections = NULL,
     tspl.asrt <- fitTPSModSect(tspl.asrt, mat = tps.XZmat[[i]], sect.fac = sect.fac, 
                                row.factor = row.factor, col.factor = col.factor, 
                                row.covar = row.covar, col.covar = col.covar, 
+                               degree = degree, difforder = difforder,
                                lab = lab, asreml.opt = asreml.opt, stub = stub, 
                                allow.unconverged = allow.unconverged, 
                                allow.fixedcorrelation = allow.fixedcorrelation,

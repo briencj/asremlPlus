@@ -136,9 +136,14 @@
  \item{IClikelihood}{A \code{character} that controls both the occurence and the type 
                     of likelihood for information criterion in the \code{test.summary} 
                     of the new \code{\link{asrtests.object}}. If \code{none}, none are 
-                    included. Otherwise, if \code{REML}, then the AIC and BIC based 
-                    on the Restricted Maximum Likelihood are included; if \code{full}, 
+                    included. Otherwise, if \code{REML} and \code{family} is set to 
+                    \code{asr_guassian} (the default), then the AIC and BIC based 
+                    on the Restricted Maximum Likelihood are included; if \code{full} 
+                    and \code{family} is set to \code{asr_guassian}, 
                     then the AIC and BIC based on the full likelihood are included. 
+                    if \code{family} is \code{asr_binomial} or \code{asr_poisson}, 
+                    with \code{dispersion} set to 1, the \code{deviance} is extracted 
+                    from \code{object} and used to calculate the AIC and BIC.
                     (See also \code{\link{infoCriteria.asreml}}.)}
  \item{bound.exclusions}{A \code{character} specifying the bound (constraint) codes that 
                     will result in a variance parameter being excluded from the count of 

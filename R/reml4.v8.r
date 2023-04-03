@@ -2831,6 +2831,7 @@ atLevelsMatch <- function(new, old, call, always.levels = TRUE)
                                  x.pred.values = NULL, x.plot.values = NULL, 
                                  titles = NULL,  tables = "all" , level.length = NA, 
                                  transform.power = 1, offset = 0, scale = 1, 
+                                 transform.function = "identity", 
                                  sortFactor = NULL, sortParallelToCombo = NULL, 
                                  sortNestingFactor = NULL, sortOrder = NULL, 
                                  decreasing = FALSE, trace = FALSE, ...)
@@ -3101,6 +3102,7 @@ atLevelsMatch <- function(new, old, call, always.levels = TRUE)
                           level.length = level.length, 
                           pairwise = pairwise,
                           transform.power = transform.power, 
+                          transform.function = transform.function, 
                           offset = offset, scale = scale, 
                           inestimable.rm = inestimable.rm, 
                           alpha = alpha)
@@ -3109,7 +3111,8 @@ atLevelsMatch <- function(new, old, call, always.levels = TRUE)
     #Add lower and upper uncertainty limits - send transform info to addBacktransforms.alldiffs 
     #so that backtransformed limits are updated
     diffs <- redoErrorIntervals.alldiffs(diffs, error.intervals = error.intervals, alpha = alpha, 
-                                         avsed.tolerance = avsed.tolerance, accuracy.threshold = accuracy.threshold, 
+                                         avsed.tolerance = avsed.tolerance, 
+                                         accuracy.threshold = accuracy.threshold, 
                                          LSDtype = LSDtype, LSDsupplied = LSDsupplied, LSDby = LSDby, 
                                          LSDstatistic = LSDstatistic, LSDaccuracy = LSDaccuracy) 
   } else
@@ -3655,6 +3658,7 @@ atLevelsMatch <- function(new, old, call, always.levels = TRUE)
                                     graphics.device = NULL, interval.annotate = TRUE,
                                     titles = NULL, colour.scheme = "colour", save.plots = FALSE, 
                                     transform.power = 1, offset = 0, scale = 1, 
+                                    transform.function = "identity", 
                                     tables = "all", level.length = NA, 
                                     sortFactor = NULL, sortParallelToCombo = NULL, 
                                     sortNestingFactor = NULL, sortOrder = NULL, 
@@ -3685,6 +3689,10 @@ atLevelsMatch <- function(new, old, call, always.levels = TRUE)
   avLSD <- AvLSD.options[check.arg.values(LSDtype, AvLSD.options)]
   if (!is.null(LSDby) &&  !is.character(LSDby))
     stop("LSDby must be a character")
+
+  #check the transform.function
+  link.opts <- c("identity", "log", "inverse", "sqrt", "logit", "probit", "cloglog")
+  transfunc <- link.opts[check.arg.values(transform.function, link.opts)]
   
   tempcall <- list(...)
   if ("levels.length" %in% names(tempcall))
@@ -3764,6 +3772,7 @@ atLevelsMatch <- function(new, old, call, always.levels = TRUE)
                                   level.length = level.length, 
                                   transform.power = transform.power, 
                                   offset = offset, scale = scale, 
+                                  transform.function = transfunc, 
                                   inestimable.rm = inestimable.rm, 
                                   sortFactor = sortFactor, 
                                   sortParallelToCombo = sortParallelToCombo, 
@@ -3794,6 +3803,7 @@ atLevelsMatch <- function(new, old, call, always.levels = TRUE)
                                   level.length = level.length, 
                                   transform.power = transform.power, 
                                   offset = offset, scale = scale, 
+                                  transform.function = transfunc, 
                                   inestimable.rm = inestimable.rm, 
                                   sortFactor = sortFactor, 
                                   sortParallelToCombo = sortParallelToCombo, 
@@ -3824,7 +3834,7 @@ atLevelsMatch <- function(new, old, call, always.levels = TRUE)
       }
       #Plot predictions if a plot is required and data are not transformed or if 
       #plot of predictions requested
-      transformed <- transform.power != 1 | offset != 0 | scale != 1
+      transformed <- transform.power != 1 | offset != 0 | scale != 1 | transform.function != "identity" 
       if ((!transformed & plot.opt != "none") | plot.opt == "predictions" 
           | plot.opt == "both")
         #Plot predictions

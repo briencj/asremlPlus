@@ -294,9 +294,13 @@ tpsmmb <- function(columncoordinates, rowcoordinates, data, nsegments,
   BcXadj <- BcX - mat1c%*%t(mat1c)%*%BcX/nuc
   Xfc <- (svd(crossprod(BcXadj)))$u[,c(ncol(BcXadj):1)]
   BcX <- BcX%*%Xfc
-# check we have 1,x as positive not negative terms
-  if (BcX[1,1]<0) BcX[,1] <- -1*BcX[,1]
-  if (BcX[1,2]>0) BcX[,2] <- -1*BcX[,2]
+# check we have 1,x as positive not negative terms (revised in v1.0.2)
+  if (BcX[1, 1] < 0) 
+    BcX[, 1] <- -1 * BcX[, 1]
+  if (diff.c > 1) {
+    if (BcX[1, 2] > 0) 
+      BcX[, 2] <- -1 * BcX[, 2]
+  }
 # deal with nesting if present
   if (nsncol>0) {
     Dcn <- diff(diag(ncn), diff = diff.c)
@@ -344,9 +348,13 @@ tpsmmb <- function(columncoordinates, rowcoordinates, data, nsegments,
   BrXadj <- BrX - mat1r%*%t(mat1r)%*%BrX/nur
   Xfr <- (svd(crossprod(BrXadj)))$u[,c(ncol(BrXadj):1)]
   BrX <- BrX%*%Xfr
-  # check we have 1,x as positive not negative terms
-  if (BrX[1,1]<0) BrX[,1] <- -1*BrX[,1]
-  if (BrX[1,2]>0) BrX[,2] <- -1*BrX[,2]
+  # check we have 1,x as positive not negative terms (revised in v1.0.2)
+  if (BrX[1, 1] < 0) 
+    BrX[, 1] <- -1 * BrX[, 1]
+  if (diff.r > 1) {
+    if (BrX[1, 2] > 0) 
+      BrX[, 2] <- -1 * BrX[, 2]
+  }
 # deal with nesting if present
   if (nsnrow>0) {
     Drn <- diff(diag(nrn), diff = diff.r)
