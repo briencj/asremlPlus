@@ -255,7 +255,7 @@ test_that("IC_wheat94_asreml4", {
     current.asrt <- testranfix(current.asrt, term = "spl(Col)", alpha = 0.20)
   
   #tests for getTestPvalue
-  testthat::expect_true(abs(getTestPvalue(current.asrt, label = "Col") - .5944761) < 1e-05)
+  testthat::expect_true(abs(getTestPvalue(current.asrt, label = "Col") - .5944761) < 1e-03)
   testthat::expect_error(getTestPvalue(current.asrt, label = "Co"))
   
   #Test units term

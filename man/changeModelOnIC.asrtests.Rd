@@ -7,7 +7,8 @@
        modifications. The function \code{\link{changeTerms}} is 
        used to change the model. Thus, the model can be modified using a 
        combination of adding and removing sets of terms from one or both of the fixed 
-       or random models and replacing the residual model. The model will be unchanged 
+       or random models, replacing the residual model and changing the bounds and/or initial 
+       values of some terms. The model will be unchanged 
        if terms specified in \code{dropFixed} or \code{dropRandom} are not in the fitted 
        model.
 
@@ -112,9 +113,11 @@
               according to Kenward and Roger (1997) for fixed terms in the dense 
               part of the model.}
  \item{set.terms}{A \code{character} vector specifying the terms that are to have 
-               bounds and/or initial values set prior to fitting.
+               bounds and/or initial values set prior to fitting the new model.
                The names must match those in the \code{vparameters} component of the 
-               \code{asreml.obj} component in the new \code{\link{asrtests.object}}.}
+               \code{asreml.obj} component in the new \code{\link{asrtests.object}}. 
+               The terms in the model do not need to change from those in the 
+               model in the supplied \code{asrtests.obj}.}
  \item{ignore.suffices}{A logical vector specifying whether the suffices of the 
                     \code{asreml}-assigned names of the variance terms (i.e. the 
                     information to the right of an "!", other than "R!") is to 

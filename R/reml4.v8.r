@@ -1,7 +1,7 @@
 
 "getTestPvalue.asrtests" <- function(asrtests.obj, label, ...)
 {
-#  k <- tail(which(as.character(asrtests.obj$test.summary$terms)==label),1)
+  #  k <- tail(which(as.character(asrtests.obj$test.summary$terms)==label),1)
   k <- tail(findterm(label, as.character(asrtests.obj$test.summary$terms)),1)
   if (k == 0)
     stop("Label not found in test.summary of supplied asrtests.obj")
@@ -11,7 +11,7 @@
 
 "getTestEntry.asrtests" <- function(asrtests.obj, label, ...)
 {
-#  k <- tail(which(as.character(asrtests.obj$test.summary$terms)==label),1)
+  #  k <- tail(which(as.character(asrtests.obj$test.summary$terms)==label),1)
   k <- tail(findterm(label, as.character(asrtests.obj$test.summary$terms)),1)
   if (k == 0)
     stop("Label not found in test.summary of supplied asrtests.obj")
@@ -32,7 +32,7 @@
     isasr <- c(isasr, "\n ",deparse(substitute(object))," is not of class asreml")
   }
   #Check have corresponding asreml version
-  if ((asr4 && !"vparameters" %in% names(object)) || 
+  if ((asr4 && !("vparameters" %in% names(object))) || 
       (!asr4 && "vparameters" %in% names(object)))
   {
     isasr[1] <- FALSE 
@@ -68,7 +68,7 @@
   {
     isTSumm[1] <- FALSE
     isTSumm <- c(isTSumm, 
-                "test.summary should be a 3-, 5- or 7-column data.frame")
+                 "test.summary should be a 3-, 5- or 7-column data.frame")
   }
   which.names <- names(object) %in% c("terms","DF","denDF","p", "AIC", "BIC","action")
   if(!all(which.names))
@@ -105,7 +105,7 @@
   validasr <- validAsreml(asreml.obj)  
   if (is.character(validasr))
     stop(validasr)
- 
+  
   asr4 <- isASRemlVersionLoaded(4, notloaded.fault = TRUE)
   if (asr4)
     asreml::asreml.options(trace = FALSE)
@@ -141,7 +141,7 @@
                                      AIC = ic$AIC, BIC = ic$BIC, 
                                      action = "Starting model")
   }
-
+  
   #Deal with wald.tab
   if (!is.null(wald.tab))
   {  
@@ -190,15 +190,15 @@
     isasrtests[1] <- FALSE
     isasrtests <- c(isasrtests, msg)
   }    
-
+  
   #Check have appropriate components
   if (!all(c("asreml.obj", "wald.tab", "test.summary") %in% names(object)))
   {
     isasrtests[1] <- FALSE
     isasrtests <- c(isasrtests, 
-                     paste("\n ", deparse(substitute(object)), 
-                           "is not a list with named components",
-                           "asreml.obj, wald.tab and test.summary"))
+                    paste("\n ", deparse(substitute(object)), 
+                          "is not a list with named components",
+                          "asreml.obj, wald.tab and test.summary"))
   }    
   if (length(isasrtests) > 1)
     isasrtests[1] <- "Error in validAsrtests : "
@@ -224,14 +224,14 @@ setOldClass("asrtests")
     which.cols <- which.cols[!(which.cols %in% omit.columns)]
     x <- x[which.cols]
   }
-
+  
   if (any(c("title", "all") %in% opt))
   {
     cat("\n\n####  Sequence of model investigations \n\n")
     if (any(c("AIC", "BIC") %in% names(x)))
       cat("(If a row has NA for p but not denDF, DF and denDF relate to fixed and variance parameter numbers)\n\n")
   }
-
+  
   print.data.frame(x, ...)
   invisible()
 }
@@ -243,7 +243,7 @@ setOldClass("asrtests")
   
   options <- c("title", "heading", "table", "all")
   opt <- options[unlist(lapply(which.wald, check.arg.values, options=options))]
-
+  
   #make change to control printing
   class(x) <- c("wald", "data.frame")
   x$Pr <- round(x$Pr, digits=4)
@@ -291,14 +291,14 @@ setOldClass("asrtests")
       print.data.frame(x, ...)
     }
   }
-
+  
   invisible()
 }
 
 "print.asrtests" <- function(x, which = "key", colourise = FALSE, ...)
- { 
+{ 
   asr4 <- isASRemlVersionLoaded(4, notloaded.fault = TRUE)
-
+  
   #Check that have a valid object of class asrtests
   validasrt <- validAsrtests(x)  
   if (is.character(validasrt))
@@ -306,35 +306,35 @@ setOldClass("asrtests")
   
   options <- c("asremlsummary", "vparametersummary", "pseudoanova", "wald.tab", 
                "testsummary", "key", "all")
-   opt <- options[unlist(lapply(which, check.arg.values, options=options))]
-   if (all(c("key", "all") %in% opt))
-     stop("Can only specify one of key and all for which argument")
-   if ("wald.tab" %in% opt)
-   {
-     opt[match("wald.tab", opt)] <- "pseudoanova"
-     opt <- unique(opt)
-   }
-   
-   #print summary of asreml.obj
-   if (any(c("asremlsummary", "all") %in% opt))
-     print(summary(x$asreml.obj), ...)
-   
-   #print vparameter summary of asreml.obj
-   if (any(c("vparametersummary", "key") %in% opt))
-   {
-     cat("\n\n####  Summary of the fitted variance parameters\n\n")
-     print(summary(x$asreml.obj)$varcomp, ...)
-   }
-   
-   #print wald.tab
-   if (any(c("pseudoanova", "key", "all") %in% opt))
-     print.wald.tab(x$wald.tab, colourise = colourise, ...)
-
-   #print test.summary
-   if (any(c("testsummary", "key", "all") %in% opt))
-     print.test.summary(x$test.summary, which.print = "all", ...)
-
-   invisible()
+  opt <- options[unlist(lapply(which, check.arg.values, options=options))]
+  if (all(c("key", "all") %in% opt))
+    stop("Can only specify one of key and all for which argument")
+  if ("wald.tab" %in% opt)
+  {
+    opt[match("wald.tab", opt)] <- "pseudoanova"
+    opt <- unique(opt)
+  }
+  
+  #print summary of asreml.obj
+  if (any(c("asremlsummary", "all") %in% opt))
+    print(summary(x$asreml.obj), ...)
+  
+  #print vparameter summary of asreml.obj
+  if (any(c("vparametersummary", "key") %in% opt))
+  {
+    cat("\n\n####  Summary of the fitted variance parameters\n\n")
+    print(summary(x$asreml.obj)$varcomp, ...)
+  }
+  
+  #print wald.tab
+  if (any(c("pseudoanova", "key", "all") %in% opt))
+    print.wald.tab(x$wald.tab, colourise = colourise, ...)
+  
+  #print test.summary
+  if (any(c("testsummary", "key", "all") %in% opt))
+    print.test.summary(x$test.summary, which.print = "all", ...)
+  
+  invisible()
 }
 
 "recalcWaldTab.asrtests" <- function(asrtests.obj, recalc.wald = FALSE, 
@@ -446,9 +446,9 @@ setOldClass("asrtests")
 
 
 "powerTransform" <- function(var.name, power = 1, offset = 0, scale = 1, 
-                              titles = NULL, data)
-#Function to perform a power transformation on a variable whose name is given as 
-#a character string in var.name. The transformed variable is stored in data
+                             titles = NULL, data)
+  #Function to perform a power transformation on a variable whose name is given as 
+  #a character string in var.name. The transformed variable is stored in data
 { 
   k <- match(var.name, names(data))
   if (!is.null(titles) & !is.na(match(var.name, names(titles))))
@@ -501,17 +501,19 @@ setOldClass("asrtests")
         tvar.name <- paste("sqrt.",tvar.name,sep="")
         ttitle <- paste("Square root of ", ttitle,sep="")
       } else
+      { 
         if (power == -1)
         { 
           tvar.name <- paste("recip.",tvar.name,sep="")
           ttitle <- paste("Reciprocal of ", ttitle,sep="")
-        }
-        else
+        } else
         { 
           tvar.name <- paste("power.",tvar.name,sep="")
           ttitle <- paste("Power ",power," of ", ttitle, sep="")
         }
+      }
     }
+
     #Add transformed variable to data
     tk <- match(tvar.name, names(data))
     if (is.na(tk))
@@ -527,7 +529,7 @@ setOldClass("asrtests")
 }
 
 "setvarianceterms.call" <- function(call, terms, ignore.suffices = TRUE, bounds = "P", 
-                                      initial.values = NA, ...)
+                                    initial.values = NA, ...)
   # call is an unevaluated call to asreml (can create using the call function)
   # terms is a vector of characters with the names of the gammas to be set
   # bounds specifies the bounds to be applied to the terms 
@@ -539,18 +541,18 @@ setOldClass("asrtests")
   #  C - Constrained by user (!VCC)      
   #  U - unbounded
   #  S - Singular Information matrix
-  # initial.values specifies the initial values for the terms
-  # - ignore.suffices, bounds and initial.values must be of length 1 or 
-  #   the same length as terms
-  # - if any of bounds or initial.values is set to NA, then they are 
-  #   left unchanged for those terms
+# initial.values specifies the initial values for the terms
+# - ignore.suffices, bounds and initial.values must be of length 1 or 
+#   the same length as terms
+# - if any of bounds or initial.values is set to NA, then they are 
+#   left unchanged for those terms
 { 
   #Deal with deprecated constraints parameter
   tempcall <- list(...)
   if (length(tempcall)) 
     if ("constraints" %in% names(tempcall))
-      stop("constraints has been deprecated in setvarianceterms.asreml - use bounds")
-
+      stop("constraints has been deprecated in setvarianceterms.call - use bounds")
+  
   asr4 <- isASRemlVersionLoaded(4, notloaded.fault = TRUE)
   if (!inherits(call, "call"))
     stop("Need to supply an argument of class call")
@@ -571,7 +573,7 @@ setOldClass("asrtests")
     stop("initial.values specification is not consistent with terms")
   if (any(!(bounds %in% c("B", "F", "P", "C", "U"))))
     stop("bounds contains at least one code that is not used by asreml")
-
+  
   #add start.values to call and apply bounds to the gammas specified by terms
   start.call <- call
   languageEl(start.call, which = "start.values") <- TRUE
@@ -611,20 +613,20 @@ setOldClass("asrtests")
     }
   }
   #rerun with the unconstrained parameters, adding parameters in ...
-  unconst.call <- call
-  languageEl(unconst.call, which = "G.param") <- gamma.table
-  languageEl(unconst.call, which = "R.param") <- gamma.table
+  languageEl(call, which = "G.param") <- gamma.table
+  languageEl(call, which = "R.param") <- gamma.table
   
   #deal with args coming via ...
   tempcall <- list(...)
   if (length(tempcall)) 
   { 
     for (z in names(tempcall))
-    languageEl(unconst.call, which = z) <- tempcall[[z]]
+      languageEl(call, which = z) <- tempcall[[z]]
   }
   #Evaluate the call
-  new.reml <- eval(unconst.call, sys.parent())
-  new.reml$call <- unconst.call
+  new.reml <- eval(call, sys.parent())
+  if (!new.reml$converge || largeVparChange(new.reml))
+    new.reml <- asreml::update.asreml(new.reml)
   invisible(new.reml)
 }
 
@@ -647,7 +649,7 @@ get.atargs <- function(at.term, dd, always.levels = FALSE)
     lvls <- stringr::str_replace_all(lvls, "\"", "")
     lvls <- stringr::str_trim(lvls)
   }
-
+  
   if (is.numeric(lvls))
   {
     if (always.levels)
@@ -668,11 +670,11 @@ get.atargs <- function(at.term, dd, always.levels = FALSE)
     }
   } else
     levs.indx <- which(obj.levs %in% as.character(lvls))
-
+  
   #Check that levs.indx is legal  
   if (length(levs.indx) != 0 && (min(levs.indx) < 0 || max(levs.indx) > length(obj.levs)))
     stop('at has numeric values that are more than the number of levels')
-
+  
   return(list(obj = obj, lvls = lvls, obj.levs = obj.levs, levs.indx = levs.indx))
 }
 
@@ -721,10 +723,10 @@ atLevelsMatch <- function(new, old, call, always.levels = TRUE)
     ##Find the sets of factors association with terms in old that involve one or more at functions
     at.old.terms <- getTerms.formula(old)
     at.old.terms <- at.old.terms[grepl("at\\(", at.old.terms)]
-#    at.old.terms.vars <- strsplit(at.old.terms, split = ":")
+    #    at.old.terms.vars <- strsplit(at.old.terms, split = ":")
     at.old.terms.vars <- lapply(at.old.terms, fac.getinTerm)
     at.old.terms.vars <- lapply(at.old.terms.vars, 
-                               function(vars) vars[!grepl("at\\(", vars)])
+                                function(vars) vars[!grepl("at\\(", vars)])
     names(at.old.terms.vars) <- at.old.terms
     
     #Loop over the pieces of new
@@ -811,27 +813,27 @@ atLevelsMatch <- function(new, old, call, always.levels = TRUE)
 "newfit.asreml" <- function(asreml.obj, fixed., random., sparse., 
                             residual., rcov., update = TRUE, trace = FALSE, 
                             allow.unconverged = TRUE, allow.fixedcorrelation = TRUE,
-                            keep.order = TRUE, set.terms = NULL, 
-                            ignore.suffices = TRUE, bounds = "P", 
-                            initial.values = NA, ...)
-#a function to refit an asreml model with modified model formula
-#using either update.asreml or a direct call to asreml
-#- the principal difference is that the latter does not enforce the 
-#  use of previous values of the variance parameters as initial values.
-#- ... is used to pass arguments to asreml.
-# set.terms is a vector of characters with the names of the gammas to be set
-# bounds specifies the bounds to be applied to the terms 
-# initial.values specifies the initial values for the terms
-# - ignore.suffices, bounds and initial.values must be of length 1 or 
-#   the same length as terms
-# - if any of bounds or initial.values is set to NA, then they are 
+                            keep.order = TRUE, 
+                            set.terms = NULL, ignore.suffices = TRUE, 
+                            bounds = "P", initial.values = NA, ...)
+  #a function to refit an asreml model with modified model formula
+  #using either update.asreml or a direct call to asreml
+  #- the principal difference is that the latter does not enforce the 
+  #  use of previous values of the variance parameters as initial values.
+  #- ... is used to pass arguments to asreml.
+  # set.terms is a vector of characters with the names of the gammas to be set
+  # bounds specifies the bounds to be applied to the terms 
+  # initial.values specifies the initial values for the terms
+  # - ignore.suffices, bounds and initial.values must be of length 1 or 
+  #   the same length as terms
+  # - if any of bounds or initial.values is set to NA, then they are 
 #   left unchanged for those terms
 { 
   #Deal with deprecated constraints parameter
   tempcall <- list(...)
   if (length(tempcall)) 
     if ("constraints" %in% names(tempcall))
-      stop("constraints has been deprecated in setvarianceterms.asreml - use bounds")
+      stop("constraints has been deprecated in setvarianceterms.call - use bounds")
   
   #For asr4, need to set trace using asreml.options in here and as.asrtests
   asr4 <- isASRemlVersionLoaded(4, notloaded.fault = TRUE)
@@ -882,20 +884,20 @@ atLevelsMatch <- function(new, old, call, always.levels = TRUE)
         my.update.formula(as.formula(languageEl(call, which = "fixed")), 
                           fixed., call = call, keep.order = keep.order)
   }
-
+  
   if (!missing(random.)) 
   {
     if (is.null(random.))
       languageEl(call, which = "random") <- NULL
     else
       languageEl(call, which = "random") <- 
-      { 
-        if (!is.null(languageEl(call, which = "random"))) 
-          my.update.formula(as.formula(languageEl(call, which = "random")), 
-                            random., call = call, keep.order = keep.order)
-        else 
-          random.
-      }
+        { 
+          if (!is.null(languageEl(call, which = "random"))) 
+            my.update.formula(as.formula(languageEl(call, which = "random")), 
+                              random., call = call, keep.order = keep.order)
+          else 
+            random.
+        }
   }
   if (!missing(sparse.)) 
     languageEl(call, which = "sparse") <- 
@@ -915,12 +917,12 @@ atLevelsMatch <- function(new, old, call, always.levels = TRUE)
         languageEl(call, which = "residual") <- NULL
       else
         languageEl(call, which = "residual") <- 
-        { if (!is.null(languageEl(call, which = "residual"))) 
-          my.update.formula(as.formula(languageEl(call, which = "residual")), 
-                            residual., call = call, keep.order = keep.order)
-          else 
-            residual.
-        }
+          { if (!is.null(languageEl(call, which = "residual"))) 
+            my.update.formula(as.formula(languageEl(call, which = "residual")), 
+                              residual., call = call, keep.order = keep.order)
+            else 
+              residual.
+          }
     }
   } else
   {
@@ -932,12 +934,12 @@ atLevelsMatch <- function(new, old, call, always.levels = TRUE)
         languageEl(call, which = "rcov") <- NULL
       else
         languageEl(call, which = "rcov") <- 
-        { if (!is.null(languageEl(call, which = "rcov"))) 
-          my.update.formula(as.formula(languageEl(call, which = "rcov")), 
-                            rcov., call = call, keep.order = keep.order)
-          else 
-            rcov.
-        }
+          { if (!is.null(languageEl(call, which = "rcov"))) 
+            my.update.formula(as.formula(languageEl(call, which = "rcov")), 
+                              rcov., call = call, keep.order = keep.order)
+            else 
+              rcov.
+          }
     }
   }
   
@@ -958,8 +960,7 @@ atLevelsMatch <- function(new, old, call, always.levels = TRUE)
       if (!is.null(languageEl(call, which = "G.param")))
         languageEl(call, which = "G.param") <- NULL
     }
-  }
-  else
+  } else
   { 
     #set variance terms
     #test for compatibility of arguments
@@ -993,8 +994,9 @@ atLevelsMatch <- function(new, old, call, always.levels = TRUE)
     }
     k <- unlist(lapply(1:nt, 
                        FUN=function(i, set.terms, termslist, ignore.suffices=TRUE)
-                       { k <- findterm(set.terms[i], termslist, rmDescription=ignore.suffices[i])
-                       return(k)
+                       { 
+                         k <- findterm(set.terms[i], termslist, rmDescription=ignore.suffices[i])
+                         return(k)
                        }, 
                        set.terms=set.terms,
                        termslist=gammas, 
@@ -1020,9 +1022,6 @@ atLevelsMatch <- function(new, old, call, always.levels = TRUE)
     languageEl(call, which = "G.param") <- gamma.table
     languageEl(call, which = "R.param") <- gamma.table
   }
-  
-  
-  
   
   #deal with args coming via ...
   tempcall <- list(...)
@@ -1058,6 +1057,7 @@ atLevelsMatch <- function(new, old, call, always.levels = TRUE)
   asreml.new.obj <- eval(call, sys.parent())
   asreml.new.obj$call <- call
   
+  #Check if updating and all variance parameters are either F, B or S, but not equal to 1
   if (update)
   {
     Rterms <- grepl("!R", names(asreml.new.obj$vparameters), fixed = TRUE)
@@ -1065,11 +1065,16 @@ atLevelsMatch <- function(new, old, call, always.levels = TRUE)
     Rterms <- unique(unlist(lapply(Rterms, rmTermDescription)))
     rterms.chk <- unlist(lapply(Rterms, grepl, names(asreml.new.obj$vparameters), fixed = TRUE)) & 
       asreml::vpt.char(asreml.new.obj) == "V"
-    if (all(asreml::vpc.char(asreml.new.obj)[rterms.chk] %in% c("F","B","S")))
+    if (all(asreml::vpc.char(asreml.new.obj)[rterms.chk] %in% c("F","B","S")) && 
+        !any(asreml.new.obj$vparameters[rterms.chk] == 1))
       stop("There is no unbound residual variance - perhaps try update = FALSE")
   }
   
-  #If not converged, issue warning
+  #If not converged or large change in the variance parameters, try more iterations
+  if (!asreml.new.obj$converge || largeVparChange(asreml.new.obj, threshold = 0.75))
+    asreml.new.obj <- asreml::update.asreml(asreml.new.obj)
+  
+  #If still not converged, issue warning
   if (!asreml.new.obj$converge)
   {
     warning(asreml.new.obj$last.message)
@@ -1137,16 +1142,16 @@ atLevelsMatch <- function(new, old, call, always.levels = TRUE)
                                   IClikelihood = "none", trace = FALSE, update = TRUE, 
                                   set.terms = NULL, ignore.suffices = TRUE, 
                                   bounds = "P", initial.values = NA, ...)
-#Removes any boundary or singular terms from the fit stored in asreml.obj, 
-#one by one from largest to smallest
-#For a list of bounds codes see setvarianceterms.call
+  #Removes any boundary or singular terms from the fit stored in asreml.obj, 
+  #one by one from largest to smallest
+  #For a list of bounds codes see setvarianceterms.call
 { 
   
   #Deal with deprecated constraints parameter
   tempcall <- list(...)
   if (length(tempcall)) 
     if ("constraints" %in% names(tempcall))
-      stop("constraints has been deprecated in setvarianceterms.asreml - use bounds")
+      stop("constraints has been deprecated in setvarianceterms.call - use bounds")
   
   asr4 <- isASRemlVersionLoaded(4, notloaded.fault = TRUE)
   #Check that a valid object of class asrtests
@@ -1158,7 +1163,7 @@ atLevelsMatch <- function(new, old, call, always.levels = TRUE)
   options <- c("none", "REML", "full")
   ic.lik <- options[check.arg.values(IClikelihood, options)]
   ic.NA <- data.frame(AIC = NA, BIC = NA)
-
+  
   #check input arguments
   if (asr4)
     kresp <- asrtests.obj$asreml.obj$formulae$fixed[[2]]
@@ -1182,8 +1187,7 @@ atLevelsMatch <- function(new, old, call, always.levels = TRUE)
       bound.terms <- allvcomp$bound == "B" | allvcomp$bound == "S"
       #                 | bound == "F"
       #bound.terms[grep("?", bound, fixed=TRUE)] <- TRUE
-    }
-    else
+    } else
     {
       allvcomp <- data.frame(bound = names(asreml.obj$gammas.con), 
                              component = asreml.obj$gammas,
@@ -1195,7 +1199,7 @@ atLevelsMatch <- function(new, old, call, always.levels = TRUE)
     vcomp <- allvcomp[bound.terms, ]
     nbound <- nrow(vcomp)
     #No boundary terms, so get out
-    if (nbound <= 0 | checkboundaryonly) break
+    if (nbound <= 0 || checkboundaryonly || is.null(asreml.obj$call$random)) break
     #Reduce bound terms to set of bound terms that can be removed
     k <- 1
     while (k <= nbound)
@@ -1208,16 +1212,17 @@ atLevelsMatch <- function(new, old, call, always.levels = TRUE)
       # if (termno <= 0) #must be an R term or not a recognisable G term
       term <- rownames(vcomp)[k]
       call <- asreml.obj$call
-      if(substr(term, 1, 2) != "R!")  term <- rmTermDescription(term)
+      if (substr(term, 1, 2) != "R!")  term <- rmTermDescription(term)
       termform <- atLevelsMatch(new = as.formula(paste("~", term)), 
                                 old = as.formula(languageEl(call, which = "random")), 
                                 call = call)
       ranterms <- getTerms.formula(call$random)
       ranforms <- lapply(ranterms, function(term) ran <- as.formula(paste("~",term)))
+      #Are there any nonremovable terms? i.e. not an R term or not a recognizable G term
       if (!any(sapply(ranforms, 
                       function(rform, termform) setequal(fac.getinTerm(getTerms.formula(rform)),
                                                          fac.getinTerm(getTerms.formula(termform))),
-                      termform = termform))) #must be an R term or not a recognisable G term
+                      termform = termform)))
       { 
         vcomp <- vcomp[-k, ]
         k <- k - 1
@@ -1240,7 +1245,7 @@ atLevelsMatch <- function(new, old, call, always.levels = TRUE)
     }
     #No removeable boundary terms, so get out
     if (nbound <= 0) break
-    #If single term, set it as the terms to remove
+    #If single term, set it as the term to remove
     if (nbound == 1)
     { 
       term <- rmTermDescription(rownames(vcomp)[1])
@@ -1250,9 +1255,9 @@ atLevelsMatch <- function(new, old, call, always.levels = TRUE)
       vcomp.vars <- lapply(rownames(vcomp)[1:nbound], getTermVars)
       vcomp.codes <- lapply(vcomp.vars, getVarsCodes, asreml.obj = asreml.obj)
       vcomp <- within(vcomp, {
-                          terms.random <- unlist(lapply(vcomp.codes, function(term){all(term == 5)}))
-                          varnos <- unlist(lapply(vcomp.codes, length))
-                    })
+        terms.random <- unlist(lapply(vcomp.codes, function(term){all(term == 5)}))
+        varnos <- unlist(lapply(vcomp.codes, length))
+      })
       #Identify terms of the same type that are next to be removed
       max.no.factor <- TRUE
       #Check for terms that involve the dev function
@@ -1283,7 +1288,6 @@ atLevelsMatch <- function(new, old, call, always.levels = TRUE)
               if (any(this.type))
                 vcomp <- subset(vcomp, this.type)
             }
-            
           }
         }
       }
@@ -1303,11 +1307,14 @@ atLevelsMatch <- function(new, old, call, always.levels = TRUE)
     }
     #Remove chosen term
     if (ic.lik != "none")
+    { 
       ic <- infoCriteria(asreml.obj, IClikelihood = ic.lik)
-    #if want to include bound.exclusions then have to make it an arg of rmboundary.asrtests
-    #, bound.exclusions = bound.exclusions) 
-    else
+    } else
+    {  
+      #if want to include bound.exclusions then have to make it an arg of rmboundary.asrtests
+      #, bound.exclusions = bound.exclusions) 
       ic <- ic.NA
+    }
     test.summary <- addtoTestSummary(test.summary, terms = term, 
                                      DF = 1, denDF = NA, p = NA, 
                                      AIC = ic$AIC, BIC = ic$BIC, 
@@ -1347,8 +1354,8 @@ atLevelsMatch <- function(new, old, call, always.levels = TRUE)
     warning(paste("Removing boundary terms has changed the log likelihood by "),
             change,"%")
   results <- as.asrtests(asreml.obj = asreml.obj, 
-                      wald.tab = asrtests.obj$wald.tab, 
-                      test.summary = test.summary, ...)
+                         wald.tab = asrtests.obj$wald.tab, 
+                         test.summary = test.summary, ...)
   invisible(results)
 }
 
@@ -1364,14 +1371,14 @@ atLevelsMatch <- function(new, old, call, always.levels = TRUE)
                                    IClikelihood = "none", 
                                    bound.exclusions = c("F","B","S","C"),  
                                    ...)
-  #Adds or removes sets of terms from one or both of the fixed or random asreml models
+#Adds or removes sets of terms from one or both of the fixed or random asreml models
 { 
   
   #Deal with deprecated constraints parameter
   tempcall <- list(...)
   if (length(tempcall)) 
     if ("constraints" %in% names(tempcall))
-      stop("constraints has been deprecated in setvarianceterms.asreml - use bounds")
+      stop("constraints has been deprecated in setvarianceterms.call - use bounds")
   
   asr4 <- isASRemlVersionLoaded(4, notloaded.fault = TRUE)
   
@@ -1394,14 +1401,14 @@ atLevelsMatch <- function(new, old, call, always.levels = TRUE)
   if (!isFixedCorrelOK(asrtests.obj$asreml.obj, allow.fixedcorrelation = allow.fixedcorrelation))
     warning(paste("The estimated value of one or more correlations in the supplied asreml fit for", kresp,
                   "is fixed and allow.fixedcorrelation is FALSE"))
-  all.terms <- c(dropFixed, addFixed, dropRandom, addRandom, newResidual)
+  all.terms <- c(dropFixed, addFixed, dropRandom, addRandom, newResidual,set.terms)
   if (all(is.null(all.terms)))
     stop("In analysing ", kresp, ", must supply terms to be removed/added")
   if (any(substr(trimws(all.terms), 1, 1) == "~"))
     stop("In analysing ", kresp, ", a leading tilde (~) has been included")
   if (!is.character(all.terms))
     stop("In analysing ", kresp, ", must supply terms as character")
-
+  
   #initialize
   asreml.obj <- asrtests.obj$asreml.obj
   wald.tab <- asrtests.obj$wald.tab
@@ -1409,7 +1416,7 @@ atLevelsMatch <- function(new, old, call, always.levels = TRUE)
   
   #Form formula with terms to be added and removed
   fix.form <- ". ~ . "
-  if (!is.null(dropFixed) | !is.null(addFixed))
+  if (!is.null(dropFixed) || !is.null(addFixed))
   {
     if (!is.null(dropFixed))
       fix.form <- paste(fix.form, " - (", dropFixed, ")", sep = "")
@@ -1417,12 +1424,12 @@ atLevelsMatch <- function(new, old, call, always.levels = TRUE)
       fix.form <- paste(fix.form, " + (", addFixed, ")", sep = "")
     fix.form <- as.formula(fix.form)
   }
-
+  
   ran.form <-" ~ . "
   if (is.null(asreml.obj$G.param))
     ran.form <-" ~ "
-  if (((is.null(dropRandom) & is.null(addRandom)) |
-      (!is.null(dropRandom) & is.null(addRandom))) & is.null(asreml.obj$G.param))
+  if (((is.null(dropRandom) && is.null(addRandom)) ||
+       (!is.null(dropRandom) && is.null(addRandom))) && is.null(asreml.obj$G.param))
   {
     ran.form <- NULL
     if (!is.null(dropRandom))
@@ -1435,7 +1442,7 @@ atLevelsMatch <- function(new, old, call, always.levels = TRUE)
       ran.form <- paste(ran.form , " + (", addRandom, ")", sep = "")
     ran.form <- as.formula(ran.form)
   }
-
+  
   res.form <- " ~ "
   if (!is.null(newResidual))
     res.form <- as.formula(paste(res.form, newResidual, sep=""))
@@ -1456,24 +1463,29 @@ atLevelsMatch <- function(new, old, call, always.levels = TRUE)
     }
   }
   
-  #Check models to update by determining if they have any terms in the update formula
-  forms <- stringr::str_trim(as.character(c(fix.form, ran.form, res.form), side = "both"))
-  lastch <- stringr::str_sub(forms, start = nchar(forms))
-  lastch <- !(lastch == "." | lastch == "~")
-  if (is.null(res.form))
-    lastch <- c(lastch, FALSE)
-  if (is.null(ran.form))
-    lastch <- c(lastch[1], FALSE, lastch[2])
-  if (!any(lastch))
-    action <- "No changes"
+  if (length(setdiff(all.terms, set.terms)) == 0) #set.terms only
+    action <- "Fix terms"
   else
-  {
-    if (sum(lastch) == 1)
-      action <- paste("Changed ", c("fixed", "random","residual")[lastch], sep = "")
+  {  
+    #Check models to update by determining if they have any terms in the update formula
+    forms <- stringr::str_trim(as.character(c(fix.form, ran.form, res.form), side = "both"))
+    lastch <- stringr::str_sub(forms, start = nchar(forms))
+    lastch <- !(lastch == "." | lastch == "~")
+    if (is.null(res.form))
+      lastch <- c(lastch, FALSE)
+    if (is.null(ran.form))
+      lastch <- c(lastch[1], FALSE, lastch[2])
+    if (!any(lastch))
+      action <- "No changes"
     else
-      action <- paste("Changed ", 
-                      paste(c("fixed", "random","residual")[lastch], collapse = ", "), 
-                      sep = "")
+    {
+      if (sum(lastch) == 1)
+        action <- paste("Changed ", c("fixed", "random","residual")[lastch], sep = "")
+      else
+        action <- paste("Changed ", 
+                        paste(c("fixed", "random","residual")[lastch], collapse = ", "), 
+                        sep = "")
+    }
   }
   
   #Update the models
@@ -1490,35 +1502,45 @@ atLevelsMatch <- function(new, old, call, always.levels = TRUE)
                                      action = action)
   } else
   {
-    if (asr4)
+    if (action == "Fix terms") #set.terms only
     {
-      asreml.new.obj <- newfit.asreml(asreml.obj, 
-                                      fixed. = fix.form, random. = ran.form, 
-                                      residual. = res.form, 
-                                      trace = trace, update = update, 
-                                      allow.unconverged = TRUE, 
-                                      allow.fixedcorrelation = TRUE, 
-                                      set.terms = set.terms, 
-                                      ignore.suffices = ignore.suffices, 
-                                      bounds = bounds, 
-                                      initial.values = initial.values, ...)
-    } else
-    {
-      asreml.new.obj <- do.call(newfit.asreml,
-                                args = list(asreml.obj, 
-                                            fixed. = fix.form, random. = ran.form, 
-                                            rcov. = res.form, 
-                                            trace = trace, update = update, 
-                                            allow.unconverged = TRUE, 
-                                            allow.fixedcorrelation = TRUE, 
-                                            set.terms = set.terms, 
-                                            ignore.suffices = ignore.suffices, 
-                                            bounds = bounds, 
-                                            initial.values = initial.values, ...))
+      asreml.obj <- asreml::update.asreml(asreml.obj)
+      call <- asreml.obj$call
+      asreml.new.obj <- setvarianceterms(call, 
+                                         terms = set.terms, 
+                                         ignore.suffices = ignore.suffices, 
+                                         bounds = bounds, 
+                                         initial.values = initial.values)
+    } else #have changes to model terms
+    { 
+      asreml.obj <- asreml::update.asreml(asreml.obj)
+      if (asr4) 
+        asreml.new.obj <- newfit.asreml(asreml.obj, 
+                                        fixed. = fix.form, random. = ran.form, 
+                                        residual. = res.form, 
+                                        trace = trace, update = update, 
+                                        allow.unconverged = TRUE, 
+                                        allow.fixedcorrelation = TRUE, 
+                                        set.terms = set.terms, 
+                                        ignore.suffices = ignore.suffices, 
+                                        bounds = bounds, 
+                                        initial.values = initial.values, ...)
+      else
+        asreml.new.obj <- do.call(newfit.asreml,
+                                  args = list(asreml.obj, 
+                                              fixed. = fix.form, random. = ran.form, 
+                                              rcov. = res.form, 
+                                              trace = trace, update = update, 
+                                              allow.unconverged = TRUE, 
+                                              allow.fixedcorrelation = TRUE, 
+                                              set.terms = set.terms, 
+                                              ignore.suffices = ignore.suffices, 
+                                              bounds = bounds, 
+                                              initial.values = initial.values, ...))
     }
     
     #Update results, checking for convergence
-    if (asreml.new.obj$converge | allow.unconverged)
+    if (asreml.new.obj$converge || allow.unconverged)
     {
       #Check fixed correlation
       if (!isFixedCorrelOK(asreml.new.obj, allow.fixedcorrelation = allow.fixedcorrelation))
@@ -1645,7 +1667,7 @@ atLevelsMatch <- function(new, old, call, always.levels = TRUE)
   tempcall <- list(...)
   if (length(tempcall)) 
     if ("constraints" %in% names(tempcall))
-      stop("constraints has been deprecated in setvarianceterms.asreml - use bounds")
+      stop("constraints has been deprecated in setvarianceterms.call - use bounds")
   
   asr4 <- isASRemlVersionLoaded(4, notloaded.fault = TRUE)
   #Check that have a valid object of class asrtests
@@ -1662,7 +1684,7 @@ atLevelsMatch <- function(new, old, call, always.levels = TRUE)
   asreml.obj <- asrtests.obj$asreml.obj
   wald.tab <- asrtests.obj$wald.tab
   test.summary <- asrtests.obj$test.summary
-
+  
   #Check for fixed correlations in supplied asrtests.obj
   if (!isFixedCorrelOK(asrtests.obj$asreml.obj, allow.fixedcorrelation = allow.fixedcorrelation))
   {
@@ -2169,7 +2191,7 @@ atLevelsMatch <- function(new, old, call, always.levels = TRUE)
   tempcall <- list(...)
   if (length(tempcall)) 
     if ("constraints" %in% names(tempcall))
-      stop("constraints has been deprecated in setvarianceterms.asreml - use bounds")
+      stop("constraints has been deprecated in setvarianceterms.call - use bounds")
   
   asr4 <- isASRemlVersionLoaded(4, notloaded.fault = TRUE)
   #Check that have a valid object of class asrtests
@@ -2185,7 +2207,7 @@ atLevelsMatch <- function(new, old, call, always.levels = TRUE)
   asreml.obj <- asrtests.obj$asreml.obj
   wald.tab <- asrtests.obj$wald.tab
   test.summary <- asrtests.obj$test.summary
-
+  
   #Check for fixed correlations in supplied asrtests.obj
   if (!isFixedCorrelOK(asrtests.obj$asreml.obj, allow.fixedcorrelation = allow.fixedcorrelation))
   {
@@ -2210,7 +2232,7 @@ atLevelsMatch <- function(new, old, call, always.levels = TRUE)
       stop("In analysing ",asrtests.obj$asreml.obj$fixed.formula[[2]],
            ", some random terms in oldterms not in random model")
   }
-
+  
   #Remove random oldterms and add random newterms
   new.form <- as.formula(paste("~ . - ",oldterms," + ",newterms, sep=""))
   asreml.new.obj <- newfit.asreml(asreml.obj, random. = new.form, 
@@ -2372,14 +2394,14 @@ atLevelsMatch <- function(new, old, call, always.levels = TRUE)
                                     update = TRUE, trace = FALSE, 
                                     set.terms = NULL, ignore.suffices = TRUE, 
                                     bounds = "P", initial.values = NA, ...)
-#Fits new residual formula and tests whether the change is significant
+  #Fits new residual formula and tests whether the change is significant
 { 
   #Deal with deprecated constraints parameter
   tempcall <- list(...)
   if (length(tempcall)) 
     if ("constraints" %in% names(tempcall))
       stop("constraints has been deprecated in testresidual.asreml - use bounds")
-
+  
   asr4 <- isASRemlVersionLoaded(4, notloaded.fault = TRUE)
   #Check that have a valid asrtests object
   validasrt <- validAsrtests(asrtests.obj)  
@@ -2604,7 +2626,7 @@ atLevelsMatch <- function(new, old, call, always.levels = TRUE)
     nonzero <- which(x.lt == 1, arr.ind=TRUE)
     nonzero <- nonzero[nonzero[, 1] == max(nonzero[, 1]), ]
     if (!is.null(nrow(nonzero)))
-        nonzero <- nonzero[nonzero[, 2] == max(nonzero[, 2]), ]
+      nonzero <- nonzero[nonzero[, 2] == max(nonzero[, 2]), ]
     #perform the permutation that in interchanges rows r and c and columns r and c
     permtn <- 1:m
     permtn[nonzero[1]] <- nonzero[2]
@@ -2628,18 +2650,18 @@ atLevelsMatch <- function(new, old, call, always.levels = TRUE)
                                       trace = FALSE, update = TRUE, 
                                       set.terms = NULL, ignore.suffices = TRUE, 
                                       bounds = "P", initial.values = NA, ...)
-#reparamterizes a deviations term to a fixed term
-#It assumes that the deviations term are deviations from trend in trend.num and 
-#  that there is a random deviations term that involves devn.fac
-#Also assumes that the same term, but with the devn.fac substitued by trend.num
-#   and spl(trend.num), are in the fixed and random models respectively.
-#Retains the trend.num term if there are any significant terms involving it.
+  #reparamterizes a deviations term to a fixed term
+  #It assumes that the deviations term are deviations from trend in trend.num and 
+  #  that there is a random deviations term that involves devn.fac
+  #Also assumes that the same term, but with the devn.fac substitued by trend.num
+  #   and spl(trend.num), are in the fixed and random models respectively.
+  #Retains the trend.num term if there are any significant terms involving it.
 { 
   #Deal with deprecated constraints parameter
   tempcall <- list(...)
   if (length(tempcall)) 
     if ("constraints" %in% names(tempcall))
-      stop("constraints has been deprecated in setvarianceterms.asreml - use bounds")
+      stop("constraints has been deprecated in setvarianceterms.call - use bounds")
   
   asr4 <- isASRemlVersionLoaded(4, notloaded.fault = TRUE)
   #Check that have a valid object of class asrtests
@@ -2774,8 +2796,8 @@ atLevelsMatch <- function(new, old, call, always.levels = TRUE)
 }
 
 "predictASR4" <- function(asreml.obj, classify, levels = list(), 
-                        sed = TRUE, vcov = FALSE, 
-                        trace = FALSE, ...)
+                          sed = TRUE, vcov = FALSE, 
+                          trace = FALSE, ...)
 {
   if (sed & vcov)
   {
@@ -2789,7 +2811,7 @@ atLevelsMatch <- function(new, old, call, always.levels = TRUE)
     n <- nrow(vc)
     dvcov <- diag(vc)
     pred$sed <- matrix(rep(dvcov, each = n), nrow = n) + 
-                     matrix(rep(dvcov, times = n), nrow = n) - 2 * vc
+      matrix(rep(dvcov, times = n), nrow = n) - 2 * vc
     pred$sed <- sqrt(pred$sed)
     diag(pred$sed) <- NA_real_
   } else
@@ -2835,14 +2857,14 @@ atLevelsMatch <- function(new, old, call, always.levels = TRUE)
                                  sortFactor = NULL, sortParallelToCombo = NULL, 
                                  sortNestingFactor = NULL, sortOrder = NULL, 
                                  decreasing = FALSE, trace = FALSE, ...)
-  #a function to get asreml predictions when there a parallel vector and factor are involved
+#a function to get asreml predictions when there a parallel vector and factor are involved
 { 
   #Check for deprecated argument meanLSD.type and warn
   tempcall <- list(...)
   if (length(tempcall)) 
     if ("meanLSD.type" %in% names(tempcall))
       stop("meanLSD.type has been deprecated - use LSDtype")
-
+  
   asr4 <- isASRemlVersionLoaded(4, notloaded.fault = TRUE)
   #Check that have a valid object of class asreml
   validasr <- validAsreml(asreml.obj)  
@@ -2860,7 +2882,7 @@ atLevelsMatch <- function(new, old, call, always.levels = TRUE)
     stop("levels.length has been deprecated - use level.length")
   if ("vcov" %in% names(tempcall))
     stop("Use Vmatrix to request that the vcov matrix be saved")
-
+  
   #Check that have a valid wald.tab object
   validwald <- validWaldTab(wald.tab)  
   if (is.character(validwald))
@@ -2902,7 +2924,7 @@ atLevelsMatch <- function(new, old, call, always.levels = TRUE)
     else
       get.vcov <- FALSE
   }
-
+  
   #Get the predicted values when x.num is not involved in classify
   if (is.null(x.num) || !(x.num %in% vars))
   { 
@@ -2935,8 +2957,8 @@ atLevelsMatch <- function(new, old, call, always.levels = TRUE)
         else
           if (all(is.na((as.numfac(pred$pvals[[k]])))))
             stop(paste("the levels of ",x.fac, "are not numeric in nature"))
-          else
-            pred$pvals[[k]] <- as.numfac(pred$pvals[[k]])
+        else
+          pred$pvals[[k]] <- as.numfac(pred$pvals[[k]])
       }
     }
     else #make sure all variables are factors
@@ -3026,7 +3048,7 @@ atLevelsMatch <- function(new, old, call, always.levels = TRUE)
   {
     i <- findterm(term, rownames(wald.tab))
     if (i != 0 && "denDF" %in% colnames(wald.tab) && !is.na(wald.tab$denDF[i]))
-        denom.df <- wald.tab$denDF[i]
+      denom.df <- wald.tab$denDF[i]
     else  if (i == 0)
     { 
       {
@@ -3070,7 +3092,7 @@ atLevelsMatch <- function(new, old, call, always.levels = TRUE)
       }
     }
   }
-
+  
   #Initialize for setting up alldiffs object
   if (asr4)
     response <- as.character(asreml.obj$formulae$fixed[[2]])
@@ -3086,7 +3108,7 @@ atLevelsMatch <- function(new, old, call, always.levels = TRUE)
     if (!is.null(linear.transformation))
       response.title <- paste(response.title, "transform(s)", sep = " ")
   }
-
+  
   #Form alldiffs object for predictions
   if (!get.vcov)
     lintrans.vcov <- NULL
@@ -3132,7 +3154,7 @@ atLevelsMatch <- function(new, old, call, always.levels = TRUE)
                                    pairwise = pairwise, alpha = alpha, 
                                    inestimable.rm = inestimable.rm)
   }
-
+  
   #Sort alldiffs components, if required
   if (!is.null(sortFactor))
     diffs <- sort(diffs, decreasing = decreasing, sortFactor = sortFactor, 
@@ -3154,14 +3176,14 @@ atLevelsMatch <- function(new, old, call, always.levels = TRUE)
                                          interval.annotate = TRUE, 
                                          titles = NULL, y.title = NULL, 
                                          filestem = NULL, ggplotFuncs = NULL, ...)
-#a function to plot asreml predictions and associated statistics
+  #a function to plot asreml predictions and associated statistics
 { 
   
   #Get ... argument so can check for linear.transformation argument
   tempcall <- list(...)
   if ("linear.transformation" %in% names(tempcall))
     warning("linear.transformation is not an argument to plotPredictions - perhaps use linTransform")
-
+  
   #Change asreml4 names to asreml3 names
   data <- as.predictions.frame(data, se = "std.error", est.status = "status")
   #Check that a valid object of class predictions.frame
@@ -3184,7 +3206,7 @@ atLevelsMatch <- function(new, old, call, always.levels = TRUE)
   if (is.null(x.num))
     if (!is.null(x.fac) && all(is.na((as.numfac(data[[x.fac]])))))
       stop(paste("the levels of ",x.fac, "are not numeric in nature"))
-
+  
   #work out columns for intervals and their names along with labels for them
   if (intervals)
   { 
@@ -3233,9 +3255,9 @@ atLevelsMatch <- function(new, old, call, always.levels = TRUE)
   non.x.terms <- setdiff(vars, c(x.fac, x.num))
   n.non.x <- length(non.x.terms)
   if ((length(vars) != n.non.x && n.non.x > 2) || (length(vars) == n.non.x && n.non.x > 3)) 
-      stop("Sorry but plotting for prediction terms with more than 3 variables ", 
-           "not implemented; \n", 
-           "One possibility is to use facCombine.alldiffs to combine some factors.")
+    stop("Sorry but plotting for prediction terms with more than 3 variables ", 
+         "not implemented; \n", 
+         "One possibility is to use facCombine.alldiffs to combine some factors.")
   #Determine plotting order of non.x.vars
   if (!is.null(nonx.fac.order)) 
   { 
@@ -3243,20 +3265,20 @@ atLevelsMatch <- function(new, old, call, always.levels = TRUE)
       stop("The factors nonx.fac.order are not the same as the set in the term being plotted")
     non.x.terms <- nonx.fac.order
     nos.lev <- sapply(1:n.non.x, 
-      FUN=function(k, non.x.terms, data){return(length(levels(data[[non.x.terms[k]]])))},
-      non.x.terms = non.x.terms, data = data)
+                      FUN=function(k, non.x.terms, data){return(length(levels(data[[non.x.terms[k]]])))},
+                      non.x.terms = non.x.terms, data = data)
   }
   else
-  #Default order - sort non.x.vars according to their numbers of levels 
+    #Default order - sort non.x.vars according to their numbers of levels 
   { 
     nos.lev <- 1
     if(n.non.x >0)
     { nos.lev <- sapply(1:n.non.x, 
                         FUN=function(k, non.x.terms, data)
-                               {return(length(levels(data[[non.x.terms[k]]])))},
+                        {return(length(levels(data[[non.x.terms[k]]])))},
                         non.x.terms = non.x.terms, data = data)
-      non.x.terms <- non.x.terms[order(nos.lev, decreasing = TRUE)]
-      nos.lev <- nos.lev[order(nos.lev, decreasing = TRUE)]
+    non.x.terms <- non.x.terms[order(nos.lev, decreasing = TRUE)]
+    nos.lev <- nos.lev[order(nos.lev, decreasing = TRUE)]
     }
   }
   #Append x.vars 
@@ -3276,10 +3298,10 @@ atLevelsMatch <- function(new, old, call, always.levels = TRUE)
   cbPalette <- rep(c("#CC79A7", "#56B4E9", "#009E73", "#E69F00", "#0072B2", "#D55E00", "#000000"), times=2)
   symb <- rep(c(18,17,15,3,13,8,21,9,3,2,11,1,7,5,10,0), times=10)
   if (!is.null(graphics.device) )
-      do.call(graphics.device, list(record = FALSE))
+    do.call(graphics.device, list(record = FALSE))
   barplot <- FALSE
   if (length(vars) == length(non.x.terms))
-  #Do bar chart
+    #Do bar chart
   { 
     barplot <- TRUE
     if (!is.null(titles) & !is.na(match(vars[1], names(titles))))
@@ -3287,23 +3309,23 @@ atLevelsMatch <- function(new, old, call, always.levels = TRUE)
     else
       x.title <- vars[[1]]
     pred.plot <-  ggplot(data=data, ...) + theme_bw() + 
-                       scale_y_continuous(y.title)
+      scale_y_continuous(y.title)
     if (classify == "(Intercept)")
       pred.plot <- pred.plot + scale_x_discrete(x.title, labels = NULL)
     else
       pred.plot <- pred.plot + scale_x_discrete(x.title)
     if (scheme.opt == "black")
       pred.plot <-  pred.plot + theme_bw() +
-                         theme(panel.grid.major = element_line(colour = "grey95", 
-                                    linewidth= 0.5), 
-                               panel.grid.minor = element_line(colour = "grey98", 
-                                    linewidth = 0.5))
+      theme(panel.grid.major = element_line(colour = "grey95", 
+                                            linewidth= 0.5), 
+            panel.grid.minor = element_line(colour = "grey98", 
+                                            linewidth = 0.5))
     if (n.non.x == 1)
     { 
       pred.plot <-  pred.plot + 
-                       aes(x = .data[[!!vars[1]]], y = .data[[!!y]]) + 
-                       scale_fill_manual(values=cbPalette) + 
-                       theme(axis.text.x=element_text(angle=90, hjust=1))
+        aes(x = .data[[!!vars[1]]], y = .data[[!!y]]) + 
+        scale_fill_manual(values=cbPalette) + 
+        theme(axis.text.x=element_text(angle=90, hjust=1))
       if (scheme.opt == "black")
         pred.plot <-  pred.plot + geom_bar(stat="identity", fill="grey50") 
       else
@@ -3313,11 +3335,11 @@ atLevelsMatch <- function(new, old, call, always.levels = TRUE)
         if (scheme.opt == "black")
           pred.plot <- pred.plot + geom_errorbar(aes(ymin=.data[[!!ylow]], 
                                                      ymax=.data[[!!yupp]]),   
-                                        linetype = "solid", colour = "black") 
+                                                 linetype = "solid", colour = "black") 
         else
-            pred.plot <- pred.plot + geom_errorbar(aes(ymin=.data[[!!ylow]], 
-                                                       ymax=.data[[!!yupp]]),   
-                                        linetype = "solid", colour = cbPalette[5]) 
+          pred.plot <- pred.plot + geom_errorbar(aes(ymin=.data[[!!ylow]], 
+                                                     ymax=.data[[!!yupp]]),   
+                                                 linetype = "solid", colour = cbPalette[5]) 
         if (interval.annotate)
         {
           pred.plot <- pred.plot + 
@@ -3330,139 +3352,139 @@ atLevelsMatch <- function(new, old, call, always.levels = TRUE)
         }
       }
     } else
-    if (n.non.x == 2)
-    { 
-      pred.plot <-  pred.plot + 
-                       aes(x = .data[[!!vars[1]]], y = .data[[!!y]]) + 
-                       scale_fill_manual(values=cbPalette) + 
-                       facet_grid(as.formula(paste("~ ",vars[2],sep=""))) + 
-                       theme(axis.text.x=element_text(angle=90, hjust=1))
-      if (scheme.opt == "black")
-        pred.plot <-  pred.plot + geom_bar(stat="identity", fill="grey50") 
-      else
-        pred.plot <-  pred.plot + geom_bar(stat="identity", fill=cbPalette[1])
-      if (intervals)
+      if (n.non.x == 2)
       { 
-        non.x.lev <- levels(data[[vars[2]]])
-        annot <- data.frame(Inf, -Inf, 
-                             factor(non.x.lev[length(non.x.lev)], levels = non.x.lev))
-        names(annot) <- c(vars[1], y, vars[2])
+        pred.plot <-  pred.plot + 
+          aes(x = .data[[!!vars[1]]], y = .data[[!!y]]) + 
+          scale_fill_manual(values=cbPalette) + 
+          facet_grid(as.formula(paste("~ ",vars[2],sep=""))) + 
+          theme(axis.text.x=element_text(angle=90, hjust=1))
         if (scheme.opt == "black")
-          pred.plot <- pred.plot + geom_errorbar(aes(ymin=.data[[!!ylow]], 
-                                                     ymax=.data[[!!yupp]]),   
-                                      linetype = "solid", colour = "black") 
+          pred.plot <-  pred.plot + geom_bar(stat="identity", fill="grey50") 
         else
-          pred.plot <- pred.plot + geom_errorbar(aes(ymin=.data[[!!ylow]], 
-                                                     ymax=.data[[!!yupp]]),   
-                                        linetype = "solid", colour = cbPalette[5]) 
-        if (nos.lev[2] > 6)
-           pred.plot <- pred.plot +
-                         theme(strip.text.x = element_text(size = 8))
-        
-        if (interval.annotate)
-        {
-          pred.plot <- pred.plot + 
-            geom_text(data = annot, label = "Error bars are", 
-                      hjust=1, vjust=-1.3, size = 2) +
-            geom_text(data = annot, label = labend, 
-                      hjust=1, vjust=-0.3, size = 2)
-          # if (low.parts[2] == "halfLeastSignificant" && !is.na(meanLSD)) 
-          # { 
-          #   annot <- data.frame(-Inf, -Inf, 
-          #                       factor(non.x.lev[1], levels = non.x.lev))
-          #   names(annot) <- c(vars[1], y, vars[2])
-          #   pred.plot <- pred.plot + 
-          #     geom_text(data = annot, hjust=-0.01, vjust=-0.3, size = 2, 
-          #               label = paste("mean LSD = ",signif(meanLSD, digits=3)))
-          # }
+          pred.plot <-  pred.plot + geom_bar(stat="identity", fill=cbPalette[1])
+        if (intervals)
+        { 
+          non.x.lev <- levels(data[[vars[2]]])
+          annot <- data.frame(Inf, -Inf, 
+                              factor(non.x.lev[length(non.x.lev)], levels = non.x.lev))
+          names(annot) <- c(vars[1], y, vars[2])
+          if (scheme.opt == "black")
+            pred.plot <- pred.plot + geom_errorbar(aes(ymin=.data[[!!ylow]], 
+                                                       ymax=.data[[!!yupp]]),   
+                                                   linetype = "solid", colour = "black") 
+          else
+            pred.plot <- pred.plot + geom_errorbar(aes(ymin=.data[[!!ylow]], 
+                                                       ymax=.data[[!!yupp]]),   
+                                                   linetype = "solid", colour = cbPalette[5]) 
+          if (nos.lev[2] > 6)
+            pred.plot <- pred.plot +
+            theme(strip.text.x = element_text(size = 8))
+          
+          if (interval.annotate)
+          {
+            pred.plot <- pred.plot + 
+              geom_text(data = annot, label = "Error bars are", 
+                        hjust=1, vjust=-1.3, size = 2) +
+              geom_text(data = annot, label = labend, 
+                        hjust=1, vjust=-0.3, size = 2)
+            # if (low.parts[2] == "halfLeastSignificant" && !is.na(meanLSD)) 
+            # { 
+            #   annot <- data.frame(-Inf, -Inf, 
+            #                       factor(non.x.lev[1], levels = non.x.lev))
+            #   names(annot) <- c(vars[1], y, vars[2])
+            #   pred.plot <- pred.plot + 
+            #     geom_text(data = annot, hjust=-0.01, vjust=-0.3, size = 2, 
+            #               label = paste("mean LSD = ",signif(meanLSD, digits=3)))
+            # }
+          }
         }
-      }
-    } else
-    if (n.non.x == 3)
-    { 
-      pred.plot <-  pred.plot + 
-                       aes(x = .data[[!!vars[1]]], y = .data[[!!y]]) + 
-                       scale_fill_manual(values=cbPalette) + 
-                       facet_grid(as.formula(paste(vars[3]," ~ ",vars[2],sep=""))) + 
-                       theme(axis.text.x=element_text(angle=90, hjust=1))
-      if (scheme.opt == "black")
-        pred.plot <-  pred.plot + geom_bar(stat="identity", fill="grey50") 
-      else
-        pred.plot <-  pred.plot + geom_bar(stat="identity", fill=cbPalette[1])
-      if (nos.lev[2] > 6 || nos.lev[3] > 6)
-         pred.plot <- pred.plot +
-                       theme(strip.text.x = element_text(size = 8),
-                       strip.text.y = element_text(size = 8, angle = -90))
-      if (intervals)
-      { 
-        non.x.lev1 <- levels(data[[vars[3]]])
-        non.x.lev2 <- levels(data[[vars[2]]])
-        annot <- data.frame(Inf, -Inf, 
-                            factor(non.x.lev1[length(non.x.lev1)], levels = non.x.lev1),
-                            factor(non.x.lev2[length(non.x.lev2)], levels = non.x.lev2))
-        names(annot) <- c(vars[1], y, vars[c(3,2)])
-        if (scheme.opt == "black")
-          pred.plot <- pred.plot + geom_errorbar(aes(ymin=.data[[!!ylow]], 
-                                                     ymax=.data[[!!yupp]]),   
-                                      linetype = "solid", colour = "black") 
-        else
-          pred.plot <- pred.plot + geom_errorbar(aes(ymin=.data[[!!ylow]], 
-                                                     ymax=.data[[!!yupp]]),   
-                                        linetype = "solid", colour = cbPalette[5]) 
-        
-        if (interval.annotate)
-        {
-          pred.plot <- pred.plot + 
-            geom_text(data = annot, label = "Error bars are", 
-                      hjust=1, vjust=-2.1, size = 2) +
-            geom_text(data = annot, label = labend, 
-                      hjust=1, vjust=-1.1, size = 2)
-          # if (low.parts[2] == "halfLeastSignificant" && !is.na(meanLSD)) 
-          # { 
-          #   annot <- data.frame(-Inf, -Inf, 
-          #                       factor(non.x.lev1[length(non.x.lev1)], levels = non.x.lev1),
-          #                       factor(non.x.lev2[1], levels = non.x.lev2))
-          #   names(annot) <- c(vars[1], y, vars[c(3,2)])
-          #   pred.plot <- pred.plot + 
-          #     geom_text(data = annot, hjust=-0.01, vjust=-1.1, size = 2, 
-          #               label = paste("mean LSD = ",signif(meanLSD, digits=3)))
-          # }
+      } else
+        if (n.non.x == 3)
+        { 
+          pred.plot <-  pred.plot + 
+            aes(x = .data[[!!vars[1]]], y = .data[[!!y]]) + 
+            scale_fill_manual(values=cbPalette) + 
+            facet_grid(as.formula(paste(vars[3]," ~ ",vars[2],sep=""))) + 
+            theme(axis.text.x=element_text(angle=90, hjust=1))
+          if (scheme.opt == "black")
+            pred.plot <-  pred.plot + geom_bar(stat="identity", fill="grey50") 
+          else
+            pred.plot <-  pred.plot + geom_bar(stat="identity", fill=cbPalette[1])
+          if (nos.lev[2] > 6 || nos.lev[3] > 6)
+            pred.plot <- pred.plot +
+              theme(strip.text.x = element_text(size = 8),
+                    strip.text.y = element_text(size = 8, angle = -90))
+          if (intervals)
+          { 
+            non.x.lev1 <- levels(data[[vars[3]]])
+            non.x.lev2 <- levels(data[[vars[2]]])
+            annot <- data.frame(Inf, -Inf, 
+                                factor(non.x.lev1[length(non.x.lev1)], levels = non.x.lev1),
+                                factor(non.x.lev2[length(non.x.lev2)], levels = non.x.lev2))
+            names(annot) <- c(vars[1], y, vars[c(3,2)])
+            if (scheme.opt == "black")
+              pred.plot <- pred.plot + geom_errorbar(aes(ymin=.data[[!!ylow]], 
+                                                         ymax=.data[[!!yupp]]),   
+                                                     linetype = "solid", colour = "black") 
+            else
+              pred.plot <- pred.plot + geom_errorbar(aes(ymin=.data[[!!ylow]], 
+                                                         ymax=.data[[!!yupp]]),   
+                                                     linetype = "solid", colour = cbPalette[5]) 
+            
+            if (interval.annotate)
+            {
+              pred.plot <- pred.plot + 
+                geom_text(data = annot, label = "Error bars are", 
+                          hjust=1, vjust=-2.1, size = 2) +
+                geom_text(data = annot, label = labend, 
+                          hjust=1, vjust=-1.1, size = 2)
+              # if (low.parts[2] == "halfLeastSignificant" && !is.na(meanLSD)) 
+              # { 
+              #   annot <- data.frame(-Inf, -Inf, 
+              #                       factor(non.x.lev1[length(non.x.lev1)], levels = non.x.lev1),
+              #                       factor(non.x.lev2[1], levels = non.x.lev2))
+              #   names(annot) <- c(vars[1], y, vars[c(3,2)])
+              #   pred.plot <- pred.plot + 
+              #     geom_text(data = annot, hjust=-0.01, vjust=-1.1, size = 2, 
+              #               label = paste("mean LSD = ",signif(meanLSD, digits=3)))
+              # }
+            }
+          }
         }
-      }
-    }
   }
   else
-  #Do line plot
+    #Do line plot
   { 
     if (intervals)
       if (!(is.null(x.num)) && x.num %in% vars)
         int.width <- (max(data[[x.num]]) - min(data[[x.num]]))*0.025
-      else
-        int.width <- length(levels(data[[x.fac]]))*0.025
-    if (!(is.null(x.num)) && x.num %in% vars)
-       x.var <- x.num
     else
-       x.var <- x.fac
+      int.width <- length(levels(data[[x.fac]]))*0.025
+    if (!(is.null(x.num)) && x.num %in% vars)
+      x.var <- x.num
+    else
+      x.var <- x.fac
     if (!is.null(titles) & !is.na(match(x.var,names(titles))))
       x.title <- titles[[x.var]]
     else
       x.title <- x.var
     pred.plot <-  ggplot(data=data, ...) + theme_bw() +
-                        scale_x_continuous(x.title) + scale_y_continuous(y.title)
+      scale_x_continuous(x.title) + scale_y_continuous(y.title)
     if (scheme.opt == "black")
       pred.plot <-  pred.plot + theme_bw() +
-                         theme(panel.grid.major = element_line(colour = "grey95", 
-                                    linewidth = 0.5), 
-                               panel.grid.minor = element_line(colour = "grey98", 
-                                    linewidth = 0.5))
+      theme(panel.grid.major = element_line(colour = "grey95", 
+                                            linewidth = 0.5), 
+            panel.grid.minor = element_line(colour = "grey98", 
+                                            linewidth = 0.5))
     #If no non.x.terms ignore single & multiple
     if (n.non.x == 0)
     { 
       pred.plot <-  pred.plot + 
-                       aes(x = .data[[!!x.var]], y = y) + 
-                       scale_colour_manual(values=cbPalette) + 
-                       scale_shape_manual(values=symb) + 
-                       geom_point(shape = symb[7])
+        aes(x = .data[[!!x.var]], y = y) + 
+        scale_colour_manual(values=cbPalette) + 
+        scale_shape_manual(values=symb) + 
+        geom_point(shape = symb[7])
       if (scheme.opt == "black")
         pred.plot <-  pred.plot + geom_line(colour = "black") 
       else
@@ -3472,11 +3494,11 @@ atLevelsMatch <- function(new, old, call, always.levels = TRUE)
         if (scheme.opt == "black")
           pred.plot <-  pred.plot + geom_errorbar(aes(ymin=.data[[!!ylow]], 
                                                       ymax=.data[[!!yupp]]),  
-                                      linetype = "solid", colour = "black", width=int.width) 
+                                                  linetype = "solid", colour = "black", width=int.width) 
         else
           pred.plot <-  pred.plot + geom_errorbar(aes(ymin=.data[[!!ylow]], 
                                                       ymax=.data[[!!yupp]]),  
-                                      linetype = "solid", colour = cbPalette[5], width=int.width) 
+                                                  linetype = "solid", colour = cbPalette[5], width=int.width) 
         
         if (interval.annotate)
         {
@@ -3490,117 +3512,117 @@ atLevelsMatch <- function(new, old, call, always.levels = TRUE)
         }
       }
     } else
-    if (panel.opt == "single")
-    #Single with non.x.terms
-    { 
-      if (n.non.x == 1)
+      if (panel.opt == "single")
+        #Single with non.x.terms
       { 
-        if (scheme.opt == "black")
-          pred.plot <-  pred.plot + aes(x = .data[[!!x.var]], y = .data[[!!y]], 
-                                      linetype=non.x.terms, shape=non.x.terms)
-        else
-          pred.plot <-  pred.plot + aes(x = .data[[!!x.var]], y = .data[[!!y]], 
-                                        colour = non.x.terms, 
-                                      linetype=non.x.terms, shape=non.x.terms) 
-        pred.plot <-  pred.plot + 
-                         labs(colour=non.x.terms, linetype=non.x.terms, shape=non.x.terms) +
-                        # scale_colour_manual(values=cbPalette) + 
-                         scale_shape_manual(values=symb) + 
-                         geom_line() + 
-                         geom_point()
-        if (intervals)
+        if (n.non.x == 1)
         { 
-          pred.plot <- pred.plot + 
-                         geom_errorbar(aes(ymin=.data[[!!ylow]], ymax=.data[[!!yupp]]),   
-                                       linetype = "solid", position = position_dodge(1))
-          if (interval.annotate)
-          {
+          if (scheme.opt == "black")
+            pred.plot <-  pred.plot + aes(x = .data[[!!x.var]], y = .data[[!!y]], 
+                                          linetype=non.x.terms, shape=non.x.terms)
+          else
+            pred.plot <-  pred.plot + aes(x = .data[[!!x.var]], y = .data[[!!y]], 
+                                          colour = non.x.terms, 
+                                          linetype=non.x.terms, shape=non.x.terms) 
+          pred.plot <-  pred.plot + 
+            labs(colour=non.x.terms, linetype=non.x.terms, shape=non.x.terms) +
+            # scale_colour_manual(values=cbPalette) + 
+            scale_shape_manual(values=symb) + 
+            geom_line() + 
+            geom_point()
+          if (intervals)
+          { 
             pred.plot <- pred.plot + 
-              annotate("text", x=Inf, y=-Inf,  hjust=1, vjust=-0.3, size = 2, 
-                       label =  paste("Error bars are ", labend, sep=""))
-            # if (low.parts[2] == "halfLeastSignificant" && !is.na(meanLSD)) 
-            # { pred.plot <- pred.plot + 
-            #   annotate("text", x=-Inf, y=-Inf,  hjust=-0.01, vjust=-0.3, size = 2, 
-            #            label = paste("mean LSD = ",signif(meanLSD, digits=3)))
-            # }
+              geom_errorbar(aes(ymin=.data[[!!ylow]], ymax=.data[[!!yupp]]),   
+                            linetype = "solid", position = position_dodge(1))
+            if (interval.annotate)
+            {
+              pred.plot <- pred.plot + 
+                annotate("text", x=Inf, y=-Inf,  hjust=1, vjust=-0.3, size = 2, 
+                         label =  paste("Error bars are ", labend, sep=""))
+              # if (low.parts[2] == "halfLeastSignificant" && !is.na(meanLSD)) 
+              # { pred.plot <- pred.plot + 
+              #   annotate("text", x=-Inf, y=-Inf,  hjust=-0.01, vjust=-0.3, size = 2, 
+              #            label = paste("mean LSD = ",signif(meanLSD, digits=3)))
+              # }
+            }
           }
         }
       }
-    }
     else #"multiple"
     { if (n.non.x == 1)
-      { 
+    { 
       pred.plot <- pred.plot + 
-                         aes(x = .data[[!!x.var]], y = .data[[!!y]]) +
-                         scale_colour_manual(values=cbPalette) + 
-                         scale_shape_manual(values=symb) + 
-                         geom_point(shape = symb[7])  + 
-                         facet_wrap(as.formula(paste("~ ",non.x.terms,sep="")))
+        aes(x = .data[[!!x.var]], y = .data[[!!y]]) +
+        scale_colour_manual(values=cbPalette) + 
+        scale_shape_manual(values=symb) + 
+        geom_point(shape = symb[7])  + 
+        facet_wrap(as.formula(paste("~ ",non.x.terms,sep="")))
+      if (scheme.opt == "black")
+        pred.plot <- pred.plot + geom_line(colour = "black")
+      else
+        pred.plot <- pred.plot + geom_line(colour = cbPalette[1])
+      if (intervals)
+      { 
+        non.x.lev <- levels(data[[non.x.terms]])
+        annot <- data.frame(Inf, -Inf, 
+                            factor(non.x.lev[length(non.x.lev)], levels = non.x.lev))
+        names(annot) <- c(x.var, y, non.x.terms)
         if (scheme.opt == "black")
-          pred.plot <- pred.plot + geom_line(colour = "black")
+          pred.plot <- pred.plot + geom_errorbar(aes(ymin=.data[[!!ylow]], 
+                                                     ymax=.data[[!!yupp]]),   
+                                                 linetype = "solid", colour = "black", width=int.width) 
         else
-          pred.plot <- pred.plot + geom_line(colour = cbPalette[1])
-        if (intervals)
-        { 
-          non.x.lev <- levels(data[[non.x.terms]])
-          annot <- data.frame(Inf, -Inf, 
-                               factor(non.x.lev[length(non.x.lev)], levels = non.x.lev))
-          names(annot) <- c(x.var, y, non.x.terms)
-          if (scheme.opt == "black")
-            pred.plot <- pred.plot + geom_errorbar(aes(ymin=.data[[!!ylow]], 
-                                                       ymax=.data[[!!yupp]]),   
-                                        linetype = "solid", colour = "black", width=int.width) 
-          else
-            pred.plot <- pred.plot + geom_errorbar(aes(ymin=.data[[!!ylow]], 
-                                                       ymax=.data[[!!yupp]]),   
-                                        linetype = "solid", colour = cbPalette[5], width=int.width) 
-          pred.plot <- pred.plot + 
-                          geom_text(data = annot, label = "Error bars are", 
-                                    hjust=1, vjust=-1.3, size = 2) +
-                          geom_text(data = annot, label = labend, 
-                                    hjust=1, vjust=-0.3, size = 2)
-          # if (interval.annotate & low.parts[2] == "halfLeastSignificant" && !is.na(meanLSD)) 
-          # { annot <- data.frame(-Inf, -Inf, 
-          #                       factor(non.x.lev[1], levels = non.x.lev))
-          #   names(annot) <- c(x.var, y, non.x.terms)
-          #   pred.plot <- pred.plot + 
-          #                 geom_text(data = annot, hjust=-0.01, vjust=-0.3, size = 2, 
-          #                          label = paste("mean LSD = ",signif(meanLSD, digits=3)))
-          # }
-        }
+          pred.plot <- pred.plot + geom_errorbar(aes(ymin=.data[[!!ylow]], 
+                                                     ymax=.data[[!!yupp]]),   
+                                                 linetype = "solid", colour = cbPalette[5], width=int.width) 
+        pred.plot <- pred.plot + 
+          geom_text(data = annot, label = "Error bars are", 
+                    hjust=1, vjust=-1.3, size = 2) +
+          geom_text(data = annot, label = labend, 
+                    hjust=1, vjust=-0.3, size = 2)
+        # if (interval.annotate & low.parts[2] == "halfLeastSignificant" && !is.na(meanLSD)) 
+        # { annot <- data.frame(-Inf, -Inf, 
+        #                       factor(non.x.lev[1], levels = non.x.lev))
+        #   names(annot) <- c(x.var, y, non.x.terms)
+        #   pred.plot <- pred.plot + 
+        #                 geom_text(data = annot, hjust=-0.01, vjust=-0.3, size = 2, 
+        #                          label = paste("mean LSD = ",signif(meanLSD, digits=3)))
+        # }
       }
+    }
       if (n.non.x == 2)
       { 
         pred.plot <- pred.plot + 
-                         aes(x = .data[[!!x.var]], y = .data[[!!y]]) +
-                         scale_colour_manual(values=cbPalette) + 
-                         scale_shape_manual(values=symb) + 
-                         geom_point(shape = symb[7]) +
-                         facet_grid(as.formula(paste(vars[2]," ~ ",vars[1],sep="")))
+          aes(x = .data[[!!x.var]], y = .data[[!!y]]) +
+          scale_colour_manual(values=cbPalette) + 
+          scale_shape_manual(values=symb) + 
+          geom_point(shape = symb[7]) +
+          facet_grid(as.formula(paste(vars[2]," ~ ",vars[1],sep="")))
         if (scheme.opt == "black")
           pred.plot <- pred.plot + geom_line(colour = "black")
         else
           pred.plot <- pred.plot + geom_line(colour = cbPalette[1])
         if (nos.lev[1] > 6 || nos.lev[2] > 6)
-           pred.plot <- pred.plot +
-                         theme(strip.text.x = element_text(size = 8),
-                         strip.text.y = element_text(size = 8, angle = -90))
+          pred.plot <- pred.plot +
+            theme(strip.text.x = element_text(size = 8),
+                  strip.text.y = element_text(size = 8, angle = -90))
         if (intervals)
         { 
           non.x.lev1 <- levels(data[[vars[1]]])
           non.x.lev2 <- levels(data[[vars[2]]])
           annot <- data.frame(Inf, -Inf, 
-                               factor(non.x.lev1[length(non.x.lev1)], levels = non.x.lev1),
-                               factor(non.x.lev2[length(non.x.lev2)], levels = non.x.lev2))
+                              factor(non.x.lev1[length(non.x.lev1)], levels = non.x.lev1),
+                              factor(non.x.lev2[length(non.x.lev2)], levels = non.x.lev2))
           names(annot) <- c(x.var, y, non.x.terms)
           if (scheme.opt == "black")
             pred.plot <- pred.plot + geom_errorbar(aes(ymin=.data[[!!ylow]], 
                                                        ymax=.data[[!!yupp]]),   
-                                        linetype = "solid", colour = "black", width=int.width) 
+                                                   linetype = "solid", colour = "black", width=int.width) 
           else
             pred.plot <- pred.plot + geom_errorbar(aes(ymin=.data[[!!ylow]], 
                                                        ymax=.data[[!!yupp]]),   
-                                        linetype = "solid", colour = cbPalette[5], width=int.width) 
+                                                   linetype = "solid", colour = cbPalette[5], width=int.width) 
           
           if (interval.annotate)
           {
@@ -3678,7 +3700,7 @@ atLevelsMatch <- function(new, old, call, always.levels = TRUE)
   if (length(tempcall)) 
     if ("meanLSD.type" %in% names(tempcall))
       stop("meanLSD.type has been deprecated - use LSDtype")
-
+  
   asr4 <- isASRemlVersionLoaded(4, notloaded.fault = TRUE)
   #Check that have a valid object of class asreml
   validasr <- validAsreml(asreml.obj)  
@@ -3689,7 +3711,7 @@ atLevelsMatch <- function(new, old, call, always.levels = TRUE)
   avLSD <- AvLSD.options[check.arg.values(LSDtype, AvLSD.options)]
   if (!is.null(LSDby) &&  !is.character(LSDby))
     stop("LSDby must be a character")
-
+  
   #check the transform.function
   link.opts <- c("identity", "log", "inverse", "sqrt", "logit", "probit", "cloglog")
   transfunc <- link.opts[check.arg.values(transform.function, link.opts)]
@@ -3737,7 +3759,7 @@ atLevelsMatch <- function(new, old, call, always.levels = TRUE)
   diff.list <- vector("list", length = length(terms))
   names(diff.list) <- gsub(":", ".", terms, fixed= TRUE)
   for (term in terms) 
-  #Get the predictions
+    #Get the predictions
   { 
     #Make sure no functions in classify
     factors <- fac.getinTerm(term, rmfunction = TRUE)
@@ -3747,13 +3769,13 @@ atLevelsMatch <- function(new, old, call, always.levels = TRUE)
       #Check if the set of model terms is mixed for trend and deviations
     { 
       if (term.types$has.trend.num && term.types$has.devn.fac)
-      #Mixed
+        #Mixed
       { if (!(x.num %in% factors))
-          classify.term <- paste(classify.term, x.num, sep=":")
-        else
-          if (!(x.fac %in% factors))
-            classify.term <- paste(classify.term, x.fac, sep=":")
-    }
+        classify.term <- paste(classify.term, x.num, sep=":")
+      else
+        if (!(x.fac %in% factors))
+          classify.term <- paste(classify.term, x.fac, sep=":")
+      }
       diffs <- predictPlus.asreml(asreml.obj = asreml.obj, 
                                   classify = classify.term, term = term, 
                                   linear.transformation = linear.transformation, 

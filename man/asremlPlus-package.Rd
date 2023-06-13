@@ -107,9 +107,9 @@
       \tab Uses information criteria to decide whether to add a spatial \cr
       \tab model to account for local spatial variation. \cr
 \code{\link{changeTerms.asrtests}}
-      \tab Adds and drops the specified sets of terms from one \cr
-      \tab or both of the fixed  or random model and/or replaces the \cr
-      \tab residual (rcov) model with a new model. \cr
+      \tab Adds and drops terms from one or both of the fixed or random \cr 
+      \tab model, replaces the residual (rcov) model with a new model \cr 
+      \tab and changes bounds or intial values of terms.  \cr
 \code{\link{iterate.asrtests}} 
       \tab Subject the fitted asreml.obj stored in an asrtests.object \cr
       \tab  to further iterations of the fitting process. \cr

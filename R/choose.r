@@ -416,8 +416,11 @@ addtoChooseSummary <- function(choose.summary, term, DF = NA, denDF = NA, p = NA
     
     #Extract asreml.objects
     asreml.obj <- asrtests.obj$asreml.obj
+    if (!is.null(asreml.obj$mf) && !is.null(attr(asreml.obj$mf, which = "mbf.env")))
+      attr(new.asrtests.obj$asreml.obj$mf, 
+           which = "mbf.env") <- attr(asreml.obj$mf, which = "mbf.env")
     new.asreml.obj <- new.asrtests.obj$asreml.obj
-    
+
     change <- FALSE
     action <- getTestEntry(new.asrtests.obj, label = label)$action 
     diff.IC <- new.IC - old.IC
@@ -484,7 +487,7 @@ addtoChooseSummary <- function(choose.summary, term, DF = NA, denDF = NA, p = NA
       }
  #   }
 
-    #I don't check that removing a boundary term will result in convergence here as is done
+    #It is not checked that removing a boundary term will result in convergence here as is done
     #in, for example, testresidual.asrtests
     if (change)
       asrtests.obj <- new.asrtests.obj

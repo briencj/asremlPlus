@@ -1694,7 +1694,7 @@ redoErrorIntervals.alldiffs <- function(alldiffs.obj, error.intervals = "Confide
     stop("avsed.tolerance should be between 0 and 1")
   int.options <- c("none", "Confidence", "StandardError", "halfLeastSignificant")
   int.opt <- int.options[check.arg.values(error.intervals, int.options)]
-  
+
   denom.df <- attr(alldiffs.obj, which = "tdf")
   preds.hd <- attr(alldiffs.obj$predictions, which = "heading")
   
@@ -1705,6 +1705,14 @@ redoErrorIntervals.alldiffs <- function(alldiffs.obj, error.intervals = "Confide
     cols <- pmatch(c("lower.", "upper."), names(alldiffs.obj$predictions))
     cols <- cols[!is.na(cols)]
     alldiffs.obj$predictions <- alldiffs.obj$predictions[, -cols]
+  }
+  
+  if (int.opt == "halfLeastSignificant" && is.null(alldiffs.obj$sed))
+  {
+    if (is.null(alldiffs.obj$vcov))
+      stop("cannot compute LSDs because there is no sed or vcov component")
+    else #compute sed component
+      alldiffs.obj <- makeSED(alldiffs.obj)
   }
   
   #Deal with LSD component
@@ -1732,17 +1740,17 @@ redoErrorIntervals.alldiffs <- function(alldiffs.obj, error.intervals = "Confide
   LSDby.diff <- attr(alldiffs.obj, which = "LSDby")
   avLSD.same <- TRUE
   LSDby.same <- TRUE
-  if (!(is.null(avLSD.diff) & is.null(avLSD)))
+  if (!(is.null(avLSD.diff) && is.null(avLSD)))
   {
-    if (!is.null(avLSD.diff) & !is.null(avLSD))
+    if (!is.null(avLSD.diff) && !is.null(avLSD))
     {
       avLSD.same <- avLSD.diff == avLSD
       if (avLSD.same & avLSD == "factor.combinations")
       {
-        if (is.null(LSDby.diff) & is.null(LSDby))
+        if (is.null(LSDby.diff) && is.null(LSDby))
           stop("LSDby not set for LSDtype set to factor.combinations")
         else 
-          if (!is.null(LSDby.diff) & !is.null(LSDby))
+          if (!is.null(LSDby.diff) && !is.null(LSDby))
           {
             LSDby.same <- all(LSDby.diff == LSDby)
           } else
@@ -1754,7 +1762,7 @@ redoErrorIntervals.alldiffs <- function(alldiffs.obj, error.intervals = "Confide
   if (!is.null(alldiffs.obj$sed))
   {
     #If no LSD component or not match, call recalcLSDs
-    if (!is.null(alldiffs.obj$LSD) | !avLSD.same | !LSDby.same)
+    if (!is.null(alldiffs.obj$LSD) || !avLSD.same || !LSDby.same)
       alldiffs.obj <- recalcLSD(alldiffs.obj, 
                                 LSDtype = avLSD, LSDsupplied = LSDsupplied, 
                                 LSDby = LSDby, LSDstatistic = LSDstat, LSDaccuracy = LSDacc,
@@ -1783,8 +1791,7 @@ redoErrorIntervals.alldiffs <- function(alldiffs.obj, error.intervals = "Confide
     sed.range <- abs(alldiffs.obj$LSD$minLSD - alldiffs.obj$LSD$maxLSD) /  alldiffs.obj$LSD$meanLSD
     sed.range[is.nan(sed.range)] <- 0
   }
-  
-  
+
   #Add lower and upper uncertainty limits
   if (int.opt != "none")
   { 
@@ -1997,6 +2004,18 @@ redoErrorIntervals.alldiffs <- function(alldiffs.obj, error.intervals = "Confide
   return(alldiffs.obj)
 }
 
+makeSED <- function(alldiffs.obj)
+{ 
+  alldiffs.obj$sed <- alldiffs.obj$vcov
+  n <- nrow(alldiffs.obj$sed)
+  dvcov <- diag(alldiffs.obj$sed)
+  alldiffs.obj$sed <- matrix(rep(dvcov, each = n), nrow = n) + 
+    matrix(rep(dvcov, times = n), nrow = n) - 2 * alldiffs.obj$sed
+  alldiffs.obj$sed <- sqrt(alldiffs.obj$sed)
+  diag(alldiffs.obj$sed) <- NA_real_
+  return(alldiffs.obj)
+}
+
 #allDifferences does not change Error.Intervals, 
 #but adds backtransforms depending on transform info
 #allDifferences is responsible calculating the LSD component; it used sliceLSDs and LSDstats
@@ -2133,16 +2152,8 @@ redoErrorIntervals.alldiffs <- function(alldiffs.obj, error.intervals = "Confide
   
   #Deal with case when have vcov, but not sed
   if (pairwise && !is.null(alldiffs.obj$vcov) && is.null(alldiffs.obj$sed))
-  {
-    alldiffs.obj$sed <- alldiffs.obj$vcov
-    n <- nrow(alldiffs.obj$sed)
-    dvcov <- diag(alldiffs.obj$sed)
-    alldiffs.obj$sed <- matrix(rep(dvcov, each = n), nrow = n) + 
-      matrix(rep(dvcov, times = n), nrow = n) - 2 * alldiffs.obj$sed
-    alldiffs.obj$sed <- sqrt(alldiffs.obj$sed)
-    diag(alldiffs.obj$sed) <- NA_real_
-  }
-  
+      alldiffs.obj <- makeSED(alldiffs.obj)
+
   #Check that differences are consistent with predictions
   pred.diff <- outer(predictions$predicted.value, predictions$predicted.value, "-")
   if (any(na.omit(abs(pred.diff-alldiffs.obj$differences)) > .Machine$double.eps ^ 0.5))

@@ -99,3 +99,40 @@ test_that("Wheatchange_asreml4", {
   testthat::expect_equal(nrow(summary(current.asrt$asreml.obj)$varcomp), 2)
   testthat::expect_equal(nrow(current.asrt$wald.tab), 4)
 })
+
+cat("#### Test for changing the residual model with asreml4\n")
+test_that("residual_changeTerms_asreml4", {
+  skip_if_not_installed("asreml")
+  skip_on_cran()
+  library(asreml)
+  library(asremlPlus)
+  print(packageVersion("asreml"))
+  #'## Load data
+  data("Exp355.Control.dat")
+  
+  dat <- with(dat, dat[order(Genotype, Salt, NP_AMF, InTreat), ])
+  
+  #Fit model with quotes around AMF_plus 
+  # NB must have quotes for character levels, 
+  # but cannot have in testranfix term because not in wald.tab or varcomp rownames
+  current.asr <- asreml(fixed = TSP ~ Lane + xPosn + AMF*Genotype*NP + 
+                          at(AMF, "AMF_plus"):per.col + (Genotype*NP):at(AMF, "AMF_plus"):per.col,
+                        random = ~ spl(xPosn) + Position ,
+                        residual = ~ Genotype:idh(NP_AMF):InTreat,
+                        keep.order=TRUE, data = dat, 
+                        maxiter=50, na.action = na.method(x="include"))
+  
+  current.asrt <- as.asrtests(current.asr, NULL, NULL)
+  current.asrt <- rmboundary(current.asrt)
+  testthat::expect_equal(nrow(current.asrt$wald.tab),14)
+  testthat::expect_true(all(c("AMF:Genotype:NP", "at(AMF, AMF_plus):per.col", "Genotype:at(AMF, AMF_plus):per.col", 
+                              "NP:at(AMF, AMF_plus):per.col", "Genotype:NP:at(AMF, AMF_plus):per.col") %in% 
+                              rownames(current.asrt$wald.tab)))
+  testthat::expect_equal(nrow(summary(current.asrt$asreml.obj)$varcomp),7)
+  
+  t.asrt <- changeTerms(current.asrt, newResidual = "Genotype:NP_AMF:InTreat", 
+                        set.terms = "Genotype:NP_AMF:InTreat!R", 
+                        initial.values = 1, bounds = "P", ignore.suffices = FALSE)
+  testthat::expect_equal(nrow(summary(t.asrt$asreml.obj)$varcomp),1)
+  testthat::expect_true(vpc.char(t.asrt$asreml.obj)["Genotype:NP_AMF:InTreat!R"] == "P")
+})

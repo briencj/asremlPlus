@@ -9,8 +9,8 @@
        be arranged in sections for each of which there is a grid and for which the model is to 
        be fitted separately. Also, the rows and columns of a grid are not necessarily one 
        observational unit wide. The spatial model is only added if the information criterion of 
-       the supplied model is decreased with the addition of the local spatial model.
-
+       the supplied model is decreased with the addition of the local spatial model.  
+       
        A row is added for each \code{section} to the \code{test.summary} \code{data.frame} 
        of the \code{\link{asrtests.object}} stating whether or not the new model has been 
        swapped for a model in which the spatial model has been add to the  supplied model. 
@@ -23,7 +23,10 @@
 \method{addSpatialModelOnIC}{asrtests}(asrtests.obj, spatial.model = "TPPS", 
                     sections = NULL, 
                     row.covar = "cRow", col.covar = "cCol", 
-                    row.factor = NULL, col.factor = NULL, 
+                    row.factor = "Row", col.factor = "Col", 
+                    corr.funcs = c("ar1", "ar1"), 
+                    row.corrFitfirst = TRUE, 
+                    dropRowterm = NULL, dropColterm = NULL, 
                     nsegs = NULL, nestorder = c(1,1), 
                     degree = c(3,3), difforder = c(2,2),
                     asreml.option = "mbf",  tpps4mbf.obj = NULL, 
@@ -42,24 +45,48 @@
                that identifies different sections of the data 
                to which separate spatial models are to be fitted.}
  \item{row.covar}{A single \code{character} string nominating a \code{\link{numeric}} 
-               column in the \code{\link{data.frame}} that contains the values of a 
-               centred covariate indexing the rows of the grid.}
+               that contains the values of a centred covariate indexing the rows of a 
+               grid. The \code{\link{numeric}} must be a column in the 
+               \code{\link{data.frame}} stored in the \code{asreml.obj} that is a 
+               component of the supplied \code{asrtests.obj}.}
  \item{col.covar}{A single \code{character} string nominating a \code{\link{numeric}} 
-               column in the \code{\link{data.frame}} that contains the values of a 
-               centred covariate indexing the columns of the grid.}
+               that contains the values of a centred covariate indexing the columns 
+               of a grid. The \code{\link{numeric}} must be a column in the 
+               \code{\link{data.frame}} stored in the \code{asreml.obj} that is a 
+               component of the supplied \code{asrtests.obj}.}
  \item{row.factor}{A single \code{character} string nominating a \code{\link{factor}} 
+               that indexes the rows of a grid that are to be one dimension of a 
+               spatial correlation model. The \code{\link{factor}} must a column in 
+               the \code{\link{data.frame}} stored in the \code{asreml.obj} that is 
+               a component of the supplied \code{asrtests.obj}.}
+ \item{col.factor}{A single \code{character} string nominating a \code{\link{factor}} 
+               that indexes the columns of a grid that are to be one dimension of a 
+               spatial correlation model. The \code{\link{factor}} must a column in 
+               the \code{\link{data.frame}} stored in the \code{asreml.obj} that is 
+               a component of the supplied \code{asrtests.obj}.}
+ \item{corr.funcs}{A single \code{character} string of length two that specifies the 
+               \code{asreml} one-dimensional correlation or variance model function 
+               for the row and column dimensions of a two-dimensional separable spatial 
+               correlation model; the two-dimensional model is fitted as a random term. 
+               If a correlation or variance model is not to be investigated for one 
+               of the dimensions, specify \code{""} for that dimension.}
+ \item{row.corrFitfirst}{If \code{TRUE} then the row correlation or variance 
+               function is fitted first, followed by the addition of the column 
+               correlation or variance function. If \code{FALSE}, the order of fitting 
+               is reversed.}
+ \item{dropRowterm}{A single \code{character} string nominating a \code{\link{factor}} 
                in the \code{\link{data.frame}} that has as many \code{levels} as there 
                are unique values in \code{row.covar}. This argument is required for 
                \code{spatial.model} set to \code{TPNCSS} or \code{TPPS}. It is used 
-               to remove a term corresponding to the \code{row.factor} and a random 
+               to remove a term corresponding to the \code{dropRowterm} and a random 
                row deviations term based on \code{row.covar} will be included in the 
                model. If the argument is \code{NULL}, it is assumed that such a term 
                is not included in the fitted model stored in \code{asrtests.obj}.}
- \item{col.factor}{A single \code{character} string nominating a \code{\link{factor}} 
+ \item{dropColterm}{A single \code{character} string nominating a \code{\link{factor}} 
                in the \code{\link{data.frame}} that has as many \code{levels} as there 
                are unique values in \code{col.covar}. This argument is required for 
                \code{spatial.model} set to \code{TPNCSS} or \code{TPPS}. It is used 
-               to remove a term corresponding to the \code{col.factor} and a random 
+               to remove a term corresponding to the \code{dropColterm} and a random 
                column deviations term based on \code{col.covar} will be included in the 
                model. If the argument is \code{NULL}, it is assumed that such a term 
                is not included in the fitted model stored in \code{asrtests.obj}.}
@@ -106,7 +133,11 @@
               also be tested and a warning issued if both fixed correlations are found 
               in it and \code{allow.fixedcorrelation} is \code{FALSE}.}
  \item{checkboundaryonly}{If \code{TRUE} then boundary and singular terms are not removed by 
-              \code{\link{rmboundary.asrtests}}; a warning is issued instead.}
+              \code{\link{rmboundary.asrtests}}; a warning is issued instead. Note that, for 
+              correlation models, the fitting of each dimension and the test for a nugget 
+              term are performed with \code{checkboundaryonly}  set to \code{TRUE} and its 
+              supplied setting only honoured using a call to \code{\link{rmboundary.asrtests}} 
+              immediately prior to returning the final result of the fitting.}
  \item{update}{If \code{TRUE} then \code{update.asreml} is called to fit the model 
                to be tested. In doing this the arguments \code{R.param} and 
               \code{G.param} are set to those in the \code{asreml} 
@@ -126,11 +157,13 @@
            \code{tpsmmb}.}
 }
 \details{
-A fitted spatial model is only returned if it improves the fit over and above that of achieved with the model fit supplied in the \code{asrtests.obj}. To fit the spatial model without any hypothoses testing or comparison of informtion criteria use \code{\link{addSpatialModel.asrtests}}. The model fit supplied in the \code{asrtests.obj} should not include terms that will be included in the local spatial model. All spatial model terms are fitted as fixed or random. Consequently, the residual model does not have to be iid.  
+A fitted spatial model is only returned if it improves the fit over and above that of achieved with the model fit supplied in the \code{asrtests.obj}. To fit the spatial model without any hypothoses testing or comparison of informtion criteria use \code{\link{addSpatialModel.asrtests}}. The model fit supplied in the \code{asrtests.obj} should not include terms that will be included in the local spatial model. All spatial model terms are fitted as fixed or random. Consequently, the residual model does not have to be iid. Note that the data must be in the order that correponds to the \code{residual} argument with a variable to the right of another variable changes levels in the data frame faster than those of the other variable e.g. \code{Row:Column} implies that all levels for \code{Column} in consecutive rows of the \code{data.frame} with a single \code{Row} level.
 
-For the \code{corr} spatial model, an exponential model (\code{exp}) is used for each dimension to model the spatial correlation. A series of models are tried, beginning with the addition of row correlation and followed by the addition of column correlation. Only if the model fit is improved is a correlation retained. Finally, if any correlation is retained, the improvment to the fit of a nuggest term is assessed. In this model, the correlation between observations from different rows is the correlation between observations in adjacent rows raised to the power equal to the absolute value of the difference in their \code{row.covar} values; similarly for the correlation in the column dimension. 
 
-The \code{TPNCSS} spatial model is as decribed by Verbyla et al. (2018) and the \code{TPPS} model is as described by Rodriguez-Alvarez et al. (2018). However, for the \code{TPPS} model, the degree of the polynomial  and the order of differencing can be varied. The defaults of 3 and 2, respectively, fit a cubic spline with second order differencing, while setting both the degree and order of differencing to 1 will fit a type of linear variance model (Piepho, Boer and Williams, 2022) The fixed terms for these models are \code{row.covar + col.covar + row.covar:col.covar} and the random terms are \code{spl(row.covar) + spl(col.covar) + dev(row.covar) + dev(col.covar) + spl(row.covar):col.covar +}\cr \code{row.covar:spl(col.covar) + spl(row.covar):spl(col.covar)}. The supplied model should not include any of these terms. However, any fixed or random main-effect term for either \code{row.factor} or \code{col.factor} will be removed from the fit.
+
+For the \code{corr} spatial model, the default model is an autocorrelation model of order one (\code{ar1}) for each dimension. However, any of the single dimension correlation/variance models from \code{asreml} can be specified for each dimension, as can no correlation model for a dimension; the models for the two dimensions can differ. Using a forward selection procedure, a series of models are tried, without removing boundary or singular terms, beginning with the addition of row correlation and followed by the addition of column correlation or, if the \code{row.corrFitfirst} is set to \code{FALSE}, the reverse order. If the fitting of the first-fitted correlation did not result in a model change because the fitting did not converge or correlations were fixed, but the fit of the second correlation was successful, then adding the first correlation will be retried. If one of the metric correlation functions is specified (e.g. \code{exp}), then the \code{row.covar} or \code{col.covar} will be used in the spatial model. However, because the correlations are fitted separately for the two dimensions, the \code{row.factor} and \code{col.factor} are needed for all models and is used for a dimension that does not involve a correlation/variance function for the fit being performed. Also, the correlation models are fitted as \code{random} terms and so the correlation model will include a variance parameter for the grid even when \code{ar1} is used to specify the correlation model, i.e. the model fitted is a variance model and there is no difference between \code{ar1} and \code{ar1v} in fitting the model. The variance parameter for this term represents the spatial variance and the fit necessarily includes a nugget term, this being the residual variance. If any correlation is retained, the need for a nuggest term is assessed by fixing the residual variance to one, which will have no effect if heterogeneous residual variances have been specified. Once the fitting of the correlation model has been completed, the \code{rmboundary} function will be executed with the \code{checkboundaryonly} value suppied in the \code{addSpatialModelOnIC.asrtests} call.
+
+The \code{TPNCSS} spatial model is as decribed by Verbyla et al. (2018) and the \code{TPPS} model is as described by Rodriguez-Alvarez et al. (2018). However, for the \code{TPPS} model, the degree of the polynomial  and the order of differencing can be varied. The defaults of 3 and 2, respectively, fit a cubic spline with second order differencing, while setting both the degree and order of differencing to 1 will fit a type of linear variance model (Piepho, Boer and Williams, 2022) The fixed terms for these models are \code{row.covar + col.covar + row.covar:col.covar} and the random terms are \code{spl(row.covar) + spl(col.covar) + dev(row.covar) + dev(col.covar) + spl(row.covar):col.covar +}\cr \code{row.covar:spl(col.covar) + spl(row.covar):spl(col.covar)}. The supplied model should not include any of these terms. However, any fixed or random main-effect term for either \code{dropRowterm} or \code{dropColterm} will be removed from the fit.
 
 The \code{TPPS} model is fitted using the function \code{tpsmmb} from the \code{R} package \code{TPSbits} authored by Sue Welham (2022). There are two methods for supplying the spline basis information produced by \code{tpsmmb} to \code{asreml}. The \code{grp} method adds the it to the \code{data.frame} holding the information for the analysis. The \code{mbf} method requires the spline basis information to be in the same enviroment as the function that is called to make a fit using \code{asreml}. To this end and prior to invoking the calling function, \code{\link{makeTPPSplineMats.data.frame}} must be used produce the \code{\link{data.frame}s}.
 
@@ -193,7 +226,7 @@ current.asrt <- rmboundary(current.asrt)
 
 current.asrt <- addSpatialModelOnIC(current.asrt, spatial.model = "TPPS", 
                                     row.covar = "cRow", col.covar = "cColumn",
-                                    row.factor = "Row", col.factor = "Column",
+                                    dropRowterm = "Row", dropColterm = "Column",
                                     asreml.option = "grp")
 infoCriteria(current.asrt$asreml.obj)
 }}

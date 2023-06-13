@@ -126,6 +126,7 @@ export(addBacktransforms,
        rmboundary.asreml,
        setvarianceterms,
        setvarianceterms.call,
+       setvarianceterms.asreml, #must be included as deprecated
        sig.devn.reparam.asreml,
        sig.devn.reparam.asrtests,
        simulate.asreml,
@@ -149,7 +150,7 @@ export(addBacktransforms,
        variofaces,
        variofaces.asreml)
 exportClasses(alldiffs, asrtests, predictions.frame)
-import(dae, ggplot2)
+import(dae, ggplot2, except = "stat_qq_line")
 importFrom("stats", "as.formula",  "fitted", "fitted.values", "formula", "median", 
                     "model.matrix", "na.omit", "pchisq", "pf", "predict", "pt", "qnorm", "qt", 
                     "quantile", "resid", "pnorm", "rnorm","simulate", "terms", "terms.formula", 
@@ -159,6 +160,7 @@ importFrom("grDevices", "savePlot")
 importFrom("graphics", "hist")
 importFrom("dplyr", "anti_join")
 importFrom("methods", "formalArgs", "getFunction", "languageEl", "languageEl<-", "validObject")
+importFrom("qqplotr", "stat_qq_band", "stat_qq_line", "stat_qq_point")
 importFrom("reshape2", "melt")
 importFrom("utils", "data", "capture.output", sessionInfo, "tail")
 importFrom("foreach", "foreach", "%do%", "%dopar%")
@@ -223,6 +225,7 @@ S3method(reparamSigDevn, asrtests)
 S3method(rmboundary, asreml)
 S3method(rmboundary, asrtests)
 S3method(setvarianceterms, call)
+S3method(setvarianceterms, asreml)
 S3method(simulate, asreml)
 S3method(sort, alldiffs)
 S3method(sort, predictions.frame)

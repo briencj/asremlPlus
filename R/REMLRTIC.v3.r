@@ -314,7 +314,12 @@ infoCriteria.asreml <- function(object, DF = NULL,
         } 
       }
       if (is.null(fixedDF))
-        fixedDF <- sum(which.cF)
+      {  
+        if (is.logical(which.cF))
+          fixedDF <- sum(which.cF)
+        else
+          fixedDF <- length(which.cF)
+      }
     } else #REML
     {
       fixedDF <- 0

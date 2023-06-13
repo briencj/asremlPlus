@@ -19,7 +19,8 @@
 \method{newfit}{asreml}(asreml.obj, fixed., random., sparse., 
        residual., rcov., update = TRUE, trace = FALSE, 
        allow.unconverged = TRUE, allow.fixedcorrelation = TRUE,
-       keep.order = TRUE, set.terms = NULL, ignore.suffices = TRUE, 
+       keep.order = TRUE, 
+       set.terms = NULL, ignore.suffices = TRUE, 
        bounds = "P", initial.values = NA, ...)}
 \arguments{
  \item{asreml.obj}{A valid \code{asreml} object with with 

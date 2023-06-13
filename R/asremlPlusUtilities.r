@@ -19,6 +19,19 @@
 #Function to allow testing for NULL when objects of length > 1 are possible
 is.allnull <- function(x) all(is.null(x))
 
+#Test for a large change in at least one variance parameter
+largeVparChange <- function(asreml.obj, threshold = 0.75)
+{
+  largeChg <- FALSE
+  chg <- summary(asreml.obj)$varcomp$"%ch"
+  if (!all(is.na(chg)))
+  {
+    chg <- chg[!is.na(chg)]
+    largeChg <- any(chg > threshold)
+  }
+  return(largeChg)
+}
+
 #Check for fixed correlations
 isFixedCorrelOK.asreml <- function(asreml.obj, allow.fixedcorrelation = TRUE, ...)  
 {
@@ -255,12 +268,30 @@ checkNamesInData <- function(Names, data)
   return(terms)
 }
 
+"termsplit" <- function(term)
+{
+  #If a term has neither of these separators, the return vector will consist of the term and ""
+  sep <- ifelse(grepl("!R", term), "!R", "!")
+  if (grepl(sep, term)) #have a compound name
+  {
+    term.parts <- strsplit(term, sep)[[1]]
+    term.source <- term.parts[1]
+    term.end <- gsub(term.source, "", term)
+    
+  } else #not a compound term
+  { 
+    term.source <- term
+    term.end <- ""
+  }
+  return(c(term.source, term.end))
+}
+
 "findterm" <- function(term, termlist, rmDescription=TRUE)
   #This function finds the position of a term in an asreml termlist 
   #It strips off stuff to the right of an !, provided it is not to the right of  
   #a term starting with R!
 { 
-  if (length(termlist) == 0 | is.null(termlist))
+  if (length(termlist) == 0 || is.null(termlist))
   { 
     k <- 0
   }
@@ -268,6 +299,7 @@ checkNamesInData <- function(Names, data)
   { 
     if (rmDescription)
     { 
+      #Remove description if not an ASR3 residual
       if (substr(term, 1, 2) != "R!")  term <- rmTermDescription(term)
       k <- which(sapply(termlist, 
                         FUN=function(kterm, term)
@@ -284,16 +316,24 @@ checkNamesInData <- function(Names, data)
     }
     else
     { 
+      #ASR4 Residual term - allow for description after !R - not sure if this occurs
+      #Perhaps !R is indicative of a residual variance
+      term.parts <- termsplit(term)
       k <- which(sapply(termlist, 
-                        FUN=function(kterm, term)
+                        FUN=function(kterm, term.parts)
                         { 
-                          if (grepl("\\:",kterm) && grepl("\\:",term))
-                            haveterm <- setequal(fac.getinTerm(term), 
-                                                 fac.getinTerm(kterm))
+                          kterm.parts <- termsplit(kterm)
+                          if (grepl("\\:",kterm.parts[1]) && grepl("\\:",term.parts[1]))
+                            haveterm.source <- setequal(fac.getinTerm(term.parts[1]), 
+                                                        fac.getinTerm(kterm.parts[1]))
                           else
-                            haveterm <- term == kterm
-                        }, 
-                        term=term))
+                            haveterm.source <- term.parts[1] == kterm.parts[1]
+                          if (haveterm.source && kterm.parts[2] == term.parts[2])
+                            haveterm <- TRUE
+                          else
+                            haveterm <- FALSE
+                          return(haveterm)
+                        }, term.parts=term.parts))
     }
     if (length(k) == 0) k <- 0
   }
@@ -312,6 +352,19 @@ checkNamesInData <- function(Names, data)
     vars <- unlist(lapply(vars, rmFunction))
   return(vars)
 }
+
+chk4TermInFormula <- function(form, term, asreml.obj)
+{
+  terms <- getTerms.formula(form)
+  facs.terms <- lapply(terms, fac.getinTerm, asreml.obj = asreml.obj)
+  names(facs.terms) <- terms
+  which.term <- sapply(facs.terms, 
+                       function(tfacs, last.facs){all(last.facs %in% tfacs)},
+                       last.facs = fac.getinTerm(term))
+  if (sum(which.term) == 1) #there is a single term with the same factors with  functions
+    term <- terms[which.term]
+  return(term)
+}    
 
 "getTermVars" <- function(term)
   #This function gets the vars in each random term from an asreml termlist 
@@ -361,8 +414,8 @@ checkNamesInData <- function(Names, data)
 
 "getVarCode" <- function(var, asreml.obj)
   #A function that returns a code for a variable
-  # 0 for an integer or numeric with no function
-  # 5 for any other variable with no function
+  # 0 for an integer or numeric with no sys function
+  # 5 for any other variable with no sys function
   # Added to these codes is 1,2,3 or 4 for lin, pol, spl and dev, respectively
 { 
   sys.funcs <- c("lin","pol","spl","dev")
@@ -374,8 +427,10 @@ checkNamesInData <- function(Names, data)
     var <- var.comp[2]
   } else
     k <- 0
-  type <- class(eval(languageEl(asreml.obj$call, which="data"))[[match(var, 
-                                                                       colnames(eval(languageEl(asreml.obj$call, which="data"))))]])
+  type <- class(eval(languageEl(asreml.obj$call, 
+                                which="data"))[[match(var, 
+                                                      colnames(eval(languageEl(asreml.obj$call, 
+                                                                               which="data"))))]])
   if (type == "integer" | type == "numeric")
     code <- k
   else
@@ -531,6 +586,7 @@ checkNamesInData <- function(Names, data)
     x[zeroes] <- 0
   return(x)
 }
+
 subset.list <- function(x, select = 1:length(x), ...)
 {
   selx <- select

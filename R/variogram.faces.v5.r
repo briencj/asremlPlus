@@ -86,6 +86,7 @@
   {
     if (!asr4)
       stop("It appears that asreml4 is not loaded and so V must be supplied to variofaces.asreml.")
+    asreml.obj <- asreml.obj
     V <- estimateV(asreml.obj, extra.matrix = extra.matrix, ignore.terms = ignore.terms, 
                    fixed.spline.terms = fixed.spline.terms, 
                    bound.exclusions = bound.exclusions)
