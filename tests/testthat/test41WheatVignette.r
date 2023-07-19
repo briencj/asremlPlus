@@ -1,12 +1,13 @@
 #devtools::test("asremlPlus")
 context("model_selection")
+asr41.lib <- "D:\\Analyses\\R ASReml4.1" 
 
-cat("#### Test for wheat76 example with asreml4\n")
-test_that("Wheat_asreml4", {
+cat("#### Test for wheat76 example with asreml41\n")
+test_that("Wheat_asreml41", {
   skip_if_not_installed("asreml")
   skip_on_cran()
   library(dae)
-  library(asreml)
+  library(asreml, lib.loc = asr41.lib)
   library(asremlPlus)
   ## use asremlPlus to analyse the wheat (barley) example from section 8.6 of the asreml manual (Butler et al. 2010)
   data(Wheat.dat)
@@ -121,12 +122,12 @@ test_that("Wheat_asreml4", {
 
 
 
-cat("#### Test for wheat76 addtoSummary with asreml4\n")
-test_that("Wheat_addtoSummary_asreml4", {
+cat("#### Test for wheat76 addtoSummary with asreml41\n")
+test_that("Wheat_addtoSummary_asreml41", {
   skip_if_not_installed("asreml")
   skip_on_cran()
   library(dae)
-  library(asreml)
+  library(asreml, lib.loc = asr41.lib)
   library(asremlPlus)
   data(Wheat.dat)
   

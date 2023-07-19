@@ -1,14 +1,13 @@
 #devtools::test("asremlPlus")
 context("model_selection")
 
-cat("#### Test for chooseModel.data.frame with asreml4\n")
-test_that("choose.model.data.frame_asreml4", {
+cat("#### Test for chooseModel.data.frame with asreml42\n")
+test_that("choose.model.data.frame_asreml42", {
   skip_if_not_installed("asreml")
   skip_on_cran()
   library(dae)
   library(asreml)
   library(asremlPlus)
-  print(packageVersion("asreml"))
   #'## Load data
   data("Ladybird.dat")
   
@@ -75,14 +74,13 @@ test_that("choose.model.data.frame_asreml4", {
   
 })
 
-cat("#### Test for chooseModel.asrtests with asreml4\n")
-test_that("choose.model.asrtests_asreml4", {
+cat("#### Test for chooseModel.asrtests with asreml42\n")
+test_that("choose.model.asrtests_asreml42", {
   skip_if_not_installed("asreml")
   skip_on_cran()
   library(dae)
   library(asreml)
   library(asremlPlus)
-  print(packageVersion("asreml"))
   data(WaterRunoff.dat)
   asreml::asreml.options(keep.order = TRUE)
   current.asr <- do.call("asreml",
@@ -118,14 +116,13 @@ test_that("choose.model.asrtests_asreml4", {
   testthat::expect_equal(sig.terms[[2]], "Date:Sources")
 })
 
-cat("#### Test for testing at terms with asreml4\n")
-test_that("at_testing_testranfix_asreml4", {
+cat("#### Test for testing at terms with asreml42\n")
+test_that("at_testing_testranfix_asreml42", {
   skip_if_not_installed("asreml")
   skip_on_cran()
   library(dae)
   library(asreml)
   library(asremlPlus)
-  print(packageVersion("asreml"))
   #'## Load data
   data("Exp355.Control.dat")
   
@@ -133,10 +130,11 @@ test_that("at_testing_testranfix_asreml4", {
   
   #Fit model with quotes around AMF_plus 
   # NB must have quotes for character levels, 
-  # but cannot have in testranfix term because not in wald.tab or varcomp rownames
+  # as from v4.2 must also have in testranfix term because wald.tab and 
+  #   varcomp rownames now have single quotes
   current.asr <- do.call(asreml,
                          list(fixed = TSP ~ Lane + xPosn + AMF*Genotype*NP + 
-                                at(AMF, "AMF_plus"):per.col + (Genotype*NP):at(AMF, "AMF_plus"):per.col,
+                                at(AMF, 'AMF_plus'):per.col + (Genotype*NP):at(AMF, 'AMF_plus'):per.col,
                               random = ~ spl(xPosn) + Position ,
                               residual = ~ Genotype:idh(NP_AMF):InTreat,
                               keep.order=TRUE, data = dat, 
@@ -145,29 +143,33 @@ test_that("at_testing_testranfix_asreml4", {
   current.asrt <- as.asrtests(current.asr, NULL, NULL)
   current.asrt <- rmboundary(current.asrt)
   testthat::expect_equal(nrow(current.asrt$wald.tab),14)
-  testthat::expect_true(all(c("AMF:Genotype:NP", "at(AMF, AMF_plus):per.col", "Genotype:at(AMF, AMF_plus):per.col", 
-                              "NP:at(AMF, AMF_plus):per.col", "Genotype:NP:at(AMF, AMF_plus):per.col") %in% 
+  testthat::expect_true(all(c("AMF:Genotype:NP", "at(AMF, 'AMF_plus'):per.col", 
+                              "Genotype:at(AMF, 'AMF_plus'):per.col", 
+                              "NP:at(AMF, 'AMF_plus'):per.col", 
+                              "Genotype:NP:at(AMF, 'AMF_plus'):per.col") %in% 
                               rownames(current.asrt$wald.tab)))
   testthat::expect_equal(nrow(summary(current.asrt$asreml.obj)$varcomp),7)
   
-  t.asrt <- testranfix(current.asrt, term = "Genotype:NP:at(AMF, AMF_plus):per.col", 
+  t.asrt <- testranfix(current.asrt, term = "Genotype:NP:at(AMF, 'AMF_plus'):per.col", 
                        drop.fix.ns = TRUE)
   t.asrt$wald.tab
   testthat::expect_equal(nrow(t.asrt$wald.tab), 13) 
-  testthat::expect_true(all(c("AMF:Genotype:NP", "at(AMF, AMF_plus):per.col", "Genotype:at(AMF, AMF_plus):per.col", 
-                              "NP:at(AMF, AMF_plus):per.col") %in% rownames(current.asrt$wald.tab)))
+  testthat::expect_true(all(c("AMF:Genotype:NP", "at(AMF, 'AMF_plus'):per.col", 
+                              "Genotype:at(AMF, 'AMF_plus'):per.col", 
+                              "NP:at(AMF, 'AMF_plus'):per.col") %in% rownames(current.asrt$wald.tab)))
   #Change position of at term in testranfix
-  t.asrt <- testranfix(current.asrt, term = "at(AMF, AMF_plus):per.col:Genotype:NP", 
+  t.asrt <- testranfix(current.asrt, term = "at(AMF, 'AMF_plus'):per.col:Genotype:NP", 
                        drop.fix.ns = TRUE)
   t.asrt$wald.tab
   testthat::expect_equal(nrow(t.asrt$wald.tab), 13)
-  testthat::expect_true(all(c("AMF:Genotype:NP", "at(AMF, AMF_plus):per.col", "Genotype:at(AMF, AMF_plus):per.col", 
-                              "NP:at(AMF, AMF_plus):per.col") %in% rownames(current.asrt$wald.tab)))
+  testthat::expect_true(all(c("AMF:Genotype:NP", "at(AMF, 'AMF_plus'):per.col", 
+                              "Genotype:at(AMF, 'AMF_plus'):per.col", 
+                              "NP:at(AMF, 'AMF_plus'):per.col") %in% rownames(current.asrt$wald.tab)))
   
   #Fit model with level index of 2
   current.asr <- do.call(asreml,
                          list(fixed = TSP ~ Lane + xPosn + AMF*Genotype*NP + 
-                                at(AMF, "AMF_plus"):per.col + (Genotype*NP):at(AMF, 2):per.col,
+                                at(AMF, 'AMF_plus'):per.col + (Genotype*NP):at(AMF, 2):per.col,
                               random = ~ spl(xPosn) + Position ,
                               residual = ~ Genotype:idh(NP_AMF):InTreat,
                               keep.order=TRUE, data = dat, 
@@ -178,17 +180,18 @@ test_that("at_testing_testranfix_asreml4", {
   testthat::expect_equal(nrow(current.asrt$wald.tab),14)
   testthat::expect_equal(nrow(summary(current.asrt$asreml.obj)$varcomp),7)
   
-  t.asrt <- testranfix(current.asrt, term = "at(AMF, AMF_plus):per.col:Genotype:NP", 
+  t.asrt <- testranfix(current.asrt, term = "at(AMF, 'AMF_plus'):per.col:Genotype:NP", 
                        drop.fix.ns = TRUE)
   t.asrt$wald.tab
   testthat::expect_equal(nrow(t.asrt$wald.tab), 13)
-  testthat::expect_true(all(c("AMF:Genotype:NP", "at(AMF, AMF_plus):per.col", "Genotype:at(AMF, AMF_plus):per.col", 
-                              "NP:at(AMF, AMF_plus):per.col") %in% rownames(current.asrt$wald.tab)))
+  testthat::expect_true(all(c("AMF:Genotype:NP", "at(AMF, 'AMF_plus'):per.col", 
+                              "Genotype:at(AMF, 'AMF_plus'):per.col", 
+                              "NP:at(AMF, 'AMF_plus'):per.col") %in% rownames(current.asrt$wald.tab)))
   
   #Test for a numeric level that is not the same as the levels index (1:no.levels)
   current.asr <- do.call(asreml,
                          list(fixed = TSP ~ at(Lane, 4) + xPosn + AMF*Genotype*NP + 
-                                at(AMF, "AMF_plus"):per.col + (Genotype*NP):at(AMF, c(2)):per.col,
+                                at(AMF, 'AMF_plus'):per.col + (Genotype*NP):at(AMF, c(2)):per.col,
                               random = ~ spl(xPosn) + Position ,
                               residual = ~ Genotype:idh(NP_AMF):InTreat,
                               keep.order=TRUE, data = dat, 
@@ -196,10 +199,11 @@ test_that("at_testing_testranfix_asreml4", {
   current.asrt <- as.asrtests(current.asr, NULL, NULL)
   current.asrt <- rmboundary(current.asrt)
   current.asrt$wald.tab
-  testthat::expect_error(
-    t.asrt <- testranfix(current.asrt, term = "at(Lane, 8)", 
-                         drop.fix.ns = TRUE), 
-    regexp = "at has numeric values that are more than the number of levels")
+  testthat::expect_true("at(Lane, '8')" %in% rownames(current.asrt$wald.tab))
+  testthat::expect_silent(
+    t.asrt <- testranfix(current.asrt, term = "at(Lane, '8')", 
+                         drop.fix.ns = TRUE))
+  testthat::expect_false("at(Lane, '8')" %in% rownames(t.asrt$wald.tab)) #hasn't been dropped
 
   #Test adding multiple terms
   current.asr <- do.call(asreml,
@@ -217,62 +221,64 @@ test_that("at_testing_testranfix_asreml4", {
   full.asrt <- changeTerms(current.asrt, 
                            addFixed = 'AMF*Genotype*NP + at(AMF, "AMF_plus"):per.col + (Genotype*NP):at(AMF, 2):per.col')
   testthat::expect_equal(nrow(full.asrt$wald.tab), 14)
-  testthat::expect_true(all(c("AMF:Genotype:NP", "at(AMF, AMF_plus):per.col", "Genotype:per.col:at(AMF, AMF_plus)", 
-                              "NP:per.col:at(AMF, AMF_plus)", "Genotype:NP:per.col:at(AMF, AMF_plus)") %in% 
-                              rownames(full.asrt$wald.tab)))
+  testthat::expect_true(all(c("AMF:Genotype:NP", "at(AMF, 'AMF_plus'):per.col", 
+                              "Genotype:per.col:at(AMF, 'AMF_plus')", 
+                              "NP:per.col:at(AMF, 'AMF_plus')", 
+                              "Genotype:NP:per.col:at(AMF, 'AMF_plus')") %in% rownames(full.asrt$wald.tab)))
   
   full.asrt <- changeTerms(current.asrt, 
                               addFixed = 'AMF*Genotype*NP + at(AMF, "AMF_plus"):per.col + (Genotype*NP):at(AMF, 2):per.col')
   testthat::expect_equal(nrow(full.asrt$wald.tab), 14)
-  testthat::expect_true(all(c("AMF:Genotype:NP", "at(AMF, AMF_plus):per.col", "Genotype:per.col:at(AMF, AMF_plus)", 
-                              "NP:per.col:at(AMF, AMF_plus)", "Genotype:NP:per.col:at(AMF, AMF_plus)") %in% 
+  testthat::expect_true(all(c("AMF:Genotype:NP", "at(AMF, 'AMF_plus'):per.col", 
+                              "Genotype:per.col:at(AMF, 'AMF_plus')", 
+                              "NP:per.col:at(AMF, 'AMF_plus')", "Genotype:NP:per.col:at(AMF, 'AMF_plus')") %in% 
                               rownames(full.asrt$wald.tab)))
 
   #Try different specification of the at level for removing a fixed term that had a level when added
+  t.asrt <- changeTerms(full.asrt, dropFixed = "at(AMF, 'AMF_plus'):per.col")
+  testthat::expect_equal(nrow(t.asrt$wald.tab), 13)
+  testthat::expect_true(!("at(AMF, 'AMF_plus'):per.col)" %in% rownames(t.asrt$wald.tab)))
+
   t.asrt <- changeTerms(full.asrt, dropFixed = 'at(AMF, "AMF_plus"):per.col')
   testthat::expect_equal(nrow(t.asrt$wald.tab), 13)
-  testthat::expect_true(!("at(AMF, AMF_plus):per.col)" %in% rownames(t.asrt$wald.tab)))
-
-  t.asrt <- changeTerms(full.asrt, dropFixed = 'at(AMF, AMF_plus):per.col')
-  testthat::expect_equal(nrow(t.asrt$wald.tab), 13)
-  testthat::expect_true(!("at(AMF, AMF_plus):per.col)" %in% rownames(t.asrt$wald.tab)))
+  testthat::expect_true(!("at(AMF, 'AMF_plus'):per.col)" %in% rownames(t.asrt$wald.tab)))
   
   t.asrt <- changeTerms(full.asrt, dropFixed = 'at(AMF, 2):per.col')
   testthat::expect_equal(nrow(t.asrt$wald.tab), 13)
-  testthat::expect_true(!("at(AMF, AMF_plus):per.col)" %in% rownames(t.asrt$wald.tab)))
+  testthat::expect_true(!("at(AMF, 'AMF_plus'):per.col)" %in% rownames(t.asrt$wald.tab)))
   
   #Try different specification of the at level for removing a fixed term that had a level index when added
   t.asrt <- changeTerms(full.asrt, dropFixed = 'Genotype:at(AMF, "AMF_plus"):per.col')
   testthat::expect_equal(nrow(t.asrt$wald.tab), 13)
-  testthat::expect_true(!("Genotype:per.col:at(AMF, AMF_plus)" %in% rownames(t.asrt$wald.tab)))
+  testthat::expect_true(!("Genotype:per.col:at(AMF, 'AMF_plus')" %in% rownames(t.asrt$wald.tab)))
   
-  t.asrt <- changeTerms(full.asrt, dropFixed = 'Genotype:at(AMF, AMF_plus):per.col')
+  t.asrt <- changeTerms(full.asrt, dropFixed = 'Genotype:at(AMF, "AMF_plus"):per.col')
   testthat::expect_equal(nrow(t.asrt$wald.tab), 13)
-  testthat::expect_true(!("Genotype:per.col:at(AMF, AMF_plus)" %in% rownames(t.asrt$wald.tab)))
+  testthat::expect_true(!("Genotype:per.col:at(AMF, 'AMF_plus')" %in% rownames(t.asrt$wald.tab)))
   
   t.asrt <- changeTerms(full.asrt, dropFixed = 'Genotype:at(AMF, 2):per.col')
   testthat::expect_equal(nrow(t.asrt$wald.tab), 13)
-  testthat::expect_true(!("Genotype:per.col:at(AMF, AMF_plus)" %in% rownames(t.asrt$wald.tab)))
+  testthat::expect_true(!("Genotype:per.col:at(AMF, 'AMF_plus')" %in% rownames(t.asrt$wald.tab)))
   
   #Remove parentheses from (Genotype*NP):at(...)
   t.asrt <- changeTerms(current.asrt, 
-                        addFixed = 'AMF*Genotype*NP + at(AMF, "AMF_plus"):per.col + Genotype*NP:at(AMF, 2):per.col')
+                        addFixed = 'AMF*Genotype*NP + at(AMF, "AMF_plus"):per.col + 
+                        Genotype*NP:at(AMF, 2):per.col')
   testthat::expect_equal(nrow(t.asrt$wald.tab), 13)
-  testthat::expect_true(all(c("AMF:Genotype:NP", "at(AMF, AMF_plus):per.col", 
-                              "NP:per.col:at(AMF, AMF_plus)", "Genotype:NP:per.col:at(AMF, AMF_plus)") %in% 
-                              rownames(t.asrt$wald.tab)))
+  testthat::expect_true(all(c("AMF:Genotype:NP", "at(AMF, 'AMF_plus'):per.col", 
+                              "NP:per.col:at(AMF, 'AMF_plus')", "Genotype:NP:per.col:at(AMF, 'AMF_plus')") 
+                            %in% rownames(t.asrt$wald.tab)))
   
 })
 
 
 
-cat("#### Test for changeTerms with at functions with asreml4\n")
-test_that("at_testing_changeTerms_asreml4", {
+cat("#### Test for changeTerms with at functions with asreml42\n")
+test_that("at_testing_changeTerms_asreml42", {
   skip_if_not_installed("asreml")
   skip_on_cran()
   library(asreml)
   library(asremlPlus)
-  print(packageVersion("asreml"))
   #'## Load data
   data(sPSA.DASTs.dat)
 
@@ -299,46 +305,52 @@ test_that("at_testing_changeTerms_asreml4", {
                               label = "Starting with homogeneous variances model")
   testthat::expect_equal(length(current.asrt$asreml.obj$vparameters), 10)
   testthat::expect_true(all(names(current.asrt$asreml.obj$vparameters) %in% 
-                          c("at(Smarthouse, NE):Zone", "at(Smarthouse, NW):Zone", "at(Smarthouse, NE):spl(cMainPosn)", 
-                            "at(Smarthouse, NW):spl(cMainPosn)", "at(Smarthouse, NE):dev(cMainPosn)", 
-                            "at(Smarthouse, NW):dev(cMainPosn)", "at(Smarthouse, NE):Zone:Lane", 
-                            "at(Smarthouse, NW):Zone:Lane", "SHZone:ZMainunit", "SHZone:ZMainunit:Salinity!R")))
+                          c("at(Smarthouse, 'NE'):Zone", "at(Smarthouse, 'NW'):Zone", 
+                            "at(Smarthouse, 'NE'):spl(cMainPosn)", "at(Smarthouse, 'NW'):spl(cMainPosn)", 
+                            "at(Smarthouse, 'NE'):dev(cMainPosn)", "at(Smarthouse, 'NW'):dev(cMainPosn)", 
+                            "at(Smarthouse, 'NE'):Zone:Lane", "at(Smarthouse, 'NW'):Zone:Lane", 
+                            "SHZone:ZMainunit", "SHZone:ZMainunit:Salinity!R")))
   
   #remove boundaries, if any
   t.asrt <- rmboundary(current.asrt)
   testthat::expect_equal(length(t.asrt$asreml.obj$vparameters), 9)
-  testthat::expect_false("at(Smarthouse, NE):dev(cMainPosn)" %in% names(t.asrt$asreml.obj$vparameters))
+  testthat::expect_false("at(Smarthouse, 'NE'):dev(cMainPosn)" %in% names(t.asrt$asreml.obj$vparameters))
   
   #Test removing the spline term for NE
   t.asrt <- changeTerms(current.asrt, dropRandom = 'at(Smarthouse, "NE"):spl(cMainPosn)', label = "Drop unbound spl")
   testthat::expect_equal(length(t.asrt$asreml.obj$vparameters), 8)
-  testthat::expect_true(!any(c("at(Smarthouse, NE):dev(cMainPosn)", "at(Smarthouse, NE):spl(cMainPosn)") %in% 
+  testthat::expect_true(!any(c("at(Smarthouse, 'NE'):dev(cMainPosn)", "at(Smarthouse, 'NE'):spl(cMainPosn)") %in% 
                           names(t.asrt$asreml.obj$vparameters)))
   
-  t.asrt <- changeTerms(current.asrt, dropRandom = 'at(Smarthouse, NE):spl(cMainPosn)', label = "Drop unbound spl")
+  t.asrt <- changeTerms(current.asrt, dropRandom = 'at(Smarthouse, "NE"):spl(cMainPosn)', 
+                        label = "Drop unbound spl")
   testthat::expect_equal(length(t.asrt$asreml.obj$vparameters), 8)
-  testthat::expect_true(!any(c("at(Smarthouse, NE):dev(cMainPosn)", "at(Smarthouse, NE):spl(cMainPosn)") %in% 
+  testthat::expect_true(!any(c("at(Smarthouse, 'NE'):dev(cMainPosn)", "at(Smarthouse, 'NE'):spl(cMainPosn)") %in% 
                                names(t.asrt$asreml.obj$vparameters)))
   
   t.asrt <- changeTerms(current.asrt, dropRandom = 'at(Smarthouse, 1):spl(cMainPosn)', label = "Drop unbound spl")
   testthat::expect_equal(length(t.asrt$asreml.obj$vparameters), 8)
-  testthat::expect_true(!any(c("at(Smarthouse, NE):dev(cMainPosn)", "at(Smarthouse, NE):spl(cMainPosn)") %in% 
+  testthat::expect_true(!any(c("at(Smarthouse, 'NE'):dev(cMainPosn)", "at(Smarthouse, 'NE'):spl(cMainPosn)") %in% 
                                names(t.asrt$asreml.obj$vparameters)))
 
   #Test removing the devn term for NW
-  t.asrt <- changeTerms(current.asrt, dropRandom = 'at(Smarthouse, "NW"):dev(cMainPosn)', label = "Drop unbound dev")
+  t.asrt <- changeTerms(current.asrt, dropRandom = 'at(Smarthouse, "NW"):dev(cMainPosn)', 
+                        label = "Drop unbound dev")
   testthat::expect_equal(length(t.asrt$asreml.obj$vparameters), 8)
-  testthat::expect_true(!any(c("at(Smarthouse, NE):dev(cMainPosn)", "at(Smarthouse, NW):dev(cMainPosn)") %in% 
+  testthat::expect_true(!any(c("at(Smarthouse, 'NE'):dev(cMainPosn)", "at(Smarthouse, 'NW'):dev(cMainPosn)") %in% 
                                names(t.asrt$asreml.obj$vparameters)))
   
-  t.asrt <- changeTerms(current.asrt, dropRandom = 'at(Smarthouse, NW):dev(cMainPosn)', label = "Drop unbound dev")
+  t.asrt <- changeTerms(current.asrt, dropRandom = 'at(Smarthouse, "NW"):dev(cMainPosn)', 
+                        label = "Drop unbound dev")
   testthat::expect_equal(length(t.asrt$asreml.obj$vparameters), 8)
-  testthat::expect_true(!any(c("at(Smarthouse, NE):dev(cMainPosn)", "at(Smarthouse, NW):dev(cMainPosn)") %in% 
+  testthat::expect_true(!any(c("at(Smarthouse, 'NE'):dev(cMainPosn)", "at(Smarthouse, 'NW'):dev(cMainPosn)") %in% 
                                names(t.asrt$asreml.obj$vparameters)))
   
-  t.asrt <- changeTerms(current.asrt, dropRandom = 'at(Smarthouse, 2):dev(cMainPosn)', label = "Drop unbound dev")
+  #This only worked with double quotes
+  t.asrt <- changeTerms(current.asrt, dropRandom = "at(Smarthouse, 2):dev(cMainPosn)", 
+                        label = "Drop unbound dev")
   testthat::expect_equal(length(t.asrt$asreml.obj$vparameters), 8)
-  testthat::expect_true(!any(c("at(Smarthouse, NE):dev(cMainPosn)", "at(Smarthouse, NW):dev(cMainPosn)") %in% 
+  testthat::expect_true(!any(c("at(Smarthouse, 'NE'):dev(cMainPosn)", "at(Smarthouse, 'NW'):dev(cMainPosn)") %in% 
                                names(t.asrt$asreml.obj$vparameters)))
   
   #The next two examples show that the term corresponding to a single level cannot be removed unless it was fitted as a single term
@@ -353,20 +365,21 @@ test_that("at_testing_changeTerms_asreml4", {
                               label = "Starting with homogeneous variances model")
   testthat::expect_equal(length(current.asrt$asreml.obj$vparameters), 10)
   testthat::expect_true(all(names(current.asrt$asreml.obj$vparameters) %in% 
-                              c("at(Smarthouse, NE):Zone", "at(Smarthouse, NW):Zone", "at(Smarthouse, NE):spl(cMainPosn)", 
-                                "at(Smarthouse, NW):spl(cMainPosn)", "at(Smarthouse, NE):dev(cMainPosn)", 
-                                "at(Smarthouse, NW):dev(cMainPosn)", "at(Smarthouse, NE):Zone:Lane", 
-                                "at(Smarthouse, NW):Zone:Lane", "SHZone:ZMainunit", "SHZone:ZMainunit:Salinity!R")))
+                              c("at(Smarthouse, 'NE'):Zone", "at(Smarthouse, 'NW'):Zone", 
+                                "at(Smarthouse, 'NE'):spl(cMainPosn)", "at(Smarthouse, 'NW'):spl(cMainPosn)", 
+                                "at(Smarthouse, 'NE'):dev(cMainPosn)", "at(Smarthouse, 'NW'):dev(cMainPosn)", 
+                                "at(Smarthouse, 'NE'):Zone:Lane", "at(Smarthouse, 'NW'):Zone:Lane", 
+                                "SHZone:ZMainunit", "SHZone:ZMainunit:Salinity!R")))
   
   #boundary term cannot be removed
   t.asrt <- rmboundary(current.asrt)
   testthat::expect_equal(length(t.asrt$asreml.obj$vparameters), 10)
-  testthat::expect_true("at(Smarthouse, NE):dev(cMainPosn)" %in% names(t.asrt$asreml.obj$vparameters))
+  testthat::expect_true("at(Smarthouse, 'NE'):dev(cMainPosn)" %in% names(t.asrt$asreml.obj$vparameters))
   
   #Remove whole term
   t.asrt <- changeTerms(current.asrt, dropRandom = "at(Smarthouse):spl(cMainPosn)")
   testthat::expect_equal(length(t.asrt$asreml.obj$vparameters), 8)
-  testthat::expect_true(!any(c("at(Smarthouse, NE):spl(cMainPosn)", "at(Smarthouse, NW):spl(cMainPosn)") %in% 
+  testthat::expect_true(!any(c("at(Smarthouse, 'NE'):spl(cMainPosn)", "at(Smarthouse, 'NW'):spl(cMainPosn)") %in% 
                                names(t.asrt$asreml.obj$vparameters)))
 
   #Fit with multiple levels indices
@@ -381,31 +394,30 @@ test_that("at_testing_changeTerms_asreml4", {
                               label = "Starting with homogeneous variances model")
   testthat::expect_equal(length(current.asrt$asreml.obj$vparameters), 10)
   testthat::expect_true(all(names(current.asrt$asreml.obj$vparameters) %in% 
-                              c("at(Smarthouse, NE):Zone", "at(Smarthouse, NW):Zone", "at(Smarthouse, NE):spl(cMainPosn)", 
-                                "at(Smarthouse, NW):spl(cMainPosn)", "at(Smarthouse, NE):dev(cMainPosn)", 
-                                "at(Smarthouse, NW):dev(cMainPosn)", "at(Smarthouse, NE):Zone:Lane", 
-                                "at(Smarthouse, NW):Zone:Lane", "SHZone:ZMainunit", "SHZone:ZMainunit:Salinity!R")))
+                              c("at(Smarthouse, 'NE'):Zone", "at(Smarthouse, 'NW'):Zone", "at(Smarthouse, 'NE'):spl(cMainPosn)", 
+                                "at(Smarthouse, 'NW'):spl(cMainPosn)", "at(Smarthouse, 'NE'):dev(cMainPosn)", 
+                                "at(Smarthouse, 'NW'):dev(cMainPosn)", "at(Smarthouse, 'NE'):Zone:Lane", 
+                                "at(Smarthouse, 'NW'):Zone:Lane", "SHZone:ZMainunit", "SHZone:ZMainunit:Salinity!R")))
   
   #boundary term cannobt br removed
   t.asrt <- rmboundary(current.asrt)
   testthat::expect_equal(length(t.asrt$asreml.obj$vparameters), 10)
-  testthat::expect_true("at(Smarthouse, NE):dev(cMainPosn)" %in% names(t.asrt$asreml.obj$vparameters))
+  testthat::expect_true("at(Smarthouse, 'NE'):dev(cMainPosn)" %in% names(t.asrt$asreml.obj$vparameters))
   
   #Remove whole term
   t.asrt <- changeTerms(current.asrt, dropRandom = "at(Smarthouse, 1:2):spl(cMainPosn)")
   testthat::expect_equal(length(t.asrt$asreml.obj$vparameters), 8)
-  testthat::expect_true(!any(c("at(Smarthouse, NE):spl(cMainPosn)", "at(Smarthouse, NW):spl(cMainPosn)") %in% 
+  testthat::expect_true(!any(c("at(Smarthouse, 'NE'):spl(cMainPosn)", "at(Smarthouse, 'NW'):spl(cMainPosn)") %in% 
                                names(t.asrt$asreml.obj$vparameters)))
 })
 
-cat("#### Test for testing MET at terms with asreml4\n")
-test_that("at_multilevel_asreml4", {
+cat("#### Test for testing MET at terms with asreml42\n")
+test_that("at_multilevel_asreml42", {
   skip_if_not_installed("asreml")
   skip_on_cran()
   library(dae)
   library(asreml)
   library(asremlPlus)
-  print(packageVersion("asreml"))
 
   #'## Load data
   data(MET)
@@ -422,13 +434,13 @@ test_that("at_multilevel_asreml4", {
   
   summary(asreml.obj)$varcomp
   current.asrt <- as.asrtests(asreml.obj, NULL, NULL)
-  testthat::expect_equal(nrow(current.asrt$wald.tab), 24)
+  testthat::expect_equal(nrow(current.asrt$wald.tab), 23)
   
   asreml.options(step.size = 0.0001)
   
   #Single term in at expresion with the level and drop.fix.ns = TRUE -- works
   t.asrt <- testranfix(current.asrt, 
-                       term = "at(expt, mtnue10):vrow", 
+                       term = "at(expt, 'mtnue10'):vrow", 
                        drop.fix.ns = TRUE,
                        dDF.na = "residual", update = FALSE)
   testthat::expect_equal(nrow(t.asrt$wald.tab), 23)
@@ -461,18 +473,17 @@ test_that("at_multilevel_asreml4", {
 })
 
 
-cat("#### Test for at terms in testswapran with asreml4\n")
-test_that("at_testswapran_asreml4", {
+cat("#### Test for at terms in testswapran with asreml42\n")
+test_that("at_testswapran_asreml42", {
   skip_if_not_installed("asreml")
   skip_on_cran()
   library(dae)
   library(asreml)
   library(asremlPlus)
-  print(packageVersion("asreml"))
   #'## Load data
   data(longit.dat)
   
-  asreml.options(fail = "soft", upsd = TRUE, pxem = 1, step.size = 0.1, ai.sing = TRUE)
+  asreml.options(fail = "soft", ai.sing = TRUE)
   current.asr <- do.call(asreml, 
                          args=list(fixed = Area ~ Block + Treatments + Treatments:xDAP,
                                    random = ~ Block:Cart + at(Treatments):spl(xDAP, k = 10) + 
@@ -480,19 +491,24 @@ test_that("at_testswapran_asreml4", {
                                      Block:Cart:spl(xDAP) + Block:Cart:xDAP,
                                    residual = ~ Block:Cart:ar1h(DAP),
                                    keep.order=TRUE, data = longit.dat, maxiter=100))
-  
+
+  current.call <- current.asr$call
+  vpR <- grepl("Block:Cart:DAP!DAP", names(current.asr$vparameters.con))
+  vpR <- current.asr$vparameters.con[vpR]
+  (terms <- names(vpR[vpR == "B"]))
+
   #'## Function to deal with bound variances - set to 1e-04
   fixBoundResidualVariances <-function(current.asr)
   {
     repeat
     {
+      asreml.options(fail = "soft", ai.sing = TRUE)
       current.call <- current.asr$call
-      vpR <- grepl("Block:Cart:DAP!DAP", 
-                   names(current.asr$vparameters.con), fixed = TRUE)
+      vpR <- grepl("Block:Cart:DAP!DAP", names(current.asr$vparameters.con))
       vpR <- current.asr$vparameters.con[vpR]
-      (terms <- names(vpR[vpR == 7]))
-      if (length(terms) == 0 || length(sum(vpR == 4)) > 5) break
-      current.asr <- setvarianceterms(current.call, terms = terms, 
+      (terms <- names(vpR[vpR == "B"]))
+      if (length(terms) == 0 || length(sum(vpR == "F")) > 5) break
+      current.asr <- setvarianceterms(call = current.call, terms = terms, 
                                       bounds = "F", initial.values = 0.0001,
                                       ignore.suffices = FALSE)
     }
@@ -518,24 +534,24 @@ test_that("at_testswapran_asreml4", {
                               label = "Heterogeneous Treatment splines")
   testthat::expect_true(getTestPvalue(current.asrt, label = "Heterogeneous Treatment splines") < 0.05)
   testthat::expect_true(names(current.asrt$asreml.obj$vparameters[1]) == 
-                          "at(Treatments, -,0):spl(xDAP, k = 10)")
+                          "at(Treatments, '-,0'):spl(xDAP, k = 10)")
   testthat::expect_true(names(current.asrt$asreml.obj$vparameters[5]) == 
-                          "at(Treatments, +,0):spl(xDAP, k = 10)")
-  testthat::expect_true(all(abs(current.asrt$asreml.obj$vparameters[1:8] - 
-                                  c(233.152932, 502.667930, 74.955973, 
-                                    2.540186, 42.003197, 61.206138, 
-                                    32.367734, 36.902978)) < 1e-02))
+                          "at(Treatments, '+,0'):spl(xDAP, k = 10)")
+  vpar.vals <- c(233.152932, 502.667930, 74.955973, 2.540186, 42.003197, 61.206138, 
+                 32.367734, 36.902978)
+  names(vpar.vals) <- names(current.asrt$asreml.obj$vparameters[1:8])
+  testthat::expect_true(all.equal(current.asrt$asreml.obj$vparameters[1:8], 
+                                  vpar.vals, tolerance = 1e-02))
 })
 
 
-cat("#### Test for spline testing with asreml4\n")
-test_that("spl.asrtests_asreml4", {
+cat("#### Test for spline testing with asreml42\n")
+test_that("spl.asrtests_asreml42", {
   skip_if_not_installed("asreml")
   skip_on_cran()
   library(dae)
   library(asreml)
   library(asremlPlus)
-  print(packageVersion("asreml"))
   data(WaterRunoff.dat)
   asreml::asreml.options(keep.order = TRUE)
   current.asr <- do.call("asreml", 
@@ -561,7 +577,7 @@ test_that("spl.asrtests_asreml4", {
                         yield <- yield + 10*vRow + 5 * (vRow^2) + 5 * (vRow^3)
                       })
   
-  #'## Fit model using asreml4
+  #'## Fit model using asreml42
   asreml.obj <- asreml(fixed = yield ~ Rep + vRow + Variety, 
                        random = ~spl(vRow, k=6) + units, 
                        residual = ~ar1(Row):ar1(Column), 
@@ -576,8 +592,8 @@ test_that("spl.asrtests_asreml4", {
 })
 
 
-cat("#### Test for reparamSigDevn.asrtests with asreml4\n")
-test_that("reparamSigDevn.asrtests_asreml4", {
+cat("#### Test for reparamSigDevn.asrtests with asreml42\n")
+test_that("reparamSigDevn.asrtests_asreml42", {
   skip_if_not_installed("asreml")
   skip_on_cran()
   library(dae)
@@ -662,8 +678,8 @@ test_that("reparamSigDevn.asrtests_asreml4", {
 })
 
 
-cat("#### Test for changeModelOnIC with wheat94 using asreml4\n")
-test_that("changeModelOnIC_wheat94_asreml4", {
+cat("#### Test for changeModelOnIC with wheat94 using asreml42\n")
+test_that("changeModelOnIC_wheat94_asreml42", {
   skip_if_not_installed("asreml")
   skip_on_cran()
   library(dae)
@@ -709,15 +725,15 @@ test_that("changeModelOnIC_wheat94_asreml4", {
                                   label = "Drop spl(Col)", IClikelihood = "full")
   testthat::expect_true(getTestEntry(current.asrt, label = "Drop spl(Col)")[["denDF"]] %in% c(-2,-3))
   testthat::expect_equal(getTestEntry(current.asrt, label = "Drop spl(Col)")[["action"]], "Unswapped")
-  testthat::expect_true(abs(getTestEntry(current.asrt, label = "Drop spl(Col)")[["AIC"]] - 6.981351) < 1e-01)
+  testthat::expect_true(abs(getTestEntry(current.asrt, label = "Drop spl(Col)")[["AIC"]] - 6.986221) < 1e-02)
 
   #Drop random units term
   current.asrt <- changeModelOnIC(current.asrt, dropRandom = "units", 
                                   label = "Drop units", IClikelihood = "full")
   testthat::expect_equal(getTestEntry(current.asrt, label = "Drop units")[["denDF"]], -1)
   testthat::expect_equal(getTestEntry(current.asrt, label = "Drop units")[["action"]], "Unswapped")
-  testthat::expect_true(abs(getTestEntry(current.asrt, label = "Drop units")[["AIC"]] - 9.511413) < 1e-02)
-  
+  testthat::expect_true(abs(getTestEntry(current.asrt, label = "Drop units")[["AIC"]] - 9.515347) < 1e-02)
+
   mod <- printFormulae(current.asrt$asreml.obj)
   testthat::expect_equal(length(mod), 3)
   
@@ -760,8 +776,8 @@ test_that("changeModelOnIC_wheat94_asreml4", {
 })
 
 
-cat("#### Test for changeModelOnIC example using asreml4\n")
-test_that("changeModelOnIC_Example_asreml4", {
+cat("#### Test for changeModelOnIC example using asreml42\n")
+test_that("changeModelOnIC_Example_asreml42", {
   skip_if_not_installed("asreml")
   skip_on_cran()
   library(dae)
@@ -780,10 +796,10 @@ test_that("changeModelOnIC_Example_asreml4", {
   current.asrt <- as.asrtests(current.asr, NULL, NULL, 
                               label = "Maximal model", IClikelihood = "full")
   #current.asrt <- rmboundary(current.asrt)
-  #testthat::expect_true(current.asrt$asreml.obj$converge)
+  testthat::expect_true(current.asrt$asreml.obj$converge)
   testthat::expect_true(current.asrt$test.summary$action[1] == "Starting model")
   testthat::expect_equal(current.asrt$test.summary$DF[1], 31)
-  testthat::expect_equal(current.asrt$test.summary$denDF[1], 5)
+  testthat::expect_equal(current.asrt$test.summary$denDF[1], 4)
   testthat::expect_equal(nrow(summary(current.asrt$asreml.obj)$varcomp), 6)
   
   # Drop both Row and Column
@@ -800,19 +816,19 @@ test_that("changeModelOnIC_Example_asreml4", {
                                   label="Row autocorrelation",
                                   IClikelihood = "full")
   testthat::expect_true(current.asrt$asreml.obj$converge)
-  testthat::expect_equal(current.asrt$test.summary$denDF[3], -2)
-  testthat::expect_true((abs(current.asrt$test.summary$AIC[3]) - 21.709898) < 1e-03)
+  testthat::expect_equal(current.asrt$test.summary$denDF[3], -1)
+  testthat::expect_true((abs(current.asrt$test.summary$AIC[3]) - 21.708630) < 1e-02)
   
   mod <- printFormulae(current.asrt$asreml.obj)
   testthat::expect_equal(length(mod), 3)
-  testthat::expect_true(grepl("units", mod[2], fixed = TRUE))
+  testthat::expect_false(grepl("units", mod[2], fixed = TRUE))
   
 })
 
 
 
-cat("#### Test for fixedcorrelations using asreml4\n")
-test_that("Fixedcorrelations_asreml4", {
+cat("#### Test for fixedcorrelations using asreml42\n")
+test_that("Fixedcorrelations_asreml42", {
   skip_if_not_installed("asreml")
   skip_on_cran()
   library(asreml)
@@ -830,9 +846,8 @@ test_that("Fixedcorrelations_asreml4", {
   m.asrt <- rmboundary(m.asrt)
   testthat::expect_true(m.asrt$asreml.obj$converge)
   
-  testthat::expect_output(
-    m1.asrt <- changeModelOnIC(m.asrt, addRandom = "units", label = "units", allow.fixedcorrelation = FALSE,
-                               IClikelihood = "full"))
+  m1.asrt <- changeModelOnIC(m.asrt, addRandom = "units", label = "units", allow.fixedcorrelation = FALSE,
+                               IClikelihood = "full")
   tests<- m1.asrt$test.summary
   testthat::expect_equal(m1.asrt$test.summary$action[2], "Unchanged - fixed correlation")
   testthat::expect_true(is.null(getFormulae(m1.asrt$asreml.obj)$random))
@@ -842,7 +857,8 @@ test_that("Fixedcorrelations_asreml4", {
   testthat::expect_equal(m2.asrt$test.summary$action[2], "Swapped")
   testthat::expect_true(grepl("units", as.character(getFormulae(m2.asrt$asreml.obj)$random)[2], fixed = TRUE))
   summary(m2.asrt$asreml.obj)$varcomp
-  testthat::expect_equal(unname(vpc.char(m2.asrt$asreml.obj)["Lane:Position!Lane!cor"]), "F")
+  testthat::expect_equal(unname(
+         m2.asrt$asreml.obj$vparameters.con["Lane:Position!Lane!cor"]), "F")
   
   m3.asrt <- changeTerms(m.asrt, addRandom = "units", label = "Add units", allow.fixedcorrelation = FALSE)
   testthat::expect_equal(m3.asrt$test.summary$action[2], "Unchanged - fixed correlation")
@@ -855,13 +871,15 @@ test_that("Fixedcorrelations_asreml4", {
   m4.asrt <- testranfix(m4.asrt, term = "units", positive.zero = TRUE, allow.fixedcorrelation = TRUE)
   testthat::expect_equal(m4.asrt$test.summary$action[3], "Retained")
   testthat::expect_true(grepl("units", as.character(getFormulae(m4.asrt$asreml.obj)$random)[2], fixed = TRUE))
-  testthat::expect_equal(unname(vpc.char(m4.asrt$asreml.obj)["Lane:Position!Lane!cor"]), "F")
+  testthat::expect_equal(unname(
+          m4.asrt$asreml.obj$vparameters.con["Lane:Position!Lane!cor"]), "F")
 
   m5.asrt <- testranfix(m4.asrt, term = "units", positive.zero = TRUE, allow.fixedcorrelation = TRUE,
                         IClikelihood = "REML")
   testthat::expect_equal(m5.asrt$test.summary$action[4], "Retained")
   testthat::expect_true(grepl("units", as.character(getFormulae(m5.asrt$asreml.obj)$random)[2], fixed = TRUE))
-  testthat::expect_equal(unname(vpc.char(m5.asrt$asreml.obj)["Lane:Position!Lane!cor"]), "F")
+  testthat::expect_equal(unname(
+           m5.asrt$asreml.obj$vparameters.con["Lane:Position!Lane!cor"]), "F")
   testthat::expect_true(all(abs(c(m5.asrt$test.summary$AIC[4],m5.asrt$test.summary$BIC[4]) - 
                                   c(2352.823, 2361.365)) < 1e-04))
   
@@ -872,13 +890,15 @@ test_that("Fixedcorrelations_asreml4", {
   testthat::expect_warning(
     m6.asrt <- testranfix(m4.asrt, term = "Lane", allow.fixedcorrelation = FALSE,
                           IClikelihood = "REML"), 
-    regexp = "The estimated value of one or more correlations in the supplied asreml fit for PSA.27 is fixed")
+    regexp = paste("The estimated value of one or more correlations in the supplied asreml fit",
+                   "for PSA.27 is bound or fixed and allow.fixedcorrelation is FALSE"))
   testthat::expect_equal(m6.asrt$test.summary$action[4], "Significant")
 
   #The fixed correlation is in m4.asrt and do not know how to remove it.
   testthat::expect_warning(
     m6.asrt <- testranfix(m4.asrt, term = "units", positive.zero = TRUE, allow.fixedcorrelation = FALSE), 
-    regexp = "The estimated value of one or more correlations in the supplied asreml fit for PSA.27 is fixed")
+    regexp = paste("The estimated value of one or more correlations in the supplied asreml fit for PSA.27 is",
+                   "bound or fixed and allow.fixedcorrelation is FALSE"))
   testthat::expect_equal(m6.asrt$test.summary$action[4], "Unchanged - fixed correlation")
   testthat::expect_true(grepl("units", as.character(getFormulae(m6.asrt$asreml.obj)$random)[2], fixed = TRUE))
 
@@ -914,38 +934,47 @@ test_that("Fixedcorrelations_asreml4", {
   testthat::expect_true(grepl("ar1(Lane):ar1(Position)", 
                               as.character(getFormulae(m1.asrt$asreml.obj)$residual)[2], fixed = TRUE))
 
-  m4.asrt <- testresidual(m.asrt, terms = "ar1(Lane):Position", label = "Lane autocorrelation", 
+  m4.asrt <- testresidual(m.asrt, terms = "ar1(Lane):ar1(Position)", label = "Lane autocorrelation", 
                           simpler = TRUE, allow.fixedcorrelation = TRUE, update = FALSE)
-  testthat::expect_equal(m4.asrt$test.summary$action[2], "Swapped")
-  testthat::expect_true(grepl("ar1(Lane):Position", 
+  testthat::expect_equal(m4.asrt$test.summary$action[2], "Unswapped")
+  testthat::expect_true(grepl("ar1(Lane):ar1(Position)", 
                               as.character(getFormulae(m4.asrt$asreml.obj)$residual)[2], fixed = TRUE))
   
   #Check warning message when supplied asreml.obj has a fixed correlation
-  testthat::expect_output(testthat::expect_warning(
+  testthat::expect_warning(
     m.asr <- do.call(asreml, 
                      args=list(fixed = PSA.27 ~ 1,
                                random = ~ Lane + Position + units,
                                residual = ~ ar1(Lane):Position,
-                               data = PSA.27.dat, maxiter=50))))
+                               data = PSA.27.dat, maxiter=50)))
   testthat::expect_warning(
     m.asrt <- as.asrtests(m.asr, NULL, NULL, label = "Start with all autocorrelation",
                           IClikelihood = "full"))
   m.asrt <- rmboundary(m.asrt)
-  m.asrt <- iterate(m.asrt)
   testthat::expect_false(m.asrt$asreml.obj$converge)
   
   testthat::expect_warning(
     m1.asrt <- changeModelOnIC(m.asrt, dropRandom = "units", allow.fixedcorrelation = FALSE),
-    regexp = "The estimated value of one or more correlations in the supplied asreml fit for PSA.27 is fixed")
+    regexp = paste("The estimated value of one or more correlations in the supplied asreml fit",
+                   "for PSA.27 is bound or fixed and allow.fixedcorrelation is FALSE"))
   testthat::expect_warning(
     m2.asrt <- testresidual(m.asrt, terms = "ar1(Lane):ar1(Position)", allow.fixedcorrelation = FALSE),
-    regexp = "The estimated value of one or more correlations in the supplied asreml fit for PSA.27 is fixed")
+    regexp = paste("The estimated value of one or more correlations in the supplied asreml fit",
+                   "for PSA.27 is bound or fixed and allow.fixedcorrelation is FALSE"))
+  
   m1.asr <- newfit(m.asr, random. = ~ . - units, allow.fixedcorrelation = TRUE)
   testthat::expect_false(any("units" == rownames(attr(m1.asr$formulae$random, which = "factors"))))
   
   testthat::expect_warning(
     m2.asr <- newfit(m.asr, random. = ~ . - units, allow.fixedcorrelation = FALSE),
-    regexp = "The estimated value of one or more correlations in the supplied asreml fit for PSA.27 is fixed")
+    regexp = paste("The estimated value of one or more correlations in the supplied asreml fit",
+                   "for PSA.27 is bound or fixed and allow.fixedcorrelation is FALSE"))
+  testthat::expect_true(any("units" == rownames(attr(m2.asr$formulae$random, which = "factors"))))
+  
+  testthat::expect_warning(
+    m2.asr <- newfit(m.asr, random. = ~ . - units, allow.fixedcorrelation = FALSE),
+    regexp = paste("The estimated value of one or more correlations in the supplied asreml fit",
+                   "for PSA.27 is bound or fixed and allow.fixedcorrelation is FALSE"))
   testthat::expect_true(any("units" == rownames(attr(m2.asr$formulae$random, which = "factors"))))
 
   #Test repararmSigDevn
@@ -966,7 +995,8 @@ test_that("Fixedcorrelations_asreml4", {
                             allow.fixedcorrelation = TRUE, update = FALSE)
   m1.asrt <- iterate(m1.asrt)
   testthat::expect_equal(m1.asrt$test.summary$action[2], "Changed fixed, random")
-  testthat::expect_true(unname(vpc.char(m1.asrt$asreml.obj)["Lane:Position!Lane!cor"]) %in% c("F", "B"))
+  testthat::expect_true(unname(
+            m1.asrt$asreml.obj$vparameters.con["Lane:Position!Lane!cor"]) %in% c("F", "B"))
   
   m2.asrt <- reparamSigDevn(m.asrt, terms = "Position", trend.num = "xPosn", devn.fac = "Position", 
                             allow.fixedcorrelation = FALSE, update = FALSE)
@@ -985,10 +1015,12 @@ test_that("Fixedcorrelations_asreml4", {
   
   m1.asrt <- testswapran(m.asrt, oldterms = "Lane", newterms = "Position", allow.fixedcorrelation = TRUE)
   testthat::expect_equal(m1.asrt$test.summary$action[2], "Rejected")
-  testthat::expect_true(unname(vpc.char(m1.asrt$asreml.obj)["Lane:Position!Lane!cor"]) %in% c("F", "B"))
-  
+  testthat::expect_true(unname(
+             m1.asrt$asreml.obj$vparameters.con["Lane:Position!Lane!cor"]) %in% c("B","F"))
+
   testthat::expect_warning(
     m2.asrt <- testswapran(m.asrt, oldterms = "Lane", newterms = "Position", allow.fixedcorrelation = FALSE),
-    regexp = "The estimated value of one or more correlations in the supplied asreml fit for PSA.27 is fixed")
-
+    regexp = paste("The estimated value of one or more correlations in the supplied asreml fit",
+                   "for PSA.27 is bound or fixed and allow.fixedcorrelation is FALSE"))
+  
 })

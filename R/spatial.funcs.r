@@ -420,7 +420,8 @@ makeCorrSpec1D <- function(corr.funcs, dimension,
                            met.funcs, unimpl.funcs)
 {  
   if (corr.funcs[dimension] %in% met.funcs)
-    corr1D <- paste0(corr.funcs[dimension],"(",row.covar,")")
+    corr1D <- paste0(corr.funcs[dimension],"(",
+                     ifelse(dimension == 1, row.covar, col.covar),")")
   else
   { 
     if (corr.funcs[dimension] != "")
@@ -444,6 +445,7 @@ fitCorrMod <- function(asrtests.obj, sections = NULL,
                        ...)
 {
   asr4 <- isASRemlVersionLoaded(4, notloaded.fault = TRUE)
+  asr4.2 <- isASReml4_2Loaded(4.2, notloaded.fault = TRUE)
   if (!asr4)
     stop(paste("Fitting spatial models using correlation/variance models", 
                "has not been implemented for asreml version less than 4.0"))
@@ -464,7 +466,7 @@ fitCorrMod <- function(asrtests.obj, sections = NULL,
   if (all(corr.funcs %in% c("", "id", "idv")))
     stop("Both correlation functions are id or equivalent")
 
-  #Check the grid covasr and factors
+  #Check the grid covars and factors
   #row.factor and col.factor must be in dat.in so that each dimension can be fitted independently
   #(so can have a term without a corr function when fitting a dimension)
   grid.cols <- c(sections, row.factor, col.factor)
@@ -578,7 +580,7 @@ fitCorrMod <- function(asrtests.obj, sections = NULL,
         ran.term <- paste0(rterms[1], ":", rterms[2])
         if (nsect > 1)
           ran.term <- paste0("at(", sections, ", ",i, "):", ran.term)
-
+        
         if (chooseOnIC)
           corr.asrt <- changeModelOnIC(corr.asrt, 
                                        addRandom = ran.term, 
@@ -683,10 +685,20 @@ fitCorrMod <- function(asrtests.obj, sections = NULL,
     {
       if (largeVparChange(corr.asrt$asreml.obj, 0.75))
         corr.asrt <- iterate(corr.asrt)
-      vpc <- asreml::vpc.char(corr.asrt$asreml.obj)
-      vpc <- vpc[grepl("!R$", names(vpc))]
-      vpt <- asreml::vpt.char(corr.asrt$asreml.obj)
-      vpt <- vpt[names(vpc)]
+      if (asr4)
+      {
+        if (asr4.2)
+        { 
+          vpc <- corr.asrt$asreml.obj$vparameters.con
+          vpt <- corr.asrt$asreml.obj$vparameters.type
+        } else
+        {
+          vpc <- vpc.char(corr.asrt$asreml.obj)
+          vpt <- vpt.char(corr.asrt$asreml.obj)
+        }
+        vpc <- vpc[grepl("!R$", names(vpc))]
+        vpt <- vpt[names(vpc)]
+      }
       if (length(vpc) == 1 && !(vpc %in% c("F", "B") && vpt == "V"))
       {
         lab <- "Try fixed residual variance"
@@ -726,10 +738,10 @@ fitCorrMod <- function(asrtests.obj, sections = NULL,
       }
     }
   }
-  
+
   #Having made all model changes with checkboundaryonly = TRUE, update for checkboundaryonly set to FALSE
   if (!checkboundaryonly)
-    corr.asrt <- rmboundary(corr.asrt, checkboundaryonly = checkboundaryonly)
+    corr.asrt <- rmboundary(corr.asrt, checkboundaryonly = checkboundaryonly, update = TRUE)
   
   return(corr.asrt)
 }
@@ -833,6 +845,7 @@ fitTPNCSSMod <- function(asrtests.obj, sections = NULL,
   return(tspl.asrt)
 }
 
+#Creates a list with the tpps bits for asreml.options = "grp"
 addPSdesign.mat <- function(dat, sections = NULL, nsect = 1, 
                             row.coords, col.coords, 
                             nsegs = NULL, nestorder = c(1, 1), 
@@ -883,6 +896,7 @@ addPSdesign.mat <- function(dat, sections = NULL, nsect = 1,
   return(tps.XZmat)
 }
 
+#makes sure that the data components of tps.XZmat are conformable between sections for the grp asreml option 
 conformTPSSections <- function(tps.XZmat)
 {
   #Check if data is conformable
@@ -945,14 +959,12 @@ conformTPSSections <- function(tps.XZmat)
 
 #'### Function to create spline basis matrices and data for TPS splines
 makeTPPSplineMats.data.frame <- function(data, sections = NULL, 
-                                         row.covar, col.covar, 
-                                         nsegs = NULL, nestorder = c(1, 1), 
-                                         degree = c(3,3), difforder = c(2,2),
-                                         asreml.option = "mbf", 
-                                         ...)
+                                           row.covar, col.covar, 
+                                           nsegs = NULL, nestorder = c(1, 1), 
+                                           degree = c(3,3), difforder = c(2,2),
+                                           asreml.option = "mbf", 
+                                           ...)
 {
-  stub = "xx"
-  
   #Check that named columns are in the data
   checkNamesInData(c(sections, row.covar, col.covar), data)
   
@@ -983,10 +995,6 @@ makeTPPSplineMats.data.frame <- function(data, sections = NULL,
   options <- c("mbf","grp")
   asreml.opt <- options[check.arg.values(asreml.option, options)]
   
-  stub = "xx"
-
-  nsect <- calc.nsect(data, sections)
-  
   #Remove any previous Tensor Spline basis columns from the data
   if (any(grepl("TP\\.", names(data))) || any(grepl("TP\\_", names(data))))
     data <- data[,-c(grep("TP\\.", names(data)), grep("TP\\_", names(data)))]
@@ -995,16 +1003,16 @@ makeTPPSplineMats.data.frame <- function(data, sections = NULL,
   rc.cols <- c(sections, row.covar, col.covar)
   dat.rc <- data[rc.cols]
   dat.rc <- unique(dat.rc)
-
   nsect <- calc.nsect(data, sections)
 
   #Get data for mbf 
   if (asreml.opt == "mbf")
   {
-    stop('Sorry, but the mbf setting of asreml.opt is not functioning yet - use asreml.opt = "grp".')
+    mbf.env <- parent.frame(1)
+    #stop('Sorry, but the mbf setting of asreml.opt is not functioning yet - use asreml.opt = "grp".')
     if (nsect != 1)
     {  
-      tmp <- split(data, f = dat.rc[[sections]])
+      tmp <- split(dat.rc, f = dat.rc[[sections]])
       sect.levs <- levels(dat.rc[[sections]])
       tps.XZmat  <- lapply(tmp, 
                            function(dat, columncoordinates, rowcoordinates, 
@@ -1012,27 +1020,33 @@ makeTPPSplineMats.data.frame <- function(data, sections = NULL,
                                     degree, difforder, asreml.opt)
                            { 
                              stub <- as.character(dat[[sects]][1])
+                             dat <- unique(dat)
+                             rownames(dat) <- NULL
                              XZ.mat <- tpsmmb(columncoordinates = columncoordinates, 
                                               rowcoordinates = rowcoordinates, 
                                               data = dat, 
-                                              stub = stub, nsegments = nsegments, 
+                                              stub = stub, 
+                                              nsegments = nsegments, 
                                               nestorder = nestorder, 
                                               degree = degree, difforder = difforder,
                                               asreml = asreml.opt, 
                                               ...)
-                             if (asreml.opt == "mbf")
-                             { 
-                               Zmat.names <- paste0(paste0(c("BcZ", "BrZ", "BcrZ"),stub), ".df")
-                               assign(Zmat.names[1], XZ.mat$BcZ.df, envir = parent.frame(1))
-                               assign(Zmat.names[2], XZ.mat$BrZ.df, envir = parent.frame(1))
-                               assign(Zmat.names[3], XZ.mat$BcrZ.df, envir = parent.frame(1))
-                             }
                              return(XZ.mat)
                            }, columncoordinates = col.covar, rowcoordinates = row.covar, 
                            sects = sections, nsegments = nsegs, nestorder = nestorder, 
                            degree = degree, difforder = difforder, asreml.opt = asreml.opt)
+      #Put the mbf data.frames into the parent frame
+      sect.levs <- levels(dat.rc[[sections]])
+      for (sect.lev in sect.levs)
+      {
+        Zmat.names <- paste0(paste0(c("BcZ", "BrZ", "BcrZ"),sect.lev), ".df")
+        assign(Zmat.names[1], tps.XZmat[[sect.lev]]$BcZ.df, envir = mbf.env)
+        assign(Zmat.names[2], tps.XZmat[[sect.lev]]$BrZ.df, envir = mbf.env)
+        assign(Zmat.names[3], tps.XZmat[[sect.lev]]$BcrZ.df, envir = mbf.env)
+      }        
     } else
     {
+      stub = "xx"
       tps.XZmat <- list(tpsmmb(columncoordinates = col.covar, 
                                rowcoordinates = row.covar, 
                                data = dat.rc, 
@@ -1052,9 +1066,9 @@ makeTPPSplineMats.data.frame <- function(data, sections = NULL,
                                              levels = tps.XZmat[[1]]$BrZ.df$TP.row)
       tps.XZmat[[1]]$BcrZ.df$TP.CxR <- factor(tps.XZmat[[1]]$BcrZ.df$TP.CxR,
                                               levels = tps.XZmat[[1]]$BcrZ.df$TP.CxR)
-      assign(Zmat.names[1], tps.XZmat[[1]]$BcZ.df, envir = parent.frame(1))
-      assign(Zmat.names[2], tps.XZmat[[1]]$BrZ.df, envir = parent.frame(1))
-      assign(Zmat.names[3], tps.XZmat[[1]]$BcrZ.df, envir = parent.frame(1))
+      assign(Zmat.names[1], tps.XZmat[[1]]$BcZ.df, envir = mbf.env)
+      assign(Zmat.names[2], tps.XZmat[[1]]$BrZ.df, envir = mbf.env)
+      assign(Zmat.names[3], tps.XZmat[[1]]$BcrZ.df, envir = mbf.env)
     }
     
     #Build the data.frame to be used in the analysis
@@ -1069,7 +1083,8 @@ makeTPPSplineMats.data.frame <- function(data, sections = NULL,
     dat$TP.col <- factor(dat$TP.col)
     dat$TP.row <- factor(dat$TP.row)
     dat$TP.CxR <- factor(dat$TP.CxR)
-    dat <- merge(data, dat, all.x = TRUE, by = rc.cols, sort = FALSE)
+    dat <- merge(data, dat, all = TRUE, sort = FALSE)
+    dat <- dat[c(rc.cols, setdiff(names(dat), rc.cols))]
     attr(dat, which = "mbf.env") <- parent.frame(1)
   } else #doing grp
   {  
@@ -1234,25 +1249,18 @@ fitTPPSMod <- function(asrtests.obj, sections = NULL,
   checkEllipsisArgs("makeTPPSplineMats.data.frame", inargs)
   checkEllipsisArgs("tpsmmb", inargs, pkg = "asremlPlus")
   
-  stub = "xx"
-
   #Get data for mbf 
   if (asreml.opt == "mbf")
   {
-    stop('Sorry, but the mbf setting of asreml.opt is not functioning yet - use asreml.opt = "grp".')
+    #stop('Sorry, but the mbf setting of asreml.opt is not functioning yet - use asreml.opt = "grp".')
     if (is.null(tpps4mbf.obj))
       stop("For asreml.option set to mbf, the argument tpps4mbf must be set to a list",
            " produced using makeTPPSSplineMats.data.frame also with asreml.option set to mbf")
     assign("tps.XZmat", tpps4mbf.obj)
-    #Build the data.frame to be used in the analysis
-    dat <- lapply(tpps4mbf.obj, function(mat) mat$data.plus)
-    if (length(tpps4mbf.obj) > 1)
-      dat <- do.call(rbind, dat)
-    else
-      dat <- dat[[1]]
+    
+    #Get the data
+    dat <- tpps4mbf.obj[[1]]$data.plus
     checkNamesInData(c(sections, row.covar, col.covar, dropRowterm, dropColterm), dat)
-    nsect <- calc.nsect(dat, sections)
-
     #Update the asreml.obj for the new data.frame
     asreml.obj  <- asrtests.obj$asreml.obj
     asreml.obj <- asreml::update.asreml(asreml.obj, data = dat)
@@ -1265,7 +1273,8 @@ fitTPPSMod <- function(asrtests.obj, sections = NULL,
       saveRDS(mf, file = mf.file)
     } else
     {
-      if (inherits(asreml.obj$mf, what = "asr.model.frame"))
+      if (inherits(asreml.obj$mf, what = "asr.model.frame") || 
+          inherits(asreml.obj$mf, what = "asreml.model.frame"))
         attr(asreml.obj$mf, which = "mbf.env") <- attr(tps.XZmat[[1]]$data.plus, which = "mbf.env")
       else
         stop("For asreml.option set to mbf, cannot find the asreml model frame to set the mbf environment")
@@ -1283,31 +1292,33 @@ fitTPPSMod <- function(asrtests.obj, sections = NULL,
     if (!is.null(dropColterm) && nlevels(dat.in[[dropColterm]]) != length(unique(dat.in[[col.covar]])))
       stop(dropColterm, " does not have the same number of levels as there are values of ", col.covar)
     
-    nsect <- calc.nsect(dat.in, sections)
     tps.XZmat <- makeTPPSplineMats(dat.in, sections = sections, 
                                     row.covar = row.covar, col.covar = col.covar,
                                     nsegs = nsegs, nestorder = nestorder,
                                     degree = degree, difforder = difforder,
                                     asreml.opt = "grp", ...)
     dat <- tps.XZmat[[1]]$data.plus
+}
 
-    #Update the asreml.obj for the new data.frame
-    asreml.obj  <- asrtests.obj$asreml.obj
-    asreml.obj <- asreml::update.asreml(asreml.obj, data = dat)
-  }
+  #Update the asreml.obj for the new data.frame
+  asreml.obj  <- asrtests.obj$asreml.obj
+  asreml.obj <- asreml::update.asreml(asreml.obj, data = dat)
   tspl.asrt <- as.asrtests(asreml.obj = asreml.obj, NULL, NULL, 
                            IClikelihood = "full", label = "Change to new data.frame with TPS bits")
 
   #Fit spatial TPPS to sections
+  nsect <- calc.nsect(dat, sections)
   for (i in 1:nsect)
   {
     if (nsect == 1)
     { 
+      stub = "xx"
       sect.fac <- NULL
       lab <- paste0("Try tensor P-splines")
     }
     else
     { 
+      stub <- levels(dat[[sections]])[i]
       sect.fac <- paste0("at(", sections, ",  ", i, "):")
       lab <- paste0("Try tensor P-splines for ", sections, " ",i)
     }

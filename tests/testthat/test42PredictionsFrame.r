@@ -1,8 +1,8 @@
 #devtools::test("asremlPlus")
 context("predictions_alldiffs")
 
-cat("#### Test for predictions.frame on Oats with asreml4\n")
-test_that("PredictionsFrame_asreml4", {
+cat("#### Test for predictions.frame on Oats with asreml42\n")
+test_that("PredictionsFrame_asreml42", {
   skip_on_cran()
   library(asreml)
   library(asremlPlus)

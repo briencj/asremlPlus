@@ -1,8 +1,8 @@
 #devtools::test("asremlPlus")
 context("model_selection")
 
-cat("#### Test for boot using wheat example with asreml4\n")
-test_that("Wheatboot_asreml4", {
+cat("#### Test for boot using wheat example with asreml42\n")
+test_that("Wheatboot_asreml42", {
   skip_if_not_installed("asreml")
   skip_on_cran()
   library(dae)

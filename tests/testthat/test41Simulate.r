@@ -1,13 +1,14 @@
 #devtools::test("asremlPlus")
 context("model_selection")
 Sys.setenv("R_TESTS" = "")
+asr41.lib <- "D:\\Analyses\\R ASReml4.1" 
 
-cat("#### Test for parallel processing with asreml4\n")
-test_that("parallel_asreml4", {
+cat("#### Test for parallel processing with asreml41\n")
+test_that("parallel_asreml41", {
   skip_if_not_installed("asreml")
   skip_on_cran()
   library(dae)
-  library(asreml)
+  library(asreml, lib.loc = asr41.lib)
   library(asremlPlus)
   library(parallel)
   library(foreach)
@@ -33,12 +34,12 @@ test_that("parallel_asreml4", {
   stopCluster(cl)
 })
 
-cat("#### Test for simulate.asreml with asreml4\n")
-test_that("simulate_asreml4", {
+cat("#### Test for simulate.asreml with asreml41\n")
+test_that("simulate_asreml41", {
   skip_if_not_installed("asreml")
   skip_on_cran()
   library(dae)
-  library(asreml)
+  library(asreml, lib.loc = asr41.lib)
   library(asremlPlus)
   
   data(Wheat.dat)

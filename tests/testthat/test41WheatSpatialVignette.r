@@ -1,11 +1,12 @@
 #devtools::test("asremlPlus")
 context("model_selection")
+asr41.lib <- "D:\\Analyses\\R ASReml4.1" 
 
-cat("#### Test for wheat76 spatial example with asreml4\n")
-test_that("Wheat_spatial_asreml4", {
+cat("#### Test for wheat76 spatial example with asreml41\n")
+test_that("Wheat_spatial_asreml41", {
   skip_if_not_installed("asreml")
   skip_on_cran()
-  library(asreml)
+  library(asreml, lib.loc = asr41.lib)
   library(asremlPlus)
   library(qqplotr)
   ## use asremlPlus to analyse the wheat (barley) example from section 8.6 of the asreml manual (Butler et al. 2010)

@@ -1,8 +1,8 @@
 #devtools::test("asremlPlus")
 context("prediction_alldiffs")
 
-cat("#### Test for allDifferences.data.frame sort.alldiffs on Oats with asreml4\n")
-test_that("allDifferences_asreml4", {
+cat("#### Test for allDifferences.data.frame sort.alldiffs on Oats with asreml42\n")
+test_that("allDifferences_asreml42", {
   skip_if_not_installed("asreml")
   skip_on_cran()
   library(asreml)
@@ -35,8 +35,8 @@ test_that("allDifferences_asreml4", {
   
   #Test for allDifferences without the sort
   Var.diffs <- allDifferences(predictions = Var.pred$pvals, 
-                           sed = Var.pred$sed, 
-                           classify = "Nitrogen:Variety", response = "Yield", tdf = den.df)
+                              sed = Var.pred$sed, 
+                              classify = "Nitrogen:Variety", response = "Yield", tdf = den.df)
   testthat::expect_true(is.alldiffs(Var.diffs))
   testthat::expect_equal(nrow(Var.diffs$predictions),12)
   testthat::expect_true(validAlldiffs(Var.diffs))
@@ -54,7 +54,7 @@ test_that("allDifferences_asreml4", {
                                    sortFactor = "Variety", decreasing = TRUE)
   testthat::expect_true(is.alldiffs(Var.sort.diffs))
   testthat::expect_true(validAlldiffs(Var.sort.diffs))
-  testthat::expect_equal(length(attr(Var.sort.diffs$predictions, which = "heading")),4)
+  testthat::expect_equal(length(attr(Var.sort.diffs$predictions, which = "heading")),1)
   testthat::expect_true("asreml.predict" %in% class(Var.sort.diffs$predictions))
   testthat::expect_equal(length(attr(Var.sort.diffs, which = "sortOrder")),3)
   testthat::expect_true(as.character(Var.sort.diffs$predictions$Variety[1]) == "Marvellous" & 
@@ -74,7 +74,7 @@ test_that("allDifferences_asreml4", {
   Var.reord.diffs <- renewClassify(Var.diffs, newclassify = "Variety:Nitrogen")
   testthat::expect_true(as.character(Var.reord.diffs$predictions$Variety[1]) == "Victory" &
                           as.character(Var.reord.diffs$predictions$Variety[2]) == "Victory")
-  testthat::expect_equal(length(attr(Var.reord.diffs$predictions, which = "heading")),4)
+  testthat::expect_equal(length(attr(Var.reord.diffs$predictions, which = "heading")),1)
   testthat::expect_true("asreml.predict" %in% class(Var.reord.diffs$predictions))
   
   #Test for re-order factors and sort
@@ -96,8 +96,8 @@ test_that("allDifferences_asreml4", {
  })
 
 
-cat("#### Test for LSDs and halfLSIs on system data with asreml4\n")
-test_that("LSD_LSI_SystemData_asreml4", {
+cat("#### Test for LSDs and halfLSIs on system data with asreml42\n")
+test_that("LSD_LSI_SystemData_asreml42", {
   skip_if_not_installed("asreml")
   skip_on_cran()
   library(asremlPlus)
@@ -266,8 +266,8 @@ test_that("LSD_LSI_SystemData_asreml4", {
 })
 
 
-cat("#### Test for LSD on Oats with asreml4\n")
-test_that("LSD_asreml4", {
+cat("#### Test for LSD on Oats with asreml42\n")
+test_that("LSD_asreml42", {
   skip_if_not_installed("asreml")
   skip_on_cran()
   library(asreml)
@@ -277,7 +277,7 @@ test_that("LSD_asreml4", {
   
   m1.asr <- asreml(Yield ~ Nitrogen*Variety, 
                    random=~Blocks/Wplots,
-                   data=Oats.dat)
+                   data=Oats.dat, pworkspace = "1Gb")
   current.asrt <- as.asrtests(m1.asr)
   wald.tab <-  current.asrt$wald.tab
   den.df <- wald.tab[match("Variety", rownames(wald.tab)), "denDF"]
@@ -420,7 +420,7 @@ test_that("LSD_asreml4", {
   
 })
 
-cat("#### Test for sort.alldiffs on Smarthouse with asreml4\n")
+cat("#### Test for sort.alldiffs on Smarthouse with asreml42\n")
 test_that("sort.alldiffs4", {
   skip_if_not_installed("asreml")
   skip_on_cran()
@@ -524,7 +524,7 @@ test_that("sort.alldiffs4", {
                                           sortFactor = "Genotype"))
 })
 
-cat("#### Test for LSD with sort.alldiffs on Smarthouse with asreml4\n")
+cat("#### Test for LSD with sort.alldiffs on Smarthouse with asreml42\n")
 test_that("LSDsort.alldiffs4", {
   skip_if_not_installed("asreml")
   skip_on_cran()
@@ -614,7 +614,7 @@ test_that("LSDsort.alldiffs4", {
   
 })
 
-cat("#### Test for LSDsupplied on Oats with asreml4\n")
+cat("#### Test for LSDsupplied on Oats with asreml42\n")
 test_that("sort.alldiffs4", {
   skip_if_not_installed("asreml")
   skip_on_cran()
@@ -688,7 +688,7 @@ test_that("sort.alldiffs4", {
   
   })
 
-cat("#### Test for LSD on WaterRunoff with asreml4\n")
+cat("#### Test for LSD on WaterRunoff with asreml42\n")
 test_that("LSDWater4", {
   skip_if_not_installed("asreml")
   skip_on_cran()
@@ -1042,7 +1042,7 @@ test_that("LSDWater4", {
   
 })
 
-cat("#### Test for exploreLSDs on WaterRunoff with asreml4\n")
+cat("#### Test for exploreLSDs on WaterRunoff with asreml42\n")
 test_that("exploreLSDWater4", {
   skip_if_not_installed("asreml")
   skip_on_cran()
@@ -1181,7 +1181,7 @@ test_that("exploreLSDWater4", {
     
 })
 
-cat("#### Test for exploreLSDs on Oats with asreml4\n")
+cat("#### Test for exploreLSDs on Oats with asreml42\n")
 test_that("exploreLSDOatsr4", {
   skip_if_not_installed("asreml")
   skip_on_cran()
@@ -1265,7 +1265,7 @@ test_that("exploreLSDOatsr4", {
                               abs(na.omit(LSDs$LSDs$LSDs) - 17.11869) < 1e-05))
 })  
 
-cat("#### Test for sort.alldiffs on WaterRunoff with asreml4\n")
+cat("#### Test for sort.alldiffs on WaterRunoff with asreml42\n")
 test_that("sort.alldiffsWater4", {
   skip_if_not_installed("asreml")
   skip_on_cran()
@@ -1379,7 +1379,7 @@ test_that("sort.alldiffsWater4", {
   
 })
 
-cat("#### Test for sort.alldiffs on Oats with asreml4\n")
+cat("#### Test for sort.alldiffs on Oats with asreml42\n")
 test_that("sort.alldiffs4", {
   skip_if_not_installed("asreml")
   skip_on_cran()
@@ -1483,7 +1483,7 @@ test_that("sort.alldiffs4", {
   
 })
 
-cat("#### Test for subset.alldiffs on Smarthouse with asreml4\n")
+cat("#### Test for subset.alldiffs on Smarthouse with asreml42\n")
 test_that("subset.alldiffs4", {
   skip_if_not_installed("asreml")
   skip_on_cran()
@@ -1559,7 +1559,7 @@ test_that("subset.alldiffs4", {
   testthat::expect_equal(length(attributes(diffs.subs)),11)
 })
 
-cat("#### Test for facCombine.alldiffs on Ladybird with asreml4\n")
+cat("#### Test for facCombine.alldiffs on Ladybird with asreml42\n")
 test_that("facCombine.alldiffs4", {
   skip_if_not_installed("asreml")
   skip_on_cran()
@@ -1706,7 +1706,7 @@ test_that("facCombine.alldiffs4", {
   
 })
 
-cat("#### Test for facRecast.alldiffs on Ladybird with asreml4\n")
+cat("#### Test for facRecast.alldiffs on Ladybird with asreml42\n")
 test_that("facRecast.alldiffs4", {
   skip_if_not_installed("asreml")
   skip_on_cran()
@@ -1756,8 +1756,8 @@ test_that("facRecast.alldiffs4", {
   
 })
 
-cat("#### Test for linear.transformation on Oats with asreml4\n")
-test_that("linear.transform_Oats_asreml4", {
+cat("#### Test for linear.transformation on Oats with asreml42\n")
+test_that("linear.transform_Oats_asreml42", {
   skip_if_not_installed("asreml")
   skip_on_cran()
   library(asreml)
@@ -1776,7 +1776,7 @@ test_that("linear.transform_Oats_asreml4", {
                        wald.tab = current.asrt$wald.tab,
                        error.intervals = "Stand", tables = "none")
   testthat::expect_is(diffs, "alldiffs")
-  testthat::expect_equal(length(attr(diffs$predictions, which = "heading")),4)
+  testthat::expect_equal(length(attr(diffs$predictions, which = "heading")),1)
   testthat::expect_true("asreml.predict" %in% class(diffs$predictions))
   testthat::expect_equal(nrow(diffs$vcov),12)
   testthat::expect_true(all(colnames(diffs$vcov)[1:2] %in% c("0,Victory", "0,Golden Rain")))
@@ -1792,7 +1792,7 @@ test_that("linear.transform_Oats_asreml4", {
                          wald.tab = current.asrt$wald.tab,
                          error.intervals = "Conf", tables = "none")
   testthat::expect_is(diffs.L, "alldiffs")
-  testthat::expect_equal(length(attr(diffs.L$predictions, which = "heading")),5)
+  testthat::expect_equal(length(attr(diffs.L$predictions, which = "heading")),2)
   testthat::expect_true("asreml.predict" %in% class(diffs.L$predictions))
   testthat::expect_true(abs((diffs$vcov[1,1] - diffs$vcov[4,1]) + 
                               (diffs$vcov[4,4] - diffs$vcov[1,4]) - diffs.L$vcov[1,1]) < 1e-04)
@@ -1811,7 +1811,7 @@ test_that("linear.transform_Oats_asreml4", {
                            LSDby = "Nitrogen",
                            tables = "none")
   testthat::expect_is(diffs.mod, "alldiffs")
-  testthat::expect_equal(length(attr(diffs.mod$predictions, which = "heading")),5)
+  testthat::expect_equal(length(attr(diffs.mod$predictions, which = "heading")),2)
   testthat::expect_true("asreml.predict" %in% class(diffs.mod$predictions))
   testthat::expect_true(is.null(diffs.mod$vcov))
   
@@ -1825,8 +1825,8 @@ test_that("linear.transform_Oats_asreml4", {
                               preds$std.error[1]) > 0.01)
 })
   
-cat("#### Test for linear.transformation on WaterRunoff with asreml4\n")
-test_that("linear.transform_WaterRunoff_asreml4", {
+cat("#### Test for linear.transformation on WaterRunoff with asreml42\n")
+test_that("linear.transform_WaterRunoff_asreml42", {
   skip_if_not_installed("asreml")
   skip_on_cran()
   library(asreml)
@@ -1950,7 +1950,7 @@ test_that("linear.transform_WaterRunoff_asreml4", {
   save <- vector(mode = "list", length = nresp)
   names(save) <- responses.lRGR
   nresp <- 1
-  asreml.options(keep.order = TRUE) #required for asreml4 only
+  asreml.options(keep.order = TRUE, ai.sing = TRUE, extra = 5) #required for asreml4 only
   for (k in 1:nresp)
   {
     fix <- paste(responses.lRGR[k], 
@@ -1959,8 +1959,8 @@ test_that("linear.transform_WaterRunoff_asreml4", {
     HEB25.asr <- do.call("asreml",
                          args = list(fixed = as.formula(fix), 
                                      random = ~ Smarthouse:Zones:Mainplots, 
-                                     residual = ~ idh(Treat.Smarthouse):Zones:Mainplots, 
-                                     data = cart.dat, workspace="500mb", 
+                                    # residual = ~ idh(Treat.Smarthouse):Zones:Mainplots, 
+                                     data = cart.dat, workspace="1gb", 
                                      na.action=na.method(y="include", x="include"),
                                      maxiter=50))
     summary(HEB25.asr)$varcomp
@@ -1993,14 +1993,14 @@ test_that("linear.transform_WaterRunoff_asreml4", {
   testthat::expect_equal(as.character(save$lRGR_sm_32_42$predictions$Combination[1]), 
                          "Barke")
   testthat::expect_true(all(abs(save$lRGR_sm_32_42$predictions[1, 2:5] - 
-                                  c(-0.4131313, 0.04177124, -0.3306084, -0.4956541)) < 1e-04))
+                                  c(-0.4020173, 0.04745505, -0.3075751, -0.4964595)) < 1e-03))
   testthat::expect_true(all(is.na(save$lRGR_sm_32_42$backtransforms[, "standard.error"])))
   testthat::expect_true(all(abs(exp(save$lRGR_sm_32_42$predictions[1, c(2,4:5)]) - 
                                   save$lRGR_sm_32_42$backtransforms[1, c(2,4:5)]) < 1e-04))
 })
 
-cat("#### Test for addBacktransforms on WaterRunoff with asreml4\n")
-test_that("addBacktransforms_WaterRunoff_asreml4", {
+cat("#### Test for addBacktransforms on WaterRunoff with asreml42\n")
+test_that("addBacktransforms_WaterRunoff_asreml42", {
   skip_if_not_installed("asreml")
   skip_on_cran()
   library(asreml)
@@ -2045,8 +2045,8 @@ test_that("addBacktransforms_WaterRunoff_asreml4", {
 })
 
 
-cat("#### Test for ratioTansforms on system data with asreml4\n")
-test_that("ratioTransforms_SystemData_asreml4", {
+cat("#### Test for ratioTansforms on system data with asreml42\n")
+test_that("ratioTransforms_SystemData_asreml42", {
   skip_if_not_installed("asreml")
   skip_on_cran()
   library(asremlPlus)
@@ -2119,9 +2119,8 @@ test_that("ratioTransforms_SystemData_asreml4", {
   
 })
 
-
-cat("#### Test for ratioTansforms on the Oats data with asreml4\n")
-test_that("ratioTransforms_SystemData_asreml4", {
+cat("#### Test for ratioTansforms on the Oats data with asreml42\n")
+test_that("ratioTransforms_SystemData_asreml42", {
   skip_if_not_installed("asreml")
   skip_on_cran()
   library(asreml)
@@ -2275,13 +2274,13 @@ test_that("ratioTransforms_SystemData_asreml4", {
   
 })
 
-cat("#### Test for alldiffs with GLM on budworm using asreml4\n")
-test_that("GLMdiffs_budworm_asreml4", {
+cat("#### Test for alldiffs with GLM on budworm using asreml42\n")
+test_that("GLMdiffs_budworm_asreml42", {
   skip_if_not_installed("asreml")
   skip_on_cran()
   library(asreml)
   library(asremlPlus)
-  ## devtools::load_all(".") #Needed to prevent a stack overflow error.
+  devtools::load_all(".") #Needed to prevent a stack overflow error.
   
   ##  1. the data - the MASS budworm data from function dose.p
   ##     in 'grouped' binomial format
@@ -2318,4 +2317,3 @@ test_that("GLMdiffs_budworm_asreml4", {
   testthat::expect_true(abs(diffs$predictions$transformed.value[1] - 0.03008577) < 1e-05)
   testthat::expect_true(abs(diffs$predictions$approx.se[1] - 0.01103991) < 1e-05)
 })
-

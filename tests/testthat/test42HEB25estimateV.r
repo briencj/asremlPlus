@@ -1,6 +1,6 @@
 
-cat("#### Test estimateV specials for HEB25 with asreml4\n")
-test_that("HEB25_estimateV_asreml4", {
+cat("#### Test estimateV specials for HEB25 with asreml42\n")
+test_that("HEB25_estimateV_asreml42", {
   skip_if_not_installed("asreml")
   skip_on_cran()
   library(dae)
@@ -58,12 +58,8 @@ test_that("HEB25_estimateV_asreml4", {
   testthat::expect_false(any(abs(Vus - V) > 1e+03))
   
   #corgh(Treatment):Genotype + diag
-  HEB25.asr <- asreml(fixed = Height ~ Smarthouse + Check + Treatment.1 + 
-                        Smarthouse:xMainPosn + Smarthouse:xLane + Check:Treatment.1, 
-                      random = ~ corgh(Treatment.1):Genotype.ID + Smarthouse:Zones:Mainplots, 
-                      residual = ~diag(Treat.Smarthouse):Zones:Mainplots, 
-                      data = cart.dat, na.action=na.method(y="include", x="include"), 
-                      maxiter = 1000, trace = FALSE)
+  HEB25.asr <- update(HEB25.asr, residual. = ~ diag(Treat.Smarthouse):Zones:Mainplots)
+  
   summary(HEB25.asr)$varcomp
   Vdiag <- estimateV(HEB25.asr)
   Vdiag[1:10, 1:9]

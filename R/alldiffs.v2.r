@@ -99,7 +99,7 @@
                                  return(var)
                                }, dat = data))
   }
-  #If necessary, set the name of the column conating the predictions
+  #If necessary, set the name of the column containing the predictions
   if (!is.null(predictions))
   {
     if (!any(c("predicted.value", "backtransformed.predictions") %in% names(data)))
@@ -301,7 +301,7 @@ setOldClass("predictions.frame")
   #Change asreml4 names to asreml3 names
   predictions <- as.predictions.frame(predictions, classify = classify, 
                                       se = "std.error", est.status = "status")
-  
+
   p <- makeAlldiffs(predictions = predictions, vcov = vcov, 
                     differences = differences, p.differences = p.differences, 
                     sed = sed, LSD = LSD, backtransforms = backtransforms, 
@@ -388,7 +388,11 @@ addMissingAttr.alldiffs <- function(alldiffs.obj, kattr)
 #Function to check that the classify variables are the initial variables in a predictions.frame 
 "getClassifyVars" <- function(classify)
 { 
-  class.nam <- unlist(strsplit(classify, "\\:"))
+  asr4.2 <- isASReml4_2Loaded(4.2, notloaded.fault = FALSE)
+  if (!is.null(asr4.2) && asr4.2)
+    class.nam <- fac.getinTerm(classify) #removes parentheses from "(Intercept)"
+  else
+    class.nam <- unlist(strsplit(classify, "\\:"))
   return(class.nam)
 }
 
@@ -396,7 +400,7 @@ checkClassifyVars.predictions.frame <- function(predictions, classify.names)
 {
   if (!all(classify.names %in% names(predictions)))
     stop("The predictions data.frame does not have a column for each of the following variables", 
-         "in the classify \n", paste0(setdiff(classify.names, predictions), collapse = ", "))
+               "in the classify \n", paste0(setdiff(classify.names, predictions), collapse = ", "))
   invisible()
 }
 
@@ -453,8 +457,8 @@ checkClassifyVars.predictions.frame <- function(predictions, classify.names)
                          deparse(substitute(object)),")"))
   } else
   {
-    class <- unlist(strsplit(classify, ":", fixed = TRUE))
-    if (!all(class == names(object$predictions)[1:length(class)]))
+    class.names <- getClassifyVars(classify)
+    if (!all(class.names == names(object$predictions)[1:length(class.names)]))
     {
       isalldiff[1] <- FALSE
       isalldiff <- c(isalldiff, 
@@ -679,17 +683,23 @@ makePredictionLabels <- function(predictions, classify, response = NULL,
                                  x.num = NULL, x.fac = NULL, 
                                  level.length = NA)
 {
+  asr4.2 <- isASReml4_2Loaded(4.2, notloaded.fault = FALSE)
+  
   #determine factors for row and column names
   #Make sure no functions in classify
   if (classify == "(Intercept)")
   {
-    factors <- classify
+    if (asr4.2)
+      factors <- "Intercept"
+    else
+      factors <- classify
   } else
   {
     factors <- fac.getinTerm(classify, rmfunction = TRUE)
     classify <- fac.formTerm(factors)
   }
   nfac <- length(factors)
+  
   #Check all factors in classify are in predictions
   if (length(setdiff(factors, names(predictions))) != 0)
   { 
@@ -1069,6 +1079,7 @@ subset.alldiffs <- function(x, subset = rep(TRUE, nrow(x$predictions)),
 
   #Save attributes
   x.attr <- attributes(x)
+  old.attrs <- getAllAttr.alldiffs(x)
 
   #Deal with unsupported parameters
   tempcall <- list(...)
@@ -1096,6 +1107,7 @@ subset.alldiffs <- function(x, subset = rep(TRUE, nrow(x$predictions)),
                                               x <- factor(x)
                                             return(x)
                                           }), stringsAsFactors = FALSE)
+    
 
     if (!is.null(x$vcov))
     {
@@ -1173,6 +1185,7 @@ subset.alldiffs <- function(x, subset = rep(TRUE, nrow(x$predictions)),
       colnames(x$sed) <- rownames(x$sed) <- pred.lev
     }
   }
+  x <- addMissingAttr.alldiffs(x, old.attrs)
   return(x)
 }
 
@@ -1196,8 +1209,8 @@ sort.predictions.frame <- function(x, decreasing = FALSE, classify, sortFactor =
   
   #Change asreml4 names to asreml3 names, if necessary
   if (inherits(x, what = "asreml.predict") && !inherits(x, what = "predictions.frame"))
-    x <- as.predictions.frame(x, classify = classify, 
-                              se = "std.error", est.status = "status")
+      x <- as.predictions.frame(x, classify = classify, 
+                                se = "std.error", est.status = "status")
   
   #Check that a valid predictions 
   validPredictionsFrame <- validPredictionsFrame(x)  
@@ -1694,7 +1707,7 @@ redoErrorIntervals.alldiffs <- function(alldiffs.obj, error.intervals = "Confide
     stop("avsed.tolerance should be between 0 and 1")
   int.options <- c("none", "Confidence", "StandardError", "halfLeastSignificant")
   int.opt <- int.options[check.arg.values(error.intervals, int.options)]
-
+  
   denom.df <- attr(alldiffs.obj, which = "tdf")
   preds.hd <- attr(alldiffs.obj$predictions, which = "heading")
   
@@ -1791,7 +1804,8 @@ redoErrorIntervals.alldiffs <- function(alldiffs.obj, error.intervals = "Confide
     sed.range <- abs(alldiffs.obj$LSD$minLSD - alldiffs.obj$LSD$maxLSD) /  alldiffs.obj$LSD$meanLSD
     sed.range[is.nan(sed.range)] <- 0
   }
-
+  
+  
   #Add lower and upper uncertainty limits
   if (int.opt != "none")
   { 
@@ -2043,6 +2057,8 @@ makeSED <- function(alldiffs.obj)
 #takes a table of asreml predictions and forms associated statistics
 #  for all pairwise differences
 { 
+  asr4.2 <- isASReml4_2Loaded(4.2, notloaded.fault = FALSE)
+  
   AvLSD.options <- c("overall", "factor.combinations", "per.prediction", "supplied")
   avLSD <- AvLSD.options[check.arg.values(LSDtype, AvLSD.options)]
   if (!is.null(LSDby) &&  !is.character(LSDby))
@@ -2152,7 +2168,7 @@ makeSED <- function(alldiffs.obj)
   
   #Deal with case when have vcov, but not sed
   if (pairwise && !is.null(alldiffs.obj$vcov) && is.null(alldiffs.obj$sed))
-      alldiffs.obj <- makeSED(alldiffs.obj)
+    alldiffs.obj <- makeSED(alldiffs.obj)
 
   #Check that differences are consistent with predictions
   pred.diff <- outer(predictions$predicted.value, predictions$predicted.value, "-")
@@ -2387,9 +2403,9 @@ makeSED <- function(alldiffs.obj)
     backtransfunc <- attr(alldiffs.obj$backtransforms, which = "transform.function")
     if (is.null(backtransfunc)) backtransfunc <- "identity"
     if (!is.null(alldiffs.obj$backtransforms) && transfunc == backtransfunc)
-        approx.se <- alldiffs.obj$backtransforms$standard.error
+      approx.se <- alldiffs.obj$backtransforms$standard.error
   }
-
+  
   #Add backtransforms if there has been a transformation 
   if (nrow(alldiffs.obj$predictions) > 0 && (trans || transfunc != "identity"))
   { 
@@ -2415,7 +2431,7 @@ makeSED <- function(alldiffs.obj)
     if (transform.power == 0 || transfunc == "log")
     { 
       backtransforms$backtransformed.predictions <- 
-                                 exp(backtransforms$backtransformed.predictions)
+        exp(backtransforms$backtransformed.predictions)
       if (err.int)
       {
         backtransforms[[kpl]] <- exp(backtransforms[[kpl]])
@@ -2508,7 +2524,7 @@ makeSED <- function(alldiffs.obj)
       if ("transformed.value" %in% names(alldiffs.obj$predictions))  
       {
         if (!(all((backtransforms$backtransformed.predictions - backtransforms$transformed.value) 
-                           < .Machine$double.eps ^ 0.5)))
+                  < .Machine$double.eps ^ 0.5)))
         {
           warning("The column transformed value inserted by asreml is not the same as the column ",
                   "backtransformed prediction obtained using the inverse transform.function")
@@ -2581,10 +2597,10 @@ makeSED <- function(alldiffs.obj)
   if (any(c("transform.power", "offset", "scale", "transform.function")  %in% names(tempcall)))
     stop(cat("Including transform.power, offset, scale or transform.function in the call is invalid \n",
              "- they are obtained from the backtransform component\n"))
-
+  
   #Check for meanLSD.type and, if found, rename to LSDtype
   alldiffs.obj <- renameDiffsAttr(alldiffs.obj)
-
+  
   #determine transform arguments
   if (is.null(alldiffs.obj$backtransforms))
   {

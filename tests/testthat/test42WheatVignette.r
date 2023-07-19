@@ -1,8 +1,8 @@
 #devtools::test("asremlPlus")
 context("model_selection")
 
-cat("#### Test for wheat76 example with asreml4\n")
-test_that("Wheat_asreml4", {
+cat("#### Test for wheat76 example with asreml42\n")
+test_that("Wheat_asreml42", {
   skip_if_not_installed("asreml")
   skip_on_cran()
   library(dae)
@@ -45,7 +45,8 @@ test_that("Wheat_asreml4", {
   # Test Col autocorrelation (depends on whether Row autocorrelation retained)
   p <- getTestPvalue(current.asrt, label = "Row autocorrelation")
   testthat::expect_true((abs(p - 2.314881e-06) < 1e-05))
-  { if (p <= 0.05)
+  { 
+    if (p <= 0.05)
     current.asrt <- testresidual(current.asrt, "~ ar1(Row):Column", 
                                  label="Col autocorrelation", simpler=TRUE,
                                  IClikelihood = "full", update=FALSE)
@@ -121,8 +122,8 @@ test_that("Wheat_asreml4", {
 
 
 
-cat("#### Test for wheat76 addtoSummary with asreml4\n")
-test_that("Wheat_addtoSummary_asreml4", {
+cat("#### Test for wheat76 addtoSummary with asreml42\n")
+test_that("Wheat_addtoSummary_asreml42", {
   skip_if_not_installed("asreml")
   skip_on_cran()
   library(dae)

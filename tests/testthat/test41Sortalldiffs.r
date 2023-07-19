@@ -1,11 +1,12 @@
 #devtools::test("asremlPlus")
 context("prediction_presentation")
+asr41.lib <- "D:\\Analyses\\R ASReml4.1" 
 
-cat("#### Test for sort.alldiffs on Smarthouse with asreml4\n")
+cat("#### Test for sort.alldiffs on Smarthouse with asreml41\n")
 test_that("sort.alldiffs4", {
   skip_if_not_installed("asreml")
   skip_on_cran()
-  library(asreml)
+  library(asreml, lib.loc = asr41.lib)
   library(asremlPlus)
   library(dae)
   data(Smarthouse.dat)
@@ -92,11 +93,11 @@ test_that("sort.alldiffs4", {
 })
 
 
-cat("#### Test for sort.predictions.frame on WaterRunoff with asreml4\n")
+cat("#### Test for sort.predictions.frame on WaterRunoff with asreml41\n")
 test_that("sort.predictions.frame4", {
   skip_if_not_installed("asreml")
   skip_on_cran()
-  library(asreml)
+  library(asreml, lib.loc = asr41.lib)
   library(asremlPlus)
   library(dae)
   data(WaterRunoff.dat)
@@ -148,11 +149,11 @@ test_that("sort.predictions.frame4", {
  testthat::expect_true(all(t$predicted.value.x == t$predicted.value.y))
 })
   
-cat("#### Test for sort.alldiffs on Oats with asreml4\n")
+cat("#### Test for sort.alldiffs on Oats with asreml41\n")
 test_that("sort.alldiffs4", {
   skip_if_not_installed("asreml")
   skip_on_cran()
-  library(asreml)
+  library(asreml, lib.loc = asr41.lib)
   library(asremlPlus)
   library(dae)
   data(Oats.dat)
@@ -259,11 +260,11 @@ test_that("sort.alldiffs4", {
 })
 
 
-cat("#### Test for sort in standard order for classify on Oats with asreml4\n")
+cat("#### Test for sort in standard order for classify on Oats with asreml41\n")
 test_that("classify.sort4", {
   skip_if_not_installed("asreml")
   skip_on_cran()
-  library(asreml)
+  library(asreml, lib.loc = asr41.lib)
   library(asremlPlus)
   library(dae)
   data(Oats.dat)

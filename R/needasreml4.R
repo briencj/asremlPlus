@@ -1,9 +1,9 @@
 .onAttach <- function(...)
 { 
-  if (!any(c("asreml","asreml4") %in% loadedNamespaces()))
+  if (!any(c("asreml","asreml41") %in% loadedNamespaces()))
   { 
 #    if ("asreml4" %in% .packages(all.available = TRUE))
-#      asreml.loaded <- requireNamespace("asreml4", quietly=TRUE)
+#      asreml.loaded <- requireNamespace("asreml41", quietly=TRUE)
 #    else
 #      asreml.loaded <- requireNamespace("asreml", quietly=TRUE)
 #    if (!asreml.loaded)  

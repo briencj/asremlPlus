@@ -528,6 +528,89 @@ setOldClass("asrtests")
   return(list(data = data, tvar.name = tvar.name, titles = titles))
 }
 
+#Function to construct a vparameters table that can be supplied to asreml with new bounds and initial values
+# - it is useful for having setvarianceterms.call use previous estimates of the variance parameters
+#Need to decide if it is worth providing for users as a way of doing the equivalent of update = TRUE when 
+# using setvarianceterms.call.
+makeVpar.table.asreml <- function(asreml.obj, terms = NULL, 
+                                  ignore.suffices = TRUE, bounds = "P", 
+                                  initial.values = NA)
+{
+  asr4 <- isASRemlVersionLoaded(4, notloaded.fault = TRUE)
+  if (!asr4)
+    stop("makeVparameters.table.asreml is only available for asreml versions greater than 4.1")
+  asr4.2 <- isASReml4_2Loaded(4.2, notloaded.fault = FALSE)
+  
+  vpars.table <- unique(data.frame(Component = names(asreml.obj$vparameters), 
+                                   Value = asreml.obj$vparameters, 
+                                   Constraint = asreml.obj$vparameters.con))
+  
+  if (!asr4.2)
+    vpars.table$Component <- vpc.char(asreml.obj)
+  
+  #Change singular terms to appropriate constraint and near-zero values
+  # - might not need this, although might be best to reset in case changes to some terms affect other terms 
+  if (any("S" %in% vpars.table$Constraint))
+  {
+    Sterms <- vpars.table$Component[vpars.table$Constraint == "S"]
+    vpars.table$Constraint[vpars.table$Component %in% Sterms & 
+                             asreml.obj$vparameters.type %in% c("V", "G", "P")] <- "P"
+    vpars.table$Value[vpars.table$Component %in% Sterms & 
+                        asreml.obj$vparameters.type %in% c("V", "G", "P")] <- 1e-04
+    vpars.table$Constraint[vpars.table$Component %in% Sterms & 
+                             asreml.obj$vparameters.type %in% c("R", "C", "L")] <- "U"
+    vpars.table$Value[vpars.table$Component %in% Sterms & 
+                        asreml.obj$vparameters.type %in% c("R", "C", "L")] <- 1e-04
+  }
+  
+  if (!is.null(terms))
+  { 
+    #test for compatibility of arguments
+    nt <- length(terms)
+    if (length(ignore.suffices) == 1 & nt != 1)
+      ignore.suffices <- rep(ignore.suffices, nt)
+    if (length(ignore.suffices) != nt)
+      stop("ignore.suffices specification is not consistent with terms")
+    if (length(bounds) == 1 & nt != 1)
+      bounds <- rep(bounds, nt)
+    if (length(bounds) != nt)
+      stop("bounds specification is not consistent with terms")
+    if (length(initial.values) == 1 & nt != 1)
+      initial.values <- rep(initial.values, nt)
+    if (length(initial.values) != nt)
+      stop("initial.values specification is not consistent with terms")
+    if (any(!(bounds %in% c("B", "F", "P", "C", "U"))))
+      stop("bounds contains at least one code that is not used by asreml")
+    
+    #Change settings for terms  
+    k <- unlist(lapply(1:nt, 
+                       FUN=function(i, terms, termslist, ignore.suffices=TRUE)
+                       { 
+                         k <- which(termslist == terms[i])
+                         return(k)
+                       }, 
+                       terms=terms,
+                       termslist=vpars.table$Component, 
+                       ignore.suffices=ignore.suffices))
+    if (any(length(k)==0))
+      stop(paste("Could not find", paste(terms[k==0], collapse=", ")))
+    else
+    { 
+      if (!all(is.na(bounds)))
+      { 
+        kk <- k[!is.na(bounds)]
+        vpars.table$Constraint[kk] <- bounds[!is.na(bounds)]
+      }
+      if (!all(is.na(initial.values)))
+      { 
+        kk <- k[!is.na(initial.values)]
+        vpars.table$Value[kk] <- initial.values[!is.na(initial.values)]
+      }
+    }
+  }
+  return(vpars.table)
+}
+
 "setvarianceterms.call" <- function(call, terms, ignore.suffices = TRUE, bounds = "P", 
                                     initial.values = NA, ...)
   # call is an unevaluated call to asreml (can create using the call function)
@@ -615,7 +698,7 @@ setOldClass("asrtests")
   #rerun with the unconstrained parameters, adding parameters in ...
   languageEl(call, which = "G.param") <- gamma.table
   languageEl(call, which = "R.param") <- gamma.table
-  
+
   #deal with args coming via ...
   tempcall <- list(...)
   if (length(tempcall)) 
@@ -839,6 +922,7 @@ atLevelsMatch <- function(new, old, call, always.levels = TRUE)
   asr4 <- isASRemlVersionLoaded(4, notloaded.fault = TRUE)
   if (asr4 & !trace)
     asreml::asreml.options(trace = trace)
+  asr4.2 <- isASReml4_2Loaded(4.2, notloaded.fault = TRUE)
   
   #Check that have a valid object of class asreml
   validasr <- validAsreml(asreml.obj)  
@@ -853,7 +937,7 @@ atLevelsMatch <- function(new, old, call, always.levels = TRUE)
     else
       kresp <- asreml.obj$fixed.formula[[2]]
     warning(paste("The estimated value of one or more correlations in the supplied asreml fit for", kresp,
-                  "is fixed and allow.fixedcorrelation is FALSE"))
+                  "is bound or fixed and allow.fixedcorrelation is FALSE"))
   }
   
   if (is.null(call <- asreml.obj$call) && 
@@ -1057,17 +1141,28 @@ atLevelsMatch <- function(new, old, call, always.levels = TRUE)
   asreml.new.obj <- eval(call, sys.parent())
   asreml.new.obj$call <- call
   
-  #Check if updating and all variance parameters are either F, B or S, but not equal to 1
+  #Check if updating and all variance parameters are either F, B or S, 
+  # and not equal to 1 (as in spatial models with no nugget variance)
   if (update)
   {
     Rterms <- grepl("!R", names(asreml.new.obj$vparameters), fixed = TRUE)
     Rterms <- names(asreml.new.obj$vparameters)[Rterms]
     Rterms <- unique(unlist(lapply(Rterms, rmTermDescription)))
-    rterms.chk <- unlist(lapply(Rterms, grepl, names(asreml.new.obj$vparameters), fixed = TRUE)) & 
-      asreml::vpt.char(asreml.new.obj) == "V"
-    if (all(asreml::vpc.char(asreml.new.obj)[rterms.chk] %in% c("F","B","S")) && 
-        !any(asreml.new.obj$vparameters[rterms.chk] == 1))
-      stop("There is no unbound residual variance - perhaps try update = FALSE")
+    if (asr4.2)
+    { 
+      rterms.chk <- unlist(lapply(Rterms, grepl, names(asreml.new.obj$vparameters), fixed = TRUE)) & 
+        asreml.new.obj$vparameters.type == "V"
+      if (all(asreml.new.obj$vparameters.con[rterms.chk] %in% c("F","B","S")) && 
+          all(abs(asreml.new.obj$vparameters[rterms.chk] - 1) > 1e-05))
+        stop("There is no unbound residual variance - perhaps try update = FALSE")
+    } else
+    { 
+      rterms.chk <- unlist(lapply(Rterms, grepl, names(asreml.new.obj$vparameters), fixed = TRUE)) & 
+        vpt.char(asreml.new.obj) == "V"
+      if (all(vpc.char(asreml.new.obj)[rterms.chk] %in% c("F","B","S")) && 
+          all(abs(asreml.new.obj$vparameters[rterms.chk] - 1) > 1e-05))
+        stop("There is no unbound residual variance - perhaps try update = FALSE")
+    }
   }
   
   #If not converged or large change in the variance parameters, try more iterations
@@ -1085,7 +1180,7 @@ atLevelsMatch <- function(new, old, call, always.levels = TRUE)
     #Check for fixed correlation
     if (!isFixedCorrelOK(asreml.new.obj, allow.fixedcorrelation = allow.fixedcorrelation))
     {
-      warning("At least one correlation's estimated value is fixed")
+      warning("At least one correlation's estimated value is bound or fixed")
       asreml.new.obj <- asreml.obj
     }
   }
@@ -1154,6 +1249,8 @@ atLevelsMatch <- function(new, old, call, always.levels = TRUE)
       stop("constraints has been deprecated in setvarianceterms.call - use bounds")
   
   asr4 <- isASRemlVersionLoaded(4, notloaded.fault = TRUE)
+  asr4.2 <- isASReml4_2Loaded(4.2, notloaded.fault = TRUE)
+  
   #Check that a valid object of class asrtests
   validasrt <- validAsrtests(asrtests.obj)  
   if (is.character(validasrt))
@@ -1181,9 +1278,17 @@ atLevelsMatch <- function(new, old, call, always.levels = TRUE)
     #Find boundary terms
     if (asr4)
     {
-      allvcomp <- data.frame(bound = asreml::vpc.char(asreml.obj),  
-                             component = asreml.obj$vparameters, 
-                             stringsAsFactors = FALSE)
+      if (asr4.2)
+      { 
+        allvcomp <- data.frame(bound = asreml.obj$vparameters.con,  
+                               component = asreml.obj$vparameters, 
+                               stringsAsFactors = FALSE)
+      } else
+      {
+        allvcomp <- data.frame(bound = vpc.char(asreml.obj),  
+                               component = asreml.obj$vparameters, 
+                               stringsAsFactors = FALSE)
+      }
       bound.terms <- allvcomp$bound == "B" | allvcomp$bound == "S"
       #                 | bound == "F"
       #bound.terms[grep("?", bound, fixed=TRUE)] <- TRUE
@@ -1296,12 +1401,12 @@ atLevelsMatch <- function(new, old, call, always.levels = TRUE)
       { 
         #Get smallest value term amongst those with the most vars
         vcomp <- subset(vcomp, vcomp$varnos == max(vcomp$varnos))
-        vcomp <- with(vcomp, vcomp[order(-component),])
+        vcomp <- with(vcomp, vcomp[order(-as.numeric(component)),])
         term <- rmTermDescription(tail(rownames(vcomp), 1))
       } else #Get smallest value term amongst those with the least vars
       { 
         vcomp <- subset(vcomp, vcomp$varnos == min(vcomp$varnos))
-        vcomp <- with(vcomp, vcomp[order(-component),])
+        vcomp <- with(vcomp, vcomp[order(-(component)),])
         term <- rmTermDescription(tail(rownames(vcomp), 1))
       }
     }
@@ -1400,7 +1505,7 @@ atLevelsMatch <- function(new, old, call, always.levels = TRUE)
   #Check for fixed correlations in supplied asrtests.obj
   if (!isFixedCorrelOK(asrtests.obj$asreml.obj, allow.fixedcorrelation = allow.fixedcorrelation))
     warning(paste("The estimated value of one or more correlations in the supplied asreml fit for", kresp,
-                  "is fixed and allow.fixedcorrelation is FALSE"))
+                  "is bound or fixed and allow.fixedcorrelation is FALSE"))
   all.terms <- c(dropFixed, addFixed, dropRandom, addRandom, newResidual,set.terms)
   if (all(is.null(all.terms)))
     stop("In analysing ", kresp, ", must supply terms to be removed/added")
@@ -1514,7 +1619,7 @@ atLevelsMatch <- function(new, old, call, always.levels = TRUE)
     } else #have changes to model terms
     { 
       asreml.obj <- asreml::update.asreml(asreml.obj)
-      if (asr4) 
+      if (asr4)
         asreml.new.obj <- newfit.asreml(asreml.obj, 
                                         fixed. = fix.form, random. = ran.form, 
                                         residual. = res.form, 
@@ -1693,7 +1798,7 @@ atLevelsMatch <- function(new, old, call, always.levels = TRUE)
     else
       kresp <- asrtests.obj$asreml.obj$fixed.formula[[2]]
     warning(paste("The estimated value of one or more correlations in the supplied asreml fit for", kresp,
-                  "is fixed and allow.fixedcorrelation is FALSE"))
+                  "is bound or fixed and allow.fixedcorrelation is FALSE"))
   }
   
   #Check for multiple terms
@@ -1871,7 +1976,7 @@ atLevelsMatch <- function(new, old, call, always.levels = TRUE)
                 asreml.obj <- asreml.new.obj
                 #Update wald.tab
                 wald.tab <- asreml::wald.asreml(asreml.obj, denDF = denDF, 
-                                                trace = trace, ...)
+                                                 trace = trace, ...)
                 wald.tab <- chkWald(wald.tab)
                 if (!asreml.obj$converge)
                   action <- paste(action, " - unconverged", sep="")
@@ -2216,7 +2321,7 @@ atLevelsMatch <- function(new, old, call, always.levels = TRUE)
     else
       kresp <- asrtests.obj$asreml.obj$fixed.formula[[2]]
     warning(paste("The estimated value of one or more correlations in the supplied asreml fit for", kresp,
-                  "is fixed and allow.fixedcorrelation is FALSE"))
+                  "is bound or fixed and allow.fixedcorrelation is FALSE"))
   }
   
   #Test whether oldterms are in random model
@@ -2421,7 +2526,7 @@ atLevelsMatch <- function(new, old, call, always.levels = TRUE)
   #Check for fixed correlations in supplied asrtests.obj
   if (!isFixedCorrelOK(asrtests.obj$asreml.obj, allow.fixedcorrelation = allow.fixedcorrelation))
     warning(paste("The estimated value of one or more correlations in the supplied asreml fit for", kresp,
-                  "is fixed and allow.fixedcorrelation is FALSE"))
+                  "is bound or fixed and allow.fixedcorrelation is FALSE"))
   if (is.null(terms))
     stop("In analysing ", kresp, ", must supply terms to be tested")
   else
@@ -2682,7 +2787,7 @@ atLevelsMatch <- function(new, old, call, always.levels = TRUE)
     else
       kresp <- asrtests.obj$asreml.obj$fixed.formula[[2]]
     warning(paste("The estimated value of one or more correlations in the supplied asreml fit for", kresp,
-                  "is fixed and allow.fixedcorrelation is FALSE"))
+                  "is bound or fixed and allow.fixedcorrelation is FALSE"))
   }
   
   #find out if any terms have either a devn.fac or a trend.num term 
@@ -2823,18 +2928,25 @@ atLevelsMatch <- function(new, old, call, always.levels = TRUE)
       stop(paste0("predict.asreml has not returned the variance matrix of the predictions as requested\n",
                   "(possibly no estimable predicted values)"))
   }
+  
   if (sed && !("sed" %in% names(pred)))
     stop(paste0("predict.asreml has not returned the sed component for the predictions as requested\n",
                 "(possibly no estimable predicted values)"))
+  if (inherits(pred$pvals, "list"))
+  {  
+    attr.hd <- attr(pred$pvals, which = "heading")
+    pred$pvals <- as.data.frame(pred$pvals)
+    attr(pred$pvals, which = "heading") <- attr.hd
+  }
   class(pred$pvals) <- c("predictions.frame", class(pred$pvals))
   return(pred)
 }
 
-"predictASR3" <- function(asreml.obj, classify, levels = list(), 
+"predictASR3" <- function(asreml.obj, classify, #levels = list(), 
                           sed = TRUE, vcov = FALSE, 
                           trace = FALSE, ...)
 {
-  pred <- predict(asreml.obj, classify=classify, levels=levels, 
+  pred <- predict(asreml.obj, classify=classify, #levels=levels, 
                   sed = sed, vcov = vcov, 
                   trace = trace, ...)$predictions
   class(pred$pvals) <- c("predictions.frame", "asreml.predict", "data.frame")
@@ -2963,12 +3075,14 @@ atLevelsMatch <- function(new, old, call, always.levels = TRUE)
     }
     else #make sure all variables are factors
     { 
-      pred$pvals[vars] <- lapply(1:length(vars), 
-                                 function(k, vars, data){
-                                   if (!is.factor(data[[vars[k]]]))
-                                     data[vars[k]] <- factor(data[[vars[k]]])
-                                   return(data[[vars[k]]])}, 
-                                 data=pred$pvals, vars=vars)
+      if (classify != "(Intercept)")
+        pred$pvals[vars] <- lapply(1:length(vars), 
+                                   function(k, vars, data){
+                                     if (!is.factor(data[[vars[k]]]))
+                                       data[vars[k]] <- factor(data[[vars[k]]], 
+                                                               levels = unique(data[[vars[k]]]))
+                                     return(data[[vars[k]]])}, 
+                                   data=pred$pvals, vars=vars)
     }
   } else    #Get the predicted values when x.num is involved in classify
   { 
@@ -3185,7 +3299,7 @@ atLevelsMatch <- function(new, old, call, always.levels = TRUE)
     warning("linear.transformation is not an argument to plotPredictions - perhaps use linTransform")
   
   #Change asreml4 names to asreml3 names
-  data <- as.predictions.frame(data, se = "std.error", est.status = "status")
+  data <- as.predictions.frame(data, classify = classify, se = "std.error", est.status = "status")
   #Check that a valid object of class predictions.frame
   validpframe <- validPredictionsFrame(data)  
   if (is.character(validpframe))
@@ -3770,11 +3884,12 @@ atLevelsMatch <- function(new, old, call, always.levels = TRUE)
     { 
       if (term.types$has.trend.num && term.types$has.devn.fac)
         #Mixed
-      { if (!(x.num %in% factors))
-        classify.term <- paste(classify.term, x.num, sep=":")
-      else
-        if (!(x.fac %in% factors))
-          classify.term <- paste(classify.term, x.fac, sep=":")
+      { 
+        if (!(x.num %in% factors))
+          classify.term <- paste(classify.term, x.num, sep=":")
+        else
+          if (!(x.fac %in% factors))
+            classify.term <- paste(classify.term, x.fac, sep=":")
       }
       diffs <- predictPlus.asreml(asreml.obj = asreml.obj, 
                                   classify = classify.term, term = term, 

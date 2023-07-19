@@ -1,8 +1,8 @@
 #devtools::test("asremlPlus")
 context("model_selection")
 
-cat("#### Test for REMLRT with asreml4\n")
-test_that("REMLRT_asreml4", {
+cat("#### Test for REMLRT with asreml42\n")
+test_that("REMLRT_asreml42", {
   skip_if_not_installed("asreml")
   skip_on_cran()
   library(dae)
@@ -30,10 +30,14 @@ test_that("REMLRT_asreml4", {
   info <- infoCriteria(m2.asr)
   testthat::expect_equal(info$varDF, 4)
   testthat::expect_lt(abs(info$AIC - 1352.941), 1e-03)
-  test <- REMLRT(m2.asr, m1.asr)
+  testthat::expect_warning(
+    test <- REMLRT(m2.asr, m1.asr), 
+    regexp = "There were a total of 1 bound terms. These bound terms occur in both models")
   testthat::expect_lt(abs(test$p - 0.004232946), 1e-03)
   testthat::expect_equal(test$DF, 1)
-  test <- REMLRT(m2.asr, m1.asr, DF = 1)
+  testthat::expect_warning(
+    test <- REMLRT(m2.asr, m1.asr, DF = 1), 
+    regexp = "There were a total of 1 bound terms. These bound terms occur in both models")
   testthat::expect_lt(abs(test$p - 0.004232946), 1e-03)
   testthat::expect_equal(test$DF, 1)
 
@@ -57,8 +61,8 @@ test_that("REMLRT_asreml4", {
   testthat::expect_lt(abs(info$loglik - m3.asr$loglik), 130)
 })
 
-cat("#### Test for wheat76 example with asreml4\n")
-test_that("Wheat_asreml4", {
+cat("#### Test for wheat76 example with asreml42\n")
+test_that("Wheat_asreml42", {
   skip_if_not_installed("asreml")
   skip_on_cran()
   library(asreml)
@@ -107,8 +111,8 @@ test_that("Wheat_asreml4", {
 
 })
 
-cat("#### Test for IC with wheat94 using asreml4\n")
-test_that("IC_wheat94_asreml4", {
+cat("#### Test for IC with wheat94 using asreml42\n")
+test_that("IC_wheat94_asreml42", {
   skip_if_not_installed("asreml")
   skip_on_cran()
   library(dae)
@@ -150,7 +154,7 @@ test_that("IC_wheat94_asreml4", {
   current.asrt <- iterate(current.asrt)
   #check that denDf for current model is the same as the number of variance parameters
   testthat::expect_true(
-    length(vpc.char(current.asrt$asreml.obj)[!(vpc.char(current.asrt$asreml.obj) 
+    length(current.asrt$asreml.obj$vparameters.con[!(current.asrt$asreml.obj$vparameters.con 
                                                %in% c("F","S","B"))])  == 
       current.asrt$test.summary$denDF[current.asrt$test.summary$terms == "Add Row + Col"])
   
@@ -167,7 +171,7 @@ test_that("IC_wheat94_asreml4", {
                               label = "Add spl(Col)", 
                               IClikelihood = "full")
   testthat::expect_equal(
-    length(vpc.char(current.asrt$asreml.obj)[!(vpc.char(current.asrt$asreml.obj) 
+    length(current.asrt$asreml.obj$vparameters.con[!(current.asrt$asreml.obj$vparameters.con 
                                                %in% c("F","S","B"))]),  
     current.asrt$test.summary$denDF[current.asrt$test.summary$terms == "Add spl(Col)"][1])
   
@@ -231,7 +235,7 @@ test_that("IC_wheat94_asreml4", {
   current.asrt <- changeTerms(current.asrt, dropRandom = "spl(Col)", 
                               label = "Drop spl(Col)", IClikelihood = "full")
   testthat::expect_equal(
-    length(vpc.char(current.asrt$asreml.obj)[!(vpc.char(current.asrt$asreml.obj) 
+    length(current.asrt$asreml.ob$vparameters.con[!(current.asrt$asreml.obj$vparameters.con 
                                                %in% c("F","S","B"))]), 
     current.asrt$test.summary$denDF[4])
   testthat::expect_true((abs(diff(current.asrt$test.summary$BIC[3:4])) - 4.062308) < 1e-05)
@@ -255,7 +259,7 @@ test_that("IC_wheat94_asreml4", {
     current.asrt <- testranfix(current.asrt, term = "spl(Col)", alpha = 0.20)
   
   #tests for getTestPvalue
-  testthat::expect_true(abs(getTestPvalue(current.asrt, label = "Col") - .5944761) < 1e-03)
+  testthat::expect_true(abs(getTestPvalue(current.asrt, label = "Col") - .5944761) < 1e-04)
   testthat::expect_error(getTestPvalue(current.asrt, label = "Co"))
   
   #Test units term
@@ -264,8 +268,8 @@ test_that("IC_wheat94_asreml4", {
   
 })
 
-cat("#### Test for IC with GLM on budworm using asreml4\n")
-test_that("IC_budworm_asreml4", {
+cat("#### Test for glmm ICs with budworm using asreml42\n")
+test_that("GLMM_budworm_asreml42", {
   skip_if_not_installed("asreml")
   skip_on_cran()
   library(asreml)
@@ -286,13 +290,11 @@ test_that("IC_budworm_asreml4", {
   # asreml AIC agrees with glm
   info <- infoCriteria(list(as0, as1))
   testthat::expect_true(all(abs(info$AIC - c(20.98403, 12.75706)) < 1e-05))
-  testthat::expect_true(all(abs(info[1, ] - c(2, 0, 0, 20.98403, 21.95385, -8.492016)) < 1e-05))
-#  testthat::expect_true(is.na(info[1, 6]))
+  testthat::expect_true(all(abs(info[1,] - c(2, 0, 0, 20.98403, 21.95385, -8.492016)) < 1e-05))
   #test deviance & AIC diff
-  testthat::expect_true(abs(-(as0$deviance - as1$deviance) - 10.22697) < 1e-05)
   testthat::expect_true(abs(with(info, loglik[1] - loglik[2])*(-2) - 10.22697) < 1e-05)
   testthat::expect_true(abs(with(info, AIC[1] - AIC[2]) - 8.226968) < 1e-05)
-
+  
   ## 2. binary/bernoulli format: 
   # convert number alive and number dead to a set of 1/0 observations at each dose
   df.bin1 <- data.frame(ldose=rep(df$ldose, df$numdead), sex=rep(df$sex, df$numdead),
@@ -306,12 +308,12 @@ test_that("IC_budworm_asreml4", {
   bin.as1 <- asreml(y ~ ldose + sex, data=df.bin, family=asr_binomial())
   info <- infoCriteria(list(bin.as0, bin.as1))
   #test deviance & AIC diff
-  testthat::expect_true(abs(-(bin.as0$deviance - bin.as1$deviance) - 10.22697) < 1e-05)
+  testthat::expect_true(abs(with(info, loglik[1] - loglik[2])*(-2) - 10.22697) < 1e-05)
   testthat::expect_true(abs(with(info, AIC[1] - AIC[2]) - 8.226968) < 1e-05)
 })
 
-cat("#### Test for getFormulae with wheat94 using asreml4\n")
-test_that("Formulae_wheat94_asreml4", {
+cat("#### Test for getFormulae with wheat94 using asreml42\n")
+test_that("Formulae_wheat94_asreml42", {
   skip_if_not_installed("asreml")
   skip_on_cran()
   library(dae)

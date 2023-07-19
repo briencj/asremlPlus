@@ -1,12 +1,13 @@
 #devtools::test("asremlPlus")
 context("model_selection")
+asr41.lib <- "D:\\Analyses\\R ASReml4.1" 
 
-cat("#### Test variofaces using Atieno with asreml4\n")
-test_that("Variofaces_asreml4", {
+cat("#### Test variofaces using Atieno with asreml41\n")
+test_that("Variofaces_asreml41", {
   skip_if_not_installed("asreml")
   skip_on_cran()
   library(dae)
-  library(asreml)
+  library(asreml, lib.loc = asr41.lib)
   library(asremlPlus)
 
   data(chkpeadat)

@@ -1,6 +1,6 @@
 
-cat("#### Test estimateV str, spl & dev for orange with asreml4\n")
-test_that("Orange_estimateV_asreml4", {
+cat("#### Test estimateV str, spl & dev for orange with asreml42\n")
+test_that("Orange_estimateV_asreml42", {
   skip_if_not_installed("asreml")
   skip_on_cran()
   library(dae)
@@ -16,10 +16,10 @@ test_that("Orange_estimateV_asreml4", {
                        knot.points = list(x = c(118,484,664,1004,1231,1372,1582)), 
                        data = orange, maxiter = 30)
   summary(asreml.obj)$varcomp
-  G.g <- kronecker(diag(asreml.obj$vparameters[1:2]), mat.I(5))
-  V.g <- asreml.obj$design[,3:12] %*% G.g %*% t(as.matrix(asreml.obj$design[,3:12]))
-  V.g <- V.g + asreml.obj$vparameters["spl(x)"] * asreml.obj$design[,13:17] %*%
-    t(as.matrix(asreml.obj$design[,13:17]))
+  G.g <- kronecker(diag(asreml.obj$vparameters[2:3]), mat.I(5))
+  V.g <- asreml.obj$design[,8:17] %*% G.g %*% t(as.matrix(asreml.obj$design[,8:17]))
+  V.g <- V.g + asreml.obj$vparameters["spl(x)"] * asreml.obj$design[,3:7] %*%
+    t(as.matrix(asreml.obj$design[,3:7]))
   V.g <- V.g + asreml.obj$vparameters["spl(x):Tree"] * asreml.obj$design[,18:42] %*%
     t(as.matrix(asreml.obj$design[,18:42]))
   V.g <- asreml.obj$sigma2 * (V.g + mat.I(nrow(orange)))
@@ -40,12 +40,18 @@ test_that("Orange_estimateV_asreml4", {
                        knot.points = list(x = c(118,484,664,1004,1231,1372,1582)),
                        data = orange, maxiter=20)
   summary(asreml.obj)$varcomp
-  G.g <- kronecker(diag(asreml.obj$vparameters[1:2]), mat.I(5))
-  V.g <- asreml.obj$design[,3:12] %*% G.g %*% t(as.matrix(asreml.obj$design[,3:12]))
-  V.g <- V.g + asreml.obj$vparameters["spl(x):Tree"] * asreml.obj$design[,18:42] %*%
-    t(as.matrix(asreml.obj$design[,18:42]))
-  V.g <- V.g + asreml.obj$vparameters["dev(x)"] * asreml.obj$design[,43:49] %*%
-    t(as.matrix(asreml.obj$design[,43:49]))
+  G.g <- kronecker(diag(asreml.obj$vparameters[c("Tree+Tree:x!diag(2)_1","Tree+Tree:x!diag(2)_2")]), 
+                   mat.I(5))
+  colnos <- match(c(paste0("Tree_", 1:5), paste0("Tree_", 1:5, ":x")), 
+                  dimnames(asreml.obj$design)[[2]])
+  V.g <- asreml.obj$design[,colnos] %*% G.g %*% t(as.matrix(asreml.obj$design[,colnos]))
+  colnos <- sort(match(outer(paste0("spl(x)_", 1:5), paste0(":Tree_", 1:5), paste0), 
+                       dimnames(asreml.obj$design)[[2]]))
+  V.g <- V.g + asreml.obj$vparameters["spl(x):Tree"] * asreml.obj$design[,colnos] %*%
+    t(as.matrix(asreml.obj$design[,colnos]))
+  colnos <- grep("dev\\(x\\)", dimnames(asreml.obj$design)[[2]])
+  V.g <- V.g + asreml.obj$vparameters["dev(x)"] * asreml.obj$design[,colnos] %*%
+    t(as.matrix(asreml.obj$design[,colnos]))
   V.g <- asreml.obj$sigma2 * (V.g + mat.I(nrow(orange)))
   V <- estimateV(asreml.obj)
   testthat::expect_true(all(abs(V - V.g) < 1e-06))
@@ -57,12 +63,18 @@ test_that("Orange_estimateV_asreml4", {
                        knot.points = list(x = c(118,484,664,1004,1231,1372,1582)),
                        data = orange, maxiter=20)     
   summary(asreml.obj)$varcomp
-  G.g <- kronecker(matrix(asreml.obj$vparameters[c(1,2,2,3)], nrow = 2), mat.I(5))
-  V.g <- asreml.obj$design[,5:14] %*% G.g %*% t(as.matrix(asreml.obj$design[,5:14]))
-  V.g <- V.g + asreml.obj$vparameters["spl(x)"] * asreml.obj$design[,15:19] %*%
-    t(as.matrix(asreml.obj$design[,15:19]))
-  V.g <- V.g + asreml.obj$vparameters["spl(x):Tree"] * asreml.obj$design[,20:44] %*%
-    t(as.matrix(asreml.obj$design[,20:44]))
+  colnos <- grep("Tree\\+Tree", names(asreml.obj$vparameters))
+  G.g <- kronecker(matrix(asreml.obj$vparameters[colnos[c(1,2,2,3)]], nrow = 2), mat.I(5))
+  colnos <- match(c(paste0("Tree_", 1:5), paste0("Tree_", 1:5, ":x")), 
+                  dimnames(asreml.obj$design)[[2]])
+  V.g <- asreml.obj$design[,colnos] %*% G.g %*% t(as.matrix(asreml.obj$design[,colnos]))
+  colnos <- match(paste0("spl(x)_", 1:5), dimnames(asreml.obj$design)[[2]])
+  V.g <- V.g + asreml.obj$vparameters["spl(x)"] * asreml.obj$design[,colnos] %*%
+    t(as.matrix(asreml.obj$design[,colnos]))
+  colnos <- sort(match(outer(paste0("spl(x)_", 1:5), paste0(":Tree_", 1:5), paste0), 
+                       dimnames(asreml.obj$design)[[2]]))
+  V.g <- V.g + asreml.obj$vparameters["spl(x):Tree"] * asreml.obj$design[,colnos] %*%
+    t(as.matrix(asreml.obj$design[,colnos]))
   V.g <- asreml.obj$sigma2 * (V.g + mat.I(nrow(orange)))
   V <- estimateV(asreml.obj)
   testthat::expect_true(all(abs(V - V.g) < 1e-06))
@@ -94,3 +106,4 @@ test_that("Orange_estimateV_asreml4", {
   asreml.options(design = FALSE) 
   
 })
+  

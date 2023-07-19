@@ -1,8 +1,8 @@
 #devtools::test("asremlPlus")
 context("prediction_alldiffs")
 
-cat("#### Test for alldiffs with GLM on budworm using asreml4\n")
-test_that("GLMdiffs_budworm_asreml4", {
+cat("#### Test for alldiffs with GLM on budworm using asreml42\n")
+test_that("GLMdiffs_budworm_asreml42", {
   skip_if_not_installed("asreml")
   skip_on_cran()
   library(asreml)
@@ -17,8 +17,8 @@ test_that("GLMdiffs_budworm_asreml4", {
   df$numalive <- df$N-df$numdead
   df$p <- df$numdead/df$N
   
-
-  as1 <- asreml(p ~ ldose + sex, data=df, family=asr_binomial(total=N))
+  
+  as1 <- asreml(p ~ ldose + sex, family=asr_binomial(total=N), data=df)
   testthat::expect_warning(
     diffs <- predictPlus(as1, classify = "sex:ldose", levels = list(ldose = 0:5),
                          transform.function = "logit", tables = "none"),

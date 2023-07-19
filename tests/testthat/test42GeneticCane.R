@@ -1,6 +1,6 @@
 
-cat("#### Test estimateV specials for Cane with asreml4\n")
-test_that("HEB25_estimateV_asreml4", {
+cat("#### Test estimateV specials for Cane with asreml42\n")
+test_that("HEB25_estimateV_asreml42", {
   skip_if_not_installed("asreml")
   skip_on_cran()
   library(dae)
@@ -36,38 +36,44 @@ test_that("HEB25_estimateV_asreml4", {
                          na.action=na.method(y="include", x="include"))
     print(asreml.obj$vparameters[length(asreml.obj$vparameters)])
     cat("\n",func,": ", asreml.obj$vparameters[length(asreml.obj$vparameters)], " and ",vpar.vals[func],"\n\n")
-    testthat::expect_true(abs(asreml.obj$vparameters[length(asreml.obj$vparameters)] - 
+   if (abs(asreml.obj$vparameters[length(asreml.obj$vparameters)] - 
+      vpar.vals[func]) > 1e-03)
+     cat("Difference is ", abs(asreml.obj$vparameters[length(asreml.obj$vparameters)] - 
+                                 vpar.vals[func]), "\n\n" )
+        testthat::expect_true(abs(asreml.obj$vparameters[length(asreml.obj$vparameters)] - 
                                 vpar.vals[func]) < 1e-03)
     V <- estimateV(asreml.obj)
     cat("\n",func,": ", V[2, 1], " and ",V.el[func],"\n\n")
     testthat::expect_true(abs(V[2, 1] - V.el[func]) < 1e-03)
   }
   
-  ### This had a bug, but seems to be working - need to see if can get to converge
-  testthat::expect_error(asreml.obj <- asreml(tch ~ Control/Check, 
-                                              random = ~ Col + Row + New,
-                                              residual = ~ ar1(Col):corb(Row, b = 3), 
-                                              data=site2, 
-                                              na.action=na.method(y="include", x="include")))
+  ### This had a bug, but seems to be working - it is now converging
+  testthat::expect_warning(
+    asreml.obj <- asreml(tch ~ Control/Check, 
+                         random = ~ Col + Row + New,
+                         residual = ~ ar1(Col):corb(Row, b = 3), 
+                         data=site2, 
+                         na.action=na.method(y="include", x="include")),
+    regexp = "Some components changed by more than 1% on the last iteration")
   testthat::expect_true(asreml.obj$converge)
-  testthat::expect_equal(nrow(summary(asreml.obj)$varcomp), 6)
+  testthat::expect_equal(nrow(summary(asreml.obj)$varcomp), 8)
   
   
   
   ### Model with genetic competition without pedigree
   asreml.options(design = TRUE)
   asreml.obj <- asreml(tch ~ Control/Check, 
-                       random=~ Col + Row + str(~New+ grp(neighbour),~us(2):id(201)),
+                       random=~ Col + Row + str(~New + grp(neighbour),~us(2):id(201)),
                        residual =~ ar1(Col):ar1(Row),
                        group=list(neighbour=c(11:211)),data=site2,
                        na.action=na.method(y="include", x="include"))
-  summary.asreml(asreml.obj)$varcomp
+  summary(asreml.obj)$varcomp
   asreml.obj$vparameters
   V.g <- with(site2, fac.vcmat(Col, asreml.obj$vparameters["Col"]) + 
                      fac.vcmat(Row, asreml.obj$vparameters["Row"]))
   G.g <- kronecker(matrix(asreml.obj$vparameters[c(3,4,4,5)], nrow = 2, ncol = 2), mat.I(201))
-  cols <- c(grep("New", colnames(asreml.obj$design), fixed = TRUE), 
-            grep("grp", colnames(asreml.obj$design), fixed = TRUE))
+  cols <- c(grep("^New", colnames(asreml.obj$design)), 
+            grep("^grp", colnames(asreml.obj$design)))
   V.g <- V.g + (asreml.obj$design[, cols] %*% G.g %*% t(as.matrix(asreml.obj$design[, cols])))
   ar1C <- fac.ar1mat(site2$Col, asreml.obj$vparameters["Col:Row!Col!cor"])
   ar1R <- fac.ar1mat(site2$Row, asreml.obj$vparameters["Col:Row!Row!cor"])
@@ -81,13 +87,13 @@ test_that("HEB25_estimateV_asreml4", {
                        residual =~ ar1(Col):ar1(Row),
                        group=list(neighbour=c(11:211)),data=site2,
                        na.action=na.method(y="include", x="include"))
-  summary.asreml(asreml.obj)$varcomp
+  summary(asreml.obj)$varcomp
   asreml.obj$vparameters
   V.g <- with(site2, fac.vcmat(Col, asreml.obj$vparameters["Col"]) + 
                 fac.vcmat(Row, asreml.obj$vparameters["Row"]) + 
                 fac.vcmat(New, asreml.obj$vparameters["New"]))
   G.g <- asreml.obj$vparameters["grp(neighbour)"] * mat.I(201)
-  cols <- grep("grp", colnames(asreml.obj$design), fixed = TRUE)
+  cols <- grep("^grp", colnames(asreml.obj$design))
   V.g <- V.g + (asreml.obj$design[, cols] %*% G.g %*% t(as.matrix(asreml.obj$design[, cols])))
   ar1C <- fac.ar1mat(site2$Col, asreml.obj$vparameters["Col:Row!Col!cor"])
   ar1R <- fac.ar1mat(site2$Row, asreml.obj$vparameters["Col:Row!Row!cor"])
@@ -98,3 +104,4 @@ test_that("HEB25_estimateV_asreml4", {
   asreml.options(design = FALSE) 
  
 })
+

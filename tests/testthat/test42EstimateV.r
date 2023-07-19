@@ -1,8 +1,8 @@
 #devtools::test("asremlPlus")
 context("model_selection")
 
-cat("#### Test estimateV for chick pea example with asreml4\n")
-test_that("chickpea_estimateV_asreml4", {
+cat("#### Test estimateV for chick pea example with asreml42\n")
+test_that("chickpea_estimateV_asreml42", {
   skip_if_not_installed("asreml")
   skip_on_cran()
   library(dae)
@@ -10,12 +10,12 @@ test_that("chickpea_estimateV_asreml4", {
   library(asremlPlus)
 
   data(chkpeadat)
-  asreml.options(design = TRUE)
+  asreml.options(design = TRUE, fail = "soft")
   asreml.obj <- asreml(fixed = Biomass.plant ~ Lines * TRT + Smarthouse/(vLanes + vPos), 
-                       random = ~Smarthouse:Zone + Smarthouse:spl(vLanes), 
-                       residual = ~idv(Smarthouse):ar1(Lane):ar1(Position), 
-                       data = chkpeadat, trace = FALSE)
-  
+                       random = ~ Smarthouse:Zone + Smarthouse:spl(vLanes), 
+                       residual = ~ idv(Smarthouse):ar1(Lane):ar1(Position), 
+                       data = chkpeadat, maxiter = 13)
+
   #'## estimate with fixed spline - no G terms in V matrix
   Vnospl <- estimateV(asreml.obj, fixed.spline.terms = "Smarthouse:spl(vLanes)")
   
@@ -34,8 +34,8 @@ test_that("chickpea_estimateV_asreml4", {
   
   #'## estimate with random spline
   Vranspl <- estimateV(asreml.obj)
-  Zspl <- as.matrix(asreml.obj$design[ , grepl("Smarthouse:spl(vLanes)", 
-                                     colnames(asreml.obj$design), fixed = TRUE)])
+  Zspl <- as.matrix(asreml.obj$design[ , grepl("Smarthouse", colnames(asreml.obj$design)) &
+                                         grepl("spl\\(vLanes\\)", colnames(asreml.obj$design))])
   V <- V + asreml.obj$sigma2 * asreml.obj$vparameters[2] * (Zspl %*% t(Zspl))
   testthat::expect_false(any(abs(Vranspl - V) > 1e-08))
   
@@ -56,8 +56,8 @@ test_that("chickpea_estimateV_asreml4", {
                  mat.ar1(asreml.obj$vparameters[4], length(levels(chkpeadat$Position))))
   V <- kronecker(diag(1,2), V)
   Vranspl6 <- estimateV(asreml.obj)
-  Zspl6 <- as.matrix(asreml.obj$design[ , grepl("Smarthouse:spl(vLanes, k = 6)", 
-                                                colnames(asreml.obj$design), fixed = TRUE)])
+  Zspl6 <- as.matrix(asreml.obj$design[ , grepl("Smarthouse", colnames(asreml.obj$design)) &
+                                          grepl("spl\\(vLanes\\, k = 6\\)", colnames(asreml.obj$design))])
   V <- asreml.obj$sigma2 * (V + asreml.obj$vparameters[1] * (Zspl6 %*% t(Zspl6)))
   testthat::expect_false(any(abs(Vranspl6 - V) > 1e-08))
   
@@ -134,8 +134,8 @@ test_that("chickpea_estimateV_asreml4", {
 })
 
 
-cat("#### Test estimateV for Wheat example with asreml4\n")
-test_that("Wheat_estimateV_asreml4", {
+cat("#### Test estimateV for Wheat example with asreml42\n")
+test_that("Wheat_estimateV_asreml42", {
   skip_if_not_installed("asreml")
   skip_on_cran()
   library(dae)
@@ -211,7 +211,7 @@ test_that("Wheat_estimateV_asreml4", {
     gamma.unit * diag(1, nrow=150, ncol=150) +
     mat.dirprod(row.ar1, col.ar1)
   V <- s2*V
-  testthat::expect_false(any(abs(VWheat - V) > 1e-08))
+  testthat::expect_true(all(abs(VWheat - V) < 1e-08))
 
   #residual with Row corb  
   asreml.obj <- asreml(fixed = yield ~ Rep + Variety, 
@@ -228,8 +228,8 @@ test_that("Wheat_estimateV_asreml4", {
   V <- fac.vcmat(Wheat.dat$Row, gamma.Row) +
     mat.dirprod(row.corb, col.ar1)
   V <- s2*V
-  testthat::expect_false(any(abs(VWheat - V) > 1e-08))
-  
+  testthat::expect_true(all.equal(VWheat, V, tolerance =  1e-06))
+
   #residual with Col corb  
   asreml.obj <- asreml(fixed = yield ~ Rep + Variety, 
                        random = ~Row, 

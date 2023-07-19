@@ -1,18 +1,18 @@
 Package: asremlPlus
-Version: 4.3.55
-Date: 2023-06-13
+Version: 4.4.11
+Date: 2023-07-19
 Title: Augments 'ASReml-R' in Fitting Mixed Models and Packages
         Generally in Exploring Prediction Differences
 Authors@R: person("Chris","Brien", role = c("aut","cre"),
          comment = c(ORCID = "0000-0003-0581-1817"),
          email = "chris.brien@adelaide.edu.au")
 Depends: R (>= 3.5.0)
-Imports: dae, doParallel, dplyr,ggplot2, foreach, grDevices, graphics, methods, parallel, 
-        qqplotr, reshape2, RColorBrewer, rlang, stats, stringr, sticky, utils
-Suggests: testthat, lattice, emmeans, lmerTest, pbkrtest, R.rsp
+Imports: dae, devtools, doParallel, dplyr,ggplot2, foreach, grDevices, graphics, methods, 
+        qqplotr, parallel, reshape2, RColorBrewer, rlang, stats, stringr, sticky, utils
+Suggests: emmeans, lattice, lmerTest, pbkrtest, R.rsp, testthat
 Enhances: asreml
 VignetteBuilder: R.rsp
-SystemRequirements: asreml-R 4.x
+SystemRequirements: asreml
 LazyData: true
 Description: Assists in automating the selection of terms to include in mixed models when  
   'asreml' is used to fit the models. Also used to display, in tables and graphs, predictions   
@@ -25,12 +25,12 @@ Description: Assists in automating the selection of terms to include in mixed mo
   the fitting of a sequence of models is kept in a data frame. Procedures are available for 
   choosing models that conform to the hierarchy or marginality principle and for displaying 
   predictions for significant terms in tables and graphs. The 'asreml' package provides a 
-  computationally efficient algorithm for fitting mixed models using Residual Maximum 
-  Likelihood. It is a commercial package that can be purchased from 
+  computationally efficient algorithm for fitting a wide range of linear mixed models using 
+  Residual Maximum Likelihood. It is a commercial package that can be purchased from 
   'VSNi' <https://vsni.co.uk/> as 'asreml-R', who will supply a zip file for local 
-  installation/updating (see <https://asreml.kb.vsni.co.uk/>). It is not needed for functions that are 
-  methods for 'alldiffs'  and 'data.frame' objects. The package 'asremPlus' can also be 
-  installed from <http://chris.brien.name/rpackages/>.
+  installation/updating (see <https://asreml.kb.vsni.co.uk/>). It is not needed for functions 
+  that are methods for 'alldiffs'  and 'data.frame' objects. The package 'asremPlus' can also 
+  be installed from <http://chris.brien.name/rpackages/>.
 License: MIT + file LICENSE
 URL: http://chris.brien.name
 NeedsCompilation: no

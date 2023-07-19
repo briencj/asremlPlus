@@ -15,6 +15,7 @@
 }
 
 \section{Index}{
+Note that many of the function below are S3 methods so that the suffix can be omitted.Of course, whether ot not the suffix is omitted, the object supplied to the first argument must be of the class specified by the suffix.  For example \code{\link{getFormulae.asreml}} is a \code{\link{getFormulae}} method for an \code{asreml.object} and so  \code{.asreml} can be omitted and the object supplied to the first argument must be of class \code{asreml}.
 \tabular{ll}{
 (i) Data \cr\cr
 

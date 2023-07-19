@@ -1,11 +1,24 @@
 
-cat("#### Test estimateV at, fa, rr functions for MET data with asreml4\n")
-test_that("MET_estimateV_asreml4", {
+cat("#### Test estimateV at, fa, rr functions for MET data with asreml42\n")
+test_that("MET_estimateV_asreml42", {
   skip_if_not_installed("asreml")
   skip_on_cran()
   library(dae)
   library(asreml)
   library(asremlPlus)
+  
+  #Function too replace design matrix colnames when computing V
+  replaceColnames <- function(des)
+  { 
+    colnam <- colnames(des)
+    colnam <- strsplit(colnam, split = ":")
+    colnam <- lapply(colnam, strsplit, split = "_")
+    colnam <- lapply(colnam, 
+                     function(nam) 
+                       paste(sapply(nam, function(fac) fac[1]), collapse = ":"))
+    colnames(des) <- colnam
+    return(des)
+  }
   
   data(MET)
   asreml.options(design = TRUE, keep.order=TRUE)
@@ -20,12 +33,14 @@ test_that("MET_estimateV_asreml4", {
   summary(asreml.obj)$varcomp
   ranterms <- names(asreml.obj$G.param)
   n <- nrow(comb.dat)
+  design <- asreml.obj$design
+  design <- replaceColnames(design)
   V.g <- matrix(0, nrow = n, ncol = n)
   for (term in ranterms)
   {
-    cols <- grep(term, colnames(asreml.obj$design), fixed = TRUE)
-    V.g <- V.g + asreml.obj$vparameters[term] * (asreml.obj$design[, cols] %*% 
-                                                   t(as.matrix(asreml.obj$design[, cols])))
+    cols <- grep(term, colnames(design), fixed = TRUE)
+    V.g <- V.g + asreml.obj$vparameters[term] * (design[, cols] %*% 
+                                                   t(as.matrix(design[, cols])))
   }
   V.g <- asreml.obj$sigma2 * (V.g + mat.I(n))
   Vat <- estimateV(asreml.obj)
@@ -44,21 +59,41 @@ test_that("MET_estimateV_asreml4", {
   ranterms <- names(asreml.obj$G.param)
   n <- nrow(comb.dat)
   V.g <- matrix(0, nrow = n, ncol = n)
+  # for (term in ranterms[2:7])
+  # {
+  #   cols <- grep(term, colnames(design), fixed = TRUE)
+  #   print(length(cols))
+  #   V.g <- V.g + asreml.obj$vparameters[term] * (asreml.obj$design[, cols] %*% 
+  #                                                  t(as.matrix(asreml.obj$design[, cols])))
+  # }
+  # term <- ranterms[1]
+  # term <- "fa(exptCond, k = 2)"
+  # cols <- grep(term, colnames(asreml.obj$design), fixed = TRUE)[1:1364]
+  # vp <- asreml.obj$vparameters[names(asreml.obj$vparameters)[grep(term, 
+  #                                                                 names(asreml.obj$vparameters), fixed = TRUE)]]
+  # spec.var <- diag(vp[grepl("!var", names(vp), fixed = TRUE)])
+  # loads <- matrix(vp[grepl("!fa", names(vp), fixed = TRUE)], ncol = 2)
+  # Gfa <- loads %*% t(loads) + spec.var
+  # V.g <- V.g + (asreml.obj$design[, cols] %*% kronecker(Gfa, mat.I(62)) %*%
+  #                 t(as.matrix(asreml.obj$design[, cols])))
+  # V.g <- asreml.obj$sigma2 * (V.g + mat.I(n))
+  
+  design <- asreml.obj$design
+  design <- replaceColnames(design)
   for (term in ranterms[2:7])
   {
-    cols <- grep(term, colnames(asreml.obj$design), fixed = TRUE)
-    V.g <- V.g + asreml.obj$vparameters[term] * (asreml.obj$design[, cols] %*% 
-                                                   t(as.matrix(asreml.obj$design[, cols])))
+    cols <- grep(term, colnames(design), fixed = TRUE)
+    V.g <- V.g + asreml.obj$vparameters[term] * (design[, cols] %*% t(as.matrix(design[, cols])))
   }
   term <- ranterms[1]
-  cols <- grep(term, colnames(asreml.obj$design), fixed = TRUE)[1:1364]
+  cols <- grep(term, colnames(design), fixed = TRUE)[1:1364]
   vp <- asreml.obj$vparameters[names(asreml.obj$vparameters)[grep(term, 
                                            names(asreml.obj$vparameters), fixed = TRUE)]]
   spec.var <- diag(vp[grepl("!var", names(vp), fixed = TRUE)])
   loads <- matrix(vp[grepl("!fa", names(vp), fixed = TRUE)], ncol = 2)
   Gfa <- loads %*% t(loads) + spec.var
-  V.g <- V.g + (asreml.obj$design[, cols] %*% kronecker(Gfa, mat.I(62)) %*%
-                  t(as.matrix(asreml.obj$design[, cols])))
+  V.g <- V.g + (design[, cols] %*% kronecker(Gfa, mat.I(62)) %*%
+                  t(as.matrix(design[, cols])))
   V.g <- asreml.obj$sigma2 * (V.g + mat.I(n))
   Vfa <- estimateV(asreml.obj)
   testthat::expect_true(all(abs(Vfa - V.g) < 1e-06))
@@ -76,20 +111,21 @@ test_that("MET_estimateV_asreml4", {
   ranterms <- names(asreml.obj$G.param)
   n <- nrow(comb.dat)
   V.g <- matrix(0, nrow = n, ncol = n)
+  design <- asreml.obj$design
+  design <- replaceColnames(design)
   for (term in ranterms[2:7])
   {
-    cols <- grep(term, colnames(asreml.obj$design), fixed = TRUE)
-    V.g <- V.g + asreml.obj$vparameters[term] * (asreml.obj$design[, cols] %*% 
-                                                   t(as.matrix(asreml.obj$design[, cols])))
+    cols <- grep(term, colnames(design), fixed = TRUE)
+    V.g <- V.g + asreml.obj$vparameters[term] * (design[, cols] %*% t(as.matrix(design[, cols])))
   }
   term <- ranterms[1]
-  cols <- grep(term, colnames(asreml.obj$design), fixed = TRUE)[1:1364]
+  cols <- grep(term, colnames(design), fixed = TRUE)[1:1364]
   vp <- asreml.obj$vparameters[names(asreml.obj$vparameters)[grep(term, 
                                                                   names(asreml.obj$vparameters), fixed = TRUE)]]
   loads <- matrix(vp[grepl("!fa", names(vp), fixed = TRUE)], ncol = 2)
   Gfa <- loads %*% t(loads)
-  V.g <- V.g + (asreml.obj$design[, cols] %*% kronecker(Gfa, mat.I(62)) %*%
-                  t(as.matrix(asreml.obj$design[, cols])))
+  V.g <- V.g + (design[, cols] %*% kronecker(Gfa, mat.I(62)) %*%
+                  t(as.matrix(design[, cols])))
   V.g <- asreml.obj$sigma2 * (V.g + mat.I(n))
   Vrr <- estimateV(asreml.obj)
   testthat::expect_true(all(abs(Vrr - V.g) < 1e-06))

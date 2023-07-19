@@ -3,9 +3,12 @@
                                fixed.spline.terms = NULL, 
                                bound.exclusions = c("F","B","S","C"), ...)
 {
-  asr4 <- isASRemlVersionLoaded(4, notloaded.fault = TRUE)
+  asr4 <- isASRemlVersionLoaded(4, notloaded.fault = FALSE)
   if (!asr4)
-    stop("This function requires asreml4 or later.")
+    stop("EstimateV.asreml requires asreml 4.x or later.")
+  asr4.2 <- isASReml4_2Loaded(4.2, notloaded.fault = FALSE)
+  # if (asr4.2)
+  #   stop("EstimateV.asreml has not been modified for new naming of the design matrix columns")
   
   #Check that have a valid object of class asreml
   validasr <- validAsreml(asreml.obj)  
@@ -15,7 +18,7 @@
   #Check which.matrix option
   mat.options <- c("V", "G", "R")
   mat.opt <- mat.options[check.arg.values(which.matrix, mat.options)]
-
+  
   #Set up allowed specials
   ran.specials <- c("at", "spl", "dev", "grp", "fa", "rr")
   res.specials <- c("dsum")
@@ -29,8 +32,9 @@
   #Check bound.exclusions for asreml3
   if (!all(bound.exclusions %in% c("F","B","S","C")))
     stop("At least one bound.type is not one of those allowed with ASReml-R version 3")
-
+  
   #check and get info about data in supplied call
+  asreml.obj <- asreml.obj
   call <- asreml.obj$call
   if (!("data" %in% names(call)))
     stop("estimateV.asreml assumes that data has been set in call to asreml")
@@ -47,12 +51,12 @@
       stop(paste("The following terms are not amongst the variance parameters: ", 
                  paste(ignore.terms[is.na(match(ignore.terms, c(ranterms,resterms)))], 
                        collapse = ", "), sep = ""))
-
+  
   #Check extra.matrix
   if (!is.null(extra.matrix) & (nrow(V) != n | ncol(V) != n))
     stop("V must be square and of order equal to the number of rows in data")
   
-  # vpararmeters.type codes - table produced by vpt.char(asreml.obj)
+  # vpararmeters.type codes
   #
   # Code                 Type
   # 1    V             variance
@@ -92,12 +96,32 @@
     {
       #Work out if term bound
       bound <- FALSE
-      if (!is.null(bound.exclusions) & term %in% names(asreml::vpc.char(asreml.obj)))
+      if (asr4)
       {
-        bound <- (asreml::vpc.char(asreml.obj)[[term]] %in% bound.exclusions)
-        if (bound)
-          warning(paste(term, "not included in V because its bound is",
-                        asreml::vpc.char(asreml.obj)[[term]], sep = " "))
+        if (asr4.2)
+        {        
+          if (!is.null(bound.exclusions) && term %in% names(asreml.obj$vparameters.con))
+          {
+            bound <- (asreml.obj$vparameters.con[[term]] %in% bound.exclusions)
+            if (bound)
+              warning(paste(term, "not included in V because its bound is",
+                            asreml.obj$vparameters.con[[term]], sep = " "))
+          }
+        } else
+        {
+          if (!is.null(bound.exclusions) & term %in% names(vpc.char(asreml.obj)))
+          {
+            bound <- (vpc.char(asreml.obj)[[term]] %in% bound.exclusions)
+            if (bound)
+              warning(paste(term, "not included in V because its bound is",
+                            vpc.char(asreml.obj)[[term]], sep = " "))
+          }
+        }
+      } else
+      {
+        bound <- names(asreml.obj$gammas.con)
+        names(bound) <- names(asreml.obj$gammas)
+        
       }
       if (!bound)
       {
@@ -136,7 +160,12 @@
                                           return(is.fa)
                                         })))))
           if (has.fa)
-            full.levs <- req.levs <- term
+          { 
+            if (asr4.2)
+              full.levs <- req.levs <- ""
+            else
+              full.levs <- req.levs <- term
+          }
           for (var in termvars)
           {
             kspecial <- checkSpecial(var = var, term = term, G.param = G.param, 
@@ -160,8 +189,24 @@
               {
                 vp.levs <- var.levs
               }
-              full.levs <- as.vector(outer(var.levs, full.levs, paste, sep = "!"))
-              req.levs <- as.vector(outer(vp.levs, req.levs, paste, sep = "!"))
+              if (asr4.2)
+              {
+                var.levs <- paste(var, var.levs, sep = "_")
+                vp.levs <- paste(var, vp.levs, sep = "_")
+                if (all(full.levs == ""))
+                {               
+                  full.levs <- var.levs
+                  req.levs <- vp.levs
+                } else
+                {
+                  full.levs <- as.vector(t(outer(full.levs, var.levs, paste, sep = ":")))
+                  req.levs <- as.vector(t(outer(req.levs, vp.levs, paste, sep = ":")))
+                }
+              } else #not asr4.2
+              { 
+                full.levs <- as.vector(outer(var.levs, full.levs, paste, sep = "!"))
+                req.levs <- as.vector(outer(vp.levs, req.levs, paste, sep = "!"))
+              }
             }
           }
           
@@ -183,8 +228,14 @@
             if (has.fa)
             {
               #Get Z for fa, removing columns for Comp effects
-              cols <- c(1:length(full.levs))[match(req.levs, full.levs)]
-              cols <- paste(term, cols, sep = "")
+              if (asr4.2)
+              {
+                cols <- req.levs
+              } else
+              {
+                cols <- c(1:length(full.levs))[match(req.levs, full.levs)]
+                cols <- paste(term, cols, sep = "")
+              }
               Z <- asreml.obj$design[,match(cols, colnames(asreml.obj$design))]
             } else # not fa
             {
@@ -198,13 +249,19 @@
             if (grepl("+", term, fixed = TRUE)) #involves an str term?
             {
               str.terms <- strsplit(term, split = "+", fixed = TRUE)[[1]]
-              cols <- NULL
-              for (str.term in str.terms)
+              if (asr4.2)
               {
-                cols <- c(cols, paste(str.term, 1:asreml.obj$noeff[str.term], sep = ""))
+                Z <- NULL
+                for (str.term in str.terms)
+                  Z <- cbind(Z, getTermDesignMatrix(str.term, asreml.obj))
+              } else
+              {
+                cols <- NULL
+                for (str.term in str.terms)
+                  cols <- c(cols, paste(str.term, 1:asreml.obj$noeff[str.term], sep = ""))
+                cols <- match(cols, colnames(asreml.obj$design))
+                Z <- asreml.obj$design[,cols]
               }
-              Z <- asreml.obj$design[,match(cols, 
-                                            colnames(asreml.obj$design))]
               V <- V + Z %*% G %*% t(as.matrix(Z))
             } else #not a problem term
             {
@@ -212,20 +269,33 @@
               V <- V + Z %*% G %*% t(Z)
             }
           }
-        }
+        } 
       }
     }
   }
   
   #Check whether residual is gamma-parameterized
-  for (term in resterms)
+  if (asr4.2)
   {
-    if (R.param[[term]]$variance$model == "idv")
+    var.terms <- names(asreml.obj$vparameters.type)[asreml.obj$vparameters.type == "V"]
+    summ <- summary(asreml.obj)$varcomp
+    summ <- summ[rownames(summ) %in% var.terms, ]
+    if (all(asreml.obj$vparameters[var.terms] == 
+            summ[rownames(summ) == var.terms, "component"]))
       foundvar <- TRUE
     else
       foundvar <- FALSE
+  } else
+  {
+    for (term in resterms)
+    {   
+      if (R.param[[term]]$variance$model == "idv")
+        foundvar <- TRUE
+      else
+        foundvar <- FALSE
+    }
   }
-    
+  
   #Process residual formula
   if (mat.opt %in% c("V", "R"))
   {
@@ -260,7 +330,7 @@
     for (term in resterms)
     {
       #Is current term special free (idv for variance and id for all other components)?
-      if ((R.param[[term]]$variance$model == "idv" | R.param[[term]]$variance$model == "id") & 
+      if ((R.param[[term]]$variance$model == "idv" || R.param[[term]]$variance$model == "id") && 
           (all(unlist(lapply(R.param[[term]][2:length(R.param[[term]])], 
                              function(x)
                              {
@@ -272,7 +342,7 @@
         if (R.param[[term]]$variance$model == "idv")
           Rlist[[term]] <- R.param[[term]]$variance$initial * 
             diag(1, nrow = R.param[[term]]$variance$size)
-        else #use it is a gamma parameterization
+        else #it is a gamma parameterization
           Rlist[[term]] <- diag(1, nrow = R.param[[term]]$variance$size)
       } else #Has a special
       {
@@ -308,8 +378,8 @@
   #Is the model fit a gamma parameterization
   if (!foundvar)
     V <- asreml.obj$sigma2 * V
-
-    #Add extra.matrix if supplied
+  
+  #Add extra.matrix if supplied
   if (!is.null(extra.matrix))
     V <- V + extra.matrix
   
@@ -340,7 +410,7 @@ checkSpecial <- function(var, term, G.param, specials, residual = FALSE)
   }
   return(list(cortype = cortype, final = final))
 }
-  
+
 
 ### Function to call a function to compute the G matrix for an asreml variance function
 "mat.Gvar" <- function(var, term, G.param, kspecial, cond.fac = "", ...)
@@ -446,7 +516,7 @@ G.sar2 <- function(var, term, G.param, cond.fac = "")
   #Get the correlation parameter and generate matrix
   vpnames <- paste(cond.fac, term,"!",var,"!cor", c(1:2), sep = "")
   G <- mat.sar2(G.param[[term]][[var]]$initial[vpnames], 
-               length(G.param[[term]][[var]]$levels))
+                length(G.param[[term]][[var]]$levels))
   return(G)
 }
 
@@ -507,8 +577,12 @@ G.cor <- function(var, term, G.param, cond.fac = "")
 
 G.corb <- function(var, term, G.param, cond.fac = "")
 {
+  asr4.2 <- isASReml4_2Loaded(4.2, notloaded.fault = FALSE)
   #Get the correlation parameter and generate matrix
-  nbands <- table(G.param[[1]][[var]]$con)["P"]
+  if (asr4.2)
+    nbands <- table(G.param[[1]][[var]]$con)["U"]
+  else
+    nbands <- table(G.param[[1]][[var]]$con)["P"]
   vpnames <- paste(cond.fac, term,"!",var,"!cor", c(1:nbands), sep = "")
   G <- mat.banded(c(1,G.param[[term]][[var]]$initial[vpnames]),
                   nrow = length(G.param[[term]][[var]]$levels),
@@ -661,3 +735,4 @@ Zspline <- function(knot.points, power = 0, print = FALSE)
     Z <- Z %*% (TD %^% power)
   return(Z)
 }
+

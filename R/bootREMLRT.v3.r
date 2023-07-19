@@ -16,6 +16,7 @@ bootREMLRT.asreml <- function(h0.asreml.obj, h1.asreml.obj,
   #  S - Singular Information matrix
   
   asr4 <- isASRemlVersionLoaded(4, notloaded.fault = TRUE)
+  asr4.2 <- isASReml4_2Loaded(4.2, notloaded.fault = TRUE)
   
   #Check that have a valid objects of class asreml
   validasr <- validAsreml(h0.asreml.obj)  
@@ -117,7 +118,7 @@ bootREMLRT.asreml <- function(h0.asreml.obj, h1.asreml.obj,
   if (is.null(V))
   {
     if (!asr4)
-      stop("It appears that asreml4 is not loaded and so V must be supplied to bootREMLRT.asreml.")
+      stop("It appears that asreml 4.x is not loaded and so V must be supplied to bootREMLRT.asreml.")
     V <- estimateV(h0.asreml.obj, extra.matrix = extra.matrix, ignore.terms = ignore.terms, 
                    fixed.spline.terms = fixed.spline.terms, 
                    bound.exclusions = bound.exclusions)
@@ -155,7 +156,7 @@ bootREMLRT.asreml <- function(h0.asreml.obj, h1.asreml.obj,
   h1.y <- languageEl(h1.call$fixed, which = 2)
   if (1 - (abs(var(sim.dat[[as.character(h1.y)]], na.rm = TRUE) / 
                var(h0.dat[[as.character(h1.y)]], na.rm = TRUE))) > 1e-03)
-      stop("The values of y in data for the two asreml objects appear not to be the same")
+    stop("The values of y in data for the two asreml objects appear not to be the same")
   
   #set up calls
   h1.object.sim <- h1.asreml.obj
@@ -200,24 +201,31 @@ bootREMLRT.asreml <- function(h0.asreml.obj, h1.asreml.obj,
     for (z in names(tempcall))
       if (z == "data")
         sim.dat <- data
+    else
+    {
+      if (z %in% c("fixed", "random", "residual", "rcov", "sparse"))
+        stop("attempt to change model to be fitted")
       else
       {
-        if (z %in% c("fixed", "random", "residual", "rcov", "sparse"))
-          stop("attempt to change model to be fitted")
-        else
-        {
-          languageEl(h0.call, which = z) <- tempcall[[z]]
-          languageEl(h1.call, which = z) <- tempcall[[z]]
-        }
+        languageEl(h0.call, which = z) <- tempcall[[z]]
+        languageEl(h1.call, which = z) <- tempcall[[z]]
       }
+    }
   }
   
   #Get bound values
   asr4 <- isASRemlVersionLoaded(4, notloaded.fault = TRUE)
   if (asr4)
   {
-    bound.h0 <- asreml::vpc.char(h0.asreml.obj)
-    bound.h1 <- asreml::vpc.char(h1.asreml.obj)
+    if (asr4.2)
+    {
+      bound.h0 <- h0.asreml.obj$vparameters.con
+      bound.h1 <- h1.asreml.obj$vparameters.con
+    } else
+    { 
+      bound.h0 <- vpc.char(h0.asreml.obj)
+      bound.h1 <- vpc.char(h1.asreml.obj)
+    }
   }
   else
   {
@@ -233,7 +241,7 @@ bootREMLRT.asreml <- function(h0.asreml.obj, h1.asreml.obj,
   NBound.h0 <- DF.diff$NBound.h0
   
   REMLRT <- 2*(h1.asreml.obj$loglik-h0.asreml.obj$loglik)
-
+  
   #Set up for simulation
   conv <- FALSE
   cl <- makeCluster(ncores)
@@ -253,69 +261,76 @@ bootREMLRT.asreml <- function(h0.asreml.obj, h1.asreml.obj,
   #generate nboot data sets and analyse them
   if (asr4)
   {
+    if (asr4.2)
+    {
+      kthreads <-   get("asr_options", envir = getFromNamespace(".asremlEnv", "asreml"))$threads
+      asreml::asreml.options(threads = 1)
+    }
     REMLRT.out <- foreach (i = 1:nboot, .combine = rbind, .inorder=FALSE,
                            .packages = c("asreml","asremlPlus"))  %dopar%
-                           { 
-                             asreml::asreml.options(fail = "soft")
-                             while (!conv)
-                             { 
-                               nnonconv <- 0
-                               sim.dat <- within(sim.dat, 
-                                                 {y.sim <- as.vector(mu + R %*% rnorm(n))})
-                               h1.asr <- eval(h1.call)
-                               conv <- h1.asr$converge
-                               if (conv)
-                               {
-                                 h0.asr <- eval(h0.call)
-                                 conv <- h0.asr$converge
-                               }
-                               if (!conv)
-                               {
-                                 nnonconv <- nnonconv + 1
-                                 REMLRT.sim <- NA
-                                 if (max.retries > nnonconv)
-                                   break()
-                               } else
-                               {
-                                 #Perform the test
-                                 REMLRT.sim <- 2*(h1.asr$loglik-h0.asr$loglik)
-                               }
-                             }
-                             conv=FALSE
-                             cbind(REMLRT.sim, nnonconv)
-                           }
+      { 
+        asreml::asreml.options(fail = "soft")
+        while (!conv)
+        { 
+          nnonconv <- 0
+          sim.dat <- within(sim.dat, 
+                            {y.sim <- as.vector(mu + R %*% rnorm(n))})
+          h1.asr <- eval(h1.call)
+          conv <- h1.asr$converge
+          if (conv)
+          {
+            h0.asr <- eval(h0.call)
+            conv <- h0.asr$converge
+          }
+          if (!conv)
+          {
+            nnonconv <- nnonconv + 1
+            REMLRT.sim <- NA
+            if (max.retries > nnonconv)
+              break()
+          } else
+          {
+            #Perform the test
+            REMLRT.sim <- 2*(h1.asr$loglik-h0.asr$loglik)
+          }
+        }
+        conv=FALSE
+        cbind(REMLRT.sim, nnonconv)
+      }
+    if (asr4.2)
+      asreml::asreml.options(threads = kthreads)
   } else
   {
     REMLRT.out <- foreach (i = 1:nboot, .combine = rbind, .inorder=FALSE,
                            .packages = c("asreml","asremlPlus"))  %dopar%
-                           { 
-                             loadASRemlVersion(3, lib.loc = "D:\\Analyses\\R oldpkg")
-                             while (!conv)
-                             { 
-                               sim.dat <- within(sim.dat, 
-                                                 {y.sim <- as.vector(mu + R %*% rnorm(n))})
-                               h1.asr <- eval(h1.call)
-                               conv <- h1.asr$converge
-                               if (conv)
-                               {
-                                 h0.asr <- eval(h0.call)
-                                 conv <- h0.asr$converge
-                               }
-                               if (!conv)
-                               {
-                                 nnonconv <- nnonconv + 1
-                                 REMLRT.sim <- NA
-                                 if (max.retries > nnonconv)
-                                   break()
-                               } else
-                               {
-                                 #Perform the test
-                                 REMLRT.sim <- 2*(h1.asr$loglik-h0.asr$loglik)
-                               }
-                             }
-                             conv=FALSE
-                             cbind(REMLRT.sim, nnonconv)
-                           }
+      { 
+        loadASRemlVersion(3, lib.loc = "D:\\Analyses\\R oldpkg")
+        while (!conv)
+        { 
+          sim.dat <- within(sim.dat, 
+                            {y.sim <- as.vector(mu + R %*% rnorm(n))})
+          h1.asr <- eval(h1.call)
+          conv <- h1.asr$converge
+          if (conv)
+          {
+            h0.asr <- eval(h0.call)
+            conv <- h0.asr$converge
+          }
+          if (!conv)
+          {
+            nnonconv <- nnonconv + 1
+            REMLRT.sim <- NA
+            if (max.retries > nnonconv)
+              break()
+          } else
+          {
+            #Perform the test
+            REMLRT.sim <- 2*(h1.asr$loglik-h0.asr$loglik)
+          }
+        }
+        conv=FALSE
+        cbind(REMLRT.sim, nnonconv)
+      }
   }
   stopCluster(cl)
   

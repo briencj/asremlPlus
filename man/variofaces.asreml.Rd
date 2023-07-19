@@ -21,7 +21,7 @@ Stefanova, Smith & Cullis (2009).}
            extra.matrix = NULL, ignore.terms = NULL, fixed.spline.terms = NULL, 
            bound.exclusions = c("F","B","S","C"), tolerance=1E-10, 
            units = "ignore", update = TRUE, trace = FALSE, 
-           graphics.device=NULL, ncores = detectCores(), ...)}
+           graphics.device=NULL, ncores = parallel::detectCores(), ...)}
 \arguments{
  \item{asreml.obj}{An \code{asreml} object from a call to \code{asreml} in which the 
                 \code{data} argument has been set.}

@@ -58,14 +58,14 @@ DFdiff <- function(bound.h1, bound.h0, DF = NULL, bound.exclusions = c("F","B","
       warning("Negative calculated degrees of freedom indicating the second model is more complex")
   if (is.null(DF))
     DF <- DF.calc
- return(list(DF = DF, NBound.h1 = NBound.h1, NBound.h0 = NBound.h0)) 
+  return(list(DF = DF, NBound.h1 = NBound.h1, NBound.h0 = NBound.h0)) 
 }
 
 REMLRT.asreml <- function(h0.asreml.obj, h1.asreml.obj, 
                           positive.zero = FALSE, bound.test.parameters = "none", 
                           DF = NULL, bound.exclusions = c("F","B","S","C"), ...)
 {
-#asreml codes (vparameters.con code):
+  #asreml codes (vparameters.con code):
   # (1) P - positive definite
   # (2) ? - liable to change from P to B    
   # (3) U - unbounded
@@ -73,7 +73,7 @@ REMLRT.asreml <- function(h0.asreml.obj, h1.asreml.obj,
   # (5) C - Constrained by user (!VCC)      
   # (6) S - Singular Information matrix
   # (7) B - fixed at a boundary (!GP)
-
+  
   #Deal with deprecated constraints parameter
   tempcall <- list(...)
   if (length(tempcall)) 
@@ -85,6 +85,7 @@ REMLRT.asreml <- function(h0.asreml.obj, h1.asreml.obj,
   }
   
   asr4 <- isASRemlVersionLoaded(4, notloaded.fault = TRUE)
+  asr4.2 <- isASReml4_2Loaded(4.2, notloaded.fault = FALSE)
   
   #Check that have a valid objects of class asreml
   validasr <- validAsreml(h0.asreml.obj)  
@@ -94,7 +95,7 @@ REMLRT.asreml <- function(h0.asreml.obj, h1.asreml.obj,
   validasr <- validAsreml(h1.asreml.obj)  
   if (is.character(validasr))
     stop(validasr)
-
+  
   #Check that fixed and sparse models are the same
   if (asr4)
   {
@@ -120,17 +121,17 @@ REMLRT.asreml <- function(h0.asreml.obj, h1.asreml.obj,
     stop("Fixed models differ in length")
   if (all(sapply(fixed.labels, function(x) length(x)) > 0))
   { for (i in 2:length(fixed.labels)) 
-    { if (!all(is.element(fixed.labels[[1]], fixed.labels[[i]]))) 
-        stop("Fixed models differ")
-    }
+  { if (!all(is.element(fixed.labels[[1]], fixed.labels[[i]]))) 
+    stop("Fixed models differ")
+  }
   }
   if (!all(diff(sapply(sparse.labels, function(x) length(x))) == 0)) 
     stop("sparse models differ in length")
   if (all(sapply(sparse.labels, function(x) length(x)) > 0)) 
   { for (i in 2:length(sparse.labels)) 
-    { if (!all(is.element(sparse.labels[[1]], sparse.labels[[i]]))) 
-        stop("sparse models differ")
-    }
+  { if (!all(is.element(sparse.labels[[1]], sparse.labels[[i]]))) 
+    stop("sparse models differ")
+  }
   }
   
   #Check bound.test.parameters argument
@@ -138,13 +139,20 @@ REMLRT.asreml <- function(h0.asreml.obj, h1.asreml.obj,
   par.opt <- par.options[check.arg.values(bound.test.parameters, par.options)]
   if (positive.zero & par.opt == "none")
     par.opt <- "onlybound"
-
+  
   #Get bound values
   asr4 <- isASRemlVersionLoaded(4, notloaded.fault = TRUE)
   if (asr4)
   {
-    bound.h0 <- asreml::vpc.char(h0.asreml.obj)
-    bound.h1 <- asreml::vpc.char(h1.asreml.obj)
+    if (asr4.2)
+    {
+      bound.h0 <- h0.asreml.obj$vparameters.con
+      bound.h1 <- h1.asreml.obj$vparameters.con
+    } else
+    {
+      bound.h0 <- vpc.char(h0.asreml.obj)
+      bound.h1 <- vpc.char(h1.asreml.obj)
+    }
   }
   else
   {
@@ -157,61 +165,61 @@ REMLRT.asreml <- function(h0.asreml.obj, h1.asreml.obj,
   NBound.h1 <- DF.diff$NBound.h1
   NBound.h0 <- DF.diff$NBound.h0
   #Perform the test
-	REMLRT <- 2*(h1.asreml.obj$loglik-h0.asreml.obj$loglik)
-	if (is.null(DF))
-	  DF <- DF.diff$DF
-
-	if (is.na(DF))	
-	{
-	  stop("DF for REML test is NA")
-	} else 
-	{
-	  if (DF == 0)
-	    warning("DF for REML test is zero indicating no difference between models in the number of parameters")
-	  else
-	    if (DF <= 0)
-	      warning("Negative degrees of freedom for REML test indicating the second model is more complex")
-	}
-
-   if (par.opt != "none")
-   { 
-     if (REMLRT < 1e-10)
-       p <- 1
-     else
-       if (par.opt == "onlybound")
-       {
-         if (DF == 1)
-           #this option is used when testing a positively-contrained variance component is zero
-           #it adjusts for testing on the boundary of the contraint by computing 0.5(ch1_0 + chi_2)
-           #comes from Self & Liang (1987) Case 5
-           p <- 0.5*(1-pchisq(REMLRT, DF))
-         else
-         {
-           warning(paste("REMLRT on more than one positive variance parameters is being attempted,", 
-                         "but is not available"))
-           p <- NA
-         }
-           #following is for DF positively-contrained components equal to zero 
-           #computes sum_i=0 to DF mix_i * chi_i where mix_i = choose(DF,  i)*2^(_DF)
-           #comes from Self & Liang (1987) Case 9 with s = 0. However, assumes 
-           #independence of information matrices
-         # {  
-         #   df <- seq(DF)
-         #   p <- 1-2^(-DF)-sum(choose(DF, df)*2^(-DF)*pchisq(REMLRT, df))
-         #   
-         # }
-       } else #one-and-one Case 6
-       {
-         if (DF == 2)
-           p <- 1 - 0.5*(pchisq(REMLRT, 1) + pchisq(REMLRT, 2))
-         else
-           stop(paste("For one-and-one, DF must equal two",
-                      "because there must be just two parameters tested"), sep = " ")
-       }
-   }
-	else
-	  p <- 1-pchisq(REMLRT, DF)
-	data.frame(REMLRT, DF, p, NBound.h0, NBound.h1)
+  REMLRT <- 2*(h1.asreml.obj$loglik-h0.asreml.obj$loglik)
+  if (is.null(DF))
+    DF <- DF.diff$DF
+  
+  if (is.na(DF))	
+  {
+    stop("DF for REML test is NA")
+  } else 
+  {
+    if (DF == 0)
+      warning("DF for REML test is zero indicating no difference between models in the number of parameters")
+    else
+      if (DF <= 0)
+        warning("Negative degrees of freedom for REML test indicating the second model is more complex")
+  }
+  
+  if (par.opt != "none")
+  { 
+    if (REMLRT < 1e-10)
+      p <- 1
+    else
+      if (par.opt == "onlybound")
+      {
+        if (DF == 1)
+          #this option is used when testing a positively-contrained variance component is zero
+          #it adjusts for testing on the boundary of the contraint by computing 0.5(ch1_0 + chi_2)
+          #comes from Self & Liang (1987) Case 5
+          p <- 0.5*(1-pchisq(REMLRT, DF))
+        else
+        {
+          warning(paste("REMLRT on more than one positive variance parameters is being attempted,", 
+                        "but is not available"))
+          p <- NA
+        }
+        #following is for DF positively-contrained components equal to zero 
+        #computes sum_i=0 to DF mix_i * chi_i where mix_i = choose(DF,  i)*2^(_DF)
+        #comes from Self & Liang (1987) Case 9 with s = 0. However, assumes 
+        #independence of information matrices
+        # {  
+        #   df <- seq(DF)
+        #   p <- 1-2^(-DF)-sum(choose(DF, df)*2^(-DF)*pchisq(REMLRT, df))
+        #   
+        # }
+      } else #one-and-one Case 6
+      {
+        if (DF == 2)
+          p <- 1 - 0.5*(pchisq(REMLRT, 1) + pchisq(REMLRT, 2))
+        else
+          stop(paste("For one-and-one, DF must equal two",
+                     "because there must be just two parameters tested"), sep = " ")
+      }
+  }
+  else
+    p <- 1-pchisq(REMLRT, DF)
+  data.frame(REMLRT, DF, p, NBound.h0, NBound.h1)
 }
 
 #The code for the full likelihood was adapted from Verbyla (2019) ANZJS, File S1 (doi: 10.1111/anzs.12254) 
@@ -220,6 +228,8 @@ infoCriteria.asreml <- function(object, DF = NULL,
                                 IClikelihood = "REML", fixedDF = NULL, varDF = NULL, ...)
 {
   asr4 <- isASRemlVersionLoaded(4, notloaded.fault = TRUE)
+  asr4.2 <- isASReml4_2Loaded(4.2, notloaded.fault = TRUE)
+  
   #Check that have a valid object of class asreml
   validasr <- validAsreml(object)  
   if (is.character(validasr))
@@ -239,7 +249,10 @@ infoCriteria.asreml <- function(object, DF = NULL,
     #Get bound values
     if (asr4)
     {
-      bound <- asreml::vpc.char(object)
+      if (asr4.2)
+        bound <- object$vparameters.con
+      else
+        bound <- vpc.char(object)
     }
     else
     {
@@ -293,7 +306,7 @@ infoCriteria.asreml <- function(object, DF = NULL,
         if (is.null(object$Cfixed)) 
           object <- asreml::update.asreml(object, maxit=1)
         coefF <- summary(object, coef=TRUE)$coef.fixed
-        which.cF <- !is.na(coefF[, "z.ratio"])
+        which.cF <- rownames(coefF)[!is.na(coefF[, "z.ratio"])]
         #      logdetC <- log(prod(svd(as.matrix(object$Cfixed[which.cF, which.cF]))$d))
         logdetC <- sum(log(svd(as.matrix(object$Cfixed[which.cF, which.cF]))$d))
       } else #asr3
@@ -319,7 +332,7 @@ infoCriteria.asreml <- function(object, DF = NULL,
           fixedDF <- sum(which.cF)
         else
           fixedDF <- length(which.cF)
-      }
+        }
     } else #REML
     {
       fixedDF <- 0
@@ -343,16 +356,24 @@ infoCriteria.asreml <- function(object, DF = NULL,
     {
       if (asr4)
         coefF <- summary(object, coef=TRUE)$coef.fixed
-     else #asr3
-       coefF <- summary(object, all=TRUE)$coef.fixed
-     which.cF <- !is.na(coefF[, "z.ratio"])
-     fixedDF <- sum(which.cF)
-     #The deviance is, by definition +ve and is -2 * loglik
-     #asreml appears to store - deviance so that it is 2 * loglik 
-     AIC <- - object$deviance + (2 * fixedDF)
-     BIC <- - object$deviance + fixedDF * log(object$nedf+fixedDF)
-     info <- data.frame(fixedDF, 0, 0, AIC, BIC, (-object$deviance)/(-2))
-     
+      else #asr3
+        coefF <- summary(object, all=TRUE)$coef.fixed
+      which.cF <- !is.na(coefF[, "z.ratio"])
+      fixedDF <- sum(which.cF)
+      #The deviance is, by definition +ve and is -2 * loglik
+      if (asr4.2)
+      { 
+        AIC <- object$deviance + (2 * fixedDF)
+        BIC <- object$deviance + fixedDF * log(object$nedf+fixedDF)
+        info <- data.frame(fixedDF, 0, 0, AIC, BIC, object$deviance/(-2))
+      } else
+      { 
+        #asreml < 4.2 stores - deviance so that it is 2 * loglik 
+        AIC <- - object$deviance + (2 * fixedDF)
+        BIC <- - object$deviance + fixedDF * log(object$nedf+fixedDF)
+        info <- data.frame(fixedDF, 0, 0, AIC, BIC, (-object$deviance)/(-2))
+      }
+
     } else
       warning("infoCriteria are not available for ", distn, " with dispersion equal to ", call.fam$dispersion, "; they have been set to NA.")
     names(info) <- c("fixedDF", "varDF", "NBound", "AIC", "BIC", "loglik")
@@ -373,7 +394,7 @@ infoCriteria.asreml <- function(object, DF = NULL,
     stop("Multiple fixedDF has not been implemented")
   if (!is.null(varDF) & length(varDF) != 1)
     stop("Multiple fixedDF has not been implemented")
-
+  
   #Get information criteria
   if (asr4)
     asreml::asreml.options(trace = FALSE)

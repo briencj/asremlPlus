@@ -36,7 +36,7 @@
           ucoeff <- 1
         else
         { 
-#          ucoeff <- asreml::summary.asreml(asreml.obj)$varcomp[termno, "component"]
+#          ucoeff <- summary(asreml.obj)$varcomp[termno, "component"]
           ucoeff <- summary(asreml.obj)$varcomp[termno, "component"]
           ucoeff <- sqrt(ucoeff/(ucoeff^2 -1))
         }  
@@ -58,7 +58,8 @@
                                 bound.exclusions = c("F","B","S","C"), 
                                 tolerance = 1E-10, units = "ignore", 
                                 update = TRUE, trace = FALSE, 
-                                graphics.device=NULL, ncores = detectCores(), ...)
+                                graphics.device=NULL, 
+                                ncores = parallel::detectCores(), ...)
 #function to do the face variogram plots, including envelopes, described by 
 #Stefanova et al (2010)
 #asreml.obj is an asreml object from a call to asreml in which the data argument 
@@ -74,6 +75,7 @@
 #... parameters to supply to asreml calls within variofaces.asreml
 { 
   asr4 <- isASRemlVersionLoaded(4, notloaded.fault = TRUE)
+  asr4.2 <- isASReml4_2Loaded(4.2)
   #Check that have a valid object of class asreml
   validasr <- validAsreml(asreml.obj)  
   if (is.character(validasr))
@@ -85,7 +87,7 @@
   if (is.null(V))
   {
     if (!asr4)
-      stop("It appears that asreml4 is not loaded and so V must be supplied to variofaces.asreml.")
+      stop("It appears that asreml 4.x is not loaded and so V must be supplied to variofaces.asreml.")
     asreml.obj <- asreml.obj
     V <- estimateV(asreml.obj, extra.matrix = extra.matrix, ignore.terms = ignore.terms, 
                    fixed.spline.terms = fixed.spline.terms, 
@@ -310,43 +312,51 @@
   
   if (asr4)
   {
-    env.var <- foreach (i = 1:nsim, .packages = c("asreml","asremlPlus"))  %dopar%
-                        { 
-                          asreml::asreml.options(fail = "soft")
-                          while (!conv)
-                          { 
-                            env.dat <- within(env.dat, 
-                                              {y.sim <- as.vector(mu + R %*% rnorm(n))})
-                            sim.asreml <- eval(call)
-                            conv <- sim.asreml$converge
-                          }
-                          conv=FALSE
-                          #Get residuals
-                          res.dat <- within(res.dat, 
-                                            {res <- get.residuals(sim.asreml, units = units)})
-                          if (restype != attr(res.dat$res, which = "restype"))
-                            warning("Observed and simulated residuals are not of the same type")
-                          
-                          
-                          #Get variogram faces for this simulated data set
-                          for (k in sections)
-                          { 
-                            if (is.null(fac.sec))
-                              sect.dat <- res.dat
-                            else
-                              sect.dat <- res.dat[res.dat[[fac.sec]]==k, -1]
-                            #      sect.dat <- as.matrix(sect.dat)
-                            sim.var <- asreml::asr_varioGram(sect.dat)
-                            names(sim.var)[1:2] <- grid.facs
-                            env.var[[1]][[k]] <- sim.var[sim.var[[fac2]]==0,]$gamma
-                            env.var[[2]][[k]] <- sim.var[sim.var[[fac1]]==0,]$gamma
-                          }
-                          env.var
-                        }
+    if (asr4.2)
+    {
+      kthreads <-   get("asr_options", envir = getFromNamespace(".asremlEnv", "asreml"))$threads
+      asreml::asreml.options(threads = 1)
+    }
+      env.var <- foreach(i = 1:nsim, .packages = c("asreml","asremlPlus"))  %dopar%
+      { 
+        asreml::asreml.options(fail = "soft")
+        while (!conv)
+        { 
+          env.dat <- within(env.dat, 
+                            {y.sim <- as.vector(mu + R %*% rnorm(n))})
+          sim.asreml <- eval(call)
+          conv <- sim.asreml$converge
+        }
+        conv=FALSE
+        #Get residuals
+        res.dat <- within(res.dat, 
+                          {res <- get.residuals(sim.asreml, units = units)})
+        if (restype != attr(res.dat$res, which = "restype"))
+          warning("Observed and simulated residuals are not of the same type")
+        
+        
+        #Get variogram faces for this simulated data set
+        for (k in sections)
+        { 
+          if (is.null(fac.sec))
+            sect.dat <- res.dat
+          else
+            sect.dat <- res.dat[res.dat[[fac.sec]]==k, -1]
+          #      sect.dat <- as.matrix(sect.dat)
+          
+          sim.var <- asreml::asr_varioGram(sect.dat)
+          names(sim.var)[1:2] <- grid.facs
+          env.var[[1]][[k]] <- sim.var[sim.var[[fac2]]==0,]$gamma
+          env.var[[2]][[k]] <- sim.var[sim.var[[fac1]]==0,]$gamma
+        }
+        env.var
+      }
+    if (asr4.2)
+      asreml::asreml.options(threads = kthreads)
   } else
   {
     env.var <- foreach (i = 1:nsim, .packages = c("asreml","asremlPlus"))  %dopar%
-                        { 
+      { 
                           loadASRemlVersion(3, lib.loc = "D:\\Analyses\\R oldpkg")
                           while (!conv)
                           { 
@@ -487,6 +497,7 @@
 #... parameters to supply to plot functions called within variofaces.asreml
 { 
   asr4 <- isASRemlVersionLoaded(4, notloaded.fault = TRUE)
+  asr4.2 <- isASReml4_2Loaded(4.2, notloaded.fault = TRUE)
   #Check that have a valid object of class asreml
   validasr <- validAsreml(object)  
   if (is.character(validasr))
@@ -618,55 +629,62 @@
   }
   if (asr4)
   {
-    sim <- foreach (i = 1:nsim, .combine=rbind,
-                    .packages = c("asreml","asremlPlus"))  %dopar%
-                    { 
-                      asreml::asreml.options(fail = "soft")
-                      while (!conv)
-                      { 
-                        env.dat <- within(env.dat, 
-                                          {y.sim <- as.vector(mu + R %*% rnorm(n))})
-                        sim.asreml <- eval(call)
-                        conv <- sim.asreml$converge
-                      }
-                      conv=FALSE
-                      sim <- vector(mode = "list", length = length(opt))
-                      names(sim) <- opt
-                      if ("data"%in% opt)
-                        sim[["data"]] <- env.dat$y.sim
-                      #Get residuals
-                      if ("residuals"%in% opt)
-                        sim[["residuals"]] <- get.residuals(sim.asreml, units=units)
-                      if ("fitted"%in% opt)
-                        sim[["fitted"]] <- fitted.values(sim.asreml)
-                      sim
-                    }
+    if (asr4.2)
+    {
+      kthreads <-   get("asr_options", envir = getFromNamespace(".asremlEnv", "asreml"))$threads
+      asreml::asreml.options(threads = 1)
+    }
+    sim <- foreach(i = 1:nsim, .combine=rbind,
+                   .packages = c("asreml","asremlPlus"))  %dopar%
+      { 
+        asreml::asreml.options(fail = "soft")
+        while (!conv)
+        { 
+          env.dat <- within(env.dat, 
+                            {y.sim <- as.vector(mu + R %*% rnorm(n))})
+          sim.asreml <- eval(call)
+          conv <- sim.asreml$converge
+        }
+        conv=FALSE
+        sim <- vector(mode = "list", length = length(opt))
+        names(sim) <- opt
+        if ("data"%in% opt)
+          sim[["data"]] <- env.dat$y.sim
+        #Get residuals
+        if ("residuals"%in% opt)
+          sim[["residuals"]] <- get.residuals(sim.asreml, units=units)
+        if ("fitted"%in% opt)
+          sim[["fitted"]] <- fitted.values(sim.asreml)
+        sim
+      }
+    if (asr4.2)
+      asreml::asreml.options(threads = kthreads)
   } else
   {
-    sim <- foreach (i = 1:nsim, .combine=rbind,
-                    .packages = c("asreml","asremlPlus"))  %dopar%
-                    { 
-                      loadASRemlVersion(3, lib.loc = "D:\\Analyses\\R oldpkg")
-                      while (!conv)
-                      { 
-                        env.dat <- within(env.dat, 
-                                          {y.sim <- as.vector(mu + R %*% rnorm(n))})
-                        sim.asreml <- eval(call)
-                        conv <- sim.asreml$converge
-                      }
-                      conv=FALSE
-                      sim <- vector(mode = "list", length = length(opt))
-                      names(sim) <- opt
-                      if ("data"%in% opt)
-                        sim[["data"]] <- env.dat$y.sim
-                      #Get residuals
-                      if ("residuals"%in% opt)
-                        sim[["residuals"]] <- get.residuals(sim.asreml, units=units)
-                      if ("fitted"%in% opt)
-                        sim[["fitted"]] <- fitted(sim.asreml)
-#                        sim[["fitted"]] <- asreml::fitted.asreml(sim.asreml)
-                     sim
-                    }
+    sim <- foreach(i = 1:nsim, .combine=rbind,
+                   .packages = c("asreml","asremlPlus"))  %dopar%
+      { 
+        loadASRemlVersion(3, lib.loc = "D:\\Analyses\\R oldpkg")
+        while (!conv)
+        { 
+          env.dat <- within(env.dat, 
+                            {y.sim <- as.vector(mu + R %*% rnorm(n))})
+          sim.asreml <- eval(call)
+          conv <- sim.asreml$converge
+        }
+        conv=FALSE
+        sim <- vector(mode = "list", length = length(opt))
+        names(sim) <- opt
+        if ("data"%in% opt)
+          sim[["data"]] <- env.dat$y.sim
+        #Get residuals
+        if ("residuals"%in% opt)
+          sim[["residuals"]] <- get.residuals(sim.asreml, units=units)
+        if ("fitted"%in% opt)
+          sim[["fitted"]] <- fitted(sim.asreml)
+        #                        sim[["fitted"]] <- asreml::fitted.asreml(sim.asreml)
+        sim
+      }
   }
   stopCluster(cl)
   
@@ -717,7 +735,8 @@
   #restype is a character string describing the type of residuals supplied.
 { 
   asr4 <- isASRemlVersionLoaded(4, notloaded.fault = TRUE)
-
+  asr4.2 <- isASReml4_2Loaded(4.2)
+  
   if (!is.data.frame(data) | !is.data.frame(residuals))
     stop("Both data and residuals should be data frames")
   n <- nrow(data)

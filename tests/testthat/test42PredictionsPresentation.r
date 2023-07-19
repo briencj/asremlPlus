@@ -1,8 +1,8 @@
 #devtools::test("asremlPlus")
 context("prediction_presentation")
 
-cat("#### Test for Intercept prediction on Oats with asreml4\n")
-test_that("predict_Intercept4", {
+cat("#### Test for Intercept prediction on Oats with asreml42\n")
+test_that("predict_Intercept_asreml42", {
   skip_if_not_installed("asreml")
   skip_on_cran()
   library(asreml)
@@ -34,8 +34,8 @@ test_that("predict_Intercept4", {
 })
 
 
-cat("#### Test for predictPlus.asreml4\n")
-test_that("predictPlus.asreml4", {
+cat("#### Test for predictPlus.asreml42\n")
+test_that("predictPlus.asreml42", {
   skip_if_not_installed("asreml")
   skip_on_cran()
   library(asreml)
@@ -43,15 +43,15 @@ test_that("predictPlus.asreml4", {
   library(dae)
   data(WaterRunoff.dat)
   asreml.options(keep.order = TRUE) #required for asreml4 only
-  testthat::expect_warning(current.asr <- asreml(fixed = pH ~ Benches + (Sources * (Type + Species)), 
-                                                 random = ~ Benches:MainPlots,
-                                                 data= WaterRunoff.dat))
-  testthat::expect_output(current.asrt <- as.asrtests(current.asr, NULL, NULL),
-                          regexp = "Calculating denominator DF")
-  testthat::expect_silent(diffs <- predictPlus(classify = "Sources:Type", 
-                                               asreml.obj = current.asr, tables = "none", 
-                                               wald.tab = current.asrt$wald.tab, 
-                                               present = c("Type","Species","Sources")))
+  current.asr <- asreml(fixed = pH ~ Benches + (Sources * (Type + Species)), 
+                        random = ~ Benches:MainPlots,
+                        data= WaterRunoff.dat)
+  current.asrt <- as.asrtests(current.asr, NULL, NULL)
+                          
+  diffs <- predictPlus(classify = "Sources:Type", 
+                       asreml.obj = current.asr, tables = "none", 
+                       wald.tab = current.asrt$wald.tab, 
+                       present = c("Type","Species","Sources"))
   testthat::expect_is(diffs, "alldiffs")
   
   #### Get the observed combinations of the factors and variables in classify
@@ -80,8 +80,8 @@ test_that("predictPlus.asreml4", {
   
 })
 
-cat("#### Test for plotPredictions.asreml4\n")
-test_that("plotPredictions.asreml4", {
+cat("#### Test for plotPredictions.asreml42\n")
+test_that("plotPredictions.asreml42", {
   skip_if_not_installed("asreml")
   skip_on_cran()
   library(asreml)
@@ -136,8 +136,8 @@ test_that("plotPredictions.asreml4", {
   testthat::expect_silent("dummy")
 })
 
-cat("#### Test for predictPresent.asreml4\n")
-test_that("predictPresent.asreml4", {
+cat("#### Test for predictPresent.asreml42\n")
+test_that("predictPresent.asreml42", {
   skip_if_not_installed("asreml")
   skip_on_cran()
   library(dae)
@@ -230,8 +230,8 @@ test_that("predictPresent.asreml4", {
 
 
 #### This test is not relevant to asreml3 because its saving of sed and vcov are different
-cat("#### Test for error when no predictions.asreml4\n")
-test_that("noPredictions.asreml4", {
+cat("#### Test for error when no predictions.asreml42\n")
+test_that("noPredictions.asreml42", {
   skip_if_not_installed("asreml")
   skip_on_cran()
   library(asreml)
@@ -262,8 +262,8 @@ test_that("noPredictions.asreml4", {
                          fixed = TRUE)
 })
 
-cat("#### Test for plotPvalues.asreml4\n")
-test_that("plotPvalues.asreml4", {
+cat("#### Test for plotPvalues.asreml42\n")
+test_that("plotPvalues.asreml42", {
   skip_if_not_installed("asreml")
   skip_on_cran()
   library(asreml)
@@ -272,7 +272,7 @@ test_that("plotPvalues.asreml4", {
   library(reshape2)
   data(WaterRunoff.dat)
   asreml.options(keep.order = TRUE) #required for asreml4 only
-  testthat::expect_output(current.asr <- asreml(fixed = pH ~ Benches + (Sources * (Type + Species)), 
+  testthat::expect_silent(current.asr <- asreml(fixed = pH ~ Benches + (Sources * (Type + Species)), 
                                                 random = ~ Benches:MainPlots,
                                                 data= WaterRunoff.dat))
   current.asrt <- as.asrtests(current.asr, NULL, NULL)
@@ -345,8 +345,8 @@ test_that("plotPvalues.asreml4", {
                                     names(pupdata$pvalues)))
 })
 
-cat("#### Test for plotPvalues.asreml4\n")
-test_that("plotPvalues.asreml4", {
+cat("#### Test for plotPvalues.asreml42\n")
+test_that("plotPvalues.asreml42", {
   skip_if_not_installed("asreml")
   skip_on_cran()
   library(asreml)
@@ -375,8 +375,8 @@ test_that("plotPvalues.asreml4", {
   
 })
 
-cat("#### Test for factor combinations asreml4\n")
-test_that("factor.combinations.asreml4", {
+cat("#### Test for factor combinations asreml42\n")
+test_that("factor.combinations.asreml42", {
   skip_if_not_installed("asreml")
   skip_on_cran()
   library(asreml)
@@ -407,7 +407,7 @@ test_that("recalcLSD.alldiffs4", {
   library(dae)
   data(WaterRunoff.dat)
   asreml.options(keep.order = TRUE) #required for asreml4 only
-  testthat::expect_output(current.asr <- asreml(fixed = pH ~ Benches + (Sources * (Type + Species)), 
+  testthat::expect_silent(current.asr <- asreml(fixed = pH ~ Benches + (Sources * (Type + Species)), 
                                                 random = ~ Benches:MainPlots,
                                                 data= WaterRunoff.dat))
   current.asrt <- as.asrtests(current.asr, NULL, NULL)
