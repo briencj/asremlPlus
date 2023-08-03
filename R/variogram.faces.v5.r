@@ -295,6 +295,12 @@
   restype <- attr(res.dat$res, which = "restype")
   r <- res.dat$res
   
+  #Set OMP_NUM_THREADS to 1 on Windows systems
+  if (grepl("Windows", Sys.getenv("OS")))
+  {
+    kTHREADS <- Sys.getenv("OMP_NUM_THREADS")
+    Sys.setenv("OMP_NUM_THREADS" = 1)
+  }
   cl <- makeCluster(ncores)
   registerDoParallel(cl)
   #process seed argument
@@ -387,6 +393,8 @@
                         }
   }
   stopCluster(cl)
+  if (grepl("Windows", Sys.getenv("OS")))
+    Sys.setenv("OMP_NUM_THREADS" = kTHREADS)
   if (abs(mean(r -res.dat$res, na.rm = TRUE)) > 1e-6)
     stop("res.dat$res has changed")
   
@@ -613,6 +621,12 @@
   
   #generate nsim data sets and save variogram face data
   conv <- FALSE
+  #Set OMP_NUM_THREADS to 1 on Windows systems
+  if (grepl("Windows", Sys.getenv("OS")))
+  {
+    kTHREADS <- Sys.getenv("OMP_NUM_THREADS")
+    Sys.setenv("OMP_NUM_THREADS" = 1)
+  }
   cl <- makeCluster(ncores)
   registerDoParallel(cl)
   #process seed argument
@@ -687,6 +701,8 @@
       }
   }
   stopCluster(cl)
+  if (grepl("Windows", Sys.getenv("OS")))
+    Sys.setenv("OMP_NUM_THREADS" = kTHREADS)
   
   out <- vector("list", length = 0)
   if ("residuals" %in% opt | "fitted" %in% opt)

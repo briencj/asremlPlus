@@ -244,6 +244,11 @@ bootREMLRT.asreml <- function(h0.asreml.obj, h1.asreml.obj,
   
   #Set up for simulation
   conv <- FALSE
+  if (grepl("Windows", Sys.getenv("OS")))
+  {
+    kTHREADS <- Sys.getenv("OMP_NUM_THREADS")
+    Sys.setenv("OMP_NUM_THREADS" = 1)
+  }
   cl <- makeCluster(ncores)
   registerDoParallel(cl)
   #process seed argument
@@ -333,6 +338,8 @@ bootREMLRT.asreml <- function(h0.asreml.obj, h1.asreml.obj,
       }
   }
   stopCluster(cl)
+  if (grepl("Windows", Sys.getenv("OS")))
+    Sys.setenv("OMP_NUM_THREADS" = kTHREADS)
   
   REMLRT.sim <- na.omit(REMLRT.out[,1])
   nunconverged <- REMLRT.out[,2]
