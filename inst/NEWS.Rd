@@ -1,6 +1,6 @@
 \name{news}
 \title{News for Package asremlPlus}
-\section{asremlPlus Version 4.4.12 (2023-08-02)}{
+\section{asremlPlus Version 4.4.12 (2023-08-03)}{
   \itemize{
   \item{Modifications to deal with classhes between multithreading and external linear algebra packages  under Windows. The environmental variable OMP_NUM_THREADS needs to be set to 1 if parallel processing is to be undertaken on a Windows machine. This can be done for individual tasks by using \code{Sys.setenv("OMP_NUM_THREADS" = 1)} prior to running the task; otherwise, the environmental variable can be set for all tasks in the Windows system via \code{Advanced system settings} > \code{Envirnomental Variables}.}
   \item{There remains an svd bug with the oneMKL libraries version 2023.1.0 that is causing problems for \code{IClikelhood} set to \code{"full"}.}
