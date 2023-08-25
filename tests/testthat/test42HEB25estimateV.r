@@ -16,7 +16,7 @@ test_that("HEB25_estimateV_asreml42", {
                       random = ~ us(Treatment.1):Genotype.ID + Smarthouse:Zones:Mainplots, 
                       residual = ~idh(Treat.Smarthouse):Zones:Mainplots, 
                       data = cart.dat, na.action=na.method(y="include", x="include"), 
-                      maxiter = 1000, trace = FALSE)
+                      maxit = 1000, trace = FALSE)
   summary(HEB25.asr)$varcomp
   Vus <- estimateV(HEB25.asr)
   Vus[1:10, 1:9]
@@ -27,11 +27,11 @@ test_that("HEB25_estimateV_asreml42", {
                       random = ~ corv(Treatment.1):Genotype.ID + Smarthouse:Zones:Mainplots, 
                       residual = ~idh(Treat.Smarthouse):Zones:Mainplots, 
                       data = cart.dat, na.action=na.method(y="include", x="include"), 
-                      maxiter = 1000, trace = FALSE)
+                      maxit = 1000, trace = FALSE)
   summary(HEB25.asr)$varcomp
   V <- estimateV(HEB25.asr)
   V[1:10, 1:9]
-  testthat::expect_false(abs(V[1,1] - 7524245) > 10)
+  testthat::expect_false(abs(V[1,1] - 7526212) > 10)
   
   #corh(Treatment):Genotype
   HEB25.asr <- asreml(fixed = Height ~ Smarthouse + Check + Treatment.1 + 
@@ -39,11 +39,11 @@ test_that("HEB25_estimateV_asreml42", {
                       random = ~ corh(Treatment.1):Genotype.ID + Smarthouse:Zones:Mainplots, 
                       residual = ~idh(Treat.Smarthouse):Zones:Mainplots, 
                       data = cart.dat, na.action=na.method(y="include", x="include"), 
-                      maxiter = 1000, trace = FALSE)
+                      maxit = 1000, trace = FALSE)
   summary(HEB25.asr)$varcomp
   V <- estimateV(HEB25.asr)
   V[1:10, 1:9]
-  testthat::expect_false(abs(V[1,1] - 8234025) > 10)
+  testthat::expect_false(abs(V[1,1] - 8233920) > 10)
   
   #corgh(Treatment):Genotype
   HEB25.asr <- asreml(fixed = Height ~ Smarthouse + Check + Treatment.1 + 
@@ -51,7 +51,7 @@ test_that("HEB25_estimateV_asreml42", {
                       random = ~ corgh(Treatment.1):Genotype.ID + Smarthouse:Zones:Mainplots, 
                       residual = ~idh(Treat.Smarthouse):Zones:Mainplots, 
                       data = cart.dat, na.action=na.method(y="include", x="include"), 
-                      maxiter = 1000, trace = FALSE)
+                      maxit = 1000, trace = FALSE)
   summary(HEB25.asr)$varcomp
   V <- estimateV(HEB25.asr)
   V[1:10, 1:9]

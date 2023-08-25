@@ -86,8 +86,7 @@ if (requireNamespace("lmerTest", quietly = TRUE) &
                                    interval.names = c("lower.CL", "upper.CL"))
    
   ## Form an all.diffs object and check its validity
-  els <- as.numeric(rownames(TS.preds))
-  TS.vcov <- vcov(TS.emm)[els,els]
+  TS.vcov <- vcov(TS.emm)
   TS.diffs <- allDifferences(predictions = TS.preds, classify = "Sources:Type", 
                              vcov = TS.vcov, tdf = den.df)
   validAlldiffs(TS.diffs)

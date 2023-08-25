@@ -116,7 +116,7 @@ test_that("choose.model.asrtests_asreml42", {
   testthat::expect_equal(sig.terms[[2]], "Date:Sources")
 })
 
-cat("#### Test for testing at terms with asreml42\n")
+cat("#### Test for testing fixed at terms with asreml42\n")
 test_that("at_testing_testranfix_asreml42", {
   skip_if_not_installed("asreml")
   skip_on_cran()
@@ -130,15 +130,19 @@ test_that("at_testing_testranfix_asreml42", {
   
   #Fit model with quotes around AMF_plus 
   # NB must have quotes for character levels, 
-  # as from v4.2 must also have in testranfix term because wald.tab and 
-  #   varcomp rownames now have single quotes
+  # as from v4.2 must also have in testranfix term 
+  #   because wald.tab, vparameters and varcomp rownames now always have single quotes.
+  # However, if fit with a character level call$fixed/random has double quotes and 
+  #     and the terms.object in formulae$fixed/random has \".
+  #If fit model with numeric  specifying the position in the levels list, 
+  #   both call$fixed/random and the terms.object in formulae$fixed/random have the numeric
   current.asr <- do.call(asreml,
                          list(fixed = TSP ~ Lane + xPosn + AMF*Genotype*NP + 
                                 at(AMF, 'AMF_plus'):per.col + (Genotype*NP):at(AMF, 'AMF_plus'):per.col,
                               random = ~ spl(xPosn) + Position ,
                               residual = ~ Genotype:idh(NP_AMF):InTreat,
                               keep.order=TRUE, data = dat, 
-                              maxiter=50, na.action = na.method(x="include")))
+                              maxit=50, na.action = na.method(x="include")))
   
   current.asrt <- as.asrtests(current.asr, NULL, NULL)
   current.asrt <- rmboundary(current.asrt)
@@ -173,13 +177,23 @@ test_that("at_testing_testranfix_asreml42", {
                               random = ~ spl(xPosn) + Position ,
                               residual = ~ Genotype:idh(NP_AMF):InTreat,
                               keep.order=TRUE, data = dat, 
-                              maxiter=50, na.action = na.method(x="include")))
+                              maxit=50, na.action = na.method(x="include")))
   
   current.asrt <- as.asrtests(current.asr, NULL, NULL)
   current.asrt <- rmboundary(current.asrt)
   testthat::expect_equal(nrow(current.asrt$wald.tab),14)
   testthat::expect_equal(nrow(summary(current.asrt$asreml.obj)$varcomp),7)
+  testthat::expect_equal(rownames(current.asrt$wald.tab)[12], "Genotype:at(AMF, 'AMF_plus'):per.col")
+  testthat::expect_true(grepl("at\\(AMF, 2):per.col", 
+                              as.character(getFormulae(current.asr)$fixed)[3]))
   
+  #Check cannot drop Genotype:NP:at(AMF, 2):per.col (because fitted with character)
+  t.asrt <- testranfix(current.asrt, term = "at(AMF, 2):per.col:Genotype:NP", 
+                       drop.fix.ns = TRUE)
+  t.asrt$wald.tab
+  testthat::expect_equal(nrow(t.asrt$wald.tab), 14)
+  
+  #Show can drop Genotype:NP:at(AMF, 'AMF_plus'):per.col 
   t.asrt <- testranfix(current.asrt, term = "at(AMF, 'AMF_plus'):per.col:Genotype:NP", 
                        drop.fix.ns = TRUE)
   t.asrt$wald.tab
@@ -188,6 +202,20 @@ test_that("at_testing_testranfix_asreml42", {
                               "Genotype:at(AMF, 'AMF_plus'):per.col", 
                               "NP:at(AMF, 'AMF_plus'):per.col") %in% rownames(current.asrt$wald.tab)))
   
+  #Use changeTerms with character level
+  t.asrt <- changeTerms(current.asrt, dropFixed = "at(AMF, 'AMF_plus'):per.col:Genotype:NP")
+  testthat::expect_equal(nrow(t.asrt$wald.tab), 13)
+  testthat::expect_true(all(c("AMF:Genotype:NP", "at(AMF, 'AMF_plus'):per.col", 
+                              "Genotype:at(AMF, 'AMF_plus'):per.col", 
+                              "NP:at(AMF, 'AMF_plus'):per.col") %in% rownames(current.asrt$wald.tab)))
+  
+  #Use changeTerms with numeric level index
+  t.asrt <- changeTerms(current.asrt, dropFixed = "at(AMF, 2):per.col:Genotype:NP")
+  testthat::expect_equal(nrow(t.asrt$wald.tab), 13)
+  testthat::expect_true(all(c("AMF:Genotype:NP", "at(AMF, 'AMF_plus'):per.col", 
+                              "Genotype:at(AMF, 'AMF_plus'):per.col", 
+                              "NP:at(AMF, 'AMF_plus'):per.col") %in% rownames(current.asrt$wald.tab)))
+
   #Test for a numeric level that is not the same as the levels index (1:no.levels)
   current.asr <- do.call(asreml,
                          list(fixed = TSP ~ at(Lane, 4) + xPosn + AMF*Genotype*NP + 
@@ -195,7 +223,7 @@ test_that("at_testing_testranfix_asreml42", {
                               random = ~ spl(xPosn) + Position ,
                               residual = ~ Genotype:idh(NP_AMF):InTreat,
                               keep.order=TRUE, data = dat, 
-                              maxiter=50, na.action = na.method(x="include")))
+                              maxit=50, na.action = na.method(x="include")))
   current.asrt <- as.asrtests(current.asr, NULL, NULL)
   current.asrt <- rmboundary(current.asrt)
   current.asrt$wald.tab
@@ -211,7 +239,7 @@ test_that("at_testing_testranfix_asreml42", {
                               random = ~ spl(xPosn) + Position ,
                               residual = ~ Genotype:idh(NP_AMF):InTreat,
                               keep.order=TRUE, data = dat, 
-                              maxiter=50, na.action = na.method(x="include")))
+                              maxit=50, na.action = na.method(x="include")))
   
   current.asrt <- as.asrtests(current.asr, NULL, NULL)
   current.asrt <- rmboundary(current.asrt)
@@ -273,7 +301,7 @@ test_that("at_testing_testranfix_asreml42", {
 
 
 
-cat("#### Test for changeTerms with at functions with asreml42\n")
+cat("#### Test for changeTerms with random at terms with asreml42\n")
 test_that("at_testing_changeTerms_asreml42", {
   skip_if_not_installed("asreml")
   skip_on_cran()
@@ -300,7 +328,7 @@ test_that("at_testing_changeTerms_asreml42", {
                                      at(Smarthouse, 2):spl(cMainPosn) + at(Smarthouse, 2):dev(cMainPosn) + 
                                      SHZone:ZMainunit,
                                    residual = ~ SHZone:ZMainunit:Salinity,
-                                   data = indv.dat, maxiter=50))
+                                   data = indv.dat, maxit=50))
   current.asrt <- as.asrtests(current.asr, NULL, NULL, IClikelihood = "full", 
                               label = "Starting with homogeneous variances model")
   testthat::expect_equal(length(current.asrt$asreml.obj$vparameters), 10)
@@ -360,7 +388,7 @@ test_that("at_testing_changeTerms_asreml42", {
                                      at(Smarthouse):spl(cMainPosn) + at(Smarthouse):dev(cMainPosn) + 
                                      SHZone:ZMainunit,
                                    residual = ~ SHZone:ZMainunit:Salinity,
-                                   data = indv.dat, maxiter=50))
+                                   data = indv.dat, maxit=50))
   current.asrt <- as.asrtests(current.asr, NULL, NULL, IClikelihood = "full", 
                               label = "Starting with homogeneous variances model")
   testthat::expect_equal(length(current.asrt$asreml.obj$vparameters), 10)
@@ -389,7 +417,7 @@ test_that("at_testing_changeTerms_asreml42", {
                                      at(Smarthouse, 1:2):spl(cMainPosn) + at(Smarthouse, 1:2):dev(cMainPosn) + 
                                      SHZone:ZMainunit,
                                    residual = ~ SHZone:ZMainunit:Salinity,
-                                   data = indv.dat, maxiter=50))
+                                   data = indv.dat, maxit=50))
   current.asrt <- as.asrtests(current.asr, NULL, NULL, IClikelihood = "full", 
                               label = "Starting with homogeneous variances model")
   testthat::expect_equal(length(current.asrt$asreml.obj$vparameters), 10)
@@ -399,7 +427,7 @@ test_that("at_testing_changeTerms_asreml42", {
                                 "at(Smarthouse, 'NW'):dev(cMainPosn)", "at(Smarthouse, 'NE'):Zone:Lane", 
                                 "at(Smarthouse, 'NW'):Zone:Lane", "SHZone:ZMainunit", "SHZone:ZMainunit:Salinity!R")))
   
-  #boundary term cannobt br removed
+  #boundary term cannot be removed
   t.asrt <- rmboundary(current.asrt)
   testthat::expect_equal(length(t.asrt$asreml.obj$vparameters), 10)
   testthat::expect_true("at(Smarthouse, 'NE'):dev(cMainPosn)" %in% names(t.asrt$asreml.obj$vparameters))
@@ -430,7 +458,7 @@ test_that("at_multilevel_asreml42", {
                               at(expt, c(1:5,7)):vcol + Genotype*Condition*expt,
                             random = ~  at(expt, c(1)):dev(vrow) + at(expt, c(2)):spl(vcol) +  
                               at(expt, c(3,5,7)):dev(vcol) + at(expt, c(7)):units,
-                            data=comb.dat, maxiter = 100, workspace = "1Gb"))
+                            data=comb.dat, maxit = 100, workspace = "1Gb"))
   
   summary(asreml.obj)$varcomp
   current.asrt <- as.asrtests(asreml.obj, NULL, NULL)
@@ -490,7 +518,7 @@ test_that("at_testswapran_asreml42", {
                                      Treatments:DAP + 
                                      Block:Cart:spl(xDAP) + Block:Cart:xDAP,
                                    residual = ~ Block:Cart:ar1h(DAP),
-                                   keep.order=TRUE, data = longit.dat, maxiter=100))
+                                   keep.order=TRUE, data = longit.dat, maxit=100))
 
   current.call <- current.asr$call
   vpR <- grepl("Block:Cart:DAP!DAP", names(current.asr$vparameters.con))
@@ -840,7 +868,7 @@ test_that("Fixedcorrelations_asreml42", {
   m.asr <- do.call(asreml, 
                    args=list(fixed = PSA.27 ~ Lane + Position,
                              residual = ~ ar1(Lane):Position,
-                             data = PSA.27.dat, maxiter=50))
+                             data = PSA.27.dat, maxit=50))
   m.asrt <- as.asrtests(m.asr, NULL, NULL, label = "Start with Lane autocorrelation",
                         IClikelihood = "full")
   m.asrt <- rmboundary(m.asrt)
@@ -907,7 +935,7 @@ test_that("Fixedcorrelations_asreml42", {
                    args=list(fixed = PSA.27 ~ Lane + Position,
                              random = ~ units,
                              residual = ~ ar1(Lane):ar1(Position),
-                             data = PSA.27.dat, maxiter=75))
+                             data = PSA.27.dat, maxit=75))
   m.asrt <- as.asrtests(m.asr, NULL, NULL, label = "Start with all autocorrelation",
                         IClikelihood = "full")
   m.asrt <- rmboundary(m.asrt)
@@ -946,7 +974,7 @@ test_that("Fixedcorrelations_asreml42", {
                      args=list(fixed = PSA.27 ~ 1,
                                random = ~ Lane + Position + units,
                                residual = ~ ar1(Lane):Position,
-                               data = PSA.27.dat, maxiter=50)))
+                               data = PSA.27.dat, maxit=50)))
   testthat::expect_warning(
     m.asrt <- as.asrtests(m.asr, NULL, NULL, label = "Start with all autocorrelation",
                           IClikelihood = "full"))
@@ -987,7 +1015,7 @@ test_that("Fixedcorrelations_asreml42", {
                    args=list(fixed = PSA.27 ~ Lane  + xPosn,
                              random = ~ spl(xPosn) + Position + units,
                              residual = ~ ar1(Lane):Position,
-                             data = PSA.27.dat, maxiter=75))
+                             data = PSA.27.dat, maxit=75))
   m.asrt <- as.asrtests(m.asr, NULL, NULL, label = "Start with all autocorrelation",
                         IClikelihood = "full")
   asreml.options(ai.sing = TRUE)
@@ -1007,7 +1035,7 @@ test_that("Fixedcorrelations_asreml42", {
                    args=list(fixed = PSA.27 ~ 1,
                              random = ~ Lane + units,
                              residual = ~ ar1(Lane):Position,
-                             data = PSA.27.dat, maxiter=100))
+                             data = PSA.27.dat, maxit=100))
   m.asrt <- as.asrtests(m.asr, NULL, NULL, label = "Start with all autocorrelation",
                         IClikelihood = "full")
   m.asrt <- rmboundary(m.asrt)

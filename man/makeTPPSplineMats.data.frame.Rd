@@ -2,8 +2,8 @@
 \alias{makeTPPSplineMats.data.frame}
 \alias{makeTPPSplineMats}
 \title{Make the spline basis matrices and data needed to fit Tensor Product P-splines.}
-\description{Prepares the fixed and random sP-spline basis matrices, and associated 
-       ifnormation, that are needed for fitting of Tensor Product P-splines (TPPS) 
+\description{Prepares the fixed and random P-spline basis matrices, and associated 
+       information, that are needed for fitting of Tensor Product P-splines (TPPS) 
        as described by Rodriguez-Alvarez et al. (2018). When \code{asreml.option}  is 
        set to \code{mbf}, \code{makeTPPSplineMats.data.frame} must be run prior to 
        fitting \code{TPPS} models for local spatial variation using 
@@ -19,6 +19,7 @@
                   row.covar, col.covar, 
                   nsegs = NULL, nestorder = c(1,1), 
                   degree = c(3,3), difforder = c(2,2),
+                  rotateX = FALSE, theta = c(0,0), 
                   asreml.option = "mbf", ...)
 }
 \arguments{
@@ -35,28 +36,51 @@
                column in the \code{\link{data.frame}} that contains the values of a 
                covariate indexing the columns of the grid.}
  \item{nsegs}{A pair of \code{\link{numeric}} values giving the number of segments into
-              which the column and row ranges are to be split, respectively (each value 
-              specifies the number of internal knots + 1). If only one number is 
+              which the column and row ranges are to be split, respectively, for fitting 
+              a P-spline model (\code{TPPS}) (each value specifies the number of internal 
+              knots + 1). If only one number is 
               specified, that value is used in both dimensions. If not specified, then 
               (number of unique values - 1) is used in each dimension; for a grid layout 
               with equal spacing, this gives a knot at each data value.}
- \item{nestorder}{A \code{\link{character}} of length 2. The order of nesting for column 
-              and row dimensions, respectively; default=1 (no nesting). A value of 2 
-              generates a spline with half the number of segments in that dimension, etc. 
-              The number of segments in each direction must be a multiple of the order 
-              of nesting.}
- \item{degree}{A \code{\link{character}}  of length 2. The degree of polynomial spline to 
-              be used for column and row dimensions respectively; default=3.}
- \item{difforder}{A \code{\link{character}} of length 2. The order of differencing for 
-              column and row dimensions, respectively; default=2.}
+ \item{nestorder}{A \code{\link{numeric}} of length 2. The order of nesting for column 
+              and row dimensions, respectively, in fitting a P-spline model (\code{TPPS}). 
+              A value of 1 specifies no nesting, a value of 2 generates a spline with 
+              half the number of segments in that 
+              dimension, etc. The number of segments in each direction must be a 
+              multiple of the order of nesting. If only one number is specified, that 
+              value is used for both dimensions.}
+ \item{degree}{A \code{\link{numeric}}  of length 2. The degree of polynomial spline to 
+              be used for column and row dimensions respectively, in fitting a P-spline 
+              (\code{TPSS}). If only one number is specified, that value is used for 
+              both dimensions.}
+ \item{difforder}{A \code{\link{numeric}} of length 2. The order of differencing for 
+              column and row dimensions, respectively, in fitting a P-spline 
+              (\code{TPSS}). If only one number is specified, that value is used for 
+              both dimensions.}
+ \item{rotateX}{A \code{logical} indicating whether to rotate the eigenvectors of the 
+              penalty matrix, as described by Piepho, Boer and Williams (2022), when 
+              fitting a P-spline (\code{TPSS}). Setting \code{rotateX} to \code{TRUE} 
+              results in an optimized rotation produced by exploring 
+              a two-dimensional grid of rotation angle pairs, and for each pair 
+              analyzing the data under a model that omits the random interaction terms. 
+              The angle pair with the minimum deviance is used to apply an optimized 
+              rotation. Rotation of the eigenvectors is only relevant for 
+              \code{difforder} values greater than 1 and has only been implemented for 
+              \code{difforder} equal to 2.}
+ \item{theta}{A \code{\link{numeric}} of length 2. The angle (in degrees) to be used in 
+              rotating the eignevectors of the penalty matrix of a P-spline (\code{TPSS}). 
+              If only one number is specified, that value is used for both dimensions.}
  \item{asreml.option}{A single \code{character} string whose value may be \code{mbf} or 
               \code{grp}, indicating the  method is to be used to supply externally 
-              formed covariate matrices to \code{asreml}.}
+              formed covariate matrices to \code{asreml} when fitting a P-spline 
+              (\code{TPSS}).}
 \item{\dots}{Further arguments passed to \code{tpsmmb} from package \code{TPSbits}.}
 }
 \details{
 The objects are formed using the function \code{tpsmmb} from the \code{R} package \code{TPSbits} 
-authored by Sue Welham (2022). 
+authored by Sue Welham (2022). This function has been extended to allow for \code{sections} (see below) 
+and to allow rotation of the penalty matrix for the linear component of the interaction terms in 
+\code{TPPCS} models (for more information about rotation see Piepho, Boer and Williams, 2022).
 
 Each combination of a \code{row.covar} and a \code{col.covar} does not have to specify a 
 single observation; for example, to fit a local spatial variation model to the main units 
@@ -70,7 +94,7 @@ a section contains:
 }
 
 \value{A \code{\link{list}} of length equal to the number of sections is produced. Each of 
-       these components is a \code{\link{list}} with 8 or 9 compnents. 
+       these components is a \code{\link{list}} with 8 or 9 compnents. The component 
        named \code{data.plus}, being the input \code{\link{data.frame}} to which has been added 
        the columns required to fit the \code{TPPS} model (the \code{\link{data.frame}} stored 
        in the \code{data} component holds only the covariates from \code{data}).
@@ -135,7 +159,9 @@ a section contains:
  }
 }
 
-\references{Rodriguez-Alvarez, M. X., Boer, M. P., van Eeuwijk, F. A., & Eilers, P. H. C. (2018). Correcting for spatial heterogeneity in plant breeding experiments with P-splines. \emph{Spatial Statistics}, \bold{23}, 52-71. 
+\references{Piepho, H-P, Boer, M. P. & Williams, E. R. (2022) Two-dimensional P-spline smoothing for spatial analysis of plant breeding trials. \emph{Biometrical Journal}, \bold{64}, 835-857.)
+
+Rodriguez-Alvarez, M. X., Boer, M. P., van Eeuwijk, F. A., & Eilers, P. H. C. (2018). Correcting for spatial heterogeneity in plant breeding experiments with P-splines. \emph{Spatial Statistics}, \bold{23}, 52-71. 
 
 Welham, S. J. (2022) \code{TPSbits}: \emph{Creates Structures to Enable Fitting and Examination of 2D Tensor-Product Splines using ASReml-R.} Version 1.0.0 \url{https://mmade.org/tpsbits/}} 
 

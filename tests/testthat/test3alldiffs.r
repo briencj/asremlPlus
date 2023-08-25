@@ -779,7 +779,7 @@ test_that("linear.transform_WaterRunoff_asreml3", {
                               random = ~ Smarthouse:Zones:Mainplots, 
                               rcov = ~ idh(Treat.Smarthouse):Zones:Mainplots, 
                               data = cart.dat, workspace=32e+06, 
-                              keep.order=TRUE, na.method.X="include", maxiter=50))
+                              keep.order=TRUE, na.method.X="include", maxit=50))
     summary(HEB25.asr)$varcomp
     current.asrt <- do.call("asrtests", 
                             args = list(asreml.obj = HEB25.asr, 

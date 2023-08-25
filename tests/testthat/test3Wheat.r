@@ -93,7 +93,7 @@ test_that("Wheat_asreml3", {
   {
     plot.asrVariogram(variogram.asreml(current.asr))
   }
-  faces <- variofaces(current.asr, V=V, maxiter=50, units="addtores")
+  faces <- variofaces(current.asr, V=V, maxit=50, units="addtores")
   testthat::expect_equal(nrow(faces$face1), 10)
   testthat::expect_equal(nrow(faces$face2), 15)
   

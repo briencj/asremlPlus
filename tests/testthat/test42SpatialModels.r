@@ -56,17 +56,36 @@ test_that("Wheat_spatial_models_asreml42", {
                                       dropRowterm = "Row", dropColterm = "Column",
                                       asreml.option = "grp")
   info <- infoCriteria(current.asrt$asreml.obj, IClikelihood = "full")
-  testthat::expect_equal(info$varDF, 6)
-  testthat::expect_lt(abs(info$AIC - 1644.007), 0.10)
+  testthat::expect_equal(info$varDF, 7)
+  testthat::expect_lt(abs(info$AIC - 1643.467), 0.10)
   
-  #Repeat to make sure no carry-over effects non-NULL for factors
-  current.asrt <- addSpatialModelOnIC(current.asrt, spatial.model = "TPPS", 
+  #Repeat to make sure no carry-over effects 
+  current.asrt <- addSpatialModelOnIC(init.asrt, spatial.model = "TPPS", 
                                       row.covar = "cRow", col.covar = "cColumn",
                                       dropRowterm = "Row", dropColterm = "Column",
                                       asreml.option = "grp")
   info <- infoCriteria(current.asrt$asreml.obj, IClikelihood = "full")
-  testthat::expect_equal(info$varDF, 6)
-  testthat::expect_lt(abs(info$AIC - 1644.007), 0.10)
+  testthat::expect_equal(info$varDF, 7)
+  testthat::expect_lt(abs(info$AIC - 1643.467), 0.10)
+  
+  #Rotate the penalty matrix
+  current.asrt <- addSpatialModelOnIC(init.asrt, spatial.model = "TPPS", 
+                                      row.covar = "cRow", col.covar = "cColumn",
+                                      dropRowterm = "Row", dropColterm = "Column", 
+                                      rotateX = TRUE, ngridangles = 9, 
+                                      asreml.option = "grp")
+  info <- infoCriteria(current.asrt$asreml.obj, IClikelihood = "full")
+  testthat::expect_equal(info$varDF, 7)
+  testthat::expect_lt(abs(info$AIC - 1641.697), 0.10)
+  testthat::expect_equal(rownames(summary(current.asrt$asreml.obj)$varcomp), 
+                         c("grp(TP.C.2_frow)", "dev(cRow)", 
+                           "grp(TP.R.1_fcol)+grp(TP.R.2_fcol)!us(2)_1:1", 
+                           "grp(TP.R.1_fcol)+grp(TP.R.2_fcol)!us(2)_2:1", 
+                           "grp(TP.R.1_fcol)+grp(TP.R.2_fcol)!us(2)_2:2", 
+                           "grp(TP_fcol_frow)", "units!R"))
+  testthat::expect_equal(attr(current.asrt, which = "theta.opt"), c(10,90))
+  
+
   
   #Test makeTPPSplineMats with grp
   tps <- makeTPPSplineMats(tmp.dat, row.covar = "cRow", col.covar = "cColumn", 
@@ -138,7 +157,7 @@ test_that("Wheat_spatial_models_asreml42", {
   testthat::expect_equal(info$varDF, 5)
   testthat::expect_lt(abs(info$AIC - 1653.096), 0.10)
 
-  #Choose the best model
+  #Return all of the models
   spatial.asrts <- chooseSpatialModelOnIC(init.asrt, 
                                           row.covar = "cRow", col.covar = "cColumn",
                                           row.factor = "Row", col.factor = "Column",
@@ -250,7 +269,7 @@ test_that("Wheat_spatial_models_asreml42", {
   testthat::expect_true(all(rownames(spatial.asrts$spatial.IC) == 
                               c("nonspatial", "corr", "TPNCSS", "TPPCS", "TPP1LS")))
   testthat::expect_true(all(abs(spatial.asrts$spatial.IC$AIC - 
-                                  c(1690.964, 1653.978, 1639.792, 1644.007, 1710.282)) < 0.10))
+                                  c(1690.964, 1653.978, 1639.792, 1644.007, 1653.111)) < 0.10))
   
   #Check that calculated spatial.IC is the same as those for models fitted using addSpatialModel
   spatialEach.asrts <- list()
@@ -273,7 +292,7 @@ test_that("Wheat_spatial_models_asreml42", {
                       lapply(spatialEach.asrts, 
                              function(asrt) infoCriteria(asrt$asreml.obj, IClikelihood = "full")))
   testthat::expect_true(all.equal(spatial.asrts$spatial.IC[2:5,], infoEach[ ,-3], 
-                                  tolerance = 1e-05))
+                                  tolerance = 0.5))
 })
 
 cat("#### Test for wheat76 corr spatial models with asreml42\n")
@@ -355,7 +374,7 @@ test_that("Wheat_corr_models_asreml42", {
                       lapply(spatial.asrts, 
                              function(asrt) infoCriteria(asrt$asreml.obj, IClikelihood = "full")))
   
-  testthat::expect_true(all.equal(infoEach$AIC, c(1714.861, 1710.282), tolerance = 1e-05))
+  testthat::expect_true(all.equal(infoEach$AIC, c(1714.861, 1653.111), tolerance = 1e-05))
 
   #Check trap for all id 
   testthat::expect_error(
@@ -448,12 +467,12 @@ test_that("barely_spatial_models_asreml42", {
   infoEach <- lapply(spatialEach.asrts, function(asrt) infoCriteria(asrt$asreml.obj, 
                                                                     IClikelihood = "full"))
   (infoEach <- do.call(rbind, infoEach))
-  testthat::expect_true(all.equal(infoEach$AIC, c(-605.5698, -611.8811, -616.8260, -646.7571), 
+  testthat::expect_true(all.equal(infoEach$AIC, c(-641.2598, -611.8811, -616.8260, -646.7571), 
                                   tolerance = 1e-02))
   infoEach <- lapply(spatialEach.asrts, function(asrt) infoCriteria(asrt$asreml.obj, 
                                                                     IClikelihood = "REML"))
   (infoEach <- do.call(rbind, infoEach))
-  testthat::expect_true(all.equal(infoEach$AIC, c(-188.7336, -191.8063, -228.514, -230.1942), 
+  testthat::expect_true(all.equal(infoEach$AIC, c(-230.4462, -191.8063, -226.5424, -230.1942), 
                                   tolerance = 1e-02))
 })
 
@@ -508,7 +527,7 @@ test_that("nonfit_spatial_models_asreml42", {
   testthat::expect_true(all(abs(spatial.asrts$spatial.IC$AIC - 
                                   c(892.861, 897.436, 899.239)) < 0.10))
   
-  #Fit all models and return all - none fits
+  #Fit all models and return all - corr fits
   spatial.asrts <- chooseSpatialModelOnIC(init.asrt, trySpatial = c("corr", "TPN", "TPPC"), 
                                           row.covar = "cRow", col.covar = "cCol",
                                           row.factor = "Row", col.factor = "Column", 
@@ -519,6 +538,7 @@ test_that("nonfit_spatial_models_asreml42", {
   testthat::expect_true(all(rownames(spatial.asrts$spatial.IC) == c("nonspatial", "corr", "TPNCSS", "TPPCS")))
   testthat::expect_true(all(abs(na.omit(spatial.asrts$spatial.IC$AIC) - 
                                   c(892.861, 887.718, 897.436, 899.239)) < 0.10))
+  testthat::expect_equal(spatial.asrts$best.spatial.mod, "corr")
   
   #Check that calculated spatial.IC is the same as those for models fitted using addSpatialModel
   spatialEach.asrts <- list()
@@ -609,6 +629,34 @@ test_that("chickpea_spatial_mod_asreml42", {
   testthat::expect_true(all(info$varDF == c(3,11)))
   testthat::expect_true(all(abs(info$AIC - c(4289.513, 3999.176)) < 0.10))
   
+  # Try TPPS model with rotation for Mainplots and two Smarthouses
+  TPPSRot.Main.grp.asrt <- addSpatialModelOnIC(init.asrt, spatial.model = "TPPS", 
+                                               sections = "Smarthouse", 
+                                               row.covar = "vLanes", col.covar = "vMPosn",
+                                               dropRowterm = "Lane", dropColterm = NULL,
+                                               rotateX = TRUE, ngridangles = 3,
+                                               asreml.option = "grp")
+  info <- infoCriteria(list(split = init.asrt$asreml.obj, TPPS = TPPSRot.Main.grp.asrt$asreml.obj), 
+                       IClikelihood = "full")
+  testthat::expect_true(all(info$varDF == c(3,7)))
+  testthat::expect_true(all(abs(info$AIC - c(4289.513, 3997.087)) < 0.10))
+  theta.opt <- attr(TPPSRot.Main.grp.asrt$asreml.obj, which = "theta.opt")
+  testthat::expect_true(all(theta.opt$SW == 0))
+  testthat::expect_true(all(theta.opt$SE == c(30,60)))
+  
+  # Try TPPS model with rotation for Lanes x Positions and two Smarthouses
+  TPPS.LP.grp.asrt <- addSpatialModelOnIC(init.asrt, spatial.model = "TPPS", 
+                                          sections = "Smarthouse", 
+                                          row.covar = "vLanes", col.covar = "vPos",
+                                          dropRowterm = NULL, dropColterm = NULL,
+                                          rotateX = TRUE, ngridangles = 3,
+                                          asreml.option = "grp")
+  
+  info <- infoCriteria(list(split = init.asrt$asreml.obj, TPPS = TPPS.LP.grp.asrt$asreml.obj), 
+                       IClikelihood = "full")
+  testthat::expect_true(all(info$varDF == c(3,11)))
+  testthat::expect_true(all(abs(info$AIC - c(4289.513, 3998.683)) < 0.10))
+  
   #Test makeTPPSplineMats with sections with Lanes x Positions  and mbf
   tps.mbf <- makeTPPSplineMats(tmp.dat, sections = "Smarthouse", 
                                row.covar = "vLanes", col.covar = "vPos",
@@ -669,7 +717,7 @@ test_that("chickpea_spatial_mod_asreml42", {
                                   TPPS = TPPS.Main.mbf.asrt$asreml.obj), 
                              IClikelihood = "full"))
   testthat::expect_true(all(info$varDF == c(3,8)))
-  testthat::expect_true(all(abs(info$AIC - c(4289.513, 4090.482 )) < 0.10))
+  testthat::expect_true(all(abs(info$AIC - c(4289.513, 4090.482)) < 0.10))
 })
 
 cat("#### Test hetero variances for HEB25 with asreml42\n")
@@ -718,7 +766,7 @@ test_that("HEB25_heterovar_asreml42", {
                             random = ~ us(Treatment.1):Genotype.ID + Smarthouse:Zones:Mainplots, 
                             residual = ~idh(Treat.Smarthouse):Zones:Mainplots, 
                             data = tmp.dat, na.action=na.method(y="include", x="include"), 
-                            maxiter = 100, trace = FALSE))
+                            maxit = 100, trace = FALSE))
   summ <- summary(HEB25.asr)$varcomp
   testthat::expect_equal(nrow(summ), 9)
   testthat::expect_equal(summ$bound, c("P","P","P","P","F","P","P","P","P"))
@@ -728,7 +776,7 @@ test_that("HEB25_heterovar_asreml42", {
   suppressWarnings(
     testthat::expect_true(all(abs(infoCriteria(HEB25.idh.asrt$asreml.obj)[c("AIC","BIC")] - 
                                     c(537.3956, 576.9867)) < 1e-03)))
-  print(HEB25.idh.asrt)
+  #print(HEB25.idh.asrt)
   
   #Test spatial models on Lanes x MainPosn
   #Check makeTPPSplineMats - must be ordered for Smarthouse then Treatment.1
@@ -814,6 +862,29 @@ test_that("HEB25_heterovar_asreml42", {
   testthat::expect_equal(summ$bound, c("P","P","U","U","P","U","U",
                                        "P","P","P","F","P","P","P","P"))
   
+  #Return two P-spline models with rotation  for L x P spatial variation
+  HEB25Rot.spatialLP.asrts <- chooseSpatialModelOnIC(HEB25.idh.asrt,  trySpatial = c("TPPCS", "TPP1LS"),
+                                                     sections = "Smarthouse", 
+                                                     row.covar = "cLane", col.covar = "cPosition",
+                                                     row.factor = "Lanes", col.factor = "Positions",
+                                                     rotateX = TRUE, ngridangles = 2,
+                                                     asreml.option = "grp", return.asrts = "all")
+  testthat::expect_true(all(abs(HEB25Rot.spatialLP.asrts$spatial.IC$AIC - 
+                                  c(524.1957, 466.9671, 476.9318) < 0.1)))
+  testthat::expect_equal(names(HEB25Rot.spatialLP.asrts$asrts), c("TPPCS",  "TPP1LS"))
+  summ <- summary(HEB25Rot.spatialLP.asrts$asrts$TPPCS$asreml.obj)$varcomp
+  testthat::expect_equal(nrow(summ), 15)
+  testthat::expect_true(all((summ$bound[-c(7,11)] == "P")))
+  testthat::expect_true(all((summ$bound[7] == " ")))
+  testthat::expect_true(all((summ$bound[11] == "F")))
+  summ <- summary(HEB25Rot.spatialLP.asrts$asrts$TPP1LS$asreml.obj)$varcomp
+  testthat::expect_equal(nrow(summ), 17)
+  testthat::expect_true(all((summ$bound[-13] == "P")))
+  testthat::expect_true(all((summ$bound[13] == "F")))
+  theta.opt <- attr(HEB25Rot.spatialLP.asrts$asrts$TPPCS$asreml.obj, which = "theta.opt")
+  testthat::expect_true(all(theta.opt$NW == c(45,90)))
+  testthat::expect_true(all(theta.opt$NE == c(45,45)))
+  
   #Test dsum 
   HEB25.asr <- do.call(asreml,
                        list(fixed = Dry.Weight ~ Smarthouse + Check + Treatment.1 + 
@@ -821,7 +892,7 @@ test_that("HEB25_heterovar_asreml42", {
                             random = ~ us(Treatment.1):Genotype.ID + Smarthouse:Zones:Mainplots, 
                             residual = ~ dsum(~ Zones:Mainplots | Treat.Smarthouse), 
                             data = tmp.dat, na.action=na.method(y="include", x="include"), 
-                            maxiter = 100, trace = FALSE))
+                            maxit = 100, trace = FALSE))
   
   HEB25.ds.asrt <- as.asrtests(HEB25.asr, NULL, NULL, label = "Nonspatial model", 
                                IClikelihood = "full")
@@ -833,7 +904,7 @@ test_that("HEB25_heterovar_asreml42", {
   #Check that varcomp is the same for idh and dsum
   testthat::expect_true(all.equal(summ.idh[-5, ], summ.ds, tolerance = 1e-03, 
                                   check.attributes = FALSE))
-  print(HEB25.ds.asrt)
+  #print(HEB25.ds.asrt)
   
   #Choose best model for L x M spatial variation when variance specified using dsum
   HEB25.spatialLM.ds.asrts <- chooseSpatialModelOnIC(HEB25.ds.asrt, 

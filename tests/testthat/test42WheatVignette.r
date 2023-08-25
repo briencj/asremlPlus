@@ -79,7 +79,7 @@ test_that("Wheat_asreml42", {
     plot.varioGram(varioGram.asreml(current.asr))
   }
   V <- estimateV(current.asr)
-  faces <- variofaces(current.asr, V=V, maxiter=50, units="addtores")
+  faces <- variofaces(current.asr, V=V, maxit=50, units="addtores")
   testthat::expect_equal(nrow(faces$face1), 10)
   testthat::expect_equal(nrow(faces$face2), 15)
   

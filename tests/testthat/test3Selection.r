@@ -136,7 +136,7 @@ test_that("at_testing_asreml3", {
                         random = ~ spl(xPosn) + Position ,
                         rcov = ~ Genotype:idh(NP_AMF):InTreat,
                         keep.order=TRUE, data = dat, 
-                        maxiter=50, na.method.X = "include")
+                        maxit=50, na.method.X = "include")
   
   current.asrt <- asrtests(current.asr, NULL, NULL)
   current.asrt <- rmboundary(current.asrt)
@@ -159,7 +159,7 @@ test_that("at_testing_asreml3", {
                         random = ~ spl(xPosn) + Position ,
                         rcov = ~ Genotype:idh(NP_AMF):InTreat,
                         keep.order=TRUE, data = dat, 
-                        maxiter=50, na.method.X = "include")
+                        maxit=50, na.method.X = "include")
   
   current.asrt <- asrtests(current.asr, NULL, NULL)
   current.asrt <- rmboundary(current.asrt)
@@ -177,7 +177,7 @@ test_that("at_testing_asreml3", {
                         random = ~ spl(xPosn) + Position ,
                         rcov = ~ Genotype:idh(NP_AMF):InTreat,
                         keep.order=TRUE, data = dat, 
-                        maxiter=50,  na.method.X = "include")
+                        maxit=50,  na.method.X = "include")
   current.asrt <- asrtests(current.asr, NULL, NULL)
   current.asrt <- rmboundary(current.asrt)
   current.asrt$wald.tab
@@ -206,7 +206,7 @@ test_that("at_multilevel_asreml3", {
                         at(expt, c(1:5,7)):vcol + Genotype*Condition*expt,
                       random = ~  at(expt, c(1)):dev(vrow) + at(expt, c(2)):spl(vcol) +  
                         at(expt, c(3,5,7)):dev(vcol) + at(expt, c(7)):units,
-                      data=comb.dat, maxiter = 100, workspace = 1e08)
+                      data=comb.dat, maxit = 100, workspace = 1e08)
   
   summary(asreml.obj)$varcomp
   current.asrt <- asrtests(asreml.obj, NULL, NULL)
@@ -261,7 +261,7 @@ test_that("at_testswapran_asreml3", {
                                    random = ~ Block:Cart + at(Treatments):spl(xDAP, k = 10) + Treatments:DAP + 
                                      Block:Cart:spl(xDAP) + Block:Cart:xDAP,
                                    rcov = ~ Block:Cart:ar1h(DAP),
-                                   keep.order=TRUE, data = longit.dat, maxiter=100))
+                                   keep.order=TRUE, data = longit.dat, maxit=100))
   
   #'## Function to deal with bound variances - set to 1e-04
   fixBoundResidualVariances <-function(current.asr)

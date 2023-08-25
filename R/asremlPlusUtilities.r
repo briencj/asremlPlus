@@ -1,3 +1,22 @@
+.asremlPlusEnv <- new.env()
+#Set up allowed specials
+corr.specs <- c("id","ar1", "ar2", "ar3", "sar","sar2",
+                "ma1", "ma2", "arma", "cor", "corb", "corg",
+                "exp", "gau", "lvr", "iexp", "igau", "ieuc", 
+                "sph", "circ", "aexp", "agau")
+var.specs <- c("diag", "us", "ante", "chol", "sfa", 
+               "fa", "facv", "rr", "vm", "dsum")
+mod.specs <- c("and","at", "C", "con", "dev", "gpf", "grp", 
+               "leg", "lin", "ma", "mbf", "pol", "pow", 
+               "sbs", "spl", "uni")
+all.specs <- c(corr.specs, paste0(corr.specs,"v"), 
+                  paste0(corr.specs,"h"), var.specs,
+                  mod.specs)
+assign("corr.specials",  corr.specs, envir=.asremlPlusEnv)
+assign("var.specials",  var.specs, envir=.asremlPlusEnv)
+assign("mod.specials",  mod.specs, envir=.asremlPlusEnv)
+assign("all.specials",  all.specs, envir=.asremlPlusEnv)
+
 "check.arg.values" <- function(arg.val, options)
   #Function to check that arg.val is one of the allowed values
   #and to return the position of the argument in the set of values
@@ -165,7 +184,8 @@ checkEllipsisArgs <- function(funcs, inargs, pkg = NULL)
                                    function(func) 
                                      formalArgs(getFunction(func, 
                                                             where = rlang::ns_env(pkg))))))
-    args <- args[-match("...", args)]
+    if ("..." %in% args)
+      args <- args[-match("...", args)]
     foreignArgs <- inargs[!(inargs %in% args)]
     if (length(foreignArgs))
       stop("the argument(s) ", paste0(foreignArgs, collapse = ", "), " are not legal arguments for ", 
@@ -300,9 +320,12 @@ checkNamesInData <- function(Names, data)
 
 "getTerms.formula" <- function(form)
 {
-  terms <- as.character(update.formula(form, ~.))
-  terms <- stringr::str_trim(unlist(strsplit(terms[length(terms)], 
-                                             split = "+", fixed = TRUE)))
+  # terms <- as.character(update.formula(form, ~.))
+  # terms <- stringr::str_trim(unlist(strsplit(terms[length(terms)], 
+  #                                            split = "+", fixed = TRUE)))
+  form <- (update.formula(form, ~.))
+  terms <- attr(as.terms.object(form), "term.labels")
+  terms <- gsub('\\\"', "'", terms)
   return(terms)
 }
 

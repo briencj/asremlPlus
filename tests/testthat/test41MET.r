@@ -16,7 +16,7 @@ test_that("MET_estimateV_asreml41", {
                         at(expt, c(1:5,7)):vcol + Genotype*Condition*expt,
                       random = ~  at(expt, c(1)):dev(vrow) + at(expt, c(2)):spl(vcol) +  
                         at(expt, c(3,5,7)):dev(vcol) + at(expt, c(7)):units,
-                      data=comb.dat, maxiter = 100, workspace = "1Gb")
+                      data=comb.dat, maxit = 100, workspace = "1Gb")
   
   summary(asreml.obj)$varcomp
   ranterms <- names(asreml.obj$G.param)
@@ -39,7 +39,7 @@ test_that("MET_estimateV_asreml41", {
                       random = ~  fa(exptCond, k = 2):Genotype + 
                         at(expt, c(1)):dev(vrow) + at(expt, c(2)):spl(vcol) +  
                         at(expt, c(3,5,7)):dev(vcol) + at(expt, c(7)):units,
-                      data=comb.dat, maxiter = 100, workspace = "1Gb")
+                      data=comb.dat, maxit = 100, workspace = "1Gb")
   
   summary(asreml.obj)$varcomp
   ranterms <- names(asreml.obj$G.param)
@@ -71,7 +71,7 @@ test_that("MET_estimateV_asreml41", {
                       random = ~  rr(exptCond, k = 2):Genotype + 
                         at(expt, c(1)):dev(vrow) + at(expt, c(2)):spl(vcol) +  
                         at(expt, c(3,5,7)):dev(vcol) + at(expt, c(7)):units,
-                      data=comb.dat, maxiter = 100, workspace = "1Gb")
+                      data=comb.dat, maxit = 100, workspace = "1Gb")
   
   summary(asreml.obj)$varcomp
   ranterms <- names(asreml.obj$G.param)

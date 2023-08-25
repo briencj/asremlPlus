@@ -644,7 +644,7 @@ test_that("HEB25_heterovar_asreml41", {
                             random = ~ us(Treatment.1):Genotype.ID + Smarthouse:Zones:Mainplots, 
                             residual = ~idh(Treat.Smarthouse):Zones:Mainplots, 
                             data = tmp.dat, na.action=na.method(y="include", x="include"), 
-                            maxiter = 100, trace = FALSE))
+                            maxit = 100, trace = FALSE))
 
   summ <- summary(HEB25.asr)$varcomp
   testthat::expect_equal(nrow(summ), 9)
@@ -748,7 +748,7 @@ test_that("HEB25_heterovar_asreml41", {
                             random = ~ us(Treatment.1):Genotype.ID + Smarthouse:Zones:Mainplots, 
                             residual = ~ dsum(~ Zones:Mainplots | Treat.Smarthouse), 
                             data = tmp.dat, na.action=na.method(y="include", x="include"), 
-                            maxiter = 100, trace = FALSE))
+                            maxit = 100, trace = FALSE))
   
   HEB25.ds.asrt <- as.asrtests(HEB25.asr, NULL, NULL, label = "Nonspatial model", 
                             IClikelihood = "full")

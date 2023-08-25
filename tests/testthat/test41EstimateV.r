@@ -199,7 +199,7 @@ test_that("Wheat_estimateV_asreml41", {
   asreml.obj <- asreml(fixed = yield ~ Rep + Variety, 
                        random = ~Row + units, 
                        residual = ~ar1(Row):ar1(Column), 
-                       data = Wheat.dat, maxiter = 25, trace = FALSE)
+                       data = Wheat.dat, maxit = 25, trace = FALSE)
   VWheat <- estimateV(asreml.obj)
   s2 <- asreml.obj$sigma2
   gamma.Row <- asreml.obj$vparameters[1]
@@ -218,7 +218,7 @@ test_that("Wheat_estimateV_asreml41", {
   asreml.obj <- asreml(fixed = yield ~ Rep + Variety, 
                        random = ~Row, 
                        residual = ~corb(Row, b = 1):ar1(Column), 
-                       data = Wheat.dat, maxiter = 25, trace = FALSE)
+                       data = Wheat.dat, maxit = 25, trace = FALSE)
   VWheat <- estimateV(asreml.obj)
   s2 <- asreml.obj$sigma2
   gamma.Row <- asreml.obj$vparameters[1]
@@ -235,7 +235,7 @@ test_that("Wheat_estimateV_asreml41", {
   asreml.obj <- asreml(fixed = yield ~ Rep + Variety, 
                        random = ~Row, 
                        residual = ~ar1(Row):corb(Column, b = 4), 
-                       data = Wheat.dat, maxiter = 25, trace = FALSE)
+                       data = Wheat.dat, maxit = 25, trace = FALSE)
   VWheat <- estimateV(asreml.obj)
   s2 <- asreml.obj$sigma2
   gamma.Row <- asreml.obj$vparameters[1]
@@ -252,7 +252,7 @@ test_that("Wheat_estimateV_asreml41", {
   asreml.obj <- asreml(fixed = yield ~ Rep + Variety, 
                        random = ~Row, 
                        residual = ~corb(Row, b = 1):corb(Column, b = 4), 
-                       data = Wheat.dat, maxiter = 25, trace = FALSE)
+                       data = Wheat.dat, maxit = 25, trace = FALSE)
   VWheat <- estimateV(asreml.obj)
   s2 <- asreml.obj$sigma2
   gamma.Row <- asreml.obj$vparameters[1]

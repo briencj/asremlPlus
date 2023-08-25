@@ -88,7 +88,7 @@ test_that("Variofaces_asreml3", {
   testthat::expect_equal(ncol(V), 1056)
   
   #Produce variogram faces plot (Stefanaova et al, 2009)
-  faces <- variofaces(current.asr, V=V, nsim = 50, maxiter = 20, seed = 14522)
+  faces <- variofaces(current.asr, V=V, nsim = 50, maxit = 20, seed = 14522)
   testthat::expect_equal(nrow(faces$face1), 48)
   testthat::expect_equal(ncol(faces$face1), 6)
   testthat::expect_equal(nrow(faces$face2), 44)

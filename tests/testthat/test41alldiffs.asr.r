@@ -1963,7 +1963,7 @@ test_that("linear.transform_WaterRunoff_asreml41", {
                                      residual = ~ idh(Treat.Smarthouse):Zones:Mainplots, 
                                      data = cart.dat, workspace="500mb", 
                                      na.action=na.method(y="include", x="include"),
-                                     maxiter=50))
+                                     maxit=50))
     summary(HEB25.asr)$varcomp
     current.asrt <- as.asrtests(HEB25.asr)
     current.asrt <- rmboundary(current.asrt)

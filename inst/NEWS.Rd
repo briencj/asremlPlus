@@ -1,5 +1,12 @@
 \name{news}
 \title{News for Package asremlPlus}
+\section{asremlPlus Version 4.4.13 (2023-08-24)}{
+  \itemize{
+  \item{Add arguments \code{rotateX} and \code{theta} to makeTPPSplineMats.data.frame so that the eigenvectors of the penalty matrix used in generating the design matrices for the random terms could be rotated by the angles in \code{theta}.}
+  \item{Add code to carry out a grid search to find the optimal angle by which to rotate the eigenvectors of the penalty matric when fitting P-splines. Add arguments \code{rotateX} and \code{ngridlines} to addSpatialModel.asrtests, addSpatialModelOnIC.asrtests and chooseSpatialModelOnIC.asrtests to allow the use to request that grid seach be made for the optimal ritation angle and to control the size of the grid searched.}
+  \item{Fix a bug in fitting a correlation model that occurs when addSpatialModel is used to fit the model.}
+  \item{There remains an svd bug with the oneMKL libraries version 2023.1.0 that is causing problems for \code{IClikelhood} set to \code{"full"}.}
+}}
 \section{asremlPlus Version 4.4.12 (2023-08-03)}{
   \itemize{
   \item{Modifications to deal with classhes between multithreading and external linear algebra packages  under Windows. The environmental variable OMP_NUM_THREADS needs to be set to 1 if parallel processing is to be undertaken on a Windows machine. This can be done for individual tasks by using \code{Sys.setenv("OMP_NUM_THREADS" = 1)} prior to running the task; otherwise, the environmental variable can be set for all tasks in the Windows system via \code{Advanced system settings} > \code{Envirnomental Variables}.}

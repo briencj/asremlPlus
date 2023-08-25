@@ -117,7 +117,7 @@ test_that("Wheat_spatial_asreml41", {
   ### Plot variofaces
   
   variofaces(current.asr, V=NULL, units="addtores", 
-             maxiter=50, update = FALSE)
+             maxit=50, update = FALSE)
 
   ### Plot normal quantile plot
   

@@ -138,7 +138,7 @@ test_that("at_testing_testranfix_asreml41", {
                               random = ~ spl(xPosn) + Position ,
                               residual = ~ Genotype:idh(NP_AMF):InTreat,
                               keep.order=TRUE, data = dat, 
-                              maxiter=50, na.action = na.method(x="include")))
+                              maxit=50, na.action = na.method(x="include")))
   
   current.asrt <- as.asrtests(current.asr, NULL, NULL)
   current.asrt <- rmboundary(current.asrt)
@@ -173,7 +173,7 @@ test_that("at_testing_testranfix_asreml41", {
                               random = ~ spl(xPosn) + Position ,
                               residual = ~ Genotype:idh(NP_AMF):InTreat,
                               keep.order=TRUE, data = dat, 
-                              maxiter=50, na.action = na.method(x="include")))
+                              maxit=50, na.action = na.method(x="include")))
   
   current.asrt <- as.asrtests(current.asr, NULL, NULL)
   current.asrt <- rmboundary(current.asrt)
@@ -195,7 +195,7 @@ test_that("at_testing_testranfix_asreml41", {
                               random = ~ spl(xPosn) + Position ,
                               residual = ~ Genotype:idh(NP_AMF):InTreat,
                               keep.order=TRUE, data = dat, 
-                              maxiter=50, na.action = na.method(x="include")))
+                              maxit=50, na.action = na.method(x="include")))
   current.asrt <- as.asrtests(current.asr, NULL, NULL)
   current.asrt <- rmboundary(current.asrt)
   current.asrt$wald.tab
@@ -211,7 +211,7 @@ test_that("at_testing_testranfix_asreml41", {
                               random = ~ spl(xPosn) + Position ,
                               residual = ~ Genotype:idh(NP_AMF):InTreat,
                               keep.order=TRUE, data = dat, 
-                              maxiter=50, na.action = na.method(x="include")))
+                              maxit=50, na.action = na.method(x="include")))
   
   current.asrt <- as.asrtests(current.asr, NULL, NULL)
   current.asrt <- rmboundary(current.asrt)
@@ -299,7 +299,7 @@ test_that("at_testing_changeTerms_asreml41", {
                                      at(Smarthouse, 2):spl(cMainPosn) + at(Smarthouse, 2):dev(cMainPosn) + 
                                      SHZone:ZMainunit,
                                    residual = ~ SHZone:ZMainunit:Salinity,
-                                   data = indv.dat, maxiter=50))
+                                   data = indv.dat, maxit=50))
   current.asrt <- as.asrtests(current.asr, NULL, NULL, IClikelihood = "full", 
                               label = "Starting with homogeneous variances model")
   testthat::expect_equal(length(current.asrt$asreml.obj$vparameters), 10)
@@ -358,7 +358,7 @@ test_that("at_testing_changeTerms_asreml41", {
                                      at(Smarthouse):spl(cMainPosn) + at(Smarthouse):dev(cMainPosn) + 
                                      SHZone:ZMainunit,
                                    residual = ~ SHZone:ZMainunit:Salinity,
-                                   data = indv.dat, maxiter=50))
+                                   data = indv.dat, maxit=50))
   current.asrt <- as.asrtests(current.asr, NULL, NULL, IClikelihood = "full", 
                               label = "Starting with homogeneous variances model")
   testthat::expect_equal(length(current.asrt$asreml.obj$vparameters), 10)
@@ -387,7 +387,7 @@ test_that("at_testing_changeTerms_asreml41", {
                                      at(Smarthouse, 1:2):spl(cMainPosn) + at(Smarthouse, 1:2):dev(cMainPosn) + 
                                      SHZone:ZMainunit,
                                    residual = ~ SHZone:ZMainunit:Salinity,
-                                   data = indv.dat, maxiter=50))
+                                   data = indv.dat, maxit=50))
   current.asrt <- as.asrtests(current.asr, NULL, NULL, IClikelihood = "full", 
                               label = "Starting with homogeneous variances model")
   testthat::expect_equal(length(current.asrt$asreml.obj$vparameters), 10)
@@ -428,7 +428,7 @@ test_that("at_multilevel_asreml41", {
                               at(expt, c(1:5,7)):vcol + Genotype*Condition*expt,
                             random = ~  at(expt, c(1)):dev(vrow) + at(expt, c(2)):spl(vcol) +  
                               at(expt, c(3,5,7)):dev(vcol) + at(expt, c(7)):units,
-                            data=comb.dat, maxiter = 100, workspace = "1Gb"))
+                            data=comb.dat, maxit = 100, workspace = "1Gb"))
   
   summary(asreml.obj)$varcomp
   current.asrt <- as.asrtests(asreml.obj, NULL, NULL)
@@ -488,7 +488,7 @@ test_that("at_testswapran_asreml41", {
                                      Treatments:DAP + 
                                      Block:Cart:spl(xDAP) + Block:Cart:xDAP,
                                    residual = ~ Block:Cart:ar1h(DAP),
-                                   keep.order=TRUE, data = longit.dat, maxiter=100))
+                                   keep.order=TRUE, data = longit.dat, maxit=100))
   
   current.call <- current.asr$call
   vpR <- grepl("Block:Cart:DAP!DAP", names(current.asr$vparameters.con))
@@ -839,7 +839,7 @@ test_that("Fixedcorrelations_asreml41", {
   m.asr <- do.call(asreml, 
                    args=list(fixed = PSA.27 ~ Lane + Position,
                              residual = ~ ar1(Lane):Position,
-                             data = PSA.27.dat, maxiter=50))
+                             data = PSA.27.dat, maxit=50))
   m.asrt <- as.asrtests(m.asr, NULL, NULL, label = "Start with Lane autocorrelation",
                         IClikelihood = "full")
   m.asrt <- rmboundary(m.asrt)
@@ -907,7 +907,7 @@ test_that("Fixedcorrelations_asreml41", {
                    args=list(fixed = PSA.27 ~ Lane + Position,
                              random = ~ units,
                              residual = ~ ar1(Lane):ar1(Position),
-                             data = PSA.27.dat, maxiter=75))
+                             data = PSA.27.dat, maxit=75))
   m.asrt <- as.asrtests(m.asr, NULL, NULL, label = "Start with all autocorrelation",
                         IClikelihood = "full")
   m.asrt <- rmboundary(m.asrt)
@@ -946,7 +946,7 @@ test_that("Fixedcorrelations_asreml41", {
                      args=list(fixed = PSA.27 ~ 1,
                                random = ~ Lane + Position + units,
                                residual = ~ ar1(Lane):Position,
-                               data = PSA.27.dat, maxiter=50)))
+                               data = PSA.27.dat, maxit=50)))
   testthat::expect_warning(
     m.asrt <- as.asrtests(m.asr, NULL, NULL, label = "Start with all autocorrelation",
                           IClikelihood = "full"))
@@ -987,7 +987,7 @@ test_that("Fixedcorrelations_asreml41", {
                    args=list(fixed = PSA.27 ~ Lane  + xPosn,
                              random = ~ spl(xPosn) + Position + units,
                              residual = ~ ar1(Lane):Position,
-                             data = PSA.27.dat, maxiter=75))
+                             data = PSA.27.dat, maxit=75))
   m.asrt <- as.asrtests(m.asr, NULL, NULL, label = "Start with all autocorrelation",
                         IClikelihood = "full")
   asreml.options(ai.sing = TRUE)
@@ -1006,7 +1006,7 @@ test_that("Fixedcorrelations_asreml41", {
                    args=list(fixed = PSA.27 ~ 1,
                              random = ~ Lane + units,
                              residual = ~ ar1(Lane):Position,
-                             data = PSA.27.dat, maxiter=100))
+                             data = PSA.27.dat, maxit=100))
   m.asrt <- as.asrtests(m.asr, NULL, NULL, label = "Start with all autocorrelation",
                         IClikelihood = "full")
   m.asrt <- rmboundary(m.asrt)

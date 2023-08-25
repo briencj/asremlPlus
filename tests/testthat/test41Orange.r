@@ -15,7 +15,7 @@ test_that("Orange_estimateV_asreml41", {
   asreml.obj <- asreml(circ ~x, 
                        random= ~ str( ~Tree/x, ~diag(2):id(5)) + spl(x) + spl(x):Tree,
                        knot.points = list(x = c(118,484,664,1004,1231,1372,1582)), 
-                       data = orange, maxiter = 30)
+                       data = orange, maxit = 30)
   summary(asreml.obj)$varcomp
   G.g <- kronecker(diag(asreml.obj$vparameters[1:2]), mat.I(5))
   V.g <- asreml.obj$design[,3:12] %*% G.g %*% t(as.matrix(asreml.obj$design[,3:12]))
@@ -30,7 +30,7 @@ test_that("Orange_estimateV_asreml41", {
   asreml.obj <- asreml(circ ~x, 
                        random= ~ str( ~Tree/x, ~idh(2):id(Tree)) + spl(x) + spl(x):Tree,
                        knot.points = list(x = c(118,484,664,1004,1231,1372,1582)), 
-                       data = orange, maxiter = 30)
+                       data = orange, maxit = 30)
   summary(asreml.obj)$varcomp
   V <- estimateV(asreml.obj)
   testthat::expect_true(all(abs(V - V.g) < 1e-06))
@@ -39,7 +39,7 @@ test_that("Orange_estimateV_asreml41", {
   asreml.obj <- asreml(circ ~ x,
                        random = ~ str( ~Tree/x, ~diag(2):id(5)) + spl(x) + spl(x):Tree + dev(x),
                        knot.points = list(x = c(118,484,664,1004,1231,1372,1582)),
-                       data = orange, maxiter=20)
+                       data = orange, maxit=20)
   summary(asreml.obj)$varcomp
   G.g <- kronecker(diag(asreml.obj$vparameters[1:2]), mat.I(5))
   V.g <- asreml.obj$design[,3:12] %*% G.g %*% t(as.matrix(asreml.obj$design[,3:12]))
@@ -56,7 +56,7 @@ test_that("Orange_estimateV_asreml41", {
                        random = ~ str( ~Tree/x, ~us(2,init=c(5.0,-0.01,0.0001)):id(5)) + 
                          spl(x) + spl(x):Tree + dev(x),
                        knot.points = list(x = c(118,484,664,1004,1231,1372,1582)),
-                       data = orange, maxiter=20)     
+                       data = orange, maxit=20)     
   summary(asreml.obj)$varcomp
   G.g <- kronecker(matrix(asreml.obj$vparameters[c(1,2,2,3)], nrow = 2), mat.I(5))
   V.g <- asreml.obj$design[,5:14] %*% G.g %*% t(as.matrix(asreml.obj$design[,5:14]))
@@ -72,7 +72,7 @@ test_that("Orange_estimateV_asreml41", {
   asreml.obj <- asreml(circ ~x, 
                        random= ~ Tree + Tree:x + spl(x) + dev(x),
                        knot.points = list(x = c(118,484,664,1004,1231,1372,1582)), 
-                       data = orange, maxiter=30)
+                       data = orange, maxit=30)
   summary(asreml.obj)$varcomp
   V.g <- asreml.obj$vparameters["Tree"] * asreml.obj$design[,3:7] %*%
     t(as.matrix(asreml.obj$design[,3:7]))

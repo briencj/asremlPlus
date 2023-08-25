@@ -17,7 +17,7 @@ test_that("HEB25_estimateV_asreml41", {
                       random = ~ us(Treatment.1):Genotype.ID + Smarthouse:Zones:Mainplots, 
                       residual = ~idh(Treat.Smarthouse):Zones:Mainplots, 
                       data = cart.dat, na.action=na.method(y="include", x="include"), 
-                      maxiter = 1000, trace = FALSE)
+                      maxit = 1000, trace = FALSE)
   summary(HEB25.asr)$varcomp
   Vus <- estimateV(HEB25.asr)
   Vus[1:10, 1:9]
@@ -28,7 +28,7 @@ test_that("HEB25_estimateV_asreml41", {
                       random = ~ corv(Treatment.1):Genotype.ID + Smarthouse:Zones:Mainplots, 
                       residual = ~idh(Treat.Smarthouse):Zones:Mainplots, 
                       data = cart.dat, na.action=na.method(y="include", x="include"), 
-                      maxiter = 1000, trace = FALSE)
+                      maxit = 1000, trace = FALSE)
   summary(HEB25.asr)$varcomp
   V <- estimateV(HEB25.asr)
   V[1:10, 1:9]
@@ -40,7 +40,7 @@ test_that("HEB25_estimateV_asreml41", {
                       random = ~ corh(Treatment.1):Genotype.ID + Smarthouse:Zones:Mainplots, 
                       residual = ~idh(Treat.Smarthouse):Zones:Mainplots, 
                       data = cart.dat, na.action=na.method(y="include", x="include"), 
-                      maxiter = 1000, trace = FALSE)
+                      maxit = 1000, trace = FALSE)
   summary(HEB25.asr)$varcomp
   V <- estimateV(HEB25.asr)
   V[1:10, 1:9]
@@ -52,7 +52,7 @@ test_that("HEB25_estimateV_asreml41", {
                       random = ~ corgh(Treatment.1):Genotype.ID + Smarthouse:Zones:Mainplots, 
                       residual = ~idh(Treat.Smarthouse):Zones:Mainplots, 
                       data = cart.dat, na.action=na.method(y="include", x="include"), 
-                      maxiter = 1000, trace = FALSE)
+                      maxit = 1000, trace = FALSE)
   summary(HEB25.asr)$varcomp
   V <- estimateV(HEB25.asr)
   V[1:10, 1:9]
@@ -64,7 +64,7 @@ test_that("HEB25_estimateV_asreml41", {
                       random = ~ corgh(Treatment.1):Genotype.ID + Smarthouse:Zones:Mainplots, 
                       residual = ~diag(Treat.Smarthouse):Zones:Mainplots, 
                       data = cart.dat, na.action=na.method(y="include", x="include"), 
-                      maxiter = 1000, trace = FALSE)
+                      maxit = 1000, trace = FALSE)
   summary(HEB25.asr)$varcomp
   Vdiag <- estimateV(HEB25.asr)
   Vdiag[1:10, 1:9]

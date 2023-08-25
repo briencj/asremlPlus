@@ -39,6 +39,7 @@ addSpatialModel.asrtests <- function(asrtests.obj, spatial.model = "TPPS",
                                      dropRowterm = NULL, dropColterm = NULL, 
                                      nsegs = NULL, nestorder = c(1, 1), 
                                      degree = c(3,3), difforder = c(2,2), 
+                                     rotateX = FALSE, ngridangles = c(18, 18), 
                                      asreml.option = "mbf", tpps4mbf.obj = NULL,  
                                      allow.unconverged = FALSE, allow.fixedcorrelation = FALSE,
                                      checkboundaryonly = FALSE, update = FALSE, 
@@ -103,7 +104,8 @@ addSpatialModel.asrtests <- function(asrtests.obj, spatial.model = "TPPS",
                                row.covar = row.covar, col.covar = col.covar, 
                                dropRowterm = dropRowterm, dropColterm = dropColterm, 
                                nsegs = nsegs, nestorder = nestorder, 
-                               degree = degree, difforder = difforder,
+                               degree = degree, difforder = difforder, 
+                               rotateX = rotateX, ngridangles = ngridangles, 
                                asreml.opt = asreml.opt, 
                                tpps4mbf.obj = tpps4mbf.obj,
                                allow.unconverged = allow.unconverged, 
@@ -124,6 +126,7 @@ addSpatialModelOnIC.asrtests <- function(asrtests.obj, spatial.model = "TPPS",
                                          dropRowterm = NULL, dropColterm = NULL, 
                                          nsegs = NULL, nestorder = c(1, 1), 
                                          degree = c(3,3), difforder = c(2,2), 
+                                         rotateX = FALSE, ngridangles = c(18, 18), 
                                          asreml.option = "mbf", tpps4mbf.obj = NULL,  
                                          allow.unconverged = FALSE, allow.fixedcorrelation = FALSE,
                                          checkboundaryonly = FALSE, update = FALSE, 
@@ -194,7 +197,8 @@ addSpatialModelOnIC.asrtests <- function(asrtests.obj, spatial.model = "TPPS",
                                row.covar = row.covar, col.covar = col.covar, 
                                dropRowterm = dropRowterm, dropColterm = dropColterm, 
                                nsegs = nsegs, nestorder = nestorder, 
-                               degree = degree, difforder = difforder,
+                               degree = degree, difforder = difforder, 
+                               rotateX = rotateX, ngridangles = ngridangles, 
                                asreml.opt = asreml.opt, 
                                tpps4mbf.obj = tpps4mbf.obj,
                                allow.unconverged = allow.unconverged, 
@@ -203,7 +207,6 @@ addSpatialModelOnIC.asrtests <- function(asrtests.obj, spatial.model = "TPPS",
                                update = update, chooseOnIC = TRUE, 
                                IClikelihood = ic.lik, which.IC = ic.type, 
                                ...)
-  
   return(spatial.asrt)  
 }
 
@@ -235,7 +238,7 @@ calcSpatialICs <- function(spatial.asrt, spatial.mod, corr.funcs = c("ar1", "ar1
     }
   }
   else #get tensor spline tests 
-    tests.sp <- tests[grepl("Try tensor", tests$terms) &  grepl("wapped", tests$action), ]
+    tests.sp <- tests[grepl("tensor", tests$terms) & grepl("spline", tests$terms) &  grepl("wapped", tests$action), ]
   
   #Form spatial.IC, calculating ICs and loglik
   if (nrow(tests.sp) < 1 || !any(grepl("wapped", tests.sp$action))) #spatial not fitted
@@ -263,6 +266,7 @@ chooseSpatialModelOnIC.asrtests <- function(asrtests.obj, trySpatial = "all",
                                             row.corrFitfirst = TRUE, 
                                             dropRowterm = NULL, dropColterm = NULL, 
                                             nsegs = NULL, nestorder = c(1, 1), 
+                                            rotateX = FALSE, ngridangles = c(18, 18), 
                                             asreml.option = "mbf", tpps4mbf.obj = NULL, 
                                             allow.unconverged = FALSE, allow.fixedcorrelation = FALSE,
                                             checkboundaryonly = FALSE, update = FALSE, 
@@ -335,6 +339,7 @@ chooseSpatialModelOnIC.asrtests <- function(asrtests.obj, trySpatial = "all",
       spatial.IC <- calcSpatialICs(spatial.asrt = spatial.asrts[["corr"]], spatial.mod = "corr", 
                                    corr.funcs = corr.funcs, spatial.IC = spatial.IC)
     }
+    
     #Fit a local spatial model involving TPNCSS
     if ("TPNCSS" %in% trySpatial)
     { 
@@ -359,6 +364,7 @@ chooseSpatialModelOnIC.asrtests <- function(asrtests.obj, trySpatial = "all",
                                              dropRowterm = dropRowterm, dropColterm = dropColterm, 
                                              nsegs = nsegs, nestorder = nestorder, 
                                              degree = c(3,3), difforder = c(2,2), 
+                                             rotateX = rotateX, ngridangles = ngridangles, 
                                              asreml.opt = asreml.opt, 
                                              tpps4mbf.obj = tpps4mbf.obj,
                                              allow.unconverged = allow.unconverged, 
@@ -379,6 +385,7 @@ chooseSpatialModelOnIC.asrtests <- function(asrtests.obj, trySpatial = "all",
                                               dropRowterm = dropRowterm, dropColterm = dropColterm, 
                                               nsegs = nsegs, nestorder = nestorder, 
                                               degree = c(1,1), difforder = c(1,1), 
+                                              rotateX = FALSE, ngridangles = c(0, 0),
                                               asreml.opt = asreml.opt, 
                                               tpps4mbf.obj = tpps4mbf.obj,
                                               allow.unconverged = allow.unconverged, 
@@ -407,8 +414,8 @@ chooseSpatialModelOnIC.asrtests <- function(asrtests.obj, trySpatial = "all",
     #If return only best, get the best asrtests.obj
     if (return.opt == "best")
       spatial.asrts <- c(list(nonspatial = asrtests.obj), spatial.asrts)[names(min.asrt)]
-    
   } 
+
   return(list(asrts = spatial.asrts, spatial.IC = spatial.IC, 
               best.spatial.mod = names(min.asrt), 
               best.spatial.IC = spatial.comp[min.asrt]))
@@ -665,7 +672,7 @@ fitCorrMod <- function(asrtests.obj, sections = NULL,
             else
               corr.asrt <- changeTerms(corr.asrt, 
                                        dropRandom = last.term,
-                                       addRandom = ran.term, label = lab1, 
+                                       addRandom = ran.term1, label = lab1, 
                                        allow.unconverged = allow.unconverged, 
                                        allow.fixedcorrelation = allow.fixedcorrelation,
                                        checkboundaryonly = TRUE, 
@@ -708,7 +715,6 @@ fitCorrMod <- function(asrtests.obj, sections = NULL,
           resmod <- NULL
         else
           resmod <- resmod[2]
-
         if (chooseOnIC)
           corr.asrt <- changeModelOnIC(corr.asrt, 
                                        newResidual = resmod, label = lab, 
@@ -788,7 +794,6 @@ fitTPNCSSMod <- function(asrtests.obj, sections = NULL,
   }
   else
   { 
-    
     sect.fac <- paste0("at(", sections, "):")
     fix.terms <- paste(paste0(sect.fac, c(row.covar, col.covar)), collapse = " + ")
   }
@@ -805,8 +810,9 @@ fitTPNCSSMod <- function(asrtests.obj, sections = NULL,
   {
     if (nsect > 1) 
     { 
-      sect.fac <- paste0("at(", sections, ", ", i, "):")
-      lab <- paste0("Try tensor NCS splines for ", sections, " ",i)
+      stub <- levels(dat.in[[sections]])[i]
+      sect.fac <- paste0("at(", sections, ", '", stub, "'):")
+      lab <- paste0("Try tensor NCS splines for ", sections, " ",stub)
     } else
       lab <- paste0("Try tensor NCS splines")
     #Fit TPNCSS to a section 
@@ -850,6 +856,7 @@ addPSdesign.mat <- function(dat, sections = NULL, nsect = 1,
                             row.coords, col.coords, 
                             nsegs = NULL, nestorder = c(1, 1), 
                             degree = c(3,3), difforder = c(2,2), 
+                            rotateX = FALSE, theta = c(0, 0), 
                             asreml.opt = "grp", stub = "xx", 
                             ...)
 {
@@ -871,6 +878,7 @@ addPSdesign.mat <- function(dat, sections = NULL, nsect = 1,
                                             stub = stub, nsegments = nsegments, 
                                             nestorder = nestorder, 
                                             degree = degree, difforder = difforder,
+                                            rotateX = rotateX, theta = theta, 
                                             asreml = asreml.opt, 
                                             ...)
                            return(XZ.mat)
@@ -889,6 +897,7 @@ addPSdesign.mat <- function(dat, sections = NULL, nsect = 1,
                              stub = stub, nsegments = nsegs, 
                              nestorder = nestorder, 
                              degree = degree, difforder = difforder,
+                             rotateX = rotateX, theta = theta, 
                              asreml = asreml.opt, 
                              ...))
   }
@@ -958,12 +967,15 @@ conformTPSSections <- function(tps.XZmat)
 }
 
 #'### Function to create spline basis matrices and data for TPS splines
+#'
+#' * The arguments degree, difforder and theta are in the order column followed by row dimension. 
 makeTPPSplineMats.data.frame <- function(data, sections = NULL, 
-                                           row.covar, col.covar, 
-                                           nsegs = NULL, nestorder = c(1, 1), 
-                                           degree = c(3,3), difforder = c(2,2),
-                                           asreml.option = "mbf", 
-                                           ...)
+                                         row.covar, col.covar, 
+                                         nsegs = NULL, nestorder = c(1, 1), 
+                                         degree = c(3,3), difforder = c(2,2), 
+                                         rotateX = FALSE, theta = c(0, 0), 
+                                         asreml.option = "mbf", 
+                                         ...)
 {
   #Check that named columns are in the data
   checkNamesInData(c(sections, row.covar, col.covar), data)
@@ -981,19 +993,35 @@ makeTPPSplineMats.data.frame <- function(data, sections = NULL,
   inargs <- list(...)
   checkEllipsisArgs("tpsmmb", inargs, pkg = "asremlPlus")
   
-  #Check nsegs, nestorder, degree and difforder
+  #Check nsegs, nestorder, degree, difforder and theta
+  if (length(nsegs) == 1)
+    nsegs <- c(nsegs,nsegs)
   if (length(nsegs) > 2)
     stop("nsegs must specify no more than 2 values, one for each of the row and column dimensions")
+  if (length(nestorder) == 1)
+    nestorder <- c(nestorder,nestorder)
   if (length(nestorder) != 2)
     stop("nestorder must specify 2 values, one for each of the row and column dimensions")
+  if (length(degree) == 1)
+    degree <- c(degree,degree)
   if (length(degree) != 2)
     stop("degree must specify 2 values, one for each of the row and column dimensions")
+  if (length(difforder) == 1)
+    difforder <- c(difforder,difforder)
   if (length(difforder) != 2)
     stop("difforder must specify 2 values, one for each of the row and column dimensions")
+  if (length(theta) == 1)
+    theta <- c(theta,theta)
+  if (length(theta) != 2)
+    stop("theta must specify 2 values, one for each of the row and column dimensions")
   
   #Check asreml.option
   options <- c("mbf","grp")
   asreml.opt <- options[check.arg.values(asreml.option, options)]
+  
+  #Check that asreml.opt is set to "grp" if thetas are not all zero 
+  if (asreml.opt == "mbf" && !all(theta == 0))
+    stop("Rotation of the eigenvectors of the penalty matrix is not available for asreml.opt = 'mbf'")
   
   #Remove any previous Tensor Spline basis columns from the data
   if (any(grepl("TP\\.", names(data))) || any(grepl("TP\\_", names(data))))
@@ -1029,6 +1057,7 @@ makeTPPSplineMats.data.frame <- function(data, sections = NULL,
                                               nsegments = nsegments, 
                                               nestorder = nestorder, 
                                               degree = degree, difforder = difforder,
+                                              rotateX = rotateX, theta = theta, 
                                               asreml = asreml.opt, 
                                               ...)
                              return(XZ.mat)
@@ -1053,6 +1082,7 @@ makeTPPSplineMats.data.frame <- function(data, sections = NULL,
                                stub = stub, nsegments = nsegs, 
                                nestorder = nestorder, 
                                degree = degree, difforder = difforder,
+                               rotateX = rotateX, theta = theta, 
                                asreml = asreml.opt, 
                                ...))
       Zmat.names <- paste0(paste0(c("BcZ", "BrZ", "BcrZ"),stub), ".df")
@@ -1088,12 +1118,14 @@ makeTPPSplineMats.data.frame <- function(data, sections = NULL,
     attr(dat, which = "mbf.env") <- parent.frame(1)
   } else #doing grp
   {  
+    rotateX <- rotateX
+    theta <- theta
     tps.XZmat <- addPSdesign.mat(dat.rc, sections = sections, nsect = nsect, 
                                  row.coords = row.covar, col.coords = col.covar, 
                                  nsegs = nsegs, nestorder = nestorder, 
                                  degree = degree, difforder = difforder,
-                                 asreml.opt = "grp", 
-                                 stub = "xx", ...)
+                                 rotateX = rotateX, theta = theta, 
+                                 asreml.opt = "grp", stub = "xx", ...)
     
     #Build the data.frame to be used in the analysis
     kextra <- ncol(data) - length(rc.cols)
@@ -1135,13 +1167,23 @@ makeTPPSplineMats.data.frame <- function(data, sections = NULL,
   
   #Add to returned object
   tps.XZmat <- lapply(tps.XZmat, function(mat, data = dat) c(mat, list(data.plus = dat)))
-  
+  attr(tps.XZmat, which = "nsect") <- nsect
+  attr(tps.XZmat, which = "nsegs") <- nsegs
+  attr(tps.XZmat, which = "nestorder") <- nestorder
+  attr(tps.XZmat, which = "degree") <- degree
+  attr(tps.XZmat, which = "difforder") <- difforder
+  attr(tps.XZmat, which = "theta_opt") <- theta
+
   return(tps.XZmat)
 }
 
-fitTPSModSect <- function(tspl.asrt, mat, sect.fac, dropRowterm, dropColterm, 
+fitTPSModSect <- function(tspl.asrt, data, mat, ksect, sect.fac, 
+                          dropRowterm, dropColterm, 
+                          sections = NULL, 
                           row.covar, col.covar, lab, 
+                          nsegs = NULL, nestorder = c(1, 1), 
                           degree = c(3,3), difforder = c(2,2), 
+                          rotateX = FALSE, ngridangles = c(18,18),
                           asreml.opt = "mbf", stub = stub, 
                           allow.unconverged = TRUE, allow.fixedcorrelation = TRUE,
                           chooseOnIC = TRUE, 
@@ -1178,7 +1220,7 @@ fitTPSModSect <- function(tspl.asrt, mat, sect.fac, dropRowterm, dropColterm,
   {
     mbf.lis <- mat$mbflist
     ran.ch <- paste(paste0(sect.fac,  
-                           c(paste0("TP.C.",1:difforder[1],":mbf(TP.row)"),  
+                           c(paste0("TP.C.",1:difforder[1],":mbf(TP.row)"), 
                              paste0("TP.R.",1:difforder[2],":mbf(TP.col)"), 
                              "mbf(TP.CxR)", 
                              paste0("dev(",row.covar,")"), 
@@ -1200,31 +1242,162 @@ fitTPSModSect <- function(tspl.asrt, mat, sect.fac, dropRowterm, dropColterm,
                                        which.IC = which.IC), 
                                   inargs))
   } else #grp
-  {
+  {    
     grp <- mat$grp
+    init.asrt <- tspl.asrt
+    theta.opt <- NULL
+    
     ran.ch <- paste(paste0(sect.fac,  
-                           c(paste0("grp(TP.C.",1:difforder[1],"_frow)"),  
+                           c(paste0("grp(TP.C.",1:difforder[1],"_frow)"), 
                              paste0("grp(TP.R.",1:difforder[2],"_fcol)"), 
                              "grp(TP_fcol_frow)", 
                              paste0("dev(",row.covar,")"), 
                              paste0("dev(",col.covar,")"))), 
                     collapse = " + ")
-    tspl.asrt <- do.call(fitfunc, 
-                         args = c(list(tspl.asrt, 
-                                       addFixed = fix.ch,
-                                       dropFixed = drop.fix, 
-                                       addRandom = ran.ch,
-                                       dropRandom = drop.ran, 
-                                       group = grp,
-                                       label = lab, 
-                                       allow.unconverged = allow.unconverged, 
-                                       allow.fixedcorrelation = allow.fixedcorrelation,
-                                       checkboundaryonly = checkboundaryonly, 
-                                       update = update, 
-                                       IClikelihood = IClikelihood, 
-                                       which.IC = which.IC), 
-                                  inargs))
+    
+    #Fit the full P-spline model, without rotation
+    if (chooseOnIC || !rotateX)
+    {   
+      if (rotateX)
+        labunrot <- gsub("tensor", "unrotated tensor", lab)
+      else
+        labunrot <- lab
+      #tspl.asrt.unrot 
+      tspl.asrt <- do.call(fitfunc, 
+                           args = c(list(tspl.asrt, 
+                                         addFixed = fix.ch,
+                                         dropFixed = drop.fix, 
+                                         addRandom = ran.ch,
+                                         dropRandom = drop.ran, 
+                                         group = grp,
+                                         label = labunrot, 
+                                         allow.unconverged = allow.unconverged, 
+                                         allow.fixedcorrelation = allow.fixedcorrelation,
+                                         checkboundaryonly = checkboundaryonly, 
+                                         update = update, 
+                                         IClikelihood = IClikelihood, 
+                                         which.IC = which.IC), 
+                                    inargs))
+    }
+    
+    #Find the optimal theta for rotating the penalty eigenvectors, fit model with the rotation
+    if (rotateX && any(difforder == 2))
+    {
+      labrot <- gsub("tensor", "rotated tensor", lab)
+      ran.rot.ch <- paste(paste0(sect.fac,  
+                                 c(paste0("grp(TP.C.",1:difforder[1],"_frow)"), 
+                                   paste0("grp(TP.R.",1:difforder[2],"_fcol)")), 
+                                 collapse = " + "))
+      rot.asrt <- do.call(changeTerms, 
+                          args = list(init.asrt, #tspl.asrt, 
+                                      addFixed = fix.ch,
+                                      dropFixed = drop.fix, 
+                                      addRandom = ran.rot.ch,
+                                      dropRandom = drop.ran, 
+                                      group = grp,
+                                      label = "Fit model for rotation gridding", 
+                                      allow.unconverged = TRUE, 
+                                      allow.fixedcorrelation = TRUE,
+                                      checkboundaryonly = TRUE, 
+                                      update = update, 
+                                      IClikelihood = IClikelihood, 
+                                      which.IC = which.IC))
+      rot.asr <- rot.asrt$asreml.obj
+      dev <- deviance.asr(rot.asr)
+      
+      
+      theta_opt <- rotate.penalty.U(rot.asr, data, sections = sections, 
+                                    row.covar = row.covar, col.covar = col.covar,
+                                    nsegs = nsegs, nestorder = nestorder,
+                                    degree = degree, difforder = difforder,
+                                    rotateX = rotateX, ngridangles = ngridangles)
+      theta.opt <- theta_opt$theta.opt
+      cat("\n\n#### Optimal thetas:", paste(theta.opt, collapse = ", "), "\n\n")
+      mat <- makeTPPSplineMats(data, sections = sections, 
+                               row.covar = row.covar, col.covar = col.covar,
+                               nsegs = nsegs, nestorder = nestorder,
+                               degree = degree, difforder = difforder,
+                               rotateX = rotateX, theta = theta.opt, 
+                               asreml.opt = "grp")[[ksect]]
+      grp <- mat$grp
+      if (chooseOnIC)
+      { 
+        tspl.asrt <- updateOnIC.asrtests(tspl.asrt, data = mat$data.plus, 
+                                         grp = grp, maxit = 30, 
+                                         label = labrot, IClikelihood = IClikelihood, 
+                                         which.IC = which.IC)
+        if (grepl("Unswapped", getTestEntry(tspl.asrt, label = labrot)$action))
+          theta.opt <- c(0,0)
+      } else
+        tspl.asrt <- update.asrtests(tspl.asrt, data = mat$data.plus, 
+                                     grp = grp, maxit = 30, 
+                                     label = labrot, IClikelihood = IClikelihood)
+      #Check criteria
+      # print(infoCriteria(list(old = tspl.asrt$asreml.obj, new = new.asr), IClikelihood = "full"))
+      # new.dev <- deviance.asr(new.asr) 
+      # print(c(dev, new.dev))
+    }
+    
+    #Prepare for fitting unstructured model to row and col marginal termsw
+    vpars <- names(tspl.asrt$asreml.obj$vparameters)
+    #repln <- as.data.frame(table(data[c(sections,row.covar,col.covar)]))
+    repln <- 1
+    
+    if (!is.null(sections))
+    {   
+      klev <- levels(data[[sections]])[ksect]
+      vpars <- vpars[grepl(klev, vpars)]
+      vpars <- gsub(paste0("'",klev,"'"), ksect, vpars)
+      repln <- length(levels(data[[sections]]))
+    }
+
+    #If more than one col variable in the marginal random row term in this section, try unstructured model
+    rowmarg.vpar <- vpars[grepl("TP.C.", vpars)]
+    if (length(rowmarg.vpar) > 1)
+    {
+      drop.ran <-paste(rowmarg.vpar, collapse = " + ") 
+      add.ran <- paste0("str( ~ ", drop.ran, ", ~ us(", length(rowmarg.vpar), 
+                        "):id(", mat$dim['nbr']*repln,"))")
+      tspl.asrt <- do.call(fitfunc, 
+                           args = c(list(tspl.asrt, 
+                                         addRandom = add.ran,
+                                         dropRandom = drop.ran, 
+                                         group = grp,
+                                         label = "Try us variance for random row terms", 
+                                         allow.unconverged = allow.unconverged, 
+                                         allow.fixedcorrelation = allow.fixedcorrelation,
+                                         checkboundaryonly = TRUE, 
+                                         update = update, 
+                                         IClikelihood = IClikelihood, 
+                                         which.IC = which.IC), 
+                                    inargs))
+    }
+    
+    #If more than one row variable in the marginal random col term in this section, try unstructured model
+    colmarg.vpar <- vpars[grepl("TP.R.", vpars)]
+    if (length(colmarg.vpar) > 1)
+    {
+      drop.ran <-paste(colmarg.vpar, collapse = " + ") 
+      add.ran <- paste0("str( ~ ", drop.ran, ", ~ us(", length(colmarg.vpar), 
+                        "):id(", mat$dim['nbc']*repln,"))")
+      tspl.asrt <- do.call(fitfunc, 
+                           args = c(list(tspl.asrt, 
+                                         addRandom = add.ran,
+                                         dropRandom = drop.ran, 
+                                         group = grp,
+                                         label = "Try us variance on random col terms", 
+                                         allow.unconverged = allow.unconverged, 
+                                         allow.fixedcorrelation = allow.fixedcorrelation,
+                                         checkboundaryonly = TRUE, 
+                                         update = update, 
+                                         IClikelihood = IClikelihood, 
+                                         which.IC = which.IC), 
+                                    inargs))
+    }
+    tspl.asrt <- rmboundary(tspl.asrt, checkboundaryonly = checkboundaryonly)
+    attr(tspl.asrt, which = "theta.opt") <- theta.opt
   }
+  
   return(tspl.asrt)
 }
 
@@ -1236,6 +1409,7 @@ fitTPPSMod <- function(asrtests.obj, sections = NULL,
                        dropRowterm = NULL, dropColterm = NULL, 
                        nsegs = NULL, nestorder = c(1, 1), 
                        degree = c(3,3), difforder = c(2,2), 
+                       rotateX = FALSE, ngridangles = c(18,18),
                        asreml.opt = "mbf", 
                        tpps4mbf.obj = NULL, 
                        allow.unconverged = TRUE, allow.fixedcorrelation = TRUE,
@@ -1248,6 +1422,28 @@ fitTPPSMod <- function(asrtests.obj, sections = NULL,
   inargs <- list(...)
   checkEllipsisArgs("makeTPPSplineMats.data.frame", inargs)
   checkEllipsisArgs("tpsmmb", inargs, pkg = "asremlPlus")
+  
+  #Check nsegs, nestorder, degree, difforder and theta
+  if (length(nsegs) == 1)
+    nsegs <- c(nsegs,nsegs)
+  if (length(nsegs) > 2)
+    stop("nsegs must specify no more than 2 values, one for each of the row and column dimensions")
+  if (length(nestorder) == 1)
+    nestorder <- c(nestorder,nestorder)
+  if (length(nestorder) != 2)
+    stop("nestorder must specify 2 values, one for each of the row and column dimensions")
+  if (length(degree) == 1)
+    degree <- c(degree,degree)
+  if (length(degree) != 2)
+    stop("degree must specify 2 values, one for each of the row and column dimensions")
+  if (length(difforder) == 1)
+    difforder <- c(difforder,difforder)
+  if (length(difforder) != 2)
+    stop("difforder must specify 2 values, one for each of the row and column dimensions")
+  if (length(ngridangles) == 1)
+    ngridangles <- c(ngridangles,ngridangles)
+  if (length(ngridangles) != 2)
+    stop("theta must specify 2 values, one for each of the row and column dimensions")
   
   #Get data for mbf 
   if (asreml.opt == "mbf")
@@ -1293,12 +1489,13 @@ fitTPPSMod <- function(asrtests.obj, sections = NULL,
       stop(dropColterm, " does not have the same number of levels as there are values of ", col.covar)
     
     tps.XZmat <- makeTPPSplineMats(dat.in, sections = sections, 
-                                    row.covar = row.covar, col.covar = col.covar,
-                                    nsegs = nsegs, nestorder = nestorder,
-                                    degree = degree, difforder = difforder,
-                                    asreml.opt = "grp", ...)
+                                   row.covar = row.covar, col.covar = col.covar,
+                                   nsegs = nsegs, nestorder = nestorder,
+                                   degree = degree, difforder = difforder, 
+                                   rotateX = rotateX,
+                                   asreml.opt = "grp", ...)
     dat <- tps.XZmat[[1]]$data.plus
-}
+  }
 
   #Update the asreml.obj for the new data.frame
   asreml.obj  <- asrtests.obj$asreml.obj
@@ -1308,6 +1505,7 @@ fitTPPSMod <- function(asrtests.obj, sections = NULL,
 
   #Fit spatial TPPS to sections
   nsect <- calc.nsect(dat, sections)
+  theta.opt <- list()
   for (i in 1:nsect)
   {
     if (nsect == 1)
@@ -1319,13 +1517,17 @@ fitTPPSMod <- function(asrtests.obj, sections = NULL,
     else
     { 
       stub <- levels(dat[[sections]])[i]
-      sect.fac <- paste0("at(", sections, ",  ", i, "):")
-      lab <- paste0("Try tensor P-splines for ", sections, " ",i)
+      sect.fac <- paste0("at(", sections, ",  '", stub, "'):")
+      lab <- paste0("Try tensor P-splines for ", sections, " ",stub)
     }
-    tspl.asrt <- fitTPSModSect(tspl.asrt, mat = tps.XZmat[[i]], sect.fac = sect.fac, 
+    tspl.asrt <- fitTPSModSect(tspl.asrt, data = dat.in, mat = tps.XZmat[[i]], 
+                               ksect = i, sect.fac = sect.fac, 
                                dropRowterm = dropRowterm, dropColterm = dropColterm, 
+                               sections = sections, 
                                row.covar = row.covar, col.covar = col.covar, 
+                               nsegs = nsegs, nestorder = nestorder, 
                                degree = degree, difforder = difforder,
+                               rotateX = rotateX, ngridangles = ngridangles, 
                                lab = lab, asreml.opt = asreml.opt, stub = stub, 
                                allow.unconverged = allow.unconverged, 
                                allow.fixedcorrelation = allow.fixedcorrelation,
@@ -1335,6 +1537,18 @@ fitTPPSMod <- function(asrtests.obj, sections = NULL,
                                IClikelihood = IClikelihood, 
                                which.IC = which.IC, 
                                ...)
+    theta.opt <- c(theta.opt, list(attr(tspl.asrt, which = "theta.opt")))
+  }
+  if (rotateX && any(difforder == 2))
+  {
+    if (nsect > 1)
+    {
+      #    theta.opt <- do.call(rbind, theta.opt)
+      #    rownames(theta.opt) <- levels(dat.in[[sections]])
+      names(theta.opt) <- levels(dat.in[[sections]])
+      attr(tspl.asrt, which = "theta.opt") <- theta.opt
+    }
+    attr(tspl.asrt$asreml.obj, which = "theta.opt") <- attr(tspl.asrt, which = "theta.opt")
   }
   
   return(tspl.asrt)

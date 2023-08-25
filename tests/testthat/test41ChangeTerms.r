@@ -121,7 +121,7 @@ test_that("residual_changeTerms_asreml41", {
                         random = ~ spl(xPosn) + Position ,
                         residual = ~ Genotype:idh(NP_AMF):InTreat,
                         keep.order=TRUE, data = dat, 
-                        maxiter=50, na.action = na.method(x="include"))
+                        maxit=50, na.action = na.method(x="include"))
   
   current.asrt <- as.asrtests(current.asr, NULL, NULL)
   current.asrt <- rmboundary(current.asrt)
