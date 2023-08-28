@@ -1,5 +1,7 @@
 #devtools::test("asremlPlus")
 context("model_selection")
+if (Sys.getenv("NOT_CRAN") == "true") require(asreml)
+library(asremlPlus)
 
 cat("#### Test for wheat76 spatial example with asreml42\n")
 test_that("Wheat_spatial_asreml42", {
@@ -87,7 +89,7 @@ test_that("Wheat_spatial_asreml42", {
                                           row.covar = "cRow", col.covar = "cColumn",
                                           row.factor = "Row", col.factor = "Column",
                                           dropRowterm = "Row", dropColterm = "Column",
-                                          rotateX = TRUE, ngridlines = 18, 
+                                          rotateX = TRUE, ngridangles = 18, 
                                           asreml.option = "grp", return.asrts = "all")
   
   print(spatial.asrts$spatial.IC)
@@ -95,9 +97,11 @@ test_that("Wheat_spatial_asreml42", {
   testthat::expect_equal(length(spatial.asrts$asrts), 4)
   testthat::expect_equal(spatial.asrts$spatial.IC$varDF, c(3,5,6,6,3))
   testthat::expect_true(all(abs(spatial.asrts$spatial.IC$AIC - 
-                                  c(1718.609, 1651.314, 1639.489, 1644.190, 1708.443) ) < 1e-03))
+                                  c(1718.609, 1651.314, 1639.489, 1645.033, 1708.443) ) < 1e-03))
   testthat::expect_true(all.equal(spatial.asrts$spatial.IC[2:4,], infoEach[1:3 ,-3], 
                                   tolerance = 0.5))
+  #theta.opt == c(0,0) because rotation Unswapped
+  testthat::expect_equal(attr(spatial.asrts$asrts$TPPCS$asreml.obj, which = "theta.opt"), c(0,0))
   
   current.asr <- spatial.asrts$asrts$TPNCSS$asreml.obj
   printFormulae(current.asr)

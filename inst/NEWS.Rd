@@ -1,5 +1,9 @@
 \name{news}
 \title{News for Package asremlPlus}
+\section{asremlPlus Version 4.4.14 (2023-08-28)}{
+  \itemize{
+  \item{Minor internal code changes.}
+}}
 \section{asremlPlus Version 4.4.13 (2023-08-24)}{
   \itemize{
   \item{Add arguments \code{rotateX} and \code{theta} to makeTPPSplineMats.data.frame so that the eigenvectors of the penalty matrix used in generating the design matrices for the random terms could be rotated by the angles in \code{theta}.}

@@ -24,22 +24,39 @@
 "validAsreml" <- function(object)
 {
   asr4 <- isASRemlVersionLoaded(4, notloaded.fault = TRUE)
+  asr4.2 <- isASReml4_2Loaded(4.2, notloaded.fault = TRUE)
   isasr <- TRUE 
   #Check class
   if (!inherits(object, "asreml") || is.null(object))
   {
     isasr[1] <- FALSE 
-    isasr <- c(isasr, "\n ",deparse(substitute(object))," is not of class asreml")
+    isasr <- c(isasr, "\n ",deparse(substitute(object))," is not of class 'asreml'")
   }
   #Check have corresponding asreml version
-  if ((asr4 && !("vparameters" %in% names(object))) || 
-      (!asr4 && "vparameters" %in% names(object)))
+  if (asr4)
   {
-    isasr[1] <- FALSE 
-    isasr <- c(isasr, 
-               paste("\n ",deparse(substitute(object)), "is not compatible with the",
-                     "version of asreml currently loaded"))
-  }
+    if (!("vparameters" %in% names(object)))
+    { 
+      isasr[1] <- FALSE 
+      isasr <- c(isasr, 
+                 paste0("\n ",deparse(substitute(object)), 
+                        " is not an asreml object compatible ASReml-R version 4"))
+    } else
+      if (asr4.2 && ("errtxt" %in% names(object)))
+      {
+        isasr[1] <- FALSE 
+        isasr <- c(isasr, 
+                   paste0("\n ",deparse(substitute(object)), 
+                          " is not an asreml object compatible with ASReml-R version 4.2 "))
+      }
+  } else #not asr4
+    if ("vparameters" %in% names(object))
+    {
+      isasr[1] <- FALSE 
+      isasr <- c(isasr, 
+                 paste0("\n ",deparse(substitute(object)), " is not compatible with ",
+                        "ASReml-R ",packageVersion("asreml"), ", the currently loaded version"))
+    }
   if (length(isasr) > 1)
     isasr[1] <- "Error(s) in validAsreml(object) : "
   return(isasr)
@@ -950,7 +967,7 @@ atLevelsMatch <- function(new, old, call, always.levels = TRUE)
     stop(validasr)
   
   #Check for fixed correlations in supplied asrtests.obj
-  if (!isFixedCorrelOK(asreml.obj, allow.fixedcorrelation = allow.fixedcorrelation))
+  if (!isFixedCorrelOK.asreml(asreml.obj, allow.fixedcorrelation = allow.fixedcorrelation))
   {
     if (asr4)
       kresp <- asreml.obj$formulae$fixed[[2]]
@@ -1198,7 +1215,7 @@ atLevelsMatch <- function(new, old, call, always.levels = TRUE)
   } else
   {
     #Check for fixed correlation
-    if (!isFixedCorrelOK(asreml.new.obj, allow.fixedcorrelation = allow.fixedcorrelation))
+    if (!isFixedCorrelOK.asreml(asreml.new.obj, allow.fixedcorrelation = allow.fixedcorrelation))
     {
       warning("At least one correlation's estimated value is bound or fixed")
       asreml.new.obj <- asreml.obj
@@ -1523,7 +1540,7 @@ atLevelsMatch <- function(new, old, call, always.levels = TRUE)
   else
     kresp <- asrtests.obj$asreml.obj$fixed.formula[[2]]
   #Check for fixed correlations in supplied asrtests.obj
-  if (!isFixedCorrelOK(asrtests.obj$asreml.obj, allow.fixedcorrelation = allow.fixedcorrelation))
+  if (!isFixedCorrelOK.asreml(asrtests.obj$asreml.obj, allow.fixedcorrelation = allow.fixedcorrelation))
     warning(paste("The estimated value of one or more correlations in the supplied asreml fit for", kresp,
                   "is bound or fixed and allow.fixedcorrelation is FALSE"))
   all.terms <- c(dropFixed, addFixed, dropRandom, addRandom, newResidual,set.terms)
@@ -1668,7 +1685,7 @@ atLevelsMatch <- function(new, old, call, always.levels = TRUE)
     if (asreml.new.obj$converge || allow.unconverged)
     {
       #Check fixed correlation
-      if (!isFixedCorrelOK(asreml.new.obj, allow.fixedcorrelation = allow.fixedcorrelation))
+      if (!isFixedCorrelOK.asreml(asreml.new.obj, allow.fixedcorrelation = allow.fixedcorrelation))
       {
         action <- "Unchanged - fixed correlation"
         if (ic.lik != "none")
@@ -2147,7 +2164,7 @@ atLevelsMatch <- function(new, old, call, always.levels = TRUE)
   test.summary <- asrtests.obj$test.summary
   
   #Check for fixed correlations in supplied asrtests.obj
-  if (!isFixedCorrelOK(asrtests.obj$asreml.obj, allow.fixedcorrelation = allow.fixedcorrelation))
+  if (!isFixedCorrelOK.asreml(asrtests.obj$asreml.obj, allow.fixedcorrelation = allow.fixedcorrelation))
   {
     if (asr4)
       kresp <- asrtests.obj$asreml.obj$formulae$fixed[[2]]
@@ -2323,7 +2340,7 @@ atLevelsMatch <- function(new, old, call, always.levels = TRUE)
             if (asreml.new.obj$converge | allow.unconverged)
             {
               #Check for fixed correlation
-              if (!isFixedCorrelOK(asreml.new.obj, allow.fixedcorrelation = allow.fixedcorrelation))
+              if (!isFixedCorrelOK.asreml(asreml.new.obj, allow.fixedcorrelation = allow.fixedcorrelation))
               {
                 action <- "Unchanged - fixed correlation"
                 asreml.new.obj <- asreml.obj
@@ -2467,7 +2484,7 @@ atLevelsMatch <- function(new, old, call, always.levels = TRUE)
       } else
       { 
         #Check for fixed correlation
-        if (!isFixedCorrelOK(asreml.new.obj, allow.fixedcorrelation = allow.fixedcorrelation))
+        if (!isFixedCorrelOK.asreml(asreml.new.obj, allow.fixedcorrelation = allow.fixedcorrelation))
         {
           p <- NA
           action <- "Fixed correlation"
@@ -2560,7 +2577,7 @@ atLevelsMatch <- function(new, old, call, always.levels = TRUE)
       } else #Evaluate test for drop.ran.ns
       {
         #Check for fixed correlation
-        if (!isFixedCorrelOK(asreml.new.obj, allow.fixedcorrelation = allow.fixedcorrelation))
+        if (!isFixedCorrelOK.asreml(asreml.new.obj, allow.fixedcorrelation = allow.fixedcorrelation))
         {
           p <- NA
           action <- "Unchanged - fixed correlation"
@@ -2671,7 +2688,7 @@ atLevelsMatch <- function(new, old, call, always.levels = TRUE)
   test.summary <- asrtests.obj$test.summary
   
   #Check for fixed correlations in supplied asrtests.obj
-  if (!isFixedCorrelOK(asrtests.obj$asreml.obj, allow.fixedcorrelation = allow.fixedcorrelation))
+  if (!isFixedCorrelOK.asreml(asrtests.obj$asreml.obj, allow.fixedcorrelation = allow.fixedcorrelation))
   {
     if (asr4)
       kresp <- asrtests.obj$asreml.obj$formulae$fixed[[2]]
@@ -2744,7 +2761,7 @@ atLevelsMatch <- function(new, old, call, always.levels = TRUE)
   } else
   {
     #Check fixed correlation
-    if (!isFixedCorrelOK(asreml.new.obj, allow.fixedcorrelation = allow.fixedcorrelation))
+    if (!isFixedCorrelOK.asreml(asreml.new.obj, allow.fixedcorrelation = allow.fixedcorrelation))
     {
       p <- NA
       action <- "Unchanged - fixed correlation"
@@ -2881,7 +2898,7 @@ atLevelsMatch <- function(new, old, call, always.levels = TRUE)
   else
     kresp <- asrtests.obj$asreml.obj$fixed.formula[[2]]    
   #Check for fixed correlations in supplied asrtests.obj
-  if (!isFixedCorrelOK(asrtests.obj$asreml.obj, allow.fixedcorrelation = allow.fixedcorrelation))
+  if (!isFixedCorrelOK.asreml(asrtests.obj$asreml.obj, allow.fixedcorrelation = allow.fixedcorrelation))
     warning(paste("The estimated value of one or more correlations in the supplied asreml fit for", kresp,
                   "is bound or fixed and allow.fixedcorrelation is FALSE"))
   if (is.null(terms))
@@ -2954,7 +2971,7 @@ atLevelsMatch <- function(new, old, call, always.levels = TRUE)
   } else
   {
     #Check fixed correlation
-    if (!isFixedCorrelOK(asreml.new.obj, allow.fixedcorrelation = allow.fixedcorrelation))
+    if (!isFixedCorrelOK.asreml(asreml.new.obj, allow.fixedcorrelation = allow.fixedcorrelation))
     {
       p <- NA
       action <- "Unchanged - fixed correlation"
@@ -3137,7 +3154,7 @@ atLevelsMatch <- function(new, old, call, always.levels = TRUE)
   ic.NA <- data.frame(fixedDF = NA, varDF = NA, AIC = NA, BIC = NA)
   
   #Check for fixed correlations in supplied asrtests.obj
-  if (!isFixedCorrelOK(asrtests.obj$asreml.obj, allow.fixedcorrelation = allow.fixedcorrelation))
+  if (!isFixedCorrelOK.asreml(asrtests.obj$asreml.obj, allow.fixedcorrelation = allow.fixedcorrelation))
   {
     if (asr4)
       kresp <- asrtests.obj$asreml.obj$formulae$fixed[[2]]
@@ -3238,7 +3255,7 @@ atLevelsMatch <- function(new, old, call, always.levels = TRUE)
     }
   }
   #Check fixed correlation
-  if (!isFixedCorrelOK(asrtests.obj$asreml.obj, allow.fixedcorrelation = allow.fixedcorrelation))
+  if (!isFixedCorrelOK.asreml(asrtests.obj$asreml.obj, allow.fixedcorrelation = allow.fixedcorrelation))
   {
     asrtests.obj <- asrtests.old.obj
     if (ic.lik != "none")

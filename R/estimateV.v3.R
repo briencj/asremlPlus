@@ -223,7 +223,8 @@
             if (is.null(asreml.obj$design))
             {
               asreml::asreml.options(design = TRUE)
-              asreml.obj <- eval(call)
+#              asreml.obj <- eval(call)
+              asreml.obj <- asreml::update.asreml(asreml.obj)
             }
             if (has.fa)
             {
