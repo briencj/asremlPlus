@@ -1,20 +1,26 @@
 \name{newfit.asreml}
 \alias{newfit.asreml}
 \alias{newfit}
-\title{Refits an asreml model with modified model formula using either 
-       a call to \code{update.asreml} or a direct call to \code{asreml}.}
-\description{Extracts the call from the \code{asreml.obj} and 
-             evaluates that call, replacing any arguments with changed values. 
-             If \code{update} is \code{TRUE} and \code{set.terms} is not set, 
-             the call is evaluated using \code{update.asreml}; otherwise, 
-             it is evaluated using a direct call to \code{asreml}. 
-             The principal difference is that the latter does not enforce the 
-             use of previous values of the variance parameters as initial 
-             values; it sets \code{G.param} and \code{R.param} to \code{NULL} 
-             or to values as specified for \code{set.terms}. 
-             The \code{\dots} argument can be used to pass \code{G.param} 
-             and/or \code{R.param}, provided \code{update} is \code{FALSE} 
-             and \code{set.terms} is not set.}
+\title{Refits an \code{asreml} model with changed arguments by extracting, modifying 
+             and evaluating its \code{call} - an alternate to update.asreml.}
+\description{Extracts the call from the \code{asreml.obj} and evaluates that call, 
+             replacing supplied \code{asreml} arguments with changed values. 
+             If \code{update} is \code{TRUE} and \code{set.terms} is \code{NULL}, 
+             the call is evaluated using the variance parameter estimates 
+             from the \code{call} stored in \code{asreml.obj}; if some 
+             variance terms in the newly fitted model are singular (S) or 
+             bound (B), a refit of the model will be tried in which the 
+             variance parameter estimates in \code{asreml.obj} are not used 
+             and will become the fitted model if its boundary terms are a 
+             subset of those in the fitted model stored in \code{asreml.obj}. 
+             If \code{update} is \code{FALSE} or \code{set.terms} is not 
+             \code{NULL}, the previous values of the variance parameters 
+              are not used as initial values for fitting the new model; 
+             \code{G.param} and \code{R.param} are set to \code{NULL} or 
+             to values as specified for \code{set.terms}. The \code{\dots} 
+             argument can be used to pass \code{G.param} and/or 
+             \code{R.param}, provided \code{update} is \code{FALSE} and 
+             \code{set.terms} is \code{NULL}.}
 \usage{
 \method{newfit}{asreml}(asreml.obj, fixed., random., sparse., 
        residual., rcov., update = TRUE, trace = FALSE, 
@@ -23,7 +29,7 @@
        set.terms = NULL, ignore.suffices = TRUE, 
        bounds = "P", initial.values = NA, ...)}
 \arguments{
- \item{asreml.obj}{A valid \code{asreml} object with with 
+ \item{asreml.obj}{A valid \code{asreml} object with 
                    a component named \code{call} (from a previous 
                    call to either \code{asreml} or \code{update.asreml}).}
  \item{fixed.}{A character or formula specifying changes to the fixed 
@@ -51,22 +57,23 @@
                 This is a one-sided formula 
                 where "." is substituted for existing components in the 
                 residual component of \code{asreml.obj$call}.}
- \item{update}{A logical indicated whether to use \code{update.asreml} or 
-               \code{asreml} to evaluate the modified call. 
-               If \code{TRUE},  use \code{update.asreml} to evaluate the 
-               modified \code{call}. In doing this the arguments 
-               \code{R.param} and \code{G.param} are set to those in the 
-               \code{asreml.obj} so that the values from the previous 
-               model are used as starting values. If \code{FALSE} then a 
-               call is made to \code{asreml} itself, in which the only 
-               changes from the previous call are those specified in the 
-               arguments to \code{newfit.asreml}.}
+ \item{update}{A logical indicating whether to use the variance parameter 
+               estimates in fitting a new model using \code{\link{newfit.asreml}}. 
+               If \code{update} is \code{TRUE} and \code{set.terms} is \code{NULL}, 
+               the call stored in the \code{asreml.obj} is evaluated using the 
+               variance parameter estimates stored in \code{R.param} and 
+               \code{G.param}, as well as the changes specified in the 
+               arguments to \code{newfit.asreml}. If \code{FALSE} or   
+               \code{set.terms} is not \code{NULL}, then the use of previous 
+               values of the variance parameters as initial values is not 
+               enforced; \code{G.param} and \code{R.param} are set to 
+               \code{NULL} or to values as specified for \code{set.terms}.}
  \item{trace}{A \code{\link{logical}} that control output from ASReml-R. 
               If TRUE then partial iteration details are displayed when ASReml-R 
               functions are invoked; if FALSE then no output is displayed.}
  \item{allow.unconverged}{A \code{logical} indicating whether to accept a new model 
-                      even when it does not converge. If \code{FALSE} and the fit does not 
-                      converge, the supplied \code{asreml.obj} is returned.}
+              even when it does not converge. If \code{FALSE} and the fit does not 
+              converge, the supplied \code{asreml.obj} is returned.}
  \item{allow.fixedcorrelation}{A \code{logical} indicating whether to accept a new model 
               even when it contains correlations in the model whose values have been 
               designated as fixed, bound or singular. If \code{FALSE} and the new model 
@@ -121,7 +128,7 @@
             VSN International Ltd, \url{https://asreml.kb.vsni.co.uk/}.}
 
 \author{Chris Brien}
-\seealso{\code{update.asreml}, \code{\link{setvarianceterms.call}}}
+\seealso{\code{\link{convAsremlobj.asreml}}, \code{update.asreml}, \code{\link{setvarianceterms.call}}}
 \examples{\dontrun{
     m2.asreml <- newfit(m1.asreml, random. = "~ . - Blocks:Plots", maxiter=75)
 }}

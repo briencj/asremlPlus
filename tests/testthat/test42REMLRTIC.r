@@ -172,8 +172,9 @@ test_that("IC_wheat94_asreml42", {
                               IClikelihood = "full")
   testthat::expect_equal(
     length(current.asrt$asreml.obj$vparameters.con[!(current.asrt$asreml.obj$vparameters.con 
-                                               %in% c("F","S","B"))]),  
-    current.asrt$test.summary$denDF[current.asrt$test.summary$terms == "Add spl(Col)"][1])
+                                               %in% c("F","S","B"))]),  8)
+  testthat::expect_equal(
+    current.asrt$test.summary$denDF[current.asrt$test.summary$terms == "Add spl(Col)"][1], 7)
   
   #Restart with fixed Rowcode and Colcode covariates, units and autocorrelation
   fm6 <- asreml(yield ~ Rowcode + Colcode,

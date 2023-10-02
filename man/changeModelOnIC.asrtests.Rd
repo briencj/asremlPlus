@@ -96,14 +96,15 @@
               \code{\link{rmboundary.asrtests}}; a warning is issued instead.}
  \item{trace}{If TRUE then partial iteration details are displayed when ASReml-R 
               functions are invoked; if FALSE then no output is displayed.}
- \item{update}{If \code{TRUE} then \code{update.asreml} is called to fit the model 
-               to be tested. In doing this the arguments \code{R.param} and 
-              \code{G.param} are set to those in the \code{asreml} 
-              object stored in \code{asrtests.obj} so that the values from the previous 
-              model are used as starting values. If \code{FALSE} then a call is made to 
-              \code{asreml} in which the only changes from the previous call are that 
-              (i) models are modifed as specified and 
-              (ii) modifications specified via \code{\dots} are made.}
+ \item{update}{If \code{TRUE}, and \code{set.terms} is \code{NULL}, then 
+              \code{\link{newfit.asreml}} is called to fit the model to be tested, 
+              using the values of the variance parameters stored in 
+              the \code{asreml.object}, that is stored in \code{asrtests.obj}, as starting values. 
+              If \code{FALSE} or \code{set.terms} is not \code{NULL}, then 
+              \code{\link{newfit.asreml}} will not use the stored variance parameter 
+              values as starting values when fitting the new model, the only 
+              modifications being (i) those specified by this function's arguments and 
+              (ii) those specified via \code{\dots}.}
  \item{denDF}{Specifies the method to use in computing approximate denominator 
               degrees of freedom when \code{wald.asreml} is called. Can be \code{none} 
               to suppress the computations, \code{numeric} for numerical methods,
@@ -139,11 +140,12 @@
                     left unchanged for those terms.}
  \item{which.IC}{A \code{character} specifying the information criterion to be used in 
               selecting the best model. Possible values are \code{AIC} and 
-              \code{BIC}. The values of the criterion for supplied model must 
+              \code{BIC}. The value of the criterion for supplied model must 
               exceed that for changed model for the changed model to be returned.}
  \item{IClikelihood}{A \code{character} specifying whether Restricted Maximum Likelihood 
-                   (\code{REML}) or the full likelihood (\code{full}) are to be used in 
-                   calculating the information criteria for \code{family} set to 
+                   (\code{REML}) or the full likelihood, evaluated using REML estimates, 
+                   (\code{full}) are to be used in calculating the information criteria 
+                   for choosing between models when \code{family} is set to 
                    \code{asr_gaussian}. For \code{family} set to \code{asr_binomial} or 
                    \code{asr_poisson} and with \code{dispersion} set to 1, the 
                    \code{deviance} is extracted from \code{object} and used to calculate 

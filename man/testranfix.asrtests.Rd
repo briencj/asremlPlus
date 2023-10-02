@@ -125,6 +125,7 @@
               Its values will be used when \code{denDF} in a test for a fixed effect
               is \code{NA}. This vector must be the same length as the number of 
               fixed terms, including (Intercept) whose value could be \code{NA}.}
+
  \item{IClikelihood}{A \code{character} that controls both the occurence and the type 
                     of likelihood for information criterion in the \code{test.summary} 
                     of the new \code{\link{asrtests.object}}. If \code{none}, none are 
@@ -132,21 +133,23 @@
                     \code{asr_guassian} (the default), then the AIC and BIC based 
                     on the Restricted Maximum Likelihood are included; if \code{full} 
                     and \code{family} is set to \code{asr_guassian}, 
-                    then the AIC and BIC based on the full likelihood are included. 
-                    if \code{family} is \code{asr_binomial} or \code{asr_poisson}, 
-                    with \code{dispersion} set to 1, the \code{deviance} is extracted 
-                    from \code{object} and used to calculate the AIC and BIC.
+                    then the AIC and BIC based on the full likelihood, evaluated using 
+                    REML estimates, are included. If \code{family} is \code{asr_binomial} 
+                    or \code{asr_poisson}, with \code{dispersion} set to 1, the 
+                    \code{deviance} is extracted from \code{object} and used to 
+                    calculate the AIC and BIC.
                     (See also \code{\link{infoCriteria.asreml}}.)}
  \item{trace}{If TRUE then partial iteration details are displayed when ASReml-R 
               functions are invoked; if FALSE then no output is displayed.}
- \item{update}{If \code{TRUE} then \code{update.asreml} is called to fit the model 
-               to be tested. In doing this the arguments \code{R.param} and 
-              \code{G.param} are set to those in the \code{asreml} 
-              object stored in \code{asrtests.obj} so that the values from the previous 
-              model are used as starting values. If \code{FALSE} then a call is made to 
-              \code{asreml} in which the only changes from the previous call are that 
-              (i) models are modifed for the supplied \code{terms} and 
-              (ii) modifications specified via \code{\dots} are made.}
+ \item{update}{If \code{TRUE}, and \code{set.terms} is \code{NULL}, then 
+              \code{\link{newfit.asreml}} is called to fit the model to be tested, 
+              using the values of the variance parameters stored in 
+              the \code{asreml.object}, that is stored in \code{asrtests.obj}, as starting values. 
+              If \code{FALSE} or \code{set.terms} is not \code{NULL}, then 
+              \code{\link{newfit.asreml}} will not use the stored variance parameter 
+              values as starting values when fitting the new model, the only 
+              modifications being (i) those for the supplied \code{terms} and 
+              (ii) those specified via \code{\dots}.}
  \item{set.terms}{A character vector specifying the terms that are to have 
                bounds and/or initial values set prior to fitting. 
                The names must match those in the \code{vparameters} component of the 

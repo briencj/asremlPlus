@@ -4,7 +4,7 @@ bootREMLRT.asreml <- function(h0.asreml.obj, h1.asreml.obj,
                               fixed.spline.terms = NULL, 
                               bound.exclusions = c("F","B","S","C"), 
                               tolerance = 1E-10, update = TRUE, trace = FALSE, 
-                              ncores = detectCores(), ...)
+                              ncores = 2, ...)
 {
   #asreml codes:
   #  B - fixed at a boundary (!GP)

@@ -40,14 +40,16 @@
       isasr[1] <- FALSE 
       isasr <- c(isasr, 
                  paste0("\n ",deparse(substitute(object)), 
-                        " is not an asreml object compatible ASReml-R version 4"))
+                        " is not an asreml object compatible ASReml-R version 4; ",
+                        "\nuse convASRemlobjVersion.asreml to create a compatible asreml object"))
     } else
       if (asr4.2 && ("errtxt" %in% names(object)))
       {
         isasr[1] <- FALSE 
         isasr <- c(isasr, 
                    paste0("\n ",deparse(substitute(object)), 
-                          " is not an asreml object compatible with ASReml-R version 4.2 "))
+                          " is not an asreml object compatible with ASReml-R version 4.2; ",
+                          "\nuse convASRemlobjVersion.asreml to create a compatible asreml object"))
       }
   } else #not asr4
     if ("vparameters" %in% names(object))
@@ -55,11 +57,22 @@
       isasr[1] <- FALSE 
       isasr <- c(isasr, 
                  paste0("\n ",deparse(substitute(object)), " is not compatible with ",
-                        "ASReml-R ",packageVersion("asreml"), ", the currently loaded version"))
+                        "ASReml-R ",packageVersion("asreml"), ", the currently loaded version; ",
+                        "\nuse convASRemlobjVersion.asreml to create a compatible asreml object"))
     }
   if (length(isasr) > 1)
     isasr[1] <- "Error(s) in validAsreml(object) : "
   return(isasr)
+}
+
+"convAsremlobj.asreml" <- function(asreml.obj, ...)
+{
+  y <- runif(10); x <- runif(10); a <- asreml::asreml(y~x)
+  call <- asreml.obj$call
+  call[[1]] <- a$call[[1]]  
+  asreml.obj <- eval(call)
+  validAsreml(asreml.obj)
+  return(asreml.obj)
 }
 
 "validWaldTab" <- function(object)
@@ -98,20 +111,6 @@
     isTSumm[1] <- "Error(s) in validWaldTab(object) : "
   return(isTSumm)
 }
-
-# "asrtests" <- function(asreml.obj, wald.tab = NULL, test.summary = NULL, 
-#                        denDF = "numeric", label = NULL, 
-#                        IClikelihood = "none", bound.exclusions = c("F","B","S","C"), 
-#                        ...)
-# {
-#   test <- as.asrtests(asreml.obj = asreml.obj, wald.tab = wald.tab, 
-#                       test.summary = test.summary, denDF = denDF, 
-#                       label = label, 
-#                       IClikelihood = IClikelihood, 
-#                       bound.exclusions = bound.exclusions, 
-#                       ...)
-#   return(test)
-# }
 
 "as.asrtests" <- function(asreml.obj, wald.tab = NULL, test.summary = NULL, 
                           denDF = "numeric", label = NULL, 
@@ -166,8 +165,7 @@
     validwald <- validWaldTab(wald.tab)  
     if (is.character(validwald))
       stop(validwald)
-  }
-  else #form wald.tab
+  } else #form wald.tab
   { 
     wald.tab <- asreml::wald.asreml(asreml.obj, denDF = denDF, trace = FALSE, ...)
     wald.tab <- chkWald(wald.tab)
@@ -1178,34 +1176,72 @@ atLevelsMatch <- function(new, old, call, always.levels = TRUE)
   asreml.new.obj <- eval(call, sys.parent())
   asreml.new.obj$call <- call
   
-  #Check if updating and all variance parameters are either F, B or S, 
+  #Check if updating and all Residual variance parameters are either F, B or S, 
   # and not equal to 1 (as in spatial models with no nugget variance)
   if (update)
   {
-    Rterms <- grepl("!R", names(asreml.new.obj$vparameters), fixed = TRUE)
-    Rterms <- names(asreml.new.obj$vparameters)[Rterms]
-    Rterms <- unique(unlist(lapply(Rterms, rmTermDescription)))
+    Ranterms <- names(asreml.new.obj$vparameters)
+    Resterms <- grepl("\\!R", names(asreml.new.obj$vparameters))
+    Resterms <- Ranterms[Resterms]
+    Ranterms <- setdiff(Ranterms, Resterms)
+    
+    #Check Resterms
+    Resterms <- unique(unlist(lapply(Resterms, rmTermDescription)))
     if (asr4.2)
     { 
-      rterms.chk <- unlist(lapply(Rterms, grepl, names(asreml.new.obj$vparameters), fixed = TRUE)) & 
+      resterms.chk <- unlist(lapply(Resterms, grepl, names(asreml.new.obj$vparameters), fixed = TRUE)) & 
         asreml.new.obj$vparameters.type == "V"
-      if (all(asreml.new.obj$vparameters.con[rterms.chk] %in% c("F","B","S")) && 
-          all(abs(asreml.new.obj$vparameters[rterms.chk] - 1) > 1e-05))
+      if (all(asreml.new.obj$vparameters.con[resterms.chk] %in% c("F","B","S")) && 
+          all(abs(asreml.new.obj$vparameters[resterms.chk] - 1) > 1e-05))
         stop("There is no unbound residual variance - perhaps try update = FALSE")
     } else
     { 
-      rterms.chk <- unlist(lapply(Rterms, grepl, names(asreml.new.obj$vparameters), fixed = TRUE)) & 
+      resterms.chk <- unlist(lapply(Resterms, grepl, names(asreml.new.obj$vparameters), fixed = TRUE)) & 
         vpt.char(asreml.new.obj) == "V"
-      if (all(vpc.char(asreml.new.obj)[rterms.chk] %in% c("F","B","S")) && 
-          all(abs(asreml.new.obj$vparameters[rterms.chk] - 1) > 1e-05))
+      if (all(vpc.char(asreml.new.obj)[resterms.chk] %in% c("F","B","S")) && 
+          all(abs(asreml.new.obj$vparameters[resterms.chk] - 1) > 1e-05))
         stop("There is no unbound residual variance - perhaps try update = FALSE")
     }
+    
+    #See if any bound or singular random terms, and if fit can be improved 
+    #by fitting with update = FALSE
+    #Have boundary terms?
+    boundinfo <-  findboundary.asreml(asreml.new.obj, asr4 = asr4, asr4.2 = asr4.2)
+    allvcomp <- boundinfo$allvcomp
+    bound.terms <- boundinfo$bound.terms
+    vcomp <- allvcomp[bound.terms, ]
+    nbound <- nrow(vcomp)
+    if (nbound > 0 && !is.null(asreml.new.obj$call$random) && is.null(set.terms))
+    {   
+      #Try a newfit with update = FALSE to remove the bound terms
+      #If R.param and G.param already set, make them NULL
+      if (!is.null(languageEl(call, which = "R.param")))
+        languageEl(call, which = "R.param") <- NULL
+      if (!is.null(languageEl(call, which = "G.param")))
+        languageEl(call, which = "G.param") <- NULL
+      new.asreml.obj <- eval(call, sys.parent())
+      new.asreml.obj$call <- call
+      new.boundinfo <-  findboundary.asreml(new.asreml.obj, asr4 = asr4, asr4.2 = asr4.2)
+      new.allvcomp <- new.boundinfo$allvcomp
+      new.bound.terms <- new.boundinfo$bound.terms
+      new.nbound <- sum(new.bound.terms)
+      if (new.nbound == 0 || 
+          (all(new.allvcomp[new.bound.terms, "bound"] %in% allvcomp[bound.terms, "bound"]) && 
+           new.nbound < nbound)) 
+        asreml.new.obj <- new.asreml.obj
+#      if (all(allvcomp[!bound.terms, "bound"] %in% new.allvcomp[!new.bound.terms, "bound"]))
+    }    
   }
   
   #If not converged or large change in the variance parameters, try more iterations
   if (!asreml.new.obj$converge || largeVparChange(asreml.new.obj, threshold = 0.75))
     asreml.new.obj <- asreml::update.asreml(asreml.new.obj)
   
+  #Make sure that mbf.env is set in asreml.new.obj
+  if (!is.null(asreml.obj$mf) && !is.null(attr(asreml.obj$mf, which = "mbf.env")))
+    attr(asreml.new.obj$mf, 
+         which = "mbf.env") <- attr(asreml.obj$mf, which = "mbf.env")
+
   #If still not converged, issue warning
   if (!asreml.new.obj$converge)
   {
@@ -1270,6 +1306,36 @@ atLevelsMatch <- function(new, old, call, always.levels = TRUE)
   invisible(results)
 }
 
+findboundary.asreml <- function(asreml.obj, asr4, asr4.2)
+{
+  if (asr4)
+  {
+    if (asr4.2)
+    { 
+      allvcomp <- data.frame(bound = asreml.obj$vparameters.con,  
+                             component = asreml.obj$vparameters, 
+                             stringsAsFactors = FALSE)
+    } else
+    {
+      allvcomp <- data.frame(bound = vpc.char(asreml.obj),  
+                             component = asreml.obj$vparameters, 
+                             stringsAsFactors = FALSE)
+    }
+    bound.terms <- allvcomp$bound == "B" | allvcomp$bound == "S"
+    #                 | bound == "F"
+    #bound.terms[grep("?", bound, fixed=TRUE)] <- TRUE
+  } else
+  {
+    allvcomp <- data.frame(bound = names(asreml.obj$gammas.con), 
+                           component = asreml.obj$gammas,
+                           stringsAsFactors = FALSE)
+    bound.terms <- allvcomp$bound == "Boundary" | allvcomp$bound == "Singular"
+    #                 | bound == "Fixed"
+    #bound.terms[grep("?", bound, fixed=TRUE)] <- TRUE
+  }
+ return(list(allvcomp = allvcomp, bound.terms = bound.terms)) 
+}
+
 "rmboundary.asrtests" <- function(asrtests.obj, checkboundaryonly = FALSE, 
                                   IClikelihood = "none", trace = FALSE, update = TRUE, 
                                   set.terms = NULL, ignore.suffices = TRUE, 
@@ -1308,50 +1374,43 @@ atLevelsMatch <- function(new, old, call, always.levels = TRUE)
   asreml.obj <- asrtests.obj$asreml.obj
   reml <- asreml.obj$loglik
   test.summary <- asrtests.obj$test.summary
+  wald.tab <- asrtests.obj$wald.tab
   no.unremoveable <- 0
   #Loop  until have removed all removable boundary terms
   repeat
   { 
     #Find boundary terms
-    if (asr4)
-    {
-      if (asr4.2)
-      { 
-        allvcomp <- data.frame(bound = asreml.obj$vparameters.con,  
-                               component = asreml.obj$vparameters, 
-                               stringsAsFactors = FALSE)
-      } else
-      {
-        allvcomp <- data.frame(bound = vpc.char(asreml.obj),  
-                               component = asreml.obj$vparameters, 
-                               stringsAsFactors = FALSE)
-      }
-      bound.terms <- allvcomp$bound == "B" | allvcomp$bound == "S"
-      #                 | bound == "F"
-      #bound.terms[grep("?", bound, fixed=TRUE)] <- TRUE
-    } else
-    {
-      allvcomp <- data.frame(bound = names(asreml.obj$gammas.con), 
-                             component = asreml.obj$gammas,
-                             stringsAsFactors = FALSE)
-      bound.terms <- allvcomp$bound == "Boundary" | allvcomp$bound == "Singular"
-      #                 | bound == "Fixed"
-      #bound.terms[grep("?", bound, fixed=TRUE)] <- TRUE
-    }
+    boundinfo <-  findboundary.asreml(asreml.obj, asr4 = asr4, asr4.2 = asr4.2)
+    allvcomp <- boundinfo$allvcomp
+    bound.terms <- boundinfo$bound.terms
     vcomp <- allvcomp[bound.terms, ]
     nbound <- nrow(vcomp)
     #No boundary terms, so get out
     if (nbound <= 0 || checkboundaryonly || is.null(asreml.obj$call$random)) break
+    # #Try a newfit with update = FALSE to remove the bound terms
+    # new.asreml.obj <- newfit(asreml.obj, update = FALSE)
+    # new.boundinfo <-  findboundary.asreml(new.asreml.obj, asr4 = asr4, asr4.2 = asr4.2)
+    # new.allvcomp <- new.boundinfo$allvcomp
+    # new.bound.terms <- new.boundinfo$bound.terms
+    # if (sum(new.bound.terms) == 0) 
+    # { 
+    #   asreml.obj <- new.asreml.obj
+    #   break
+    # }
+    # if (all(allvcomp[!bound.terms, "bound"] %in% new.allvcomp[!new.bound.terms, "bound"]))
+    # {
+    #   asreml.obj <- new.asreml.obj
+    #   allvcomp <- new.allvcomp
+    #   bound.terms <- new.bound.terms
+    #   vcomp <- allvcomp[bound.terms, ]
+    #   nbound <- nrow(vcomp)
+    # }
+
     #Reduce bound terms to set of bound terms that can be removed
     k <- 1
     while (k <= nbound)
     { 
       #Check if bound term is in the random formula
-      # term <- rownames(vcomp)[k]
-      # ranterms.obj <- as.terms.object(languageEl(asreml.obj$call, which="random"), 
-      #                                 asreml.obj)
-      # termno <- findterm(term, labels(ranterms.obj))
-      # if (termno <= 0) #must be an R term or not a recognisable G term
       term <- rownames(vcomp)[k]
       call <- asreml.obj$call
       if (substr(term, 1, 2) != "R!")  term <- rmTermDescription(term)
@@ -1484,19 +1543,34 @@ atLevelsMatch <- function(new, old, call, always.levels = TRUE)
               paste(rownames(vcomp), collapse = "; "), "\n")
   }
   #Check for variance terms that have been fixed and issue warning
-  if (length(allvcomp$bound[allvcomp$bound == "Fixed"]) != 0)
+  if (any(grepl("^F", allvcomp$bound))) #check for F or Fixed
   { 
-    warning("In analysing ", kresp,
-            ", estimates of the following parameter(s) are fixed:\n",
-            rownames(allvcomp)[allvcomp$bound == "Fixed"])
+    #See if newfit removes an fixed terms
+    new.asreml.obj <- newfit(asreml.obj, update = FALSE)
+    new.boundinfo <-  findboundary.asreml(new.asreml.obj, asr4 = asr4, asr4.2 = asr4.2)
+    new.allvcomp <- new.boundinfo$allvcomp
+    if (sum(grepl("^F", new.allvcomp$bound)) < sum(grepl("^F", allvcomp$bound)))
+    {
+      asreml.obj <- new.asreml.obj
+      allvcomp <- new.allvcomp
+    } 
+    if (any(grepl("^F", allvcomp$bound)))
+      warning("In analysing ", kresp,
+              ", estimates of the following parameter(s) are fixed:\n",
+              rownames(allvcomp)[grepl("^F", allvcomp$bound)])
+    #rownames(allvcomp)[allvcomp$bound == "Fixed"])
   }
   #check for change in log likelihood and if changed issue warning
   change <- abs(reml -asreml.obj$loglik)/reml*100
   if (!is.na(change) & change > 1)
+  { 
     warning(paste("Removing boundary terms has changed the log likelihood by "),
             change,"%")
+    wald.tab <- NULL #as.asrtests will recalulcate the wald tab
+  }  
+  
   results <- as.asrtests(asreml.obj = asreml.obj, 
-                         wald.tab = asrtests.obj$wald.tab, 
+                         wald.tab = wald.tab, 
                          test.summary = test.summary, ...)
   invisible(results)
 }
@@ -1697,8 +1771,7 @@ atLevelsMatch <- function(new, old, call, always.levels = TRUE)
                                          DF=ic$fixedDF, denDF = ic$varDF, 
                                          p = NA, AIC = ic$AIC, BIC = ic$BIC, 
                                          action = action)
-      }
-      else
+      } else
       {
         asreml.obj <- asreml.new.obj
         #Update wald.tab
@@ -1799,7 +1872,7 @@ atLevelsMatch <- function(new, old, call, always.levels = TRUE)
                               bound.exclusions = c("F","B","S","C"),  
                               IClikelihood = "none", 
                               ...)
-  #calls update.asreml to update the asreml.obj stored inasrtests.obj
+  #calls update.asreml to update the asreml.obj stored in asrtests.obj
 { 
   
   #Check that have a valid object of class asrtests
@@ -2022,7 +2095,7 @@ atLevelsMatch <- function(new, old, call, always.levels = TRUE)
       args <- args[-match("...", args)]
     asremlArgs <- inargs[inargs %in% args]
     if (!length(asremlArgs))
-      warning("No asreml or update.asreml args have been supplied to update.asrtests")
+      warning("No asreml or update.asreml args have been supplied to updateOnIC.asrtests")
     else
       upd.asr.args <- TRUE
   }
@@ -2038,7 +2111,7 @@ atLevelsMatch <- function(new, old, call, always.levels = TRUE)
                                      action = "Unswapped")
   } else
   {
-    #Use changeTerms to change the model
+    #Use update.asrts to update the model in the asreml.obj
     new.asrtests.obj <- update(asrtests.obj, label = label,
                                allow.unconverged = allow.unconverged, 
                                allow.fixedcorrelation = allow.fixedcorrelation, 

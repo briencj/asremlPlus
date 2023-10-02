@@ -29,6 +29,8 @@ export(addBacktransforms,
        choose.model.asrtests,
        chooseSpatialModelOnIC.asrtests,
        chooseSpatialModelOnIC, 
+       convAsremlobj.asreml,
+       convAsremlobj,
        estimateV,
        estimateV.asreml,
        exploreLSDs,
@@ -154,13 +156,13 @@ import(dae)
 import(ggplot2, except = "stat_qq_line")
 importFrom("stats", "as.formula",  "fitted", "fitted.values", "formula", "median", 
                     "model.matrix", "na.omit", "pchisq", "pf", "predict", "pt", "qnorm", "qt", 
-                    "quantile", "resid", "pnorm", "rnorm","simulate", "terms", "terms.formula", 
-                    "update.formula")
+                    "quantile", "resid", "pnorm", "rnorm", "runif", "simulate", "terms", 
+                    "terms.formula", "update.formula")
 importFrom("devtools", "load_all")
 importFrom("RColorBrewer", "brewer.pal")
 importFrom("grDevices", "savePlot")
 importFrom("graphics", "hist")
-importFrom("dplyr", "anti_join")
+importFrom("dplyr", "anti_join", "left_join")
 importFrom("methods", "formalArgs", "getFunction", "languageEl", "languageEl<-", "validObject")
 importFrom("qqplotr", "stat_qq_band","stat_qq_line", "stat_qq_point")
 
@@ -183,6 +185,7 @@ S3method(changeTerms, asrtests)
 S3method(chooseModel, asrtests) 
 S3method(chooseModel, data.frame) 
 S3method(chooseSpatialModelOnIC, asrtests)
+S3method(convAsremlobj, asreml)
 S3method(estimateV, asreml) 
 S3method(exploreLSDs, alldiffs) 
 S3method(facCombine, alldiffs)
@@ -227,6 +230,7 @@ S3method(renewClassify, alldiffs)
 S3method(reparamSigDevn, asrtests)
 S3method(rmboundary, asreml)
 S3method(rmboundary, asrtests)
+S3method(setmbfenv, asreml)
 S3method(setvarianceterms, call)
 S3method(setvarianceterms, asreml)
 S3method(simulate, asreml)

@@ -33,7 +33,8 @@
                        dropRowterm = NULL, dropColterm = NULL, 
                        nsegs = NULL, nestorder = c(1,1), 
                        rotateX = FALSE, ngridangles = c(18, 18), 
-                       asreml.option = "mbf",  tpps4mbf.obj = NULL, 
+                       which.rotacriterion = "AIC", nrotacores = 1, 
+                       asreml.option = "mbf", tpps4mbf.obj = NULL, 
                        allow.unconverged = FALSE, 
                        allow.fixedcorrelation = FALSE,
                        checkboundaryonly = FALSE, update = FALSE, 
@@ -47,10 +48,16 @@
                \code{corr}, \code{TPNCSS}, \code{TPPCS}, and \code{TPP1LS}. 
                If set to \code{none}, then just the supplied nonspatial model and 
                the information about its information criteria will be returned.}
- \item{sections}{A single \code{character} string that species the name of the column 
+ \item{sections}{A single \code{character} string that specifies the name of the column 
                in the \code{\link{data.frame}} that contains the \code{\link{factor}} 
-               that identifies different sections of the data 
-               to which separate spatial models are to be fitted.}
+               that identifies different sections of the data to which separate spatial 
+               models are to be fitted. Note that, if there are other terms that 
+               involve \code{sections} in the random formula, there should be separate 
+               terms for each level of \code{sections}. For example, in a blocked 
+               experiment involving multiple sites, there should be a separate term for 
+               the Blocks at each Site i.e. terms of the form at(Site, i):Block, or 
+               equivalent, for each site. Otherwise, the combined term (e.g. Site:Block) 
+               will affect the fitting of the local spatial model for a site.}
  \item{row.covar}{A single \code{character} string nominating a \code{\link{numeric}} 
                that contains the values of a centred covariate indexing the rows of a 
                grid. The \code{\link{numeric}} must be a column in the 
@@ -102,18 +109,18 @@
  \item{nsegs}{A pair of \code{\link{numeric}} values giving the number of segments into
               which the column and row ranges are to be split, respectively, for fitting 
               a P-spline model (\code{TPPS}) (each value specifies the number of internal 
-              knots + 1). If only one number is 
-              specified, that value is used in both dimensions. If not specified, then 
-              (number of unique values - 1) is used in each dimension; for a grid layout 
-              with equal spacing, this gives a knot at each data value.}
+              knots + 1). If not specified, then (number of unique values - 1) is used 
+              in each dimension; for a grid layout with equal spacing, this gives a knot 
+              at each data value. If \code{sections} is not \code{NULL} and the grid 
+              differs between the \code{sections}, then \code{nsegs} will differ between 
+              the \code{sections}.}
  \item{nestorder}{A \code{\link{numeric}} of length 2. The order of nesting for column 
               and row dimensions, respectively, in fitting a P-spline model (\code{TPPS}). 
               A value of 1 specifies no nesting, a value of 2 generates a spline with 
               half the number of segments in that 
               dimension, etc. The number of segments in each direction must be a 
-              multiple of the order of nesting. If only one number is specified, that 
-              value is used for both dimensions.}
- \item{rotateX}{A \code{logical} indicating whether to rotate the eigenvectors of the 
+              multiple of the order of nesting.}
+ \item{rotateX}{A \code{\link{logical}} indicating whether to rotate the eigenvectors of the 
               penalty matrix, as described by Piepho, Boer and Williams (2022), when 
               fitting a P-spline (\code{TPSS}). Setting \code{rotateX} to \code{TRUE} 
               results in an optimized rotation produced by exploring 
@@ -124,31 +131,48 @@
               \code{difforder} values greater than 1 and has only been implemented for 
               \code{difforder} equal to 2.}
  \item{ngridangles}{A \code{\link{numeric}} of length 2. The numbers of angles between 0 
-              and 90 degrees) for row and column dimensions to be used in determining the 
+              and 90 degrees for row and column dimensions to be used in determining the 
               optimal pair of angles for rotating the eignevectors of the penalty matrix 
               of a P-spline (\code{TPSS}). Specifying factors of 90 will result in 
-              integer-valued angles. If only one number is specified, that value 
-              is used for both dimensions. The number of grid points, and hence re-analyses 
-              will be the product of the two sums calculated as one plus each of the values 
-              for \code{ngridangles}.}
+              integer-valued angles. The number of grid points, and hence 
+              re-analyses will be the product of the two sums. a sum being one plus each 
+              of the values for \code{ngridangles}.}
+ \item{which.rotacriterion}{A single \code{character} string nominating which of the 
+              criteria, out of the \code{deviance}, the \code{likelihood}, the 
+              \code{AIC} and the \code{BIC}, is to be used in determining the optimal 
+              rotation of the eigenvectors of the penalty matrix. The \code{deviance} 
+              uses the REML value computed by \code{asreml}; the other criteria use 
+              the full likelihood, evaluated using the REML estimates, that is computed 
+              by \code{\link{infoCriteria.asreml}}.}
+ \item{nrotacores}{A \code{\link{numeric}} specifying the number of cores to deploy for 
+              running the analyses required to search the two-diemsional grid of rotation 
+              angles when \code{rotateX} is \code{TRUE}. Parallel processing has been 
+              implemented for analyzing, for each column angle, the set of angles to be 
+              investigated for the row dimension.  The default value of one means that 
+              parallel processing will not be used. The value chosen for \code{nrotacores} 
+              needs to balanced against the other processes that are using parallel 
+              processing at the same time.}
  \item{asreml.option}{A single \code{character} string specifying whether the \code{grp} or 
               \code{mbf} methods are to be used to supply externally formed covariate 
-              matrices to \code{asreml} when fitting a P-spline (\code{TPSS}). 
-              If the \code{mbf} methods is to be used, then 
-              \code{\link{makeTPPSplineMats.data.frame}} must be used before calling 
-              \code{addSpatialModel.asrtests}. Compared to the \code{mbf} method, 
-              the \code{grp} method creates large \code{\link{asrtests.object}}s, but is 
-              faster. The \code{grp} method adds columns to the 
-              \code{\link{data.frame}} containing the \code{data}. The \code{mbf} method 
-              adds only fixed covariate to \code{data} and stores the random covariates 
-              in the environment that called \code{\link{makeTPPSplineMats.data.frame}}; 
-              there are three \code{\link{data.frame}s} stored for each \code{section}.}
- \item{tpps4mbf.obj}{An object made with \code{\link{makeTPPSplineMats.data.frame}} and 
-              which contains the spline basis information, that is extra to the 
-              \code{\link{data.frame}s} created by\cr 
-              \code{\link{makeTPPSplineMats.data.frame}} 
-              in the environment in which it is called and that is needed to fit a 
-              \code{TPPS} model using the \code{mbf} method of \code{asreml}.}
+              matrices to \code{asreml} when fitting a P-spline (\code{TPSS}). Compared 
+              to the \code{mbf} method, the \code{grp} method is somewhat faster, but 
+              creates large \code{\link{asrtests.object}}s for which the time it takes 
+              to save them can exceed any gains in execution speed. The \code{grp} 
+              method adds columns to the \code{\link{data.frame}} containing the \code{data}. 
+              On the other hand, the \code{mbf} method adds only the fixed covariates 
+              to \code{data} and stores the random covariates in the environment of the 
+              internal function that calls the spline-fitting function; there are three smaller 
+              \code{\link{data.frame}s} for each \code{section} that are not stored in the 
+              \code{asreml.object} resulting from the fitted model.}
+ \item{tpps4mbf.obj}{An object made with \code{\link{makeTPPSplineMats.data.frame}} 
+              that contains the spline basis information for fitting P-splines. 
+              The argument \code{tpps4mbf.obj} only needs to be set when the \code{mbf} 
+              option of \code{asreml.option} is being used and it is desired to use 
+              \code{mbf} \code{\link{data.frame}s} that have been created and stored 
+              prior to calling \code{chooseSpatialModelOnIC.asrtests}. If \code{tpps4mbf.obj} 
+              is \code{NULL}, \cr 
+              \code{\link{makeTPPSplineMats.data.frame}} will be called 
+              internally to produce the required \code{mbf} \code{\link{data.frame}s}.}
  \item{allow.unconverged}{A \code{logical} indicating whether to accept a new model 
               even when it does not converge. If \code{FALSE} and the fit of the new 
               model does not converge, the supplied \code{asrtests.obj} is returned.  
@@ -168,21 +192,26 @@
               term are performed with \code{checkboundaryonly}  set to \code{TRUE} and its 
               supplied setting only honoured using a call to \code{\link{rmboundary.asrtests}} 
               immediately prior to returning the final result of the fitting.}
- \item{update}{If \code{TRUE} then \code{update.asreml} is called to fit the model 
-              to be tested. In doing this the arguments \code{R.param} and 
-              \code{G.param} are set to those in the \code{asreml} 
-              object stored in \code{asrtests.obj} so that the values from the previous 
-              model are used as starting values. If \code{FALSE} then a call is made to 
-              \code{asreml} in which the only changes from the previous call are that 
-              (i) models are modifed as specified and 
-              (ii) modifications specified via \code{\dots} are made.}
+ \item{update}{If \code{TRUE}, and \code{set.terms} is \code{NULL}, then 
+              \code{\link{newfit.asreml}} is called to fit the model to be tested, 
+              using the values of the variance parameters stored in 
+              the \code{asreml.object}, that is stored in \code{asrtests.obj}, as starting values. 
+              If \code{FALSE} or \code{set.terms} is not \code{NULL}, then 
+              \code{\link{newfit.asreml}} will not use the stored variance parameter 
+              values as starting values when fitting the new model, the only 
+              modifications being (i) to fit aptial terms and 
+              (ii) those specified via \code{\dots}.}
  \item{which.IC}{A \code{character} specifying the information criterion to be used in 
-              selecting the best model. Possible values are \code{AIC} and 
-              \code{BIC}. The values of the criterion for supplied model must 
-              exceed that for changed model for the changed model to be returned.}
+                   selecting the best model. Possible values are \code{AIC} and 
+                   \code{BIC}. The value of the criterion for supplied model must 
+                   exceed that for changed model for the changed model to be returned. 
+                   (For choosing the rotation angle of the eigenvectors of the penalty 
+                    matrix, see \code{which.rotacriterion}.}
  \item{IClikelihood}{A \code{character} specifying whether Restricted Maximum Likelihood 
-               (\code{REML}) or the full likelihood (\code{full}) are to be used in 
-               calculating the information criteria.}
+                   (\code{REML}) or the full likelihood, evaluated using REML estimates, 
+                   (\code{full}) are to be used in calculating the information criteria 
+                   to be included in the \code{test.summary} of an 
+                   \code{\link{asrtests.object}} or to be used in choosing the best model.}
  \item{return.asrts}{A \code{character} string specifying whether the \code{\link{asrtests.object}} 
                for the \code{best} fitting model (smallest AIC or BIC) is returned or the 
                \code{\link{asrtests.object}}s resulting from the attempted fits of \code{all} of 
@@ -198,7 +227,7 @@ For the \code{corr} spatial model, the default model is an autocorrelation model
 
 The tensor-product natural-cubic-smoothing-spline (\code{TPNCSS}) spatial model is as decribed by Verbyla et al. (2018), the tensor-product penalized-cubic-spline (\code{TPPCS}) model is similar to that described by Rodriguez-Alvarez et al. (2018), and the tensor-product, first-difference-penalty, linear spline (\code{TPP1LS}) model is amongst those described by Piepho, Boer and Williams (2022).  The fixed terms for the spline models are \code{row.covar + col.covar + row.covar:col.covar} and the random terms are \code{spl(row.covar) + spl(col.covar) + dev(row.covar) + dev(col.covar) + spl(row.covar):col.covar + row.covar:spl(col.covar) + spl(row.covar):spl(col.covar)}, except that \code{spl(row.covar) + spl(col.covar)} is not included in \code{TPPCS} and \code{TPP1LS} models. The supplied model should not include any of these terms. However, any fixed or random main-effect Row or Column term that has been included as an initial model for comparison with a spatial model can be removed prior to fitting the spatial model using \code{dropRowterm} or \code{dropColterm}.  For the penalized P-spline models with second-order differencing, the model matrices used to fit the random terms \code{spl(row.covar):col.covar} and \code{row.covar:spl(col.covar)} are transformed using the spectral decomposition of their penalty matrices, and unstructured variance models across the columns of each of them will be tried.
 
-The \code{TPPCS} and \code{TPP1LS} models are fitted using functions from the \code{R} package \code{TPSbits} authored by Sue Welham (2022). There are two methods for supplying the spline basis information produced by \code{tpsmmb} to \code{asreml}. The \code{grp} method adds the it to the \code{data.frame} holding the information for the analysis. The \code{mbf} method requires the \code{\link{data.frame}s} with the spline basis information to be in the same environment as the function that is called to make a fit using \code{asreml}. To this end, and prior to invoking the function to fit spatial models, \code{\link{makeTPPSplineMats.data.frame}} must be used to produce the \code{\link{data.frame}s}. For \code{TPPCS} models, it is also possible to investigate the rotation of the penalty matrix for the random terms \code{spl(row.covar):col.covar} and \code{row.covar:spl(col.covar)} (for more information see Piepho, Boer and Williams, 2022).
+The \code{TPPCS} and \code{TPP1LS} models are fitted using functions from the \code{R} package \code{TPSbits} authored by Sue Welham (2022). There are two methods for supplying the spline basis information produced by \code{tpsmmb} to \code{asreml}. The \code{grp} method adds it to the \code{data.frame} supplied in the \code{data} argument of the \code{asreml} call. The \code{mbf} method creates smaller \code{\link{data.frame}s} with the spline basis information in the same environment as the internal function that calls the spline-fitting function. For \code{TPPS} with second-order differencing, it is also possible to investigate the rotation of the penalty matrix eigenvectors for the random terms \code{spl(row.covar):col.covar} and \code{row.covar:spl(col.covar)} (for more information see Piepho, Boer and Williams, 2022).  If it is desired to use in a later session, an \code{asreml} function, or \code{asrtests} function that calls \code{asreml}, (e.g. \code{predict.asreml}, \code{\link{predictPlus.asreml}}, or \code{\link{changeTerms.asrtests}}) on an \code{asreml.object} created using \code{mbf} terms, then the \code{mbf} \code{\link{data.frame}s} will need to be recreated using \code{\link{makeTPPSplineMats.data.frame}} in the new session, supplying, if there has been rotation of the penalty matrix eigenvectors, the \code{theta} values that are returned as the attribute \code{theta.opt} of the \code{asreml.obj}. 
 
 All models utlize the function \code{\link{changeModelOnIC.asrtests}} to assess the model fit, the information critera used in assessing the fit being calculated using \code{\link{infoCriteria}}. Arguments from \code{tpsmmb} and \code{\link{changeModelOnIC.asrtests}} can be supplied in calls to \code{chooseSpatialModelOnIC.asrtests} and will be passed on to the relevant function throught the ellipses argument (\ldots).
 
@@ -219,9 +248,10 @@ have the same combination.
        and that spatial model. Each \code{\link{asrtests.object}} contains the components:  
        (i) \code{asreml.obj}, (ii) \code{wald.tab}, and (iii) \code{test.summary}. If the 
        \code{\link{asrtests.object}} is the result of fitting a \code{TPPCS} model with 
-       an exploration of the rotation of the penalty matrix for the linear components, 
-       then the \code{asreml.obj} will have an attribute \code{theta.opt} that contains 
-       the optimal rotation angles of the penalty.
+       an exploration of the rotation of the eigenvectors of the penalty matrix for the linear 
+       components, then the \code{asreml.obj} will have an attribute \code{theta.opt} that contains 
+       the optimal rotation angles of the eigenvectors.
+
        
        The \code{spatial.IC} component holds a \code{\link{data.frame}} with summary of the 
        values of the information criteria for the supplied model and those resulting from  
@@ -243,13 +273,19 @@ Welham, S. J. (2022) \code{TPSbits}: \emph{Creates Structures to Enable Fitting 
 
 \author{Chris Brien}
 
-\seealso{\code{\link{as.asrtests}}, \code{\link{rmboundary.asrtests}}, 
-         \code{\link{addSpatialModelOnIC.asrtests}}, \code{\link{addSpatialModel.asrtests}}, ,
-         \code{\link{testranfix.asrtests}}, \cr 
+\seealso{\code{\link{as.asrtests}}, 
+         \code{\link{makeTPPSplineMats.data.frame}}, 
+         \code{\link{addSpatialModelOnIC.asrtests}}, \cr
+         \code{\link{addSpatialModel.asrtests}}, 
+         \code{\link{changeModelOnIC.asrtests}}, 
+         \code{\link{changeTerms.asrtests}},  \cr
+         \code{\link{rmboundary.asrtests}},  
+         \code{\link{testranfix.asrtests}}, 
          \code{\link{testresidual.asrtests}}, 
-         \code{\link{newfit.asreml}}, \code{\link{reparamSigDevn.asrtests}}, 
-         \code{\link{chooseModel.asrtests}}, \cr 
-         \code{\link{changeModelOnIC.asrtests}}, \code{\link{infoCriteria.asreml}}}
+         \code{\link{newfit.asreml}}, \cr
+         \code{\link{reparamSigDevn.asrtests}}, 
+         \code{\link{changeTerms.asrtests}}, 
+         \code{\link{infoCriteria.asreml}}}
 \examples{\dontrun{
 
 data(Wheat.dat)
@@ -273,7 +309,7 @@ current.asrt <- as.asrtests(current.asr, NULL, NULL,
                             label = "Random Row and Column effects")
 current.asrt <- rmboundary(current.asrt)
 
-# Choose the best of three models the local spatial variation
+# Choose the best of four models for the local spatial variation
 current.asrt <- chooseSpatialModelOnIC(current.asrt, 
                                        row.covar = "cRow", col.covar = "cColumn",
                                        dropRowterm = "Row", dropColterm = "Column",

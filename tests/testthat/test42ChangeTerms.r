@@ -70,11 +70,11 @@ test_that("Wheatchange_asreml42", {
   current.asrt <- as.asrtests(current.asr, NULL, NULL)
   current.asrt <- changeTerms(current.asrt, dropRandom = "units",newResidual = "-(1)")
   testthat::expect_equal(sum(chk.changes(current.asrt$test.summary)), 2)
-  testthat::expect_equal(nrow(summary(current.asrt$asreml.obj)$varcomp), 1)
+  testthat::expect_equal(nrow(summary(current.asrt$asreml.obj)$varcomp), 3)
   testthat::expect_equal(nrow(current.asrt$wald.tab), 4)
   current.asrt <- changeTerms(current.asrt, newResidual = "ar1(Row):ar1(Column)")
   testthat::expect_equal(sum(chk.changes(current.asrt$test.summary)), 1)
-  testthat::expect_equal(nrow(summary(current.asrt$asreml.obj)$varcomp), 3)
+  testthat::expect_equal(nrow(summary(current.asrt$asreml.obj)$varcomp), 4)
   testthat::expect_equal(nrow(current.asrt$wald.tab), 4)
 
   # Restart with no random and add them back in

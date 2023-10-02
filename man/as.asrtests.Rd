@@ -54,7 +54,8 @@ as.asrtests(asreml.obj, wald.tab = NULL, test.summary = NULL,
                     of the new \code{\link{asrtests.object}}. If \code{none}, none are 
                     included. Otherwise, if \code{REML}, then the AIC and BIC based 
                     on the Restricted Maximum Likelihood are included; if \code{full}, 
-                    then the AIC and BIC based on the full likelihood are included. 
+                    then the AIC and BIC based on the full likelihood, evaluated 
+                    using REML estimates, are included. 
                     (See also \code{\link{infoCriteria.asreml}}.)}
  \item{bound.exclusions}{A \code{character} specifying the bound (constraint) codes that 
                     will result in a variance parameter being excluded from the count of 

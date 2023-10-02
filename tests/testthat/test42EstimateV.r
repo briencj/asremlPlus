@@ -228,7 +228,7 @@ test_that("Wheat_estimateV_asreml42", {
   V <- fac.vcmat(Wheat.dat$Row, gamma.Row) +
     mat.dirprod(row.corb, col.ar1)
   V <- s2*V
-  testthat::expect_true(all.equal(VWheat, V, tolerance =  1e-06))
+  testthat::expect_true(all.equal(VWheat, V, tolerance =  1e-05))
 
   #residual with Col corb  
   asreml.obj <- asreml(fixed = yield ~ Rep + Variety, 

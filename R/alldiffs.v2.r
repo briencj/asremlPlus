@@ -1899,7 +1899,7 @@ redoErrorIntervals.alldiffs <- function(alldiffs.obj, error.intervals = "Confide
               preds.attr <- attributes(alldiffs.obj$predictions)
               preds$rows <- 1:nrow(preds)
               preds.nam <- names(preds)
-              preds <- merge(preds, LSD.dat, all.x = TRUE, sort = FALSE)
+              preds <- dplyr::left_join(preds, LSD.dat)
               preds <- preds[c(preds.nam, setdiff(names(preds), preds.nam))]
               if (any(diff(preds$rows != 1)))
                 preds[preds$rows, ] <- preds

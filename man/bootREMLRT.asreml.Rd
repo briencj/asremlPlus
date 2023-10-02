@@ -31,7 +31,7 @@
            fixed.spline.terms = NULL, 
            bound.exclusions = c("F","B","S","C"), 
            tolerance = 1E-10, update = TRUE, trace = FALSE, 
-           ncores = detectCores(), ...)
+           ncores = 2, ...)
 }
 \arguments{
  \item{h0.asreml.obj}{\code{asreml} object containing the fit under the model for the 
@@ -86,17 +86,19 @@
                     then none will be excluded.}
  \item{tolerance}{The value such that eigenvalues less than it are considered to be zero.}
  \item{update}{If \code{TRUE }then the arguments \code{R.param} 
-              and \code{G.param} are set to those in the \code{asreml} object 
-              supplied in \code{object} so that the values from the original 
-              model are used as starting values. If \code{FALSE} then calls are made to 
-              \code{asreml} in which the only changes from the previous call are 
+              and \code{G.param} are set to those in the \code{asreml} object supplied 
+              in \code{object} so that the values from the original model are used as 
+              starting values. If \code{FALSE} then \code{asreml} \code{calls} are 
+              evaluated, the only changes from the previous call being that 
               (i) the model is fitted to simulated data and (ii) modifications 
-              specified via \code{\dots} are made, except that changes cannot be made to 
+              specified via \code{\dots} are mode, except that changes cannot be made to 
               any of the models.}
  \item{trace}{If \code{TRUE} then partial iteration details are displayed when ASReml-R 
               functions are invoked; if \code{FALSE} then no output is displayed.}
  \item{ncores}{A \code{numeric} specifying the number of cores to use in doing the 
-             simulations.}
+              simulations. In choosing a value for \code{ncores}, it is necessary to 
+              take into account other processes that are using parallel processing at 
+              the same time.}
  \item{\dots}{Other arguments that are passed down to the function asreml. Changes to the 
             models are not allowed. Other changes are dangerous and generally should be 
             avoided.}
@@ -145,10 +147,10 @@
 }
 
 \author{Chris Brien}
-\seealso{\code{\link{REMLRT.asreml}}, \code{\link{infoCriteria.asreml}}, 
+\seealso{\code{\link{REMLRT.asreml}}, \code{\link{infoCriteria.asreml}}, \code{\link{newfit.asreml}}, 
          \code{\link{testranfix.asrtests}}}
 \examples{\dontrun{
-    bootREMLRT(ICV.max, ICV.red, ncores = 2)
+    bootREMLRT(ICV.max, ICV.red, ncores = parallel::detectCores())
 }}
 \keyword{htest}
 \keyword{asreml}

@@ -33,27 +33,33 @@ Note that many of the function below are S3 methods so that the suffix can be om
 
 \code{\link{as.alldiffs}}
       \tab Forms an \code{\link{alldiffs.object}} from the supplied \cr
-      \tab predictions, along with those statistics, associated with the \cr 
-      \tab predictions and their pairwise differnces, that have been supplied. \cr
+      \tab predictions, along with those statistics, associated with \cr 
+      \tab the predictions and their pairwise differnces, that have \cr
+      \tab been supplied. \cr
 \code{\link{asrtests}}
       \tab Pseudonym for \code{\link{as.asrtests}}. \cr
 \code{\link{as.asrtests}}
-      \tab Forms an \code{\link{asrtests.object}} that stores (i) a fitted asreml object, \cr
+      \tab Forms an \code{\link{asrtests.object}} that stores \cr
+      \tab (i) a fitted asreml object, \cr
       \tab (ii) a pseudo-anova table for the fixed terms and \cr
       \tab (iii) a history of changes and hypthesis testing \cr
       \tab used in obtaining the model. \cr
 \code{\link{as.predictions.frame}}
-      \tab Forms a \code{\link{predictions.frame}} from a data.frame, ensuring that \cr
-      \tab the correct columns are present. \cr
+      \tab Forms a \code{\link{predictions.frame}} from a data.frame, ensuring \cr
+      \tab that the correct columns are present. \cr
+\code{\link{convAsremlobj.asreml}}
+      \tab Recreates an \code{asreml} object so that it is compatible with the \cr 
+      \tab currently loaded \code{asreml} version. \cr
 \code{\link{facCombine.alldiffs}}
       \tab Combines several factors into one in the components of \cr
       \tab an \code{\link{alldiffs.object}}.  \cr
 \code{\link{facRecast.alldiffs}}
-      \tab Reorders and/or revises the factor levels using the order of old levels \cr
-      \tab in \code{levels.order} and the new labels for the levels given in \code{newlabels}. \cr
+      \tab Reorders and/or revises the factor levels using the order of \cr
+      \tab old levels in \code{levels.order} and the new labels for the \cr
+      \tab levels given in \code{newlabels}. \cr
 \code{\link{facRename.alldiffs}}
-      \tab Renames \code{\link{factor}}s in the \code{prediction} component of \cr
-      \tab an \code{\link{alldiffs.object}}.    \cr
+      \tab Renames \code{\link{factor}}s in the \code{prediction} component \cr
+      \tab of an \code{\link{alldiffs.object}}.    \cr
 \code{\link{getFormulae.asreml}}
       \tab Gets the formulae from an asreml object. \cr
 \code{\link{is.alldiffs}}
@@ -76,7 +82,8 @@ Note that many of the function below are S3 methods so that the suffix can be om
       \tab Prints the components of a list containing data on the \cr
       \tab LSDs for all pairwise differences of predictions.      \cr
 \code{\link{print.predictions.frame}}
-      \tab Prints the values in a \code{\link{predictions.frame}}, with or without title and heading. \cr
+      \tab Prints the values in a \code{\link{predictions.frame}}, with or without \cr 
+      \tab title and heading. \cr
 \code{\link{print.test.summary}}
       \tab Prints a data.frame containing a test.summary. \cr
 \code{\link{print.wald.tab}}
@@ -115,8 +122,10 @@ Note that many of the function below are S3 methods so that the suffix can be om
       \tab Subject the fitted asreml.obj stored in an asrtests.object \cr
       \tab  to further iterations of the fitting process. \cr
 \code{\link{newfit.asreml}} 
-      \tab  Refits an asreml model with modified model formula \cr
-      \tab  using either a call to 'update.asreml' or a direct \cr
+      \tab Refits an \code{asreml} model with changed arguments by extracting, \cr
+      \tab modifying and evaluating its \code{call}  - an alternate to \cr 
+      \tab update.asreml. \cr
+using either a call to 'update.asreml' or a direct \cr
       \tab  call to 'asreml'. \cr
 \code{\link{reparamSigDevn.asrtests}}
        \tab Reparamterizes each random (deviations) term \cr

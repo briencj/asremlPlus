@@ -104,15 +104,16 @@
               fixed terms, including (Intercept) whose value could be \code{NA}.}
  \item{trace}{If TRUE then partial iteration details are displayed when ASReml-R 
               functions are invoked; if FALSE then no output is displayed.}
-\item{update}{If \code{TRUE }then \code{update.asreml} is called in testing models. 
-              In doing this the arguments \code{R.param} and \code{G.param} are 
-              set to those in the \code{asreml} object stored in \code{object} 
-              so that the values from the previous model are used as starting values. 
-              If \code{FALSE} then a call is made to \code{asreml} in which the 
-              only changes to the \code{asreml.obj} stored in the supplied 
-              \code{object} are (i) to the terms in the fixed and random models 
-              corresponding to terms in \code{terms.marginality} and (ii) those 
-              modifications specified via \code{\dots}.}
+ \item{update}{If \code{TRUE}, and \code{set.terms} is \code{NULL}, then 
+              \code{\link{newfit.asreml}} is called to fit the model to be tested, 
+              using the values of the variance parameters stored in 
+              the \code{asreml.object}, that is stored in \code{asrtests.obj}, as starting values. 
+              If \code{FALSE} or \code{set.terms} is not \code{NULL}, then 
+              \code{\link{newfit.asreml}} will not use the stored variance parameter 
+              values as starting values when fitting the new model, the only 
+              modifications being (i) to the terms in the fixed and random models 
+              corresponding to terms in \code{terms.marginality} and 
+              (ii) those specified via \code{\dots}.}
  \item{set.terms}{A character vector specifying the terms that are to have 
                   bounds and/or initial values set prior to fitting. 
                   The names must match those in the \code{vparameters} component of the 
@@ -148,7 +149,8 @@
                     of the new \code{\link{asrtests.object}}. If \code{none}, none are 
                     included. Otherwise, if \code{REML}, then the AIC and BIC based 
                     on the Restricted Maximum Likelihood are included; if \code{full}, 
-                    then the AIC and BIC based on the full likelihood are included. 
+                    then the AIC and BIC based on the full likelihood, evaluated using
+                    REML estimates, are included. 
                     (See also \code{\link{infoCriteria.asreml}}.)}
  \item{\dots}{further arguments passed to \code{asreml}, \code{wald.asreml} and
                    \code{\link{as.asrtests}} via \code{\link{testranfix.asrtests}}.}

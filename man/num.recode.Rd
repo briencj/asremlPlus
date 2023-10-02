@@ -13,7 +13,7 @@
 }
 \value{A \code{vector}.}
 \author{Chris Brien}
-\seealso{\code{dae::fac.recode}.}
+\seealso{\code{dae::fac.recast}.}
 \examples{
 ## set up a factor with labels
 x <- rep(c(-42, -14, 14, 42), 4)

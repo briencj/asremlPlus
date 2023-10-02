@@ -1,5 +1,25 @@
 \name{news}
 \title{News for Package asremlPlus}
+\section{asremlPlus Version 4.4.15 (2023-10-02}{
+  \itemize{
+  \item{Make the default number of cores (\code{ncores}) for parallel processing in bootREMLRT.asreml, simulate.asreml and variofaces.asreml.} 
+  \item{Add the function convAsremlobj.asreml that recreates an existing \code{asreml} object using the currently loaded \code{asreml} version so that the object is compatible with this version.}
+  \item{Made the following modifications to addSpatialModel.asrtests, addSpatialModelOnIC.asrtests and chooseSpatialModelOnIC.asrtests:
+  \itemize{
+  \item{Tweaked the code underlying these functions for fitting local spatial variation models to make it more robust.}
+  \item{Added reporting the optimal rotation angles to the test.summary when \code{rotateX} is \code{TRUE}. Also, added theta(s) as an attribute to the \code{asreml.object}.}
+  \item{Added the \code{which.rotacriterion} so that one could choose between the \code{deviance}, \code{likelihood}, \code{AIC} and \code{BIC} as the criterion to use in determining the optimal roation angle for rotating the eigenvectors of the penalty matrix.}
+  \item{Add the capacity to parallel process, for each column angle, the search of the row angles. This option is only available for the \code{asreml.option} set to \code{grp}.}
+  \item{Removed the need to precede a call to these functions with a call makeTPPSplineMats.data.frame when \code{asreml.option} is set to \code{mbf}.}
+  \item{Fix a bug in fitting natural cubic smoothing spines (\code{TPNCSS}) using these functions where only the first of the \code{sections} had splines fitted to it.}
+  \item{Change from ordinal numbers to levels in labelling the fitting of correlation \code{corr} spatial models when using these functions.}
+}}
+  \item{Modify makeTPPSplineMats.data.frame so that the default enviroment of the data.frames for the \code{mbf} option of \code{asreml.opt} is that of the function that calls makeTPPSplineMats.data.frame. Also, for \code{mbf.env} set to \code{NULL}, do not assign the \code{mbf} data.frames; just include them in the \code{list} that is returned.}
+  \item{Make the \code{data.plus} component of the \code{list} produced by makeTPPSplineMats.data.frame when \code{asreml.option} is set to \code{mbf} equivalent to that produced when \code{asreml.option} is set to \code{grp}.}
+  \item{Corrected bug in detecting \code{Fixed (F)} variance components in rmboundary.asrtests.}
+  \item{Added to newfit.asreml, a test for bound and singular terms in a new model when \code{update} is \code{TRUE} and, if there are any, added code to refit the model as if \code{update} was \code{FALSE}, to see if any bound terms become unbound terms.}
+  \item{Clarified the dcoumentation of the \code{update} argument in all functions that include it.}
+}}
 \section{asremlPlus Version 4.4.14 (2023-08-28)}{
   \itemize{
   \item{Minor internal code changes.}

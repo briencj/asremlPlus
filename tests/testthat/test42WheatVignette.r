@@ -24,7 +24,7 @@ test_that("Wheat_asreml42", {
   # Load current fit into an asrtests object
   current.asrt <- as.asrtests(current.asr, NULL, NULL, 
                               label = "Maximal model", IClikelihood = "full")
-  testthat::expect_lt(abs(current.asrt$test.summary$AIC - 1653.1), 0.50)
+  testthat::expect_lt(abs(current.asrt$test.summary$AIC - 1653.098), 0.10)
   
   
   # Check for and remove any boundary terms
@@ -79,7 +79,8 @@ test_that("Wheat_asreml42", {
     plot.varioGram(varioGram.asreml(current.asr))
   }
   V <- estimateV(current.asr)
-  faces <- variofaces(current.asr, V=V, maxit=50, units="addtores")
+  faces <- variofaces(current.asr, V=V, maxit=50, units="addtores",
+                      ncores = parallel::detectCores())
   testthat::expect_equal(nrow(faces$face1), 10)
   testthat::expect_equal(nrow(faces$face2), 15)
   

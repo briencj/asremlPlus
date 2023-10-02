@@ -24,7 +24,7 @@
          \code{\link{print.alldiffs}}, \code{\link{sort.alldiffs}}, \cr
          \code{\link{facCombine.alldiffs}}, \code{\link{facRecast.alldiffs}}, 
          \code{\link{renewClassify.alldiffs}}; 
-         \code{fac.recode} in package \pkg{dae}.}
+         \code{fac.recast} in package \pkg{dae}.}
 \examples{
   data("Ladybird.dat")
   

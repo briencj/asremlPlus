@@ -59,7 +59,7 @@
                                 tolerance = 1E-10, units = "ignore", 
                                 update = TRUE, trace = FALSE, 
                                 graphics.device=NULL, 
-                                ncores = parallel::detectCores(), ...)
+                                ncores = 2, ...)
 #function to do the face variogram plots, including envelopes, described by 
 #Stefanova et al (2010)
 #asreml.obj is an asreml object from a call to asreml in which the data argument 
@@ -489,7 +489,7 @@
 
 "simulate.asreml" <- function(object, nsim=100, seed = NULL, means=NULL, V, 
                               tolerance = 1E-10, update = TRUE, trace = FALSE, 
-                              which = "data", units = "ignore", ncores = detectCores(), 
+                              which = "data", units = "ignore", ncores = 2, 
                               ...)
   #function to obtain simulated data corresponding to a fitted asreml model
   #object is an asreml object from a call to asreml in which the data argument 

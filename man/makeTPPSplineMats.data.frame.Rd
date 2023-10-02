@@ -4,15 +4,15 @@
 \title{Make the spline basis matrices and data needed to fit Tensor Product P-splines.}
 \description{Prepares the fixed and random P-spline basis matrices, and associated 
        information, that are needed for fitting of Tensor Product P-splines (TPPS) 
-       as described by Rodriguez-Alvarez et al. (2018). When \code{asreml.option}  is 
-       set to \code{mbf}, \code{makeTPPSplineMats.data.frame} must be run prior to 
-       fitting \code{TPPS} models for local spatial variation using 
+       as described by Rodriguez-Alvarez et al. (2018). This function is called 
+       internally by \code{\link{addSpatialModelOnIC.asrtests}}, 
        \code{\link{addSpatialModelOnIC.asrtests}} and 
-       \code{\link{chooseSpatialModelOnIC.asrtests}}. The spline basis matrices are 
-       created in the parent environment of \code{makeTPPSplineMats.data.frame} 
-       when it is called. If the \code{grp} is to be used to supply the basis 
-       functions  to asreml-R, then this function need not be called; the spatial 
-       spline fitting functions will set up the basis functions. 
+       \code{\link{chooseSpatialModelOnIC.asrtests}} when fitting \code{TPPS} models 
+       for local spatial variation. There are two methods available, controlled by 
+       \code{asrem.option} for creating and storing the basis functions. 
+       This function is most likely to be called directly when \code{mbf} has been used 
+       in creating an \code{asreml.object} and it is desired to use the object in a 
+       session subsequent to the session in which the object was created.
 }
 \usage{
 \method{makeTPPSplineMats}{data.frame}(data, sections = NULL, 
@@ -20,7 +20,8 @@
                   nsegs = NULL, nestorder = c(1,1), 
                   degree = c(3,3), difforder = c(2,2),
                   rotateX = FALSE, theta = c(0,0), 
-                  asreml.option = "mbf", ...)
+                  asreml.option = "mbf", mbf.env = sys.frame(), 
+                  ...)
 }
 \arguments{
  \item{data}{An \code{\link{data.frame}} that holds the spline bases for a section. 
@@ -38,26 +39,24 @@
  \item{nsegs}{A pair of \code{\link{numeric}} values giving the number of segments into
               which the column and row ranges are to be split, respectively, for fitting 
               a P-spline model (\code{TPPS}) (each value specifies the number of internal 
-              knots + 1). If only one number is 
-              specified, that value is used in both dimensions. If not specified, then 
-              (number of unique values - 1) is used in each dimension; for a grid layout 
-              with equal spacing, this gives a knot at each data value.}
+              knots + 1). If not specified, then (number of unique values - 1) is used 
+              in each dimension; for a grid layout with equal spacing, this gives a knot 
+              at each data value. If \code{sections} is not \code{NULL} and the grid 
+              differs between the \code{sections}, then \code{nsegs} will differ between 
+              the \code{sections}.}
  \item{nestorder}{A \code{\link{numeric}} of length 2. The order of nesting for column 
               and row dimensions, respectively, in fitting a P-spline model (\code{TPPS}). 
               A value of 1 specifies no nesting, a value of 2 generates a spline with 
               half the number of segments in that 
               dimension, etc. The number of segments in each direction must be a 
-              multiple of the order of nesting. If only one number is specified, that 
-              value is used for both dimensions.}
+              multiple of the order of nesting.}
  \item{degree}{A \code{\link{numeric}}  of length 2. The degree of polynomial spline to 
               be used for column and row dimensions respectively, in fitting a P-spline 
-              (\code{TPSS}). If only one number is specified, that value is used for 
-              both dimensions.}
+              (\code{TPSS}).}
  \item{difforder}{A \code{\link{numeric}} of length 2. The order of differencing for 
               column and row dimensions, respectively, in fitting a P-spline 
-              (\code{TPSS}). If only one number is specified, that value is used for 
-              both dimensions.}
- \item{rotateX}{A \code{logical} indicating whether to rotate the eigenvectors of the 
+              (\code{TPSS}).}
+ \item{rotateX}{A \code{\link{logical}} indicating whether to rotate the eigenvectors of the 
               penalty matrix, as described by Piepho, Boer and Williams (2022), when 
               fitting a P-spline (\code{TPSS}). Setting \code{rotateX} to \code{TRUE} 
               results in an optimized rotation produced by exploring 
@@ -68,12 +67,22 @@
               \code{difforder} values greater than 1 and has only been implemented for 
               \code{difforder} equal to 2.}
  \item{theta}{A \code{\link{numeric}} of length 2. The angle (in degrees) to be used in 
-              rotating the eignevectors of the penalty matrix of a P-spline (\code{TPSS}). 
-              If only one number is specified, that value is used for both dimensions.}
- \item{asreml.option}{A single \code{character} string whose value may be \code{mbf} or 
-              \code{grp}, indicating the  method is to be used to supply externally 
-              formed covariate matrices to \code{asreml} when fitting a P-spline 
-              (\code{TPSS}).}
+              rotating the eignevectors of the penalty matrix of a P-spline (\code{TPSS}).}
+ \item{asreml.option}{A single \code{character} string specifying whether the \code{grp} or 
+              \code{mbf} methods are to be used to supply externally formed covariate 
+              matrices to \code{asreml} when fitting a P-spline (\code{TPSS}). Compared 
+              to the \code{mbf} method, the \code{grp} method is somewhat faster, but 
+              creates large \code{\link{asrtests.object}}s for which the time it takes 
+              to save them can exceed any gains in execution speed. The \code{grp} 
+              method adds columns to the \code{\link{data.frame}} containing the \code{data}. 
+              On the other hand, the \code{mbf} method adds only the fixed covariates 
+              to \code{data} and stores the random covariates in the environment of the 
+              internal function that calls the spline-fitting function; there are three smaller 
+              \code{\link{data.frame}s} for each \code{section} that are not stored in the 
+              \code{asreml.object} resulting from the fitted model.}
+ \item{mbf.env}{A \code{\link{environment}} specifying the environment to which the 
+              \code{\link{data.frame}s} containing the spline bases are to be assigned. 
+              If \code{mbf.env} is \code{NULL}, the data.frames will not be assigned.}
 \item{\dots}{Further arguments passed to \code{tpsmmb} from package \code{TPSbits}.}
 }
 \details{
@@ -155,7 +164,10 @@ a section contains:
        added the columns required to fit tensor product splines in \code{asreml-R}. 
        This \code{\link{data.frame}} can be used to fit the TPS model.  
        FOr multiple \code{sections}, this \code{\link{data.frame}} will occur 
-       in the component for each section.
+       in the component for each section. If \code{asreml.option} is set to 
+       \code{mbf}, then this component will have the \code{attribute} \code{mbf.env} 
+       that specifies the environment to which the \code{\link{data.frame}s} 
+       containing the spline bases have been assigned. 
  }
 }
 
@@ -167,7 +179,8 @@ Welham, S. J. (2022) \code{TPSbits}: \emph{Creates Structures to Enable Fitting 
 
 \author{Chris Brien}
 
-\seealso{\code{\link{addSpatialModelOnIC.asrtests}}, \code{\link{chooseSpatialModelOnIC.asrtests}}, \code{tpsmmb}}
+\seealso{\code{\link{addSpatialModel.asrtests}}, \code{\link{addSpatialModelOnIC.asrtests}}, \cr 
+         \code{\link{chooseSpatialModelOnIC.asrtests}}, \code{tpsmmb} from \code{TPSbits}}
 \examples{\dontrun{
 
 data(Wheat.dat)

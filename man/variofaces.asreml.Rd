@@ -21,7 +21,7 @@ Stefanova, Smith & Cullis (2009).}
            extra.matrix = NULL, ignore.terms = NULL, fixed.spline.terms = NULL, 
            bound.exclusions = c("F","B","S","C"), tolerance=1E-10, 
            units = "ignore", update = TRUE, trace = FALSE, 
-           graphics.device=NULL, ncores = parallel::detectCores(), ...)}
+           graphics.device=NULL, ncores = 2, ...)}
 \arguments{
  \item{asreml.obj}{An \code{asreml} object from a call to \code{asreml} in which the 
                 \code{data} argument has been set.}
@@ -73,14 +73,16 @@ Stefanova, Smith & Cullis (2009).}
               \code{ignore}. If standardized conditional residuals are plotted and 
               the BLUPs for \code{units} are to be added then it is the standardized 
               BLUPs that are added.}
- \item{update}{If \code{TRUE }then the arguments \code{R.param} 
-              and \code{G.param} are set to those in the \code{asreml} object 
-              supplied in \code{object} so that the values from the original 
-              model are used as starting values. If \code{FALSE} then calls are made to 
-              \code{asreml} in which the only changes from the previous call are 
-              (i) the model is fitted to simulated data and (ii) modifications 
-              specified via \code{\dots} are made, except that changes cannot be made to 
-              any of the models.}
+ \item{update}{If \code{TRUE}, and \code{set.terms} is \code{NULL}, then 
+              \code{\link{newfit.asreml}} is called to fit the model to be tested, 
+              using the values of the variance parameters stored in 
+              the \code{asreml.object}, that is stored in \code{asrtests.obj}, as starting values. 
+              If \code{FALSE} or \code{set.terms} is not \code{NULL}, then 
+              \code{\link{newfit.asreml}} will not use the stored variance parameter 
+              values as starting values when fitting the new model, the only 
+              modifications being ((i) the model is fitted to simulated data and 
+              (ii) those specified via \code{\dots}, except that changes 
+              cannot be made to any of the models.}
  \item{trace}{If TRUE then partial iteration details are displayed when ASReml-R 
               functions are invoked; if FALSE then no output is displayed.}
  \item{graphics.device}{A \code{character} specifying a graphics device for plotting. 
@@ -89,7 +91,9 @@ Stefanova, Smith & Cullis (2009).}
               \code{"windows"}, for example,  will result in a windows graphics 
               device being  opened.}
  \item{ncores}{A \code{numeric} specifying the number of cores to use in doing the 
-             simulations.}
+              simulations. In choosing a value for \code{ncores}, it is necessary to 
+              take into account other processes that are using parallel processing at 
+              the same time.}
  \item{\dots}{Other arguments that are passed down to the function \code{asreml}. Changes 
               to the models are not allowed. Other changes are dangerous and generally 
               should be avoided.}
@@ -122,7 +126,7 @@ Stefanova, Smith & Cullis (2009).}
             spatial analysis of field trials. \emph{Journal of Agricultural, Biological, 
             and Environmental Statistics}, \bold{14}, 392--410.}
 \author{Chris Brien}
-\seealso{\code{\link{asremlPlus-package}}, \code{asreml}, 
+\seealso{\code{\link{asremlPlus-package}}, \code{asreml}, \code{\link{newfit.asreml}}, 
          \code{\link{plotVariofaces.data.frame}}, \code{\link{simulate.asreml}}, \code{\link{set.seed}}.}
 \examples{\dontrun{
 data(Wheat.dat)
@@ -146,7 +150,7 @@ V <- gamma.Row * fac.sumop(Wheat.dat$Row) +
 V <- s2*V
 
 #Produce variogram faces plot (Stefanaova et al, 2009)
-variofaces(current.asr, V=V, ncores = 2)
+variofaces(current.asr, V=V, ncores = parallel::detectCores())
 }}
 \keyword{hplot}
 \keyword{dplot}

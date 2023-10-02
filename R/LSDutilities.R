@@ -145,8 +145,8 @@ addByFactorsToLSD.alldiffs <- function(alldiffs.obj, LSDby = NULL)
                               function(fac) {fac <- as.numfac(fac); return(fac)}) 
   
   #Add LSDby factors to LSD object
-  combs <- merge(data.frame(fac.comb = rownames(alldiffs.obj$LSD)),
-                 combs, all.x = TRUE, sort = FALSE)
+  combs <- dplyr::left_join(data.frame(fac.comb = rownames(alldiffs.obj$LSD)),
+                            combs)
   combs <- combs[-match("fac.comb", names(combs))]
   alldiffs.obj$LSD <- cbind(combs, alldiffs.obj$LSD)
   return(alldiffs.obj)

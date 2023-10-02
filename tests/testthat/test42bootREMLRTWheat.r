@@ -51,7 +51,8 @@ test_that("Wheatboot_asreml42", {
   boot.units <- bootREMLRT(h0.asreml.obj = reduced.asreml.obj, 
                            h1.asreml.obj = full.asreml.obj, 
                            nboot = 100, seed = 6250,
-                           fixed.spline.terms = "spl(vRow)")
+                           fixed.spline.terms = "spl(vRow)",
+                           ncores = parallel::detectCores())
   testthat::expect_equal(length(boot.units), 6)
   testthat::expect_equal(boot.units$DF, 1)
   testthat::expect_equal(length(boot.units$REMLRT.sim) + 
@@ -70,7 +71,8 @@ test_that("Wheatboot_asreml42", {
   boot.units <- bootREMLRT(h0.asreml.obj = reduced.asreml.obj, 
                            h1.asreml.obj = full.asreml.obj, 
                            nboot = 100, seed = 6250,
-                           fixed.spline.terms = "spl(vRow)")
+                           fixed.spline.terms = "spl(vRow)",
+                           ncores = parallel::detectCores())
   testthat::expect_equal(length(boot.units), 6)
   testthat::expect_equal(boot.units$DF, 2)
   testthat::expect_equal(length(boot.units$REMLRT.sim) + 
@@ -86,7 +88,8 @@ test_that("Wheatboot_asreml42", {
   boot.units <- bootREMLRT(h0.asreml.obj = reduced.asreml.obj, 
                            h1.asreml.obj = full.asreml.obj, 
                            nboot = 100, seed = 6250,
-                           fixed.spline.terms = "spl(vRow)")
+                           fixed.spline.terms = "spl(vRow)",
+                           ncores = parallel::detectCores())
   testthat::expect_equal(length(boot.units), 6)
   testthat::expect_equal(boot.units$DF, 1)
   testthat::expect_equal(length(boot.units$REMLRT.sim) + 

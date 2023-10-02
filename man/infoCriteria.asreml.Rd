@@ -5,8 +5,8 @@
 \title{Computes AIC and BIC for models.}
 \description{Computes Akiake and Bayesian (Schwarz) Information Criteria for models. 
              Either the Restricted Maximum likelihood (\code{REML}) or the full likelihood 
-             (\code{full}) can be used. The full likelihood is used when it is desired to 
-             compare models that differ in their fixed models.}
+             (\code{full}) can be used. The full likelihood, evaluated using REML estimates 
+             is used when it is desired to compare models that differ in their fixed models.}
 \usage{
 \method{infoCriteria}{asreml}(object, DF = NULL, 
             bound.exclusions = c("F","B","S","C"), 
@@ -29,10 +29,11 @@
                     estimated variance parameters. If set to \code{NULL} then none will 
                     be excluded.}
  \item{IClikelihood}{A \code{character} specifying whether Restricted Maximum Likelihood 
-                   (\code{REML}) or the full likelihood (\code{full}) are to be used in 
-                   calculating the information criteria for \code{family} set to 
-                   \code{asr_gaussian}. For \code{family} set to \code{asr_binomial} or 
-                   \code{asr_poisson} and with \code{dispersion} set to 1, the 
+                   (\code{REML}) or the full likelihood, evaluated using REML estimates, 
+                   (\code{full}) are to be used in calculating the information criteria 
+                   for \code{family} set to \code{asr_gaussian}. 
+                   For \code{family} set to \code{asr_binomial} 
+                   or \code{asr_poisson} and with \code{dispersion} set to 1, the 
                    \code{deviance} is extracted from \code{object} and used to calculate 
                    the AIC and BIC (as suggested by Damian Collins); the setting of 
                    \code{IClikelihood} is ignored and the log-likelihood set to \code{NA}. 

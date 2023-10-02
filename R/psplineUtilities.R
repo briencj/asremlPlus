@@ -61,56 +61,184 @@ deviance.asr <- function(obj.asr)
   dev
 }
 
+#' Function called by rotate.penalty.U to fit the rotation for a theta pair
+#' 
+fitRotation <- function(rot.asr, data, theta = c(0,0), 
+                        sections, ksect, row.covar, col.covar,
+                        nsegs, nestorder, degree, difforder, 
+                        stub, asreml.opt = "grp", mbf.env = sys.frame(), 
+                        which.rotacriterion = "AIC", 
+                        criteria)
+{
+  tps.XZmat <- makeTPPSplineMats(data, sections = sections, 
+                                 row.covar = row.covar, col.covar = col.covar,
+                                 nsegs = nsegs, nestorder = nestorder,
+                                 degree = degree, difforder = difforder,
+                                 rotateX = TRUE, theta = theta, 
+                                 asreml.opt = asreml.opt, mbf.env = NULL)
+  dat <- tps.XZmat[[ksect]]$data.plus
+  if (asreml.opt == "mbf")
+  {
+    mbf.env <- sys.frame()
+    rot.asr <- setmbfenv(rot.asr, dat = dat, mbf.env = mbf.env)
+    mbf.lis <- tps.XZmat[[ksect]]$mbflist
+    Zmat.names <- paste0(paste0(c("BcZ", "BrZ", "BcrZ"),stub), ".df")
+    assign(Zmat.names[1], tps.XZmat[[ksect]]$BcZ.df, envir = mbf.env)
+    assign(Zmat.names[2], tps.XZmat[[ksect]]$BrZ.df, envir = mbf.env)
+    assign(Zmat.names[3], tps.XZmat[[ksect]]$BcrZ.df, envir = mbf.env)
+
+    # call <- rot.asr$call
+    # if (!is.null(languageEl(call, which = "R.param")))
+    #   languageEl(call, which = "R.param") <- NULL
+    # if (!is.null(languageEl(call, which = "G.param")))
+    #   languageEl(call, which = "G.param") <- NULL
+    # languageEl(call, which = "data") <- dat
+    # languageEl(call, which = "mbf") <- mbf.lis
+    # languageEl(call, which = "maxit") <- 30
+    # new.asr <- eval(call, envir = sys.frame())    
+    new.asr <- newfit(rot.asr, data = dat, mbf = mbf.lis, maxit = 30, 
+                      update = FALSE)
+  } else
+  { 
+    grp.lis <- tps.XZmat[[ksect]]$grp
+    new.asr <- newfit(rot.asr, data = dat, group = grp.lis, maxit = 30, 
+                      update = FALSE)
+  }
+  if (which.rotacriterion == "deviance")
+    crit1 <- deviance.asr(new.asr)
+  if (which.rotacriterion == "likelihood")
+    crit1 <- infoCriteria(new.asr, IClikelihood = "full")$loglik
+  if (which.rotacriterion == "AIC")
+    crit1 <- infoCriteria(new.asr, IClikelihood = "full")$AIC
+  if (which.rotacriterion == "BIC")
+    crit1 <- infoCriteria(new.asr, IClikelihood = "full")$BIC
+  criterion <- data.frame(theta1=theta[1], theta2=theta[2], crit=crit1)
+  return(criterion)
+}
+
 #' Function for profiling the rotation of the eigenvectors of the penalty matrix in order to find 
 #' the optimal rotation angle.
 #' (adapted by CJB on 13/08/2023 from code Bsplines_functions_plus_rotation.R supplied in the 
 #' Supplementary materials for Piepho, Boer and Wiliams (2022) Biom. J., 64, 835-857.)
 #'
-rotate.penalty.U <- function(rot.asr, data, sections, row.covar, col.covar,
+rotate.penalty.U <- function(rot.asr, data, sections, ksect, row.covar, col.covar,
                              nsegs, nestorder, degree, difforder, 
-                             rotateX, ngridangles, which.criterion = "AIC")
+                             rotateX, ngridangles, stub, 
+                             which.rotacriterion = "AIC", nrotacores = 1,
+                             asreml.opt = "grp", mbf.env = sys.frame())
 {
+  asr4 <- isASRemlVersionLoaded(4, notloaded.fault = TRUE)
+  asr4.2 <- isASReml4_2Loaded(4.2, notloaded.fault = TRUE)
   
-  #Check IClikelihood options
-  options <- c("deviance", "likelihood", "AIC")
-  which.criterion <- options[check.arg.values(which.criterion, options)]
+  #Check which.rotacriterion options
+  options <- c("deviance", "likelihood", "AIC", "BIC")
+  which.rotacriterion <- options[check.arg.values(which.rotacriterion, options)]
 
   if (!rotateX) 
     stop("Internal function rotate.penalty.U has been called with rotateX = FALSE")
+  
+  if (nrotacores > 1 && asr4)
+  {
+    if (grepl("Windows", Sys.getenv("OS")))
+    {
+      kTHREADS <- Sys.getenv("OMP_NUM_THREADS")
+      Sys.setenv("OMP_NUM_THREADS" = 1)
+    }
+    cl <- parallel::makeCluster(nrotacores)
+    doParallel::registerDoParallel(cl)
+    if (asr4.2)
+    {
+      kthreads <-   get("asr_options", envir = getFromNamespace(".asremlEnv", "asreml"))$threads
+      asreml::asreml.options(threads = 1)
+    }
+  }
 
   criteria <- NULL
   s <- proc.time()[3]
   for (sc in 0:ngridangles[1])
   {
     theta1 <- 90*sc/ngridangles[1] #in degrees
-    
-    for (sr in 0:ngridangles[2]) 
+    if (nrotacores == 1 || !asr4)
     {
-      theta2 <- 90*sr/ngridangles[2] #in degrees
-      tps.XZmat <- makeTPPSplineMats(data, sections = sections, 
-                                     row.covar = row.covar, col.covar = col.covar,
-                                     nsegs = nsegs, nestorder = nestorder,
-                                     degree = degree, difforder = difforder,
-                                     rotateX = rotateX, theta = c(theta1, theta2), 
-                                     asreml.opt = "grp")
-      dat <- tps.XZmat[[1]]$data.plus
-      new.asr <- asreml::update.asreml(rot.asr, data = dat, maxit = 30)
-      if (which.criterion == "deviance")
-        crit1 <- deviance.asr(new.asr)
-      if (which.criterion == "likelihood")
-        crit1 <- infoCriteria(new.asr, IClikelihood = "full")$loglik
-      if (which.criterion == "AIC")
-        crit1 <- infoCriteria(new.asr, IClikelihood = "full")$AIC
-      criteria <- rbind(criteria,
-                        data.frame(theta1=theta1, theta2=theta2, crit=crit1))
-    }
+      for (sr in 0:ngridangles[2]) 
+      {
+        theta2 <- 90*sr/ngridangles[2] #in degrees
+        criterion <- fitRotation(rot.asr = rot.asr, data = data, 
+                                 theta = c(theta1, theta2), 
+                                sections = sections, ksect = ksect, 
+                                row.covar = row.covar, col.covar = col.covar,
+                                nsegs = nsegs, nestorder = nestorder,
+                                degree = degree, difforder = difforder, 
+                                mbf.env = mbf.env, stub = stub, 
+                                which.rotacriterion = which.rotacriterion)
+        criteria <- rbind(criteria, criterion)
+      }
+    } else #use parallel processing - not working for "mbf"
+    { 
+      criterion <- foreach(sr = 0:ngridangles[2], .combine=rbind, .inorder = TRUE, 
+                           .packages = c("asreml","asremlPlus"))  %dopar%
+        { 
+          theta2 <- 90*sr/ngridangles[2] #in degrees
+          criterion <- fitRotation(rot.asr = rot.asr, data = data, 
+                                   theta = c(theta1, theta2), 
+                                   sections = sections, ksect = ksect, 
+                                   row.covar = row.covar, col.covar = col.covar,
+                                   nsegs = nsegs, nestorder = nestorder,
+                                   degree = degree, difforder = difforder, 
+                                   mbf.env = mbf.env, stub = stub, 
+                                   which.rotacriterion = which.rotacriterion)
+        }
+      criteria <- rbind(criteria, criterion)
+    } 
+    
+#    print(criteria)
+    theta <- criteria[c("theta1","theta2")][nrow(criteria),]
     elapsed <- proc.time()[3] - s
-    cat("sc", sc, "time", elapsed, "seconds\n")
+    
+    cat("sc:", sc, 
+        "thetas:", paste(theta, collapse = ", "), 
+        "elapsed time:", elapsed, "seconds\n")
   }
   
-  #Find the optimal rotation
-  which.min <- which.min(criteria$crit)
-  theta.opt <- as.numeric(criteria[which.min, c("theta1", "theta2")])
+  if (nrotacores > 1 && asr4)
+  { 
+    if (asr4.2)
+      asreml::asreml.options(threads = kthreads)
+    stopCluster(cl)
+    if (grepl("Windows", Sys.getenv("OS")))
+      Sys.setenv("OMP_NUM_THREADS" = kTHREADS)
+  }
+
+#Find the optimal rotation
+  if (which.rotacriterion %in% c("likelihood"))
+    which.opt <- which.max(criteria$crit)
+  else
+    which.opt <- which.min(criteria$crit)
+  theta.opt <- as.numeric(criteria[which.opt, c("theta1", "theta2")])
   return(list(theta.opt = theta.opt, criteria = criteria))
 }
 
+#Function to set  the mbf.env in an asreml.obj, by default, to the current environment
+setmbfenv.asreml <- function(asreml.obj, dat, mbf.env = sys.frame(), ...)
+{ 
+  attr(dat, which = "mbf.env") <- mbf.env
+  if (!is.null(asreml.obj$mf) && !is.null(attr(asreml.obj$mf, which = "mbf.env")))
+    attr(asreml.obj$mf, which = "mbf.env") <- mbf.env
+  #Set the mbf.env in the model.frame attribute
+  if (is.null(asreml.obj$mf)) #mf is not in mf component and so must be an RDS file
+  {
+    mf.file <- asreml.obj$call$model.frame
+    mf <- readRDS(file = mf.file)
+    attr(mf, which = "mbf.env") <- mbf.env
+    saveRDS(mf, file = mf.file)
+  } else
+  {
+    if (inherits(asreml.obj$mf, what = "asr.model.frame") ||
+        inherits(asreml.obj$mf, what = "asreml.model.frame"))
+      attr(asreml.obj$mf, which = "mbf.env") <- mbf.env
+    else
+      stop("For asreml.option set to mbf, cannot find the asreml model frame to set the mbf environment")
+  }
+  asreml.obj <- asreml::update.asreml(asreml.obj, data = dat)
+  return(asreml.obj)
+}

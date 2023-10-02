@@ -72,7 +72,7 @@
             VSN International Ltd, \url{https://asreml.kb.vsni.co.uk/}.}
 
 \author{Chris Brien}
-\seealso{\code{update.asreml}}
+\seealso{\code{\link{newfit.asreml}}, \code{update.asreml}}
 \examples{\dontrun{
    m1.call <- call("asreml", 
                    fixed = Height ~ (Block + Irrig)*csDay.num,

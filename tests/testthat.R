@@ -24,13 +24,13 @@ library(testthat)
 #test_check("asremlPlus", filter = "42Selection")
 #test_check("asremlPlus", filter = "42Simulate")
 #test_check("asremlPlus", filter = "42Sortalldiffs")
-#test_check("asremlPlus", filter = "42SpatialModels") #need to run individual tests
+#test_check("asremlPlus", filter = "42SpatialModels") # do separately
 #test_check("asremlPlus", filter = "42Variofaces")
-#test_check("asremlPlus", filter = "42WheatSpatialVignette")
-#test_check("asremlPlus", filter = "42WheatVignette")
+#test_check("asremlPlus", filter = "42WheatSpatialVignette") # do separately
+#test_check("asremlPlus", filter = "42WheatVignette") # do separately
 #test_check("asremlPlus", filter = "42S[a-o]")
-#test_check("asremlPlus", filter = "42[V-W]")
 #test_check("asremlPlus", filter = "42[A-R]")
+#test_check("asremlPlus", filter = "42[V-W]")
 #test_check("asremlPlus", filter = "42S")
 
 #test_check("asremlPlus", filter = "42")

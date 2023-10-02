@@ -404,6 +404,7 @@ tpsmmb <- function(columncoordinates, rowcoordinates, data, nsegments,
     if (method == "Wood")
       U.Xr[,1] <- U.Xr[,1]/norm_vec(U.Xr[,1]) 
     U.Xr[,2] <- U.Xr[,2]/norm_vec(U.Xr[,2]) 
+    #rotate them
     BrX <- Br %*% U.Xr %*% mat.rotate(theta[2])
   } else
   { 
