@@ -178,12 +178,25 @@ checkEllipsisArgs <- function(funcs, inargs, pkg = NULL)
   if (length(inargs))
   {
     if (is.null(pkg))
-      args <- unique(unlist(lapply(funcs, formalArgs)))
+      args <- unique(unlist(lapply(
+        funcs, 
+        function(f) 
+        {
+          args <- { if (f == "asreml.options")
+            names(asreml::asreml.options()) #not being used, but left in case
+          else
+            formalArgs(f)}
+        })))
     else
       args <- unique(unlist(lapply(funcs, 
-                                   function(func) 
-                                     formalArgs(getFunction(func, 
-                                                            where = rlang::ns_env(pkg))))))
+                                   function(f) 
+                                     args <- 
+                                     { 
+                                       if (f == "asreml.options")
+                                         names(asreml::asreml.options()) #not being used, but left in case
+                                       else
+                                         formalArgs(getFunction(f, 
+                                                            where = rlang::ns_env(pkg)))})))
     if ("..." %in% args)
       args <- args[-match("...", args)]
     foreignArgs <- inargs[!(inargs %in% args)]
@@ -318,13 +331,13 @@ checkNamesInData <- function(Names, data)
   return(term)
 }
 
-"getTerms.formula" <- function(form)
+"getTerms.formula" <- function(form, ...)
 {
   # terms <- as.character(update.formula(form, ~.))
   # terms <- stringr::str_trim(unlist(strsplit(terms[length(terms)], 
   #                                            split = "+", fixed = TRUE)))
   form <- (update.formula(form, ~.))
-  terms <- attr(as.terms.object(form), "term.labels")
+  terms <- attr(as.terms.object(form, ...), "term.labels")
   terms <- gsub('\\\"', "'", terms)
   return(terms)
 }

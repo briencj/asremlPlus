@@ -33,7 +33,7 @@ test_that("HEB25_estimateV_asreml42", {
     asreml.obj <- asreml(tch ~ Control/Check, 
                          random = ~ Col + Row + New,
                          residual = ranform, 
-                         data=site2, 
+                         data=site2, maxit = 30,
                          na.action=na.method(y="include", x="include"))
     print(asreml.obj$vparameters[length(asreml.obj$vparameters)])
     cat("\n",func,": ", asreml.obj$vparameters[length(asreml.obj$vparameters)], " and ",vpar.vals[func],"\n\n")

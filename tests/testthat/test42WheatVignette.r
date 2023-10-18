@@ -15,7 +15,7 @@ test_that("Wheat_asreml42", {
   current.asr <- asreml(yield ~ Rep + WithinColPairs + Variety, 
                         random = ~ Row + Column + units,
                         residual = ~ ar1(Row):ar1(Column), 
-                        data=Wheat.dat)
+                        maxit = 30, data=Wheat.dat)
   summary(current.asr)
   info <- infoCriteria(current.asr)
   testthat::expect_equal(info$varDF, 5)

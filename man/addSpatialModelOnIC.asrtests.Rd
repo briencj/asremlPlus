@@ -34,7 +34,7 @@
                     asreml.option = "mbf", tpps4mbf.obj = NULL, 
                     allow.unconverged = FALSE, allow.fixedcorrelation = FALSE,
                     checkboundaryonly = FALSE, update = FALSE, 
-                    IClikelihood = "full", which.IC = "AIC", ...)
+                    maxit = 30, IClikelihood = "full", which.IC = "AIC", ...)
 }
 \arguments{
  \item{asrtests.obj}{An \code{\link{asrtests.object}} containing the components 
@@ -45,13 +45,26 @@
  \item{sections}{A single \code{character} string that specifies the name of the column 
                in the \code{\link{data.frame}} that contains the \code{\link{factor}} 
                that identifies different sections of the data to which separate spatial 
-               models are to be fitted. Note that, if there are other terms that 
-               involve \code{sections} in the random formula, there should be separate 
-               terms for each level of \code{sections}. For example, in a blocked 
-               experiment involving multiple sites, there should be a separate term for 
-               the Blocks at each Site i.e. terms of the form at(Site, i):Block, or 
-               equivalent, for each site. Otherwise, the combined term (e.g. Site:Block) 
-               will affect the fitting of the local spatial model for a site.}
+               models are to be fitted. Note that, for other terms that involve 
+               \code{sections} in the random formula, there should be separate terms for 
+               each level of \code{sections}. For example, in a blocked experiment 
+               involving multiple sites, there should be a sum of separate term for 
+               the Blocks at each Site i.e. a formula that contains terms like 
+               at(Site, i):Block for each site and these are separated by \code{'+'}. 
+               Otherwise, the combined term (e.g. Site:Block) will impact on the 
+               fitting of the local spatial models for the different Sites. 
+               Similarly, if considerations other than the fitting of spatial models 
+               do not require a residual variance structure e.g. heterogeneous residual 
+               variances depending on treatments, there should be separate units terms 
+               for each of the \code{sections}. This will allow the fitting of a nugget 
+               variance for each  of the \code{sections}. To achieve, this use the sum 
+               of \code{dsum} terms for each of the sections, each term being of the form 
+               \code{dsum(~ units | Section, levels = list(i))} where \code{i} is a level 
+               of \code{Section}. It is important to specify separate terms, rather than 
+               compound terms obtained by specifying multiple \code{levels} in the 
+               \code{list} or leaving \code{levels} out altogether. Separate terms are 
+               needed so that terms for individual \code{sections} can be manipulated 
+               independently.}
  \item{row.covar}{A single \code{character} string nominating a \code{\link{numeric}} 
                that contains the values of a centred covariate indexing the rows of a 
                grid. The \code{\link{numeric}} must be a column in the 
@@ -205,6 +218,8 @@
                    exceed that for changed model for the changed model to be returned. 
                    (For choosing the rotation angle of the eigenvectors of the penalty 
                     matrix, see \code{which.rotacriterion}.}
+ \item{maxit}{A \code{\link{numeric}} specifying the maximum number of iterations that 
+              \code{asreml} should perform in fitting a model.}
  \item{IClikelihood}{A \code{character} specifying whether Restricted Maximum Likelihood 
                    (\code{REML}) or the full likelihood, evaluated using REML estimates, 
                    (\code{full}) are to be used in calculating the information criteria 
@@ -216,7 +231,7 @@
 \details{
 A fitted spatial model is only returned if it improves the fit over and above that of achieved with the model fit supplied in the \code{asrtests.obj}. To fit the spatial model without any hypothoses testing or comparison of informtion criteria use \code{\link{addSpatialModel.asrtests}}. The model fit supplied in the \code{asrtests.obj} should not include terms that will be included in the local spatial model. All spatial model terms are fitted as fixed or random. Consequently, the residual model does not have to be iid. Note that the data must be in the order that correponds to the \code{residual} argument with a variable to the right of another variable changes levels in the data frame faster than those of the other variable e.g. \code{Row:Column} implies that all levels for \code{Column} in consecutive rows of the \code{data.frame} with a single \code{Row} level.
 
-For the \code{corr} spatial model, the default model is an autocorrelation model of order one (\code{ar1}) for each dimension. However, any of the single dimension correlation/variance models from \code{asreml} can be specified for each dimension, as can no correlation model for a dimension; the models for the two dimensions can differ. Using a forward selection procedure, a series of models are tried, without removing boundary or singular terms, beginning with the addition of row correlation and followed by the addition of column correlation or, if the \code{row.corrFitfirst} is set to \code{FALSE}, the reverse order. If the fitting of the first-fitted correlation did not result in a model change because the fitting did not converge or correlations were fixed, but the fit of the second correlation was successful, then adding the first correlation will be retried. If one of the metric correlation functions is specified (e.g. \code{exp}), then the \code{row.covar} or \code{col.covar} will be used in the spatial model. However, because the correlations are fitted separately for the two dimensions, the \code{row.factor} and \code{col.factor} are needed for all models and is used for a dimension that does not involve a correlation/variance function for the fit being performed. Also, the correlation models are fitted as \code{random} terms and so the correlation model will include a variance parameter for the grid even when \code{ar1} is used to specify the correlation model, i.e. the model fitted is a variance model and there is no difference between \code{ar1} and \code{ar1v} in fitting the model. The variance parameter for this term represents the spatial variance and the fit necessarily includes a nugget term, this being the residual variance. If any correlation is retained, the need for a nuggest term is assessed by fixing the residual variance to one, which will have no effect if heterogeneous residual variances have been specified. Once the fitting of the correlation model has been completed, the \code{rmboundary} function will be executed with the \code{checkboundaryonly} value suppied in the \code{addSpatialModelOnIC.asrtests} call.
+For the \code{corr} spatial model, the default model is an autocorrelation model of order one (\code{ar1}) for each dimension. However, any of the single dimension correlation/variance models from \code{asreml} can be specified for each dimension, as can no correlation model for a dimension; the models for the two dimensions can differ. Using a forward selection procedure, a series of models are tried, without removing boundary or singular terms, beginning with the addition of row correlation and followed by the addition of column correlation or, if the \code{row.corrFitfirst} is set to \code{FALSE}, the reverse order. If the fitting of the first-fitted correlation did not result in a model change because the fitting did not converge or correlations were fixed, but the fit of the second correlation was successful, then adding the first correlation will be retried. If one of the metric correlation functions is specified (e.g. \code{exp}), then the \code{row.covar} or \code{col.covar} will be used in the spatial model. However, because the correlations are fitted separately for the two dimensions, the \code{row.factor} and \code{col.factor} are needed for all models and is used for a dimension that does not involve a correlation/variance function for the fit being performed. Also, the correlation models are fitted as \code{random} terms and so the correlation model will include a variance parameter for the grid even when \code{ar1} is used to specify the correlation model, i.e. the model fitted is a variance model and there is no difference between \code{ar1} and \code{ar1v} in fitting the model. The variance parameter for this term represents the spatial variance and the fit necessarily includes a nugget term, this being the residual variance. If any correlation is retained in the model, for a section if \code{sections} is not \code{NULL}, then the need for a nuggest term is assessed by fixing the corresponding residual variance to one, unless there are multiple residual variances and these are not related to the \code{sections}. Once the fitting of the correlation model has been completed, the \code{rmboundary} function will be executed with the \code{checkboundaryonly} value supplied in the \code{addSpatialModelOnIC.asrtests} call. Finally, checking for bound and singular random terms associated with the correlation model and residual terms will be carried out when there are correlation terms in the model and \code{checkboundaryonly} has been set to \code{FALSE}; as many as possible will be removed from the fitted model, in some cases by fixing variance terms to one.
 
 The tensor-product natural-cubic-smoothing-spline (\code{TPNCSS}) spatial models are as decribed by Verbyla et al. (2018). The tensor-product penalized-spline (\code{TPPS}) models are as described by (Piepho, Boer and Williams, 2022). For the \code{TPPS} model, the degree of the polynomial and the order of differencing can be varied. The defaults of 3 and 2, respectively, fit a cubic spline with second order differencing, which is similar to those of Rodriguez-Alvarez et al. (2018). Setting both the degree and order of differencing to 1 will fit a type of linear variance model. The fixed terms for the spline models are \code{row.covar + col.covar + row.covar:col.covar} and the random terms are \code{spl(row.covar) + spl(col.covar) + dev(row.covar) + dev(col.covar) + spl(row.covar):col.covar +}\cr \code{row.covar:spl(col.covar) + spl(row.covar):spl(col.covar)}, except that \code{spl(row.covar) + spl(col.covar)} is not included in \code{TPPS} models. The supplied model should not include any of these terms. However, any fixed or random main-effect Row or Column term that has been included as an initial model for comparison with a spatial model can be removed prior to fitting the spatial model using \code{dropRowterm} or \code{dropColterm}.  For \code{TPPS} with second-order differencing, the model matrices used to fit the random terms \code{spl(row.covar):col.covar} and \code{row.covar:spl(col.covar)} are transformed using the spectral decomposition of their penalty matrices, and unstructured variance models across the columns of the linear component of each of them will be tried.
 
@@ -224,7 +239,7 @@ The \code{TPPCS} and \code{TPP1LS} models are fitted using functions from the \c
 
 All models utlize the function \code{\link{changeModelOnIC.asrtests}} to assess the model fit, the information critera used in assessing the fit being calculated using \code{\link{infoCriteria}}. Any \code{bound} terms are remopved from the model. Arguments from \code{tpsmmb} and \code{\link{changeModelOnIC.asrtests}} can be supplied in calls to \code{addSpatialModelOnIC.asrtests} and will be passed on to the relevant function through the ellipses argument (\ldots).
 
-The data for experiment can be divided \code{sections} and the same spatial model fitted separately to each. The fit over all of the sections is assessed.
+The data for experiment can be divided \code{sections} and the same spatial model fitted separately to each. The fit over all of the sections is assessed. For more detail see \code{sections} above.
 
 Each combination of a row.coords and a col.coords does not have to specify a single observation; 
 for example, to fit a local spatial model to the main units of a split-unit design, 

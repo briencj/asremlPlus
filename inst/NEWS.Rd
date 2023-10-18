@@ -1,5 +1,12 @@
 \name{news}
 \title{News for Package asremlPlus}
+\section{asremlPlus Version 4.4.16 (2023-10-18}{
+  \itemize{
+  \item{Added the \code{maxit} option for \code{asreml} to addSpatialModel.asrtests, addSpatialModelOnIC.asrtests and chooseSpatialModelOnIC.asrtests, setting its default to 30 for these \code{functions} to increase the chances that the models will converge.}
+  \item{Extensively revise the code to improve the handling of situations in which the residual variance or the spatial variance associated with a correlation term becomes singular or bound in fitting a spatial correlation model using addSpatialModel.asrtests, addSpatialModelOnIC.asrtests and chooseSpatialModelOnIC.asrtests.}
+  \item{Revise checking for nugget variance when there are sections and the residual has a separate terms for each section.}
+  \item{Added a basic check for separate random and residual terms for sections and, if there are none, issue a warning that better fitting can result if they are included.}
+}}
 \section{asremlPlus Version 4.4.15 (2023-10-02}{
   \itemize{
   \item{Make the default number of cores (\code{ncores}) for parallel processing in bootREMLRT.asreml, simulate.asreml and variofaces.asreml.} 

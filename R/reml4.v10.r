@@ -725,7 +725,7 @@ makeVpar.table.asreml <- function(asreml.obj, terms = NULL,
   #Evaluate the call
   new.reml <- eval(call, sys.parent())
   if (!new.reml$converge || largeVparChange(new.reml))
-    new.reml <- asreml::update.asreml(new.reml)
+    new.reml <- newfit(new.reml)
   invisible(new.reml)
 }
 
@@ -811,7 +811,7 @@ atLevelsMatch <- function(new, old, call, always.levels = TRUE)
     if (any(sapply(new.split, function(x) grepl("str\\(", x))))
       at.parts <- sapply(at.parts, function(x) gsub(",$", "", x))
     names(at.parts) <- at.parts
-      
+
     #remove beginning and ending parentheses for multiple random terms
     at.parts <- sapply(at.parts, function(part)
     {
@@ -919,11 +919,19 @@ atLevelsMatch <- function(new, old, call, always.levels = TRUE)
 "my.update.formula" <- function(old, new, call, keep.order = TRUE, ...) 
   #function to update a formula
 { 
- env <- environment(as.formula(old))
+  old <- as.formula(old)
+  old <- update.formula(old, ~ .)
+  env <- environment(old)
+  if (missing(new)) new <- old
   new <- atLevelsMatch(new, old, call)
   #update formula expands the formula using keep.order = FALSE (cannot be changed)
-  tmp <- update.formula(as.formula(old), new, keep.order = keep.order) 
-  out <- formula(terms.formula(tmp, keep.order = keep.order))
+  if (old == formula(~1))
+    out <- old
+  else
+  { 
+    tmp <- update.formula(old, new, keep.order = keep.order) 
+    out <- formula(terms.formula(tmp, keep.order = keep.order))
+ }
   environment(out) <- env
   return(out)
 }
@@ -1061,7 +1069,7 @@ atLevelsMatch <- function(new, old, call, always.levels = TRUE)
           }
     }
   }
-  
+
   if (is.null(set.terms))
   { 
     if (update)
@@ -1149,27 +1157,38 @@ atLevelsMatch <- function(new, old, call, always.levels = TRUE)
     for (z in names(tempcall))
       languageEl(call, which = z) <- tempcall[[z]]
   }
-  #Check whether formulae has been reduced to no terms
+
+  #Check whether formulae have been reduced to no terms and, if have, update the formulae
   if (!is.null(languageEl(call, which = "random")) && 
-      length(attr(terms(as.formula(languageEl(call, which = "random"))), 
-                  "factors")) == 0) 
+      length(attr(terms(
+        my.update.formula(as.formula(languageEl(call, which = "random")), 
+                          random., call = call, keep.order = keep.order)), 
+        "factors")) == 0) 
     languageEl(call, which = "random") <- NULL
   if (!is.null(languageEl(call, which = "sparse")) && 
-      length(attr(terms(as.formula(languageEl(call, which = "sparse"))), "factors")) == 0) 
-    languageEl(call, which = "sparse") <- NULL
+      length(attr(terms(
+        my.update.formula(as.formula(languageEl(call, which = "sparse")), 
+                          sparse., call = call, keep.order = keep.order)), 
+        "factors")) == 0) 
+    languageEl(call, which = "random") <- NULL
   if (asr4)
   {
-    if (!is.null(languageEl(call, which = "residual")) &&
-        length(attr(terms(as.formula(languageEl(call, which = "residual"))), 
-                    "factors")) == 0) 
+    if (!is.null(languageEl(call, which = "residual")) && 
+        length(attr(terms(
+          my.update.formula(as.formula(languageEl(call, which = "residual")), 
+                            residual., call = call, keep.order = keep.order)), 
+          "factors")) == 0) 
       languageEl(call, which = "residual") <- NULL
   } else
   {
-    if (!is.null(languageEl(call, which = "rcov")) &&
-        length(attr(terms(as.formula(languageEl(call, which = "rcov"))), "factors")) == 0) 
+    if (!is.null(languageEl(call, which = "rcov")) && 
+        length(attr(terms(
+          my.update.formula(as.formula(languageEl(call, which = "rcov")), 
+                            rcov., call = call, keep.order = keep.order)), 
+          "factors")) == 0) 
       languageEl(call, which = "rcov") <- NULL
   }
-  
+
   #Evaluate the call
   if (asr4 & keep.order)
     asreml::asreml.options(keep.order = TRUE)
@@ -1235,7 +1254,11 @@ atLevelsMatch <- function(new, old, call, always.levels = TRUE)
   
   #If not converged or large change in the variance parameters, try more iterations
   if (!asreml.new.obj$converge || largeVparChange(asreml.new.obj, threshold = 0.75))
-    asreml.new.obj <- asreml::update.asreml(asreml.new.obj)
+  { 
+    call <- asreml.new.obj$call
+    asreml.new.obj <- eval(call, sys.parent())
+  }
+  #    asreml.new.obj <- asreml::update.asreml(asreml.new.obj)
   
   #Make sure that mbf.env is set in asreml.new.obj
   if (!is.null(asreml.obj$mf) && !is.null(attr(asreml.obj$mf, which = "mbf.env")))
@@ -1261,7 +1284,6 @@ atLevelsMatch <- function(new, old, call, always.levels = TRUE)
   #Reset trace to default on the way out
   if (asr4)
     asreml::asreml.options(trace = TRUE)
-  
   invisible(asreml.new.obj)
 }
 
@@ -1282,7 +1304,7 @@ atLevelsMatch <- function(new, old, call, always.levels = TRUE)
   test.summary <- asrtests.obj$test.summary
   
   #Update the asreml.obj
-  asreml.obj <- asreml::update.asreml(asreml.obj)
+  asreml.obj <- newfit(asreml.obj)
   #  call <- asreml.obj$call
   #  asreml.obj <- eval(call, sys.parent())
   #If not converged, issue warning
@@ -1387,24 +1409,6 @@ findboundary.asreml <- function(asreml.obj, asr4, asr4.2)
     nbound <- nrow(vcomp)
     #No boundary terms, so get out
     if (nbound <= 0 || checkboundaryonly || is.null(asreml.obj$call$random)) break
-    # #Try a newfit with update = FALSE to remove the bound terms
-    # new.asreml.obj <- newfit(asreml.obj, update = FALSE)
-    # new.boundinfo <-  findboundary.asreml(new.asreml.obj, asr4 = asr4, asr4.2 = asr4.2)
-    # new.allvcomp <- new.boundinfo$allvcomp
-    # new.bound.terms <- new.boundinfo$bound.terms
-    # if (sum(new.bound.terms) == 0) 
-    # { 
-    #   asreml.obj <- new.asreml.obj
-    #   break
-    # }
-    # if (all(allvcomp[!bound.terms, "bound"] %in% new.allvcomp[!new.bound.terms, "bound"]))
-    # {
-    #   asreml.obj <- new.asreml.obj
-    #   allvcomp <- new.allvcomp
-    #   bound.terms <- new.bound.terms
-    #   vcomp <- allvcomp[bound.terms, ]
-    #   nbound <- nrow(vcomp)
-    # }
 
     #Reduce bound terms to set of bound terms that can be removed
     k <- 1
@@ -1545,20 +1549,27 @@ findboundary.asreml <- function(asreml.obj, asr4, asr4.2)
   #Check for variance terms that have been fixed and issue warning
   if (any(grepl("^F", allvcomp$bound))) #check for F or Fixed
   { 
-    #See if newfit removes an fixed terms
-    new.asreml.obj <- newfit(asreml.obj, update = FALSE)
-    new.boundinfo <-  findboundary.asreml(new.asreml.obj, asr4 = asr4, asr4.2 = asr4.2)
-    new.allvcomp <- new.boundinfo$allvcomp
-    if (sum(grepl("^F", new.allvcomp$bound)) < sum(grepl("^F", allvcomp$bound)))
-    {
-      asreml.obj <- new.asreml.obj
-      allvcomp <- new.allvcomp
-    } 
-    if (any(grepl("^F", allvcomp$bound)))
-      warning("In analysing ", kresp,
-              ", estimates of the following parameter(s) are fixed:\n",
-              rownames(allvcomp)[grepl("^F", allvcomp$bound)])
-    #rownames(allvcomp)[allvcomp$bound == "Fixed"])
+    fix.vcomp <- allvcomp[grepl("^F", allvcomp$bound), ]
+    #Leave if equal to one
+    if (!any(abs(fix.vcomp$component - 1) < 1e-06))
+    {  
+      fix.terms <- rownames(allvcomp)[grepl("^F", allvcomp$bound)]
+      #See if newfit removes any fixed terms
+      new.asreml.obj <- newfit(asreml.obj, update = FALSE)
+      new.boundinfo <-  findboundary.asreml(new.asreml.obj, asr4 = asr4, asr4.2 = asr4.2)
+      new.allvcomp <- new.boundinfo$allvcomp
+      
+      fix.vcomp <- new.allvcomp[rownames(new.allvcomp) %in% fix.terms, ]
+      if (!any(grepl("^S", fix.vcomp$bound)) && any(!grepl("^F", fix.vcomp$bound)))
+      {
+        asreml.obj <- new.asreml.obj
+        allvcomp <- new.allvcomp
+      } 
+      if (any(grepl("^F", allvcomp$bound)))
+        warning("In analysing ", kresp,
+                ", estimates of the following parameter(s) are fixed:\n",
+                rownames(allvcomp)[grepl("^F", allvcomp$bound)])
+    }
   }
   #check for change in log likelihood and if changed issue warning
   change <- abs(reml -asreml.obj$loglik)/reml*100
@@ -1641,11 +1652,10 @@ findboundary.asreml <- function(asreml.obj, asr4, asr4.2)
     fix.form <- as.formula(fix.form)
   }
   
+  nullran <- is.null(languageEl(asrtests.obj$asreml.obj$call, which = "random"))
   ran.form <-" ~ . "
-  if (is.null(asreml.obj$G.param))
-    ran.form <-" ~ "
   if (((is.null(dropRandom) && is.null(addRandom)) ||
-       (!is.null(dropRandom) && is.null(addRandom))) && is.null(asreml.obj$G.param))
+       (!is.null(dropRandom) && is.null(addRandom))) && nullran)
   {
     ran.form <- NULL
     if (!is.null(dropRandom))
@@ -1653,9 +1663,19 @@ findboundary.asreml <- function(asreml.obj, asr4, asr4.2)
   } else
   {
     if (!is.null(dropRandom))
-      ran.form <- paste(ran.form, " - (", dropRandom, ")", sep = "")
+    {
+      if (nullran)
+        warning("No random terms to drop")
+      else
+        ran.form <- paste(ran.form, " - (", dropRandom, ")", sep = "")
+    }
     if (!is.null(addRandom))
-      ran.form <- paste(ran.form , " + (", addRandom, ")", sep = "")
+    { 
+      if (nullran)
+        ran.form <- paste("~ (", addRandom, ")", sep = "")
+      else
+        ran.form <- paste(ran.form , " + (", addRandom, ")", sep = "")
+     }
     ran.form <- as.formula(ran.form)
   }
   
@@ -1720,7 +1740,7 @@ findboundary.asreml <- function(asreml.obj, asr4, asr4.2)
   {
     if (action == "Fix terms") #set.terms only
     {
-      asreml.obj <- asreml::update.asreml(asreml.obj)
+      asreml.obj <- newfit(asreml.obj)
       call <- asreml.obj$call
       asreml.new.obj <- setvarianceterms(call, 
                                          terms = set.terms, 
@@ -1729,7 +1749,7 @@ findboundary.asreml <- function(asreml.obj, asr4, asr4.2)
                                          initial.values = initial.values)
     } else #have changes to model terms
     { 
-      asreml.obj <- asreml::update.asreml(asreml.obj)
+      asreml.obj <- newfit(asreml.obj)
       if (asr4)
         asreml.new.obj <- newfit.asreml(asreml.obj, 
                                         fixed. = fix.form, random. = ran.form, 
@@ -1836,11 +1856,27 @@ findboundary.asreml <- function(asreml.obj, asr4, asr4.2)
       }
       if (temp.asrt$asreml.obj$converge)
       {
-        asreml.obj <- temp.asrt$asreml.obj
-        test.summary <- temp.asrt$test.summary
-        #Update wald.tab
-        wald.tab <- asreml::wald.asreml(asreml.obj, denDF = denDF, trace = trace, ...)
-        wald.tab <- chkWald(wald.tab)
+        if (!isFixedCorrelOK.asreml(temp.asrt$asreml.obj, 
+                                    allow.fixedcorrelation = allow.fixedcorrelation))
+        {
+          action <- "Unchanged - fixed correlation"
+          if (ic.lik != "none")
+            ic <- infoCriteria(asreml.obj, IClikelihood = ic.lik, 
+                               bound.exclusions = bound.exclusions)
+          else
+            ic <- ic.NA
+          test.summary <- addtoTestSummary(test.summary, terms = label, 
+                                           DF=ic$fixedDF, denDF = ic$varDF, 
+                                           p = NA, AIC = ic$AIC, BIC = ic$BIC, 
+                                           action = action)
+        } else
+        { 
+          asreml.obj <- temp.asrt$asreml.obj
+          test.summary <- temp.asrt$test.summary
+          #Update wald.tab
+          wald.tab <- asreml::wald.asreml(asreml.obj, denDF = denDF, trace = trace, ...)
+          wald.tab <- chkWald(wald.tab)
+        }
       } else
       {
         p <- NA
@@ -1872,7 +1908,7 @@ findboundary.asreml <- function(asreml.obj, asr4, asr4.2)
                               bound.exclusions = c("F","B","S","C"),  
                               IClikelihood = "none", 
                               ...)
-  #calls update.asreml to update the asreml.obj stored in asrtests.obj
+  #calls newfit.asreml to update the asreml.obj stored in asrtests.obj
 { 
   
   #Check that have a valid object of class asrtests
@@ -1912,7 +1948,7 @@ findboundary.asreml <- function(asreml.obj, asr4, asr4.2)
   test.summary <- asrtests.obj$test.summary
   
   #Update the asreml.obj
-  asreml.new.obj <- update(asreml.obj, ...)
+  asreml.new.obj <- newfit(asreml.obj, ...)
   
   #Update the asreml.obj
   #if (abs(asreml.new.obj$loglik - asreml.obj) <- 1.5e-08)  else
@@ -2046,7 +2082,7 @@ findboundary.asreml <- function(asreml.obj, asr4, asr4.2)
                                   ...)
   #Uses information criteria to select the best model after comparing that the model in the 
   #asreml.obj stored in asrtests.obj and the one obtained after updating this asreml.obj 
-  #directly using asrel and update.asreml arguments.
+  #directly using asreml and newfit.asreml arguments.
   #The function update.asrtests is used to change the model.
 { 
   #Check IClikelihood options, because "none" is not allowed here

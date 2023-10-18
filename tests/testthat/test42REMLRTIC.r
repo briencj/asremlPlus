@@ -15,7 +15,7 @@ test_that("REMLRT_asreml42", {
   m1.asr <- asreml(yield ~ Rep + WithinColPairs + Variety, 
                    random = ~ Row + Column + units,
                    residual = ~ ar1(Row):ar1(Column), 
-                   data=Wheat.dat)
+                   maxit = 30, data=Wheat.dat)
   summary(m1.asr)$varcomp
   info <- infoCriteria(m1.asr)
   testthat::expect_equal(info$varDF, 5)
@@ -25,7 +25,7 @@ test_that("REMLRT_asreml42", {
   m2.asr <- asreml(yield ~ Rep + WithinColPairs + Variety, 
                    random = ~ Row + Column,
                    residual = ~ ar1(Row):ar1(Column), 
-                   data=Wheat.dat)
+                   maxit = 30, data=Wheat.dat)
   summary(m2.asr)$varcomp
   info <- infoCriteria(m2.asr)
   testthat::expect_equal(info$varDF, 4)
@@ -44,7 +44,7 @@ test_that("REMLRT_asreml42", {
   m3.asr <- asreml(yield ~ Rep + WithinColPairs + Variety, 
                    random = ~ Row + Column,
                    residual = ~ Row:Column, 
-                   data=Wheat.dat)
+                   maxit = 30, data=Wheat.dat)
   summary(m3.asr)$varcomp
   test3 <- REMLRT(m3.asr, m1.asr)
   testthat::expect_lt(abs(test3$p - 2.596812e-13), 1e-03)
@@ -74,19 +74,19 @@ test_that("Wheat_asreml42", {
   m.max <- asreml(yield ~ Rep + WithinColPairs + Variety, 
                   random = ~ Row + Column + units,
                   residual = ~ ar1(Row):ar1(Column), 
-                  data=Wheat.dat)
+                  maxit = 30, data=Wheat.dat)
 
   #Drop term for within Column pairs
   m1 <- asreml(yield ~ Rep + Variety, 
                random = ~ Row + Column + units,
                residual = ~ ar1(Row):ar1(Column), 
-               data=Wheat.dat)
+               maxit = 30, data=Wheat.dat)
   
   #Drop nugget term
   m2 <- asreml(yield ~ Rep + WithinColPairs + Variety, 
                random = ~ Row + Column,
                residual = ~ ar1(Row):ar1(Column), 
-               data=Wheat.dat)
+               maxit = 30, data=Wheat.dat)
 
   #Drop Row autocorrelation
   m3 <- asreml(yield ~ Rep + WithinColPairs + Variety, 
@@ -98,7 +98,7 @@ test_that("Wheat_asreml42", {
   m4 <- asreml(yield ~ Rep + WithinColPairs + Variety, 
                random = ~ Row + Column + units,
                residual = ~ ar1(Row):Column, 
-               data=Wheat.dat)
+               maxit = 30, data=Wheat.dat)
 
   mods.asr <- list(m.max, m1, m2, m3, m4)
   ic <- infoCriteria(mods.asr, IClikelihood = "full")

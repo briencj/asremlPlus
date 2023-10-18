@@ -26,7 +26,7 @@ test_that("Wheat_spatial_asreml42", {
                          list(yield ~ Rep + WithinColPairs + Variety, 
                               random = ~ Row + Column,
                               residual = ~ Row:Column,
-                              data=tmp.dat))
+                              data=tmp.dat, maxit = 10))
   summary(current.asr)$varcomp
   info <- infoCriteria(current.asr, IClikelihood = "full")
   testthat::expect_equal(info$varDF, 3)
@@ -52,7 +52,7 @@ test_that("Wheat_spatial_asreml42", {
   spatialEach.asrts[["corr"]] <- addSpatialModelOnIC(current.asrt, spatial.model = "corr", 
                                                      row.covar = "cRow", col.covar = "cColumn", 
                                                      row.factor = "Row", col.factor = "Column", 
-                                                     allow.fixedcorrelation = TRUE,
+                                                     allow.fixedcorrelation = TRUE, 
                                                      checkboundaryonly = TRUE, IClikelihood = "full")
   spatialEach.asrts[["corr"]] <- rmboundary(spatialEach.asrts[["corr"]], IClikelihood = "full")
 
@@ -96,9 +96,9 @@ test_that("Wheat_spatial_asreml42", {
   print(spatial.asrts$spatial.IC)
   print(spatial.asrts$asrts$TPNCSS)
   testthat::expect_equal(length(spatial.asrts$asrts), 4)
-  testthat::expect_equal(spatial.asrts$spatial.IC$varDF, c(3,5,6,6,3))
+  testthat::expect_equal(spatial.asrts$spatial.IC$varDF, c(3,5,6,7,4))
   testthat::expect_true(all(abs(spatial.asrts$spatial.IC$AIC - 
-                                  c(1718.609, 1651.314, 1639.489, 1647.883, 1708.443) ) < 1e-02))
+                                  c(1718.609, 1651.315, 1639.489, 1642.838, 1708.443) ) < 1e-02))
   testthat::expect_true(all.equal(spatial.asrts$spatial.IC[2:4,], infoEach[1:3 ,-3], 
                                   tolerance = 0.5))
   #theta.opt == c(0,0) because rotation Unswapped

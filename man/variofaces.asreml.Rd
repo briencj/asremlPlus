@@ -17,7 +17,9 @@ Stefanova, Smith & Cullis (2009).}
              of the data, such as experiments in different environments. 
              In this case, the two variogram faces are produced for each section.}
 \usage{
-\method{variofaces}{asreml}(asreml.obj, means=NULL, V=NULL, nsim=100, seed = NULL, 
+\method{variofaces}{asreml}(asreml.obj, means=NULL, V=NULL, 
+           sections = NULL, row.factor = NULL, col.factor = NULL,
+           nsim=100, seed = NULL, 
            extra.matrix = NULL, ignore.terms = NULL, fixed.spline.terms = NULL, 
            bound.exclusions = c("F","B","S","C"), tolerance=1E-10, 
            units = "ignore", update = TRUE, trace = FALSE, 
@@ -32,13 +34,25 @@ Stefanova, Smith & Cullis (2009).}
           given the model fitted to the observed data and the estimates of the 
           parameters obtained. If \code{V} is \code{NULL} then \code{\link{estimateV.asreml}} 
           is called to obtain it from \code{asreml.obj}}
+ \item{sections}{A single \code{character} string that specifies the name of the column 
+               in the \code{\link{data.frame}} that contains the \code{\link{factor}} 
+               that identifies different sections of the data to which separate spatial 
+               models have beeen fitted.}
+ \item{row.factor}{A single \code{character} string nominating a \code{\link{factor}} 
+               that indexes the rows of a grid that are one dimension of a 
+               spatial correlation model. The \code{\link{factor}} must a column in 
+               the \code{\link{data.frame}} stored in the \code{asreml.obj}.}
+ \item{col.factor}{A single \code{character} string nominating a \code{\link{factor}} 
+               that indexes the columns of a grid that are one dimension of a 
+               spatial correlation model. The \code{\link{factor}} must a column in 
+               the \code{\link{data.frame}} stored in the \code{asreml.obj}.}
  \item{nsim}{The number of data sets to be simulated in obtaining the envelopes.}
  \item{seed}{A single value, interpreted as an integer, that specifies the 
               starting value of the random number generator. The "L'Ecuyer-CMRG" random 
               generator is used and \code{nextRNGStream} is used to seed each core from the
               original \code{seed}.}
  \item{extra.matrix}{A \code{matrix} of order equal to the number of observations that is to 
-               be added to the varaince \code{matrix}, the latter based 
+               be added to the variance \code{matrix}, the latter based 
                on the information in \code{asreml.obj}. It is assumed that the sigma-parameterized 
                values of the variance parameter estimates, such as is given in the \code{varcomp} 
                component of \code{summary.asreml}, have been used in calculating 

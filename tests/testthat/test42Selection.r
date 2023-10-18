@@ -228,10 +228,9 @@ test_that("at_testing_testranfix_asreml42", {
   current.asrt <- rmboundary(current.asrt)
   current.asrt$wald.tab
   testthat::expect_true("at(Lane, '8')" %in% rownames(current.asrt$wald.tab))
-  testthat::expect_warning(
-    t.asrt <- testranfix(current.asrt, term = "at(Lane, '8')", 
-                         drop.fix.ns = TRUE))
-  testthat::expect_false("at(Lane, '8')" %in% rownames(t.asrt$wald.tab)) #hasn't been dropped
+  t.asrt <- testranfix(current.asrt, term = "at(Lane, '8')", 
+                       drop.fix.ns = TRUE)
+  testthat::expect_false("at(Lane, '8')" %in% rownames(t.asrt$wald.tab)) #has been dropped
 
   #Test adding multiple terms
   current.asr <- do.call(asreml,
@@ -296,7 +295,6 @@ test_that("at_testing_testranfix_asreml42", {
   testthat::expect_true(all(c("AMF:Genotype:NP", "at(AMF, 'AMF_plus'):per.col", 
                               "NP:per.col:at(AMF, 'AMF_plus')", "Genotype:NP:per.col:at(AMF, 'AMF_plus')") 
                             %in% rownames(t.asrt$wald.tab)))
-  
 })
 
 
@@ -357,7 +355,7 @@ test_that("at_testing_changeTerms_asreml42", {
   #Test removing the devn term for NW
   t.asrt <- changeTerms(current.asrt, dropRandom = 'at(Smarthouse, "NW"):dev(cMainPosn)', 
                         label = "Drop unbound dev")
-  testthat::expect_equal(length(t.asrt$asreml.obj$vparameters), 9)
+  testthat::expect_equal(length(t.asrt$asreml.obj$vparameters), 8)
   testthat::expect_true(!("at(Smarthouse, 'NW'):dev(cMainPosn)") %in% names(t.asrt$asreml.obj$vparameters))
   
   #This incorrectly removes both levels Smarthouse
@@ -539,7 +537,7 @@ test_that("at_testswapran_asreml42", {
   current.asrt <- testranfix(current.asrt, term = "Treatments:DAP",
                              positive.zero = TRUE)
   testthat::expect_equal(current.asrt$test.summary$action[2], "Dropped")
-  testthat::expect_true(all(table(summary(current.asrt$asreml.obj)$varcomp$bound) ==  c(1,1,45,1)))
+  testthat::expect_true(all(table(summary(current.asrt$asreml.obj)$varcomp$bound) ==  c(2,45,1)))
   
   #'### Test for different curvatures in splines
   current.asrt <- testswapran(current.asrt, oldterms = "at(Treatments):spl(xDAP, k = 10)",
@@ -813,7 +811,7 @@ test_that("changeModelOnIC_Example_asreml42", {
   testthat::expect_true(current.asrt$asreml.obj$converge)
   testthat::expect_true(current.asrt$test.summary$action[1] == "Starting model")
   testthat::expect_equal(current.asrt$test.summary$DF[1], 31)
-  testthat::expect_equal(current.asrt$test.summary$denDF[1], 5)
+  testthat::expect_equal(current.asrt$test.summary$denDF[1], 4)
   testthat::expect_equal(nrow(summary(current.asrt$asreml.obj)$varcomp), 6)
   
   # Drop both Row and Column
@@ -822,7 +820,7 @@ test_that("changeModelOnIC_Example_asreml42", {
                                   checkboundaryonly = TRUE,
                                   which.IC = "AIC", IClikelihood = "full")
   testthat::expect_true(current.asrt$asreml.obj$converge)
-  testthat::expect_equal(current.asrt$test.summary$denDF[2], -1)
+  testthat::expect_equal(current.asrt$test.summary$denDF[2], 0)
   
   # Replace residual with model without Row autocorrelation (loses units also)
   current.asrt <- changeModelOnIC(current.asrt, 
@@ -836,7 +834,6 @@ test_that("changeModelOnIC_Example_asreml42", {
   mod <- printFormulae(current.asrt$asreml.obj)
   testthat::expect_equal(length(mod), 3)
   testthat::expect_true(grepl("units", mod[2], fixed = TRUE))
-  
 })
 
 
@@ -895,7 +892,7 @@ test_that("Fixedcorrelations_asreml42", {
   testthat::expect_equal(unname(
            m5.asrt$asreml.obj$vparameters.con["Lane:Position!Lane!cor"]), "B")
   testthat::expect_true(all(abs(c(m5.asrt$test.summary$AIC[4],m5.asrt$test.summary$BIC[4]) - 
-                                  c(2357.000, 2365.542)) < 1e-03))
+                                  c(2355.000, 2359.271)) < 1e-03))
   
   m6.asrt <- testranfix(m4.asrt, term = "Lane", allow.fixedcorrelation = TRUE,
                         IClikelihood = "REML")

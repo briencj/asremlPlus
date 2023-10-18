@@ -67,7 +67,7 @@ fitRotation <- function(rot.asr, data, theta = c(0,0),
                         sections, ksect, row.covar, col.covar,
                         nsegs, nestorder, degree, difforder, 
                         stub, asreml.opt = "grp", mbf.env = sys.frame(), 
-                        which.rotacriterion = "AIC", 
+                        maxit = 30, which.rotacriterion = "AIC", 
                         criteria)
 {
   tps.XZmat <- makeTPPSplineMats(data, sections = sections, 
@@ -96,12 +96,12 @@ fitRotation <- function(rot.asr, data, theta = c(0,0),
     # languageEl(call, which = "mbf") <- mbf.lis
     # languageEl(call, which = "maxit") <- 30
     # new.asr <- eval(call, envir = sys.frame())    
-    new.asr <- newfit(rot.asr, data = dat, mbf = mbf.lis, maxit = 30, 
+    new.asr <- newfit(rot.asr, data = dat, mbf = mbf.lis, maxit = maxit, 
                       update = FALSE)
   } else
   { 
     grp.lis <- tps.XZmat[[ksect]]$grp
-    new.asr <- newfit(rot.asr, data = dat, group = grp.lis, maxit = 30, 
+    new.asr <- newfit(rot.asr, data = dat, group = grp.lis, maxit = maxit, 
                       update = FALSE)
   }
   if (which.rotacriterion == "deviance")
@@ -124,6 +124,7 @@ fitRotation <- function(rot.asr, data, theta = c(0,0),
 rotate.penalty.U <- function(rot.asr, data, sections, ksect, row.covar, col.covar,
                              nsegs, nestorder, degree, difforder, 
                              rotateX, ngridangles, stub, 
+                             maxit = 30, 
                              which.rotacriterion = "AIC", nrotacores = 1,
                              asreml.opt = "grp", mbf.env = sys.frame())
 {
@@ -170,7 +171,7 @@ rotate.penalty.U <- function(rot.asr, data, sections, ksect, row.covar, col.cova
                                 nsegs = nsegs, nestorder = nestorder,
                                 degree = degree, difforder = difforder, 
                                 mbf.env = mbf.env, stub = stub, 
-                                which.rotacriterion = which.rotacriterion)
+                                maxit = maxit, which.rotacriterion = which.rotacriterion)
         criteria <- rbind(criteria, criterion)
       }
     } else #use parallel processing - not working for "mbf"
@@ -186,7 +187,7 @@ rotate.penalty.U <- function(rot.asr, data, sections, ksect, row.covar, col.cova
                                    nsegs = nsegs, nestorder = nestorder,
                                    degree = degree, difforder = difforder, 
                                    mbf.env = mbf.env, stub = stub, 
-                                   which.rotacriterion = which.rotacriterion)
+                                   maxit = maxit, which.rotacriterion = which.rotacriterion)
         }
       criteria <- rbind(criteria, criterion)
     } 
@@ -239,6 +240,6 @@ setmbfenv.asreml <- function(asreml.obj, dat, mbf.env = sys.frame(), ...)
     else
       stop("For asreml.option set to mbf, cannot find the asreml model frame to set the mbf environment")
   }
-  asreml.obj <- asreml::update.asreml(asreml.obj, data = dat)
+  asreml.obj <- newfit(asreml.obj, data = dat)
   return(asreml.obj)
 }

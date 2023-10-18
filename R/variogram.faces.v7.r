@@ -52,7 +52,10 @@
 }
 
 
-"variofaces.asreml" <- function(asreml.obj, means=NULL, V = NULL, nsim=100, seed = NULL, 
+"variofaces.asreml" <- function(asreml.obj, means=NULL, V = NULL, 
+                                sections = NULL, 
+                                row.factor = NULL, col.factor = NULL,
+                                nsim=100, seed = NULL, 
                                 extra.matrix = NULL, ignore.terms = NULL, 
                                 fixed.spline.terms = NULL, 
                                 bound.exclusions = c("F","B","S","C"), 
@@ -157,98 +160,111 @@
        languageEl(call, which = z) <- tempcall[[z]]
  }
  
- #investigate residual term to see if it is a two-factor term or a 
- #three-factor term with one factor indexing sections
- if (asr4)
-   rterm <- languageEl(call, which = "residual")
- else
-   rterm <- languageEl(call, which = "rcov")
- #Check for multiple terms
- rterm.form <- as.formula(rterm)
- res.specials <- c("dsum")
- common.specials <-  c("id", "diag", "us", 
-                       "ar1", "ar2", "ar3", "sar","sar2",
-                       "ma1", "ma2", "arma", "exp", "gau", 
-                       "cor", "corb", "corg") 
- other.specials <- c("at", "sph", "chol", "ante", "sfa", "facv")
- rterm.obj <- as.terms.object(rterm, asreml.obj, 
-                              specials=c(res.specials, common.specials, 
-                                         paste(common.specials[4:length(common.specials)],"v",sep=""),
-                                         paste(common.specials[4:length(common.specials)],"h",sep=""),
-                                         other.specials))
- if (length(labels(rterm.obj)) != 1)
+ #Have grid factors been supplied or do they have to be extracted from the residual?
+ if (is.null(c(sections, row.factor, col.factor)))
  {
+   #investigate residual term to see if it is a two-factor term or a 
+   #three-factor term with one factor indexing sections
    if (asr4)
-     stop("In analysing ",asreml.obj$formulae$fixed[[2]],
-          ", the residual model must involve a single term")
+     rterm <- languageEl(call, which = "residual")
    else
-     stop("In analysing ",asreml.obj$fixed.formula[[2]],
-          ", the residual model must involve a single term")
- }
- if (asr4)
-   kspecial <- attr(rterm.obj, which = "specials")$dsum
- else
- {
+     rterm <- languageEl(call, which = "rcov")
+   #Check for multiple terms
+   rterm.form <- as.formula(rterm)
+   res.specials <- c("dsum")
+   common.specials <-  c("id", "diag", "us", 
+                         "ar1", "ar2", "ar3", "sar","sar2",
+                         "ma1", "ma2", "arma", "exp", "gau", 
+                         "cor", "corb", "corg") 
+   other.specials <- c("at", "sph", "chol", "ante", "sfa", "facv")
+   rterm.obj <- as.terms.object(rterm, asreml.obj, 
+                                specials=c(res.specials, common.specials, 
+                                           paste(common.specials[4:length(common.specials)],"v",sep=""),
+                                           paste(common.specials[4:length(common.specials)],"h",sep=""),
+                                           other.specials))
    if (length(labels(rterm.obj)) != 1)
-     stop("In analysing ",object.sim$fixed.formula[[2]],
-          ", the rcov model must involve a single term")
-   kspecial <- attr(rterm.obj, which = "specials")$at
- }
- 
- if (is.null(kspecial))
- {
-   grid.facs <- rownames(attr(rterm.obj, which = "factors"))
-   grid.facs <- unlist(lapply(grid.facs, rmFunction))
-   sections <- 1
-   fac.sec <- NULL
- } else
- {
-   if (asr4)
    {
-     rterm <- labels(rterm.obj)
-     rterm <- substr(rterm, start=6, stop=nchar(rterm))
-     rterm <- substr(rterm, start=1, stop =(nchar(rterm)-1))
-     trim <- function (x) gsub("^\\s+|\\s+$", "", x)
-     if (grepl(",", rterm, fixed=TRUE))
-     {
-       rterm <- trim(strsplit(rterm, ",", fixed=TRUE)[[1]])
-     }
-     kmodel <- grep("~", rterm, fixed=TRUE)
-     if (length(kmodel) != 1)
-       stop("residual model appears to lack a formula")
-     rterm <- rterm[kmodel]
-     rterm <- strsplit(rterm, "~", fixed=TRUE)[[1]][2]
-     var <- trim(strsplit(rterm, "|", fixed=TRUE)[[1]])
-     var <- trim(var)
-     if (length(var) != 2)
-       stop("residual model appears not to include `|' operator")
-     fac.sec <- var[2]  
-     sections <- levels(env.dat[[fac.sec]])
-     rterm <- as.formula(paste("~",var[1],sep=""))
-     rterm.obj <- as.terms.object(rterm, asreml.obj, 
-                                  specials=c("dsum", "at", "ar1", "ar2", "ar3", "sar","sar2",
-                                             "ma1", "ma2", "arma", "exp", "gau", 
-                                             "cor", "corb", "corg", "diag", "us", 
-                                             "chol", "ante", "sfa", "facv", "fa", "rr"))
-     if (length(labels(rterm.obj)) != 1)
+     if (asr4)
        stop("In analysing ",asreml.obj$formulae$fixed[[2]],
             ", the residual model must involve a single term")
-     grid.facs <- rownames(attr(rterm.obj, which = "factors"))
-     grid.facs <- unlist(lapply(grid.facs, rmFunction))
-   } else
-   { 
-     grid.facs <- rownames(attr(rterm.obj, which = "factors"))
-     grid.facs <- unlist(lapply(grid.facs, rmFunction))
-     if (length(kspecial) != 1)
-       stop("Can only have a single factor defining sections of the data (using at)")
-     fac.sec <- grid.facs[kspecial[1]]  
-     sections <- levels(env.dat[[fac.sec]])
-     grid.facs <- grid.facs[-kspecial[1]]
+     else
+       stop("In analysing ",asreml.obj$fixed.formula[[2]],
+            ", the residual model must involve a single term")
    }
+   if (asr4)
+     kspecial <- attr(rterm.obj, which = "specials")$dsum
+   else
+   {
+     if (length(labels(rterm.obj)) != 1)
+       stop("In analysing ",object.sim$fixed.formula[[2]],
+            ", the rcov model must involve a single term")
+     kspecial <- attr(rterm.obj, which = "specials")$at
+   }
+   
+   if (is.null(kspecial))
+   {
+     grid.facs <- rownames(attr(rterm.obj, which = "factors"))
+     grid.facs <- unlist(lapply(grid.facs, rmFunction))
+     sections <- 1
+     fac.sec <- NULL
+   } else
+   {
+     if (asr4)
+     {
+       rterm <- labels(rterm.obj)
+       rterm <- substr(rterm, start=6, stop=nchar(rterm))
+       rterm <- substr(rterm, start=1, stop =(nchar(rterm)-1))
+       trim <- function (x) gsub("^\\s+|\\s+$", "", x)
+       if (grepl(",", rterm, fixed=TRUE))
+       {
+         rterm <- trim(strsplit(rterm, ",", fixed=TRUE)[[1]])
+       }
+       kmodel <- grep("~", rterm, fixed=TRUE)
+       if (length(kmodel) != 1)
+         stop("residual model appears to lack a formula")
+       rterm <- rterm[kmodel]
+       rterm <- strsplit(rterm, "~", fixed=TRUE)[[1]][2]
+       var <- trim(strsplit(rterm, "|", fixed=TRUE)[[1]])
+       var <- trim(var)
+       if (length(var) != 2)
+         stop("residual model appears not to include `|' operator")
+       fac.sec <- var[2]  
+       sections <- levels(env.dat[[fac.sec]])
+       rterm <- as.formula(paste("~",var[1],sep=""))
+       rterm.obj <- as.terms.object(rterm, asreml.obj, 
+                                    specials=c("dsum", "at", "ar1", "ar2", "ar3", "sar","sar2",
+                                               "ma1", "ma2", "arma", "exp", "gau", 
+                                               "cor", "corb", "corg", "diag", "us", 
+                                               "chol", "ante", "sfa", "facv", "fa", "rr"))
+       if (length(labels(rterm.obj)) != 1)
+         stop("In analysing ",asreml.obj$formulae$fixed[[2]],
+              ", the residual model must involve a single term")
+       grid.facs <- rownames(attr(rterm.obj, which = "factors"))
+       grid.facs <- unlist(lapply(grid.facs, rmFunction))
+     } else
+     { 
+       grid.facs <- rownames(attr(rterm.obj, which = "factors"))
+       grid.facs <- unlist(lapply(grid.facs, rmFunction))
+       if (length(kspecial) != 1)
+         stop("Can only have a single factor defining sections of the data (using at)")
+       fac.sec <- grid.facs[kspecial[1]]  
+       sections <- levels(env.dat[[fac.sec]])
+       grid.facs <- grid.facs[-kspecial[1]]
+     }
+   }
+   if (length(grid.facs) != 2)
+     stop("Must have two dimensions in the residual model")
+ } #end of getting grid facs from the residual
+ else #deal with supplied grid facs
+ {
+   stop("The option of entering sections, row and column factor names is yet to be implemented.")
+   if (is.null(sections)) 
+     sections <- 1
+   grid.facs <- c(row.factor, col.factor)
+   if (length(grid.facs) != 2)
+     stop("Must have both a row and a col factor when the names of the factor that index the grid are supplied.")
  }
- if (length(grid.facs) != 2)
-   stop("Must have two dimensions in the residual model")
-
+ 
  #Set up for simulation
  #There will be two lists, one for each face
  #The list for each face  has number of sections components
