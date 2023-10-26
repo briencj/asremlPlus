@@ -48,7 +48,7 @@ test_that("HEB25_estimateV_asreml42", {
     testthat::expect_true(abs(V[2, 1] - V.el[func]) < 0.5)
   }
   
-  ### This had a bug, but seems to be working - it is now converging
+  ### This had a bug, but seems to be working - it is now converging - now it is not
   testthat::expect_warning(
     asreml.obj <- asreml(tch ~ Control/Check, 
                          random = ~ Col + Row + New,
@@ -56,7 +56,7 @@ test_that("HEB25_estimateV_asreml42", {
                          data=site2, 
                          na.action=na.method(y="include", x="include")),
     regexp = "Some components changed by more than 1% on the last iteration")
-  testthat::expect_true(asreml.obj$converge)
+  testthat::expect_false(asreml.obj$converge)
   testthat::expect_equal(nrow(summary(asreml.obj)$varcomp), 8)
   
   

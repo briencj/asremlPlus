@@ -11,8 +11,8 @@
 
 "getTestEntry.asrtests" <- function(asrtests.obj, label, ...)
 {
-  #  k <- tail(which(as.character(asrtests.obj$test.summary$terms)==label),1)
-  k <- tail(findterm(label, as.character(asrtests.obj$test.summary$terms)),1)
+  k <- tail(which(as.character(asrtests.obj$test.summary$terms)==label),1)
+  #k <- tail(findterm(label, as.character(asrtests.obj$test.summary$terms)),1)
   if (k == 0)
     stop("Label not found in test.summary of supplied asrtests.obj")
   entry <- asrtests.obj$test.summary[k,]

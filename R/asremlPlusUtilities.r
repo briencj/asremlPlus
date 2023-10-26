@@ -553,34 +553,94 @@ chk4TermInFormula <- function(form, term, asreml.obj)
   return(term.types)
 }
 
-"getTermDesignMatrix" <- function(term, asreml.obj, split = ":")
+#This function identifies the names of the rows or columns that correspond to the effects for term.
+#The argument `use` identifies which component of an asreml.obj is to be used to obtain the effect names.
+#Possible values are: rancoeffs, G.aom or design. 
+"getTermEffectNames" <- function(term, asreml.obj, use = "design", split = ":")
 {
   asr4.2 <- isASReml4_2Loaded(4.2, notloaded.fault = TRUE)
   if (asr4.2)
   { 
     vars <- fac.getinTerm(term, asr4.2 = asr4.2)
     nvars <- length(vars)
-    colnams <- colnames(asreml.obj$design)
-    col.vars <- strsplit(colnams, split = split, fixed = TRUE)
+    if (use == "rancoeffs")
+      effnames <- rownames(asreml.obj$coefficients$random)
+    else
+    {
+      if (use == "G.aom")
+        effnames <- rownames(asreml.obj$aom$G)
+      else if (use == "design")
+      {
+        effnames <- colnames(asreml.obj$design)
+      } else
+        stop("Cannot use ", use)
+    }
+    col.vars <- strsplit(effnames, split = split, fixed = TRUE)
     #reduce to columns of same length as term
     len.nvars <- unlist(lapply(col.vars, length)) == nvars
-    colnams <- colnams[len.nvars]
+    effnames <- effnames[len.nvars]
     col.vars <- col.vars[len.nvars]
     col.vars <- as.data.frame(do.call(rbind, col.vars))
-    #Determine which columns have the same vars, in any order, as the term; select colnams that do
+    #Determine which columns have the same vars, in any order, as the term; select effnames that do
     which.cols <- apply(col.vars, MARGIN = 1, 
                         FUN = function(krow, vars)
                         {
                           all(sapply(vars, function(v, krow) any(startsWith(krow, v)), krow = krow))
                         }, vars = vars)
-    colnams <- colnams[which.cols]
+    effnames <- effnames[which.cols]
   }
   else
   { 
-    colnams <- colnames(asreml.obj$design)[startsWith(colnames(asreml.obj$design), term)]
-    restnams <- substring(colnams, first = nchar(term)+1)
-    colnams <- colnams[grepl("^[0-9]*$", restnams)]
+    if (use == "rancoeffs")
+      effnames <- rownames(asreml.obj$coefficients$random)[
+        startsWith(rownames(asreml.obj$coefficients$random), term)]
+    else
+    {
+      if (use == "G.aom")
+        effnames <- rownames(asreml.obj$aom$G)[startsWith(rownames(asreml.obj$aom$G), term)]
+      else if (use == "design")
+      {
+        effnames <- colnames(asreml.obj$design)[startsWith(colnames(asreml.obj$design), term)]
+      } else
+        stop("Cannot use", use)
+    }
+    restnams <- substring(effnames, first = nchar(term)+1)
+    effnames <- effnames[grepl("^[0-9]*$", restnams)]
   }
+  #grp terms do not have a known number of columns
+  if (term %in% names(asreml.obj$noeff) && length(effnames) != asreml.obj$noeff[term])
+    stop(paste("Error in finding the columns in ", use,  " for ", term, sep=""))
+  return(effnames)
+}
+
+#This function produces a data frame of the factors involved a set of effnames
+#The function is not being used.
+as.data.frame.effnames <- function(effnames)
+{
+  fac.vars <- NULL
+  asr4.2 <- isASReml4_2Loaded(4.2, notloaded.fault = TRUE)
+  if (asr4.2)
+  { 
+    col.vars <- strsplit(effnames, split = split, fixed = TRUE)
+    col.vars <- as.data.frame(do.call(rbind, col.vars))
+    facs.vars <- as.data.frame(lapply(col.vars, function(var)
+    {
+      var <- strsplit(var, split = "\\_")
+      var.nam <- var[[1]][1]
+      if (!all(sapply(var, function(x, var.nam) x[1] == var.nam, var.nam = var.nam)))
+        stop("The effects names are not based on the same variables")
+      var.levs <- as.data.frame(do.call(rbind, lapply(var, function(v) v[2])))
+      names(var.levs) <- var.nam
+      var.levs[,1] <- factor(var.levs[,1], levels = unique(var.levs[,1]))
+      return(var.levs)
+    }))
+  }
+  return(facs.vars)
+}
+
+"getTermDesignMatrix" <- function(term, asreml.obj, split = ":")
+{
+  colnams <- getTermEffectNames(term, asreml.obj, use = "design", split = split)
   #grp terms do not have a known number of columns
   if (term %in% names(asreml.obj$noeff) && length(colnams) != asreml.obj$noeff[term])
     stop(paste("Error in finding the columns in the design matrix for ",term,sep=""))

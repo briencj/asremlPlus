@@ -198,12 +198,13 @@ tpsmmb <- function(columncoordinates, rowcoordinates, data, nsegments,
   if (missing(rowcoordinates)) stop("rowcoordinates argument must be set")
   if (missing(data)) stop("data argument must be set")
   
+  #Following code for checking options and allowing partial matching added by CJB on 14/08/2023
   options <- c("mbf","grp","sepgrp","own")
   asreml <- options[check.arg.values(asreml, options)]
   options <- c("Lee","Wood")
   method <- options[check.arg.values(method, options)]
   
-  #Convert thetas from degrees to radians for rotating X
+  #Convert thetas from degrees to radians for rotating X (added by CJB on 14/08/2023)
   theta <- theta*pi/180
   
   # get coordinate values
@@ -214,6 +215,8 @@ tpsmmb <- function(columncoordinates, rowcoordinates, data, nsegments,
   nur <- length(row)
   row.match <- match(data[[rowcoordinates]],row)
   nv <- length(data[[columncoordinates]])
+  #CJB modified to require the supply of two values of the arguments that pertain to two dimensions. (14/08/2023)
+  #Got caught a few times when I put a full stop instead of a comma.
   if (!all(sapply(list(degree, difforder, nestorder, theta), function(x) length(x) == 2)))
     stop("At least one of degree, difforder, nestorder and theta is not of length 2")
   # get lower bounds

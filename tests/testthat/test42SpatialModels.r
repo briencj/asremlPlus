@@ -788,6 +788,7 @@ test_that("Wheat703_corr_models_asreml42", {
                                         row.factor = "Lane", col.factor = "Position", 
                                         trySpatial = "corr")
     ksumm <- summary(corr.asrt$asrts[[1]]$asreml.obj)$varcomp
+#    print(all.equal(ksumm, summ[[kresp]], tolerance = 1e-05))
     testthat::expect_true(all.equal(ksumm, summ[[kresp]], tolerance = 1e-05))
 #    summ <- c(summ, list(summary(corr.asrt$asrts[[1]]$asreml.obj)$varcomp))
   }
@@ -796,7 +797,7 @@ test_that("Wheat703_corr_models_asreml42", {
 })
 
 cat("#### Test for wheat76 corr spatial models with asreml42\n")
-test_that("Wheat_corr_models_asreml42", {
+test_that("Wheat76_corr_models_asreml42", {
   skip_if_not_installed("asreml")
   skip_on_cran()
   library(dae)

@@ -11,6 +11,7 @@ test_that("REMLRT_asreml42", {
   ## use asremlPlus to analyse the wheat (barley) example from section 8.6 of the asreml manual (Butler et al. 2010)
   data(Wheat.dat)
   
+  asreml::asreml.options(extra = 5, ai.sing = TRUE, fail = "soft")
   # Fit initial model
   m1.asr <- asreml(yield ~ Rep + WithinColPairs + Variety, 
                    random = ~ Row + Column + units,
@@ -70,6 +71,7 @@ test_that("Wheat_asreml42", {
   ## Fit several models to the wheat data and caclulate their ICs
   data(Wheat.dat)
   
+  asreml::asreml.options(extra = 5, ai.sing = TRUE, fail = "soft")
   # Fit initial model
   m.max <- asreml(yield ~ Rep + WithinColPairs + Variety, 
                   random = ~ Row + Column + units,

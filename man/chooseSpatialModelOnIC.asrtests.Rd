@@ -33,7 +33,7 @@
                        row.covar = "cRow", col.covar = "cCol", 
                        row.factor = "Row", col.factor = "Col", 
                        corr.funcs = c("ar1", "ar1"), 
-                       row.corrFitfirst = TRUE, 
+                       row.corrFitfirst = TRUE, allow.corrsJointFit = TRUE, 
                        dropRowterm = NULL, dropColterm = NULL, 
                        nsegs = NULL, nestorder = c(1,1), 
                        rotateX = FALSE, ngridangles = c(18, 18), 
@@ -102,11 +102,16 @@
                the two-dimensional model is fitted as a random term. If a correlation 
                or variance model is not to be investigated for one of the dimensions, 
                specify \code{""} for that dimension.}
- \item{row.corrFitfirst}{If \code{TRUE} then, in fitting the model for 
-                \code{spatial.model} set to \code{corr}, the row correlation or 
-               variance function is fitted first, followed by the addition of the 
+ \item{row.corrFitfirst}{A \code{\link{logical}}. If \code{TRUE} then, in fitting the 
+               model for \code{spatial.model} set to \code{corr}, the row correlation  
+               or variance function is fitted first, followed by the addition of the 
                column correlation or variance function. If \code{FALSE}, the order 
                of fitting is reversed.}
+ \item{allow.corrsJointFit}{A \code{\link{logical}} which, if \code{TRUE}, will allow 
+               the simultaneous fitting of correlation functions for the two dimensions 
+               of the grid when separate fits have failed to fit any correlation 
+               functions. This argument is available for when a joint fit 
+               hangs the system.}
  \item{dropRowterm}{A single \code{character} string nominating a \code{\link{factor}} 
                in the \code{\link{data.frame}} that has as many \code{levels} as there 
                are unique values in \code{row.covar}. This argument is applicable for 
