@@ -18,7 +18,7 @@
        Convergence in fitting the model is checked and a note included in the 
        \code{action} if there was not. All components of the 
        \code{\link{asrtests.object}} are updated to exhibit the differences 
-       between the suupplied and new model.
+       between the supplied and new models.
 
        To obtain a list of the information criteria for a set of models use 
        \code{\link{changeTerms.asrtests}} with \code{IClikelihood} set to 

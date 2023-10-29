@@ -432,6 +432,16 @@ test_that("Wheat_spatial_models_asreml42", {
   info <- infoCriteria(grp.asrt$asreml.obj, IClikelihood = "full")
   testthat::expect_equal(info$varDF, 7)
   testthat::expect_lt(abs(info$AIC - 1643.467), 0.10)
+  testthat::expect_equal(rownames(summary(grp.asrt$asreml.obj)$varcomp), 
+                         c("grp(TP.C.2_frow)", "dev(cRow)", 
+                           "grp(TP.R.1_fcol)+grp(TP.R.2_fcol)!corh(2)!cor", 
+                           "grp(TP.R.1_fcol)+grp(TP.R.2_fcol)!corh(2)_1", 
+                           "grp(TP.R.1_fcol)+grp(TP.R.2_fcol)!corh(2)_2", 
+                           "grp(TP_fcol_frow)", "units!R"))
+  testthat::expect_equal(rownames(grp.asrt$wald.tab), c("(Intercept)", "Rep", "WithinColPairs", 
+                                                        "Variety", 
+                                                        "TP.CR.2", "TP.CR.3", "TP.CR.4"))
+  
   
   #Repeat to make sure no carry-over effects 
   current.asrt <- addSpatialModelOnIC(init.asrt, spatial.model = "TPPS", 
@@ -450,6 +460,18 @@ test_that("Wheat_spatial_models_asreml42", {
   info <- infoCriteria(list(grp.asrt$asreml.obj, mbf.asrt$asreml.obj), IClikelihood = "full")
   testthat::expect_true(all.equal(info[1,], info[2,], tolerance = 1e-06, check.attributes = FALSE)) #mbf & grp are same
   
+  
+  #Rotate the penalty matrix with grp, testing if full rotated model is better than full, unrotated model
+  grp.asrt <- addSpatialModelOnIC(init.asrt, spatial.model = "TPPS", 
+                                  row.covar = "cRow", col.covar = "cColumn",
+                                  dropRowterm = "Row", dropColterm = "Column", 
+                                  rotateX = TRUE, ngridangles = c(9,9), 
+                                  asreml.option = "grp")
+  info <- infoCriteria(current.asrt$asreml.obj, IClikelihood = "full")
+  testthat::expect_equal(info$varDF, 7)
+  testthat::expect_lt(abs(info$AIC - 1643.467), 0.10) #this unrotated AIC
+  
+  
   #Rotate the penalty matrix with grp
   grp.asrt <- addSpatialModel(init.asrt, spatial.model = "TPPS", 
                                   row.covar = "cRow", col.covar = "cColumn",
@@ -461,9 +483,9 @@ test_that("Wheat_spatial_models_asreml42", {
   testthat::expect_lt(abs(info$AIC - 1650.192), 0.10)
   testthat::expect_equal(rownames(summary(grp.asrt$asreml.obj)$varcomp), 
                          c("grp(TP.C.2_frow)", "dev(cRow)", 
-                           "grp(TP.R.1_fcol)+grp(TP.R.2_fcol)!us(2)_1:1", 
-                           "grp(TP.R.1_fcol)+grp(TP.R.2_fcol)!us(2)_2:1", 
-                           "grp(TP.R.1_fcol)+grp(TP.R.2_fcol)!us(2)_2:2", 
+                           "grp(TP.R.1_fcol)+grp(TP.R.2_fcol)!corh(2)!cor", 
+                           "grp(TP.R.1_fcol)+grp(TP.R.2_fcol)!corh(2)_1", 
+                           "grp(TP.R.1_fcol)+grp(TP.R.2_fcol)!corh(2)_2", 
                            "grp(TP_fcol_frow)", "units!R"))
   testthat::expect_equal(rownames(grp.asrt$wald.tab), c("(Intercept)", "Rep", "WithinColPairs", 
                                                         "Variety", 
@@ -483,9 +505,9 @@ test_that("Wheat_spatial_models_asreml42", {
   testthat::expect_lt(abs(info$AIC - 1650.192), 0.10)
   testthat::expect_equal(rownames(summary(mbf.asrt$asreml.obj)$varcomp), 
                          c("dev(cRow)", "mbf(TP.row):TP.C.2", 
-                           "TP.R.1:mbf(TP.col)+mbf(TP.col):TP.R.2!us(2)_1:1", 
-                           "TP.R.1:mbf(TP.col)+mbf(TP.col):TP.R.2!us(2)_2:1", 
-                           "TP.R.1:mbf(TP.col)+mbf(TP.col):TP.R.2!us(2)_2:2", 
+                           "TP.R.1:mbf(TP.col)+mbf(TP.col):TP.R.2!corh(2)!cor", 
+                           "TP.R.1:mbf(TP.col)+mbf(TP.col):TP.R.2!corh(2)_1", 
+                           "TP.R.1:mbf(TP.col)+mbf(TP.col):TP.R.2!corh(2)_2", 
                            "mbf(TP.CxR)", "units!R"))
   testthat::expect_equal(rownames(mbf.asrt$wald.tab), c("(Intercept)", "Rep", "WithinColPairs", 
                                                         "Variety", 

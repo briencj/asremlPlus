@@ -1,5 +1,9 @@
 \name{news}
 \title{News for Package asremlPlus}
+\section{asremlPlus Version 4.4.18 (2023-10-29}{
+  \itemize{
+  \item For fitting in P-spline models using addSpatialModel.asrtests, addSpatialModelOnIC.asrtests or chooseSpatialModelOnIC.asrtests, change the function for fitting the covariance of the constant and the linear term from \code{us} to \code{corh} or \code{corgh}.
+}}
 \section{asremlPlus Version 4.4.17 (2023-10-26}{
   \itemize{
   \item Fix bug in investigating nugget variance for correlation models when there are \code{sections}.

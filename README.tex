@@ -5,16 +5,19 @@
 \documentclass[
 ]{article}
 \usepackage{amsmath,amssymb}
-\usepackage{lmodern}
 \usepackage{iftex}
 \ifPDFTeX
   \usepackage[T1]{fontenc}
   \usepackage[utf8]{inputenc}
   \usepackage{textcomp} % provide euro and other symbols
 \else % if luatex or xetex
-  \usepackage{unicode-math}
+  \usepackage{unicode-math} % this also loads fontspec
   \defaultfontfeatures{Scale=MatchLowercase}
   \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+\usepackage{lmodern}
+\ifPDFTeX\else
+  % xetex/luatex font selection
 \fi
 % Use upquote if available, for straight quotes in verbatim environments
 \IfFileExists{upquote.sty}{\usepackage{upquote}}{}
@@ -47,6 +50,7 @@
 \makeatletter
 \def\fps@figure{htbp}
 \makeatother
+\usepackage{svg}
 \setlength{\emergencystretch}{3em} % prevent overfull lines
 \providecommand{\tightlist}{%
   \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
@@ -56,7 +60,7 @@
 \fi
 \IfFileExists{bookmark.sty}{\usepackage{bookmark}}{\usepackage{hyperref}}
 \IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
-\urlstyle{same} % disable monospaced font for URLs
+\urlstyle{same}
 \hypersetup{
   pdftitle={asremlPlus},
   hidelinks,
@@ -69,12 +73,12 @@
 \begin{document}
 \maketitle
 
-\href{http://www.repostatus.org/\#active}{\includegraphics{http://www.repostatus.org/badges/latest/active.svg}}
-\href{https://cran.r-project.org/}{\includegraphics{https://img.shields.io/badge/R\%3E\%3D-2.10.0-6666ff.svg}}
+\href{http://www.repostatus.org/\#active}{\includesvg{http://www.repostatus.org/badges/latest/active.svg}}
+\href{https://cran.r-project.org/}{\includesvg{https://img.shields.io/badge/R\%3E\%3D-2.10.0-6666ff.svg}}
 \href{https://cran.r-project.org/package=asremlPlus}{\includegraphics{http://www.r-pkg.org/badges/version/asremlPlus}}
-\href{/commits/master}{\includegraphics{https://img.shields.io/badge/Package\%20version-4.3.51-orange.svg?style=flat-square}}
-\href{/commits/master}{\includegraphics{https://img.shields.io/badge/last\%20change-2023--04--03-yellowgreen.svg}}
-\href{http://choosealicense.com/licenses/mit/}{\includegraphics{https://img.shields.io/github/license/mashape/apistatus.svg}}
+\href{/commits/master}{\includegraphics{https://img.shields.io/badge/Package\%20version-4.4.18-orange.svg?style=flat-square}}
+\href{/commits/master}{\includesvg{https://img.shields.io/badge/last\%20change-2023--10--29-yellowgreen.svg}}
+\href{http://choosealicense.com/licenses/mit/}{\includesvg{https://img.shields.io/github/license/mashape/apistatus.svg}}
 \href{commits/master}{\includegraphics{https://cranlogs.r-pkg.org/badges/last-week/asremlPlus}}
 
 \texttt{asremlPlus} is an R package that augments the use of

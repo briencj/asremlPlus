@@ -510,15 +510,6 @@ getSectionVpars <- function( asreml.obj, sections, stub, corr.facs, which = c("r
   if ("ran" %in%  which)
   { 
     vpc.ran <- vpc[!grepl("!R$", names(vpc))]
-    # vpc.ran <- vpc.ran[sapply(names(vpc.ran),
-    #                           function(term, corr.facs)
-    #                           {
-    #                             all(sapply(corr.facs,
-    #                                        {
-    #                                          function(fac, term)
-    #                                            grepl(fac, term)
-    #                                        }, term = term))
-    #                           }, corr.facs = c(sections, corr.facs))]
     if (length(vpc.ran) > 0)
       vpc.ran <- vpc.ran[sapply(names(vpc.ran),
                                 function(term, corr.facs)
@@ -1171,21 +1162,6 @@ fitCorrMod <- function(asrtests.obj, sections = NULL,
             }
             
             
-            #Try fixing either a residual variance or random term if only one is fixed 
-            # for (j in i:1)
-            # {
-            #   if (nsect > 1)
-            #   {
-            #     stub <- levels(dat.in[[sections]])[j]
-            #   } else
-            #     stub <- NULL
-            #   
-            #   #update constraints for corr.bound under the new model
-            #   vpc.corr <- getSectionVpars(corr.asrt$asreml.obj, 
-            #                               sections = sections, stub = stub, 
-            #                               corr.facs = facs, 
-            #                               asr4 = asr4, asr4.2 = asr4.2)
-
             if (length(vpc.corr$ran) > 0)
             { 
               vpt.ran <- getVpars(corr.asrt$asreml.obj, asr4, asr4.2)$vpt[names(vpc.corr$ran)]
@@ -1998,10 +1974,12 @@ fitTPSModSect <- function(tspl.asrt, data, mat, ksect, sect.fac,
   
   #If more than one col variable in the marginal random row term in this section, try unstructured model
   rowmarg.vpar <- vpars[grepl("TP\\.C\\.", vpars)]
-  if (length(rowmarg.vpar) > 1)
+  nr <- length(rowmarg.vpar)
+  if (nr > 1)
   {
     drop.ran <-paste(rowmarg.vpar, collapse = " + ") 
-    add.ran <- paste0("str( ~ ", drop.ran, ", ~ us(", length(rowmarg.vpar), 
+    add.ran <- paste0("str( ~ ", drop.ran, ", 
+                      ~ ", ifelse(nr > 2, "corgh", "corh"),"(", length(rowmarg.vpar), 
                       "):id(", mat$dim['nbr']*repln,"))")
     if (asreml.opt == "mbf")
       tspl.asrt <- do.call(fitfunc, 
@@ -2037,10 +2015,11 @@ fitTPSModSect <- function(tspl.asrt, data, mat, ksect, sect.fac,
   
   #If more than one row variable in the marginal random col term in this section, try unstructured model
   colmarg.vpar <- vpars[grepl("TP\\.R\\.", vpars)]
+  nc <- length(colmarg.vpar)
   if (length(colmarg.vpar) > 1)
   {
     drop.ran <-paste(colmarg.vpar, collapse = " + ") 
-    add.ran <- paste0("str( ~ ", drop.ran, ", ~ us(", length(colmarg.vpar), 
+    add.ran <- paste0("str( ~ ", drop.ran, ", ~ ", ifelse(nr > 2, "corgh", "corh"), "(", nc, 
                       "):id(", mat$dim['nbc']*repln,"))")
     if (asreml.opt == "mbf")
       tspl.asrt <- do.call(fitfunc, 
