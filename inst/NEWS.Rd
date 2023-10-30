@@ -1,5 +1,9 @@
 \name{news}
 \title{News for Package asremlPlus}
+\section{asremlPlus Version 4.4.19 (2023-10-30}{
+  \itemize{
+  \item Fix bug that prevented the fitting of covariance between the constant and linear parameters of the random row and random column terms in a \code{TPPCS} model.
+}}
 \section{asremlPlus Version 4.4.18 (2023-10-29}{
   \itemize{
   \item For fitting in P-spline models using addSpatialModel.asrtests, addSpatialModelOnIC.asrtests or chooseSpatialModelOnIC.asrtests, change the function for fitting the covariance of the constant and the linear term from \code{us} to \code{corh} or \code{corgh}.

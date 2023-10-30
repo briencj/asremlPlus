@@ -1702,6 +1702,8 @@ fitTPSModSect <- function(tspl.asrt, data, mat, ksect, sect.fac,
 {
   inargs <- list(...)
   
+  asr4.2 <- isASReml4_2Loaded(4.2, notloaded.fault = TRUE)
+  
   #Are dropRowterm and dropColterm already in the model?
   facs <- c(dropRowterm, dropColterm)
   drop.fix <- NULL
@@ -1804,7 +1806,7 @@ fitTPSModSect <- function(tspl.asrt, data, mat, ksect, sect.fac,
       rot.asr <- rot.asrt$asreml.obj
       dev <- deviance.asr(rot.asr)
       
-      #FInd the optimal thetas
+      #Find the optimal thetas
       theta_opt <- rotate.penalty.U(rot.asr, data, sections = sections, ksect = ksect, 
                                     row.covar = row.covar, col.covar = col.covar,
                                     nsegs = nsegs, nestorder = nestorder,
@@ -1968,7 +1970,8 @@ fitTPSModSect <- function(tspl.asrt, data, mat, ksect, sect.fac,
   {   
     klev <- levels(data[[sections]])[ksect]
     vpars <- vpars[grepl(klev, vpars)]
-    vpars <- gsub(paste0("'",klev,"'"), ksect, vpars)
+    if (!asr4.2)
+      vpars <- gsub(paste0("'",klev,"'"), ksect, vpars)
     repln <- length(levels(data[[sections]]))
   }
   
@@ -1977,17 +1980,17 @@ fitTPSModSect <- function(tspl.asrt, data, mat, ksect, sect.fac,
   nr <- length(rowmarg.vpar)
   if (nr > 1)
   {
+    us.func <- ifelse(nr > 2, "corgh", "corh")
     drop.ran <-paste(rowmarg.vpar, collapse = " + ") 
-    add.ran <- paste0("str( ~ ", drop.ran, ", 
-                      ~ ", ifelse(nr > 2, "corgh", "corh"),"(", length(rowmarg.vpar), 
-                      "):id(", mat$dim['nbr']*repln,"))")
+    add.ran <- paste0("str( ~ ", drop.ran, ", ~ ", 
+                      us.func, "(", length(rowmarg.vpar), "):id(", mat$dim['nbr']*repln,"))")
     if (asreml.opt == "mbf")
       tspl.asrt <- do.call(fitfunc, 
                            args = c(list(tspl.asrt, 
                                          addRandom = add.ran,
                                          dropRandom = drop.ran, 
                                          mbf = mbf.lis,
-                                         label = "Try us variance for random row terms", 
+                                         label = "Try column-parameters covariance for random row terms", 
                                          allow.unconverged = allow.unconverged, 
                                          allow.fixedcorrelation = allow.fixedcorrelation,
                                          checkboundaryonly = TRUE, 
@@ -2002,7 +2005,7 @@ fitTPSModSect <- function(tspl.asrt, data, mat, ksect, sect.fac,
                                          addRandom = add.ran,
                                          dropRandom = drop.ran, 
                                          group = grp,
-                                         label = "Try us variance for random row terms", 
+                                         label = "Try column-parameters covariance for random row terms", 
                                          allow.unconverged = allow.unconverged, 
                                          allow.fixedcorrelation = allow.fixedcorrelation,
                                          checkboundaryonly = TRUE, 
@@ -2018,16 +2021,17 @@ fitTPSModSect <- function(tspl.asrt, data, mat, ksect, sect.fac,
   nc <- length(colmarg.vpar)
   if (length(colmarg.vpar) > 1)
   {
+    us.func <- ifelse(nc > 2, "corgh", "corh")
     drop.ran <-paste(colmarg.vpar, collapse = " + ") 
-    add.ran <- paste0("str( ~ ", drop.ran, ", ~ ", ifelse(nr > 2, "corgh", "corh"), "(", nc, 
-                      "):id(", mat$dim['nbc']*repln,"))")
+    add.ran <- paste0("str( ~ ", drop.ran, 
+                      ", ~ ", us.func, "(", nc, "):id(", mat$dim['nbc']*repln,"))")
     if (asreml.opt == "mbf")
       tspl.asrt <- do.call(fitfunc, 
                            args = c(list(tspl.asrt, 
                                          addRandom = add.ran,
                                          dropRandom = drop.ran, 
                                          mbf = mbf.lis,
-                                         label = "Try us variance on random col terms", 
+                                         label = "Try row-parameters covariance for random column terms", 
                                          allow.unconverged = allow.unconverged, 
                                          allow.fixedcorrelation = allow.fixedcorrelation,
                                          checkboundaryonly = TRUE, 
@@ -2042,7 +2046,7 @@ fitTPSModSect <- function(tspl.asrt, data, mat, ksect, sect.fac,
                                          addRandom = add.ran,
                                          dropRandom = drop.ran, 
                                          group = grp,
-                                         label = "Try us variance on random col terms", 
+                                         label = "Try row-parameters covariance for random column terms", 
                                          allow.unconverged = allow.unconverged, 
                                          allow.fixedcorrelation = allow.fixedcorrelation,
                                          checkboundaryonly = TRUE, 
