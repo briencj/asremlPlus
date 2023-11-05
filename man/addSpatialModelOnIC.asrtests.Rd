@@ -32,6 +32,7 @@
                     dropRowterm = NULL, dropColterm = NULL, 
                     nsegs = NULL, nestorder = c(1,1), 
                     degree = c(3,3), difforder = c(2,2), 
+                    usRandLinCoeffs = TRUE, 
                     rotateX = FALSE, ngridangles = c(18, 18), 
                     which.rotacriterion = "AIC", nrotacores = 1, 
                     asreml.option = "mbf", tpps4mbf.obj = NULL, 
@@ -141,6 +142,14 @@
  \item{difforder}{A \code{\link{numeric}} of length 2. The order of differencing for 
               column and row dimensions, respectively, in fitting a P-spline 
               (\code{TPSS}).}
+ \item{usRandLinCoeffs}{A \code{\link{logical}} which, if \code{TRUE}, will attempt to  
+               fit an unstructured variance model to the constant and linear terms in 
+               the interactions for constant and linear terms in one grid dimension 
+               interacting with smoooth terms in the second grid dimension. The 
+               unstructured variance model can only be fitted if both the constant and 
+               linear interaction terms have been retained in the fitted model. 
+               This argument can be used to omit the attempt to fit an unstructured 
+               variance model when the attempt results in a stystem error.}
  \item{rotateX}{A \code{\link{logical}} indicating whether to rotate the eigenvectors of the 
               penalty matrix, as described by Piepho, Boer and Williams (2022), when 
               fitting a P-spline (\code{TPSS}). Setting \code{rotateX} to \code{TRUE} 

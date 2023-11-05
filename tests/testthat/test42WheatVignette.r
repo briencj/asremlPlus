@@ -122,6 +122,76 @@ test_that("Wheat_asreml42", {
 })
 
 
+cat("#### Test for wheat76 example using AIC with asreml42\n")
+test_that("Wheat_asreml42", {
+  skip_if_not_installed("asreml")
+  skip_on_cran()
+  library(dae)
+  library(asreml)
+  library(asremlPlus)
+  ## use asremlPlus to analyse the wheat (barley) example from section 8.6 of the asreml manual (Butler et al. 2010)
+  ## The AIC is used in asremlPlus-package.RD
+  data(Wheat.dat)
+  
+  # Fit initial model
+  current.asr <- asreml(yield ~ Rep + WithinColPairs + Variety, 
+                        random = ~ Row + Column + units,
+                        residual = ~ ar1(Row):ar1(Column), 
+                        maxit = 30, data=Wheat.dat)
+  summary(current.asr)
+  info <- infoCriteria(current.asr)
+  testthat::expect_equal(info$varDF, 5)
+  testthat::expect_lt(abs(info$AIC - 1346.768), 0.10)
+  
+  # Load current fit into an asrtests object
+  current.asrt <- as.asrtests(current.asr, NULL, NULL, 
+                              label = "Maximal model", IClikelihood = "full")
+  testthat::expect_lt(abs(current.asrt$test.summary$AIC - 1653.098), 0.10)
+  
+  
+  # Check for and remove any boundary terms
+  current.asrt <- rmboundary(current.asrt, IClikelihood = "full")
+  
+  #Check term for within Column pairs
+  current.asrt <- testranfix(current.asrt, term = "WithinColPairs", 
+                             drop.fix.ns=TRUE, IClikelihood = "full")
+  
+  # Test nugget term
+  current.asrt <- changeModelOnIC(current.asrt, addRandom = "units", 
+                                  label = "units", IClikelihood = "full")
+  
+  # Test Row autocorrelation
+  current.asrt <- changeModelOnIC(t.asrt, newResidual = "Row:ar1(Column)", 
+                                  label="Row autocorrelation", 
+                                  IClikelihood = "full")
+  
+  # Test Col autocorrelation (depends on whether Row autocorrelation retained)
+  result <- getTestEntry(t.asrt, label = "Row autocorrelation")$action
+  testthat::expect_true(grepl("Unswapped", result))
+  { 
+    if (grepl("Unswapped", result) || grepl("Unchanged", result))
+      current.asrt <- changeModelOnIC(t.asrt, newResidual = "ar1(Row):Column", 
+                                      label="Col autocorrelation", 
+                                      IClikelihood = "full", update=FALSE)
+    else
+      current.asrt <- changeModelOnIC(t.asrt, newResidual = "Row:Column", 
+                                      label="Col autocorrelation", 
+                                      IClikelihood = "full", update=FALSE)
+  }
+  print(current.asrt)
+  testthat::expect_equal(length(current.asrt), 3)
+  testthat::expect_equal(nrow(current.asrt$wald.tab), 3)
+  testthat::expect_equal(nrow(current.asrt$test.summary), 8)
+  testthat::expect_lt(abs(current.asrt$test.summary$AIC[8] - 54.18178706), 0.10)
+  testthat::expect_lt(abs(current.asrt$test.summary$BIC[8] - 51.17115177), 0.10)
+  info <- infoCriteria(current.asrt$asreml.obj)
+  testthat::expect_equal(info$varDF, 5)
+  testthat::expect_lt(abs(info$AIC - 1353.762), 1e-03)
+})
+
+
+
+
 
 cat("#### Test for wheat76 addtoSummary with asreml42\n")
 test_that("Wheat_addtoSummary_asreml42", {

@@ -564,7 +564,7 @@ test_that("Wheat_spatial_models_asreml42", {
   testthat::expect_true(all(rownames(spatial.asrts$spatial.IC) == 
                               c("nonspatial", "corr", "TPNCSS", "TPPCS", "TPP1LS")))
   testthat::expect_true(all(abs(spatial.asrts$spatial.IC$AIC - 
-                                  c(1720.891, 1653.096, 1639.792, 1643.467, 1710.282)) < 0.10))
+                                  c(1720.891, 1653.096, 1639.792, 1643.467, 1653.111)) < 0.10))
   testthat::expect_equal(spatial.asrts$best.spatial.mod, "TPNCSS")
   
   #Fit two models and return both
@@ -588,7 +588,7 @@ test_that("Wheat_spatial_models_asreml42", {
   testthat::expect_true(all(rownames(spatial.asrts$spatial.IC) == 
                               c("nonspatial", "corr", "TPNCSS", "TPPCS", "TPP1LS")))
   testthat::expect_true(all(abs(spatial.asrts$spatial.IC$AIC - 
-                                  c(1720.891, 1653.096, 1639.792, 1643.467, 1710.282)) < 0.10))
+                                  c(1720.891, 1653.096, 1639.792, 1643.467, 1653.111)) < 0.10))
   
   #Check that calculated spatial.IC is the same as those for models fitted using addSpatialModel
   spatialEach.asrts <- list()
@@ -703,7 +703,7 @@ test_that("Wheat_spatial_models_asreml42", {
   testthat::expect_true(all(rownames(spatial.asrts$spatial.IC) == 
                               c("nonspatial", "corr", "TPNCSS", "TPPCS", "TPP1LS")))
   testthat::expect_true(all(abs(spatial.asrts$spatial.IC$AIC - 
-                                  c(1690.964, 1653.978, 1639.792, 1643.467, 1690.964)) < 0.10))
+                                  c(1690.964, 1653.978, 1639.792, 1643.467, 1653.111)) < 0.10))
   
   #Check that calculated spatial.IC is the same as those for models fitted using addSpatialModel
   spatialEach.asrts <- list()
@@ -897,7 +897,7 @@ test_that("Wheat76_corr_models_asreml42", {
                       lapply(spatial.asrts, 
                              function(asrt) infoCriteria(asrt$asreml.obj, IClikelihood = "full")))
   
-  testthat::expect_true(all.equal(infoEach$AIC, c(1714.861, 1710.282), tolerance = 1e-05))
+  testthat::expect_true(all.equal(infoEach$AIC, c(1714.861, 1653.111), tolerance = 1e-05))
 
   #Check trap for all id 
   testthat::expect_error(

@@ -373,23 +373,24 @@ print(current.asrt, which = "pseudoanova")
 current.asrt <- testranfix(current.asrt, "WithinColPairs", drop.fix.ns=TRUE)
   
 # Test nugget term
-current.asrt <- testranfix(current.asrt, "units", positive=TRUE)
+current.asrt <- changeModelOnIC(current.asrt, addRandom = "units", 
+                                label = "units", IClikelihood = "full")
   
 # Test Row autocorrelation
-current.asrt <- testresidual(current.asrt, "~ Row:ar1(Column)", 
-                             label="Row autocorrelation", simpler=TRUE)
+current.asrt <- changeModelOnIC(t.asrt, newResidual = "Row:ar1(Column)", 
+                                label="Row autocorrelation", 
+                                IClikelihood = "full")
   
 # Test Col autocorrelation (depends on whether Row autocorrelation retained)
-(p <- getTestPvalue(current.asrt, label = "Row autocorrelation"))
-{ if (p <= 0.05)
-    current.asrt <- testresidual(current.asrt, "~ ar1(Row):Column", 
-                                 label="Col autocorrelation", 
-                                 simpler=TRUE, update=FALSE)
-  else
-    current.asrt <- testresidual(current.asrt, "~ Row:Column", 
-                                 label="Col autocorrelation", 
-                                 simpler=TRUE, update=FALSE)
-}
+result <- getTestEntry(t.asrt, label = "Row autocorrelation")$action
+if (grepl("Unswapped", result) || grepl("Unchanged", result))
+  current.asrt <- changeModelOnIC(t.asrt, newResidual = "ar1(Row):Column", 
+                                  label="Col autocorrelation", 
+                                  IClikelihood = "full", update=FALSE)
+else
+  current.asrt <- changeModelOnIC(t.asrt, newResidual = "Row:Column", 
+                                  label="Col autocorrelation", 
+                                  IClikelihood = "full", update=FALSE)
 
 # Output the results
 print(current.asrt, which = "test")

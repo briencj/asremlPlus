@@ -62,9 +62,9 @@
                     are in the \code{data.frame} supplied to \code{predictions}, they will be 
                     returned to the previous names. 
                     
-          \item \code{differences}: {A \code{matrix} containing all pairwise differences between
+          \item \code{differences}: A \code{matrix} containing all pairwise differences between
                     the predictions; it should have the same number of rows and columns as there are
-                    rows in \code{predictions}.}
+                    rows in \code{predictions}.
           \item \code{p.differences}: A \code{matrix} containing p-values for all pairwise differences 
                     between the predictions; each p-value is computed as the probability of a t-statistic 
                     as large as or larger than the observed difference divided by its standard error. 

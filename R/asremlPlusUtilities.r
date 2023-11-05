@@ -615,13 +615,13 @@ chk4TermInFormula <- function(form, term, asreml.obj)
 
 #This function produces a data frame of the factors involved a set of effnames
 #The function is not being used.
-as.data.frame.effnames <- function(effnames)
+as.data.frame.effnames <- function(x, ...)
 {
   fac.vars <- NULL
   asr4.2 <- isASReml4_2Loaded(4.2, notloaded.fault = TRUE)
   if (asr4.2)
   { 
-    col.vars <- strsplit(effnames, split = split, fixed = TRUE)
+    col.vars <- strsplit(x, split = split, fixed = TRUE)
     col.vars <- as.data.frame(do.call(rbind, col.vars))
     facs.vars <- as.data.frame(lapply(col.vars, function(var)
     {

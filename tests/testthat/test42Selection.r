@@ -829,7 +829,7 @@ test_that("changeModelOnIC_Example_asreml42", {
                                   IClikelihood = "full")
   testthat::expect_true(current.asrt$asreml.obj$converge)
   testthat::expect_equal(current.asrt$test.summary$denDF[3], -2)
-  testthat::expect_true((abs(current.asrt$test.summary$AIC[3]) - 21.708630) < 1e-02)
+  testthat::expect_true((abs(current.asrt$test.summary$AIC[3]) - 21.72047) < 1e-02)
   
   mod <- printFormulae(current.asrt$asreml.obj)
   testthat::expect_equal(length(mod), 3)
@@ -866,7 +866,7 @@ test_that("Fixedcorrelations_asreml42", {
   m2.asrt <- changeModelOnIC(m.asrt, addRandom = "units", label = "units", allow.fixedcorrelation = TRUE,
                              IClikelihood = "full")
   testthat::expect_equal(m2.asrt$test.summary$action[2], "Unswapped")
-  testthat::expect_false(grepl("units", as.character(getFormulae(m2.asrt$asreml.obj)$random)[2], fixed = TRUE))
+  testthat::expect_true(grepl("units", as.character(getFormulae(m2.asrt$asreml.obj)$random)[2]))
   summary(m2.asrt$asreml.obj)$varcomp
   testthat::expect_equal(unname(
          m2.asrt$asreml.obj$vparameters.con["Lane:Position!Lane!cor"]), "U")
@@ -877,22 +877,22 @@ test_that("Fixedcorrelations_asreml42", {
   
   m4.asrt <- changeTerms(m.asrt, addRandom = "units", label = "Add units", allow.fixedcorrelation = TRUE)
   testthat::expect_equal(m4.asrt$test.summary$action[2], "Changed random")
-  testthat::expect_true(grepl("units", as.character(getFormulae(m4.asrt$asreml.obj)$random)[2], fixed = TRUE))
+  testthat::expect_true(grepl("units", as.character(getFormulae(m4.asrt$asreml.obj)$random)[2]))
   
   m4.asrt <- testranfix(m4.asrt, term = "units", positive.zero = TRUE, allow.fixedcorrelation = TRUE)
   testthat::expect_equal(m4.asrt$test.summary$action[3], "Retained")
-  testthat::expect_true(grepl("units", as.character(getFormulae(m4.asrt$asreml.obj)$random)[2], fixed = TRUE))
+  testthat::expect_true(grepl("units", as.character(getFormulae(m4.asrt$asreml.obj)$random)[2]))
   testthat::expect_equal(unname(
           m4.asrt$asreml.obj$vparameters.con["Lane:Position!Lane!cor"]), "B")
 
   m5.asrt <- testranfix(m4.asrt, term = "units", positive.zero = TRUE, allow.fixedcorrelation = TRUE,
                         IClikelihood = "REML")
   testthat::expect_equal(m5.asrt$test.summary$action[4], "Retained")
-  testthat::expect_true(grepl("units", as.character(getFormulae(m5.asrt$asreml.obj)$random)[2], fixed = TRUE))
+  testthat::expect_true(grepl("units", as.character(getFormulae(m5.asrt$asreml.obj)$random)[2]))
   testthat::expect_equal(unname(
            m5.asrt$asreml.obj$vparameters.con["Lane:Position!Lane!cor"]), "B")
   testthat::expect_true(all(abs(c(m5.asrt$test.summary$AIC[4],m5.asrt$test.summary$BIC[4]) - 
-                                  c(2355.000, 2359.271)) < 1e-03))
+                                  c(2357.000, 2365.542)) < 1e-03))
   
   m6.asrt <- testranfix(m4.asrt, term = "Lane", allow.fixedcorrelation = TRUE,
                         IClikelihood = "REML")

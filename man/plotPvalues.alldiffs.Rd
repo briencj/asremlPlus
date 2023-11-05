@@ -139,7 +139,7 @@
  }
 \value{A \code{\link{list}} with components named \code{pvalues} and \code{plots}. 
        The \code{pvalues} component contains the \code{data.frame} with the columns \code{Rows}, 
-       \code{Columns}, \code{p}, \code{sections1} and \code{sections2}. This {data.frame} is 
+       \code{Columns}, \code{p}, \code{sections1} and \code{sections2}. This \code{data.frame} is 
        formed using the \code{sed} component of \code{object} and is used by 
        \code{\link{plotPvalues.data.frame}} in producng the plot. The \code{plots} 
        component contains a list of \code{ggplot} objects, one for each plot produced. 

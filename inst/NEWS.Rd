@@ -1,8 +1,17 @@
 \name{news}
 \title{News for Package asremlPlus}
+\section{asremlPlus Version 4.4.21 (2023-11-05}{
+  \itemize{
+  \item Increment version for resubmission to CRAN after fixing an S3 method declaration error.
+}}
+\section{asremlPlus Version 4.4.20 (2023-11-05}{
+  \itemize{
+  \item Revise manual pages to meet cran syntax requirements. 
+  \item Add the argument \code{usRandLinCoeffs} to addSpatialModel.asrtests, addSpatialModelOnIC.asrtests or chooseSpatialModelOnIC.asrtests to control whether to attempt the fit of the unstructured variance model for the constant and linear terms in random interactions with smooth terms. Also, added code to reject the model if any of the variances or covariances are bound.
+}}
 \section{asremlPlus Version 4.4.19 (2023-10-30}{
   \itemize{
-  \item Fix bug that prevented the fitting of covariance between the constant and linear parameters of the random row and random column terms in a \code{TPPCS} model.
+  \item Fix bug that prevented the fitting of unstructured variance model  between the random constant and linear parameters in the interaction of these terms with the random smooth row and random column terms in a \code{TPPCS} model.  
 }}
 \section{asremlPlus Version 4.4.18 (2023-10-29}{
   \itemize{

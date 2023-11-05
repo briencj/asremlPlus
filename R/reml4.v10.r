@@ -783,9 +783,9 @@ get.atargs <- function(at.term, dd, always.levels = FALSE)
 #   because wald.tab, vparameters and varcomp rownames now always have single quotes.
 # However, if fit with a character level call$fixed/random has double quotes and 
 #     and the terms.object in formulae$fixed/random has \".
-#If fit model with numeric  specifying the position in the levels list, 
+#If fit model with numeric specifying the position in the levels list, 
 #   both call$fixed/random and the terms.object in formulae$fixed/random have the numeric.
-#   This latter fact means that when updating a formula, needs to given index if was given in the 
+#   This latter fact means that when updating a formula, needs to give index if was given in the 
 #   formula to be updated.
 
 
@@ -796,7 +796,7 @@ get.atargs <- function(at.term, dd, always.levels = FALSE)
 #It assumes that the new "at" term has the actual levels, rather than an index 1:no.levels.
 #
 #Testing of formulae with at functions is in test42Selection
-atLevelsMatch <- function(new, old, call, always.levels = TRUE)
+atLevelsMatch <- function(new, old, call, single.new.term = FALSE, always.levels = TRUE)
 {
   new.ch <- deparse(new)
   new.ch <- paste0(stringr::str_trim(new.ch, side = "left"), collapse = "")
@@ -804,7 +804,10 @@ atLevelsMatch <- function(new, old, call, always.levels = TRUE)
   {
     ##Split new into pieces based on whether they are separated by "+"s
     dd <- eval(languageEl(call, which = "data")) #needed for levels
-    new.split <- unlist(strsplit(new.ch, "[-~/+]")) #removed "*" on 17/9/2022
+    if (single.new.term)
+      new.split <- unlist(strsplit(new.ch, "[-]")) #introduced on 1/11/2023
+    else
+      new.split <- unlist(strsplit(new.ch, "[-~/+]")) #removed "*" on 17/9/2022
     at.parts <- stringr::str_trim(new.split[unlist(lapply(new.split, grepl, 
                                                           pattern = "at"))])
     ##Look for stray end comma if str in formula
@@ -923,7 +926,7 @@ atLevelsMatch <- function(new, old, call, always.levels = TRUE)
   old <- update.formula(old, ~ .)
   env <- environment(old)
   if (missing(new)) new <- old
-  new <- atLevelsMatch(new, old, call)
+  new <- atLevelsMatch(new, old, call, single.new.term = FALSE)
   #update formula expands the formula using keep.order = FALSE (cannot be changed)
   if (old == formula(~1))
     out <- old
@@ -1394,6 +1397,7 @@ findboundary.asreml <- function(asreml.obj, asr4, asr4.2)
   
   #Initialize
   asreml.obj <- asrtests.obj$asreml.obj
+  summary(asreml.obj)$varcomp
   reml <- asreml.obj$loglik
   test.summary <- asrtests.obj$test.summary
   wald.tab <- asrtests.obj$wald.tab
@@ -1420,14 +1424,18 @@ findboundary.asreml <- function(asreml.obj, asr4, asr4.2)
       if (substr(term, 1, 2) != "R!")  term <- rmTermDescription(term)
       termform <- atLevelsMatch(new = as.formula(paste("~", term)), 
                                 old = as.formula(languageEl(call, which = "random")), 
-                                call = call)
+                                call = call, single.new.term = TRUE)
       ranterms <- getTerms.formula(call$random)
-      ranforms <- lapply(ranterms, function(term) ran <- as.formula(paste("~",term)))
+      ranforms <- lapply(ranterms, function(term) ran <- as.formula(paste("~", 
+                                                                          paste0(term, collapse = " + "))))
+
       #Are there any nonremovable terms? i.e. not an R term or not a recognizable G term
       if (!any(sapply(ranforms, 
-                      function(rform, termform) setequal(fac.getinTerm(getTerms.formula(rform)),
-                                                         fac.getinTerm(getTerms.formula(termform))),
-                      termform = termform)))
+                      function(rform, termform) setequal(fac.getinTerm(getTerms.formula(rform), asr4.2 = asr4.2),
+                                                         fac.getinTerm(gsub('\\\"', "'", as.character(termform)[2]), 
+                                                                       asr4.2 = asr4.2)),
+#                      fac.getinTerm(getTerms.formula(termform), asr4.2 = asr4.2)),
+                       termform = termform)))
       { 
         vcomp <- vcomp[-k, ]
         k <- k - 1
@@ -2004,7 +2012,8 @@ findboundary.asreml <- function(asreml.obj, asr4, asr4.2)
           test.summary <- addtoTestSummary(test.summary, terms = label, DF=NA, denDF = NA, 
                                            p = NA, action = action)
         #Check for boundary terms
-        temp.asrt <- rmboundary.asrtests(as.asrtests(asreml.obj, wald.tab, test.summary, ...), 
+        temp.asrt <- rmboundary.asrtests(as.asrtests(asreml.obj, wald.tab, test.summary, 
+                                                     IClikelihood = IClikelihood), 
                                          checkboundaryonly = checkboundaryonly, 
                                          IClikelihood = IClikelihood, 
                                          trace = trace, update = update, 

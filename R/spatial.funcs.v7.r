@@ -83,6 +83,7 @@ addSpatialModel.asrtests <- function(asrtests.obj, spatial.model = "TPPS",
                                      dropRowterm = NULL, dropColterm = NULL, 
                                      nsegs = NULL, nestorder = c(1, 1), 
                                      degree = c(3,3), difforder = c(2,2), 
+                                     usRandLinCoeffs = TRUE, 
                                      rotateX = FALSE, ngridangles = c(18, 18), 
                                      which.rotacriterion = "AIC", nrotacores = 1, 
                                      asreml.option = "mbf", tpps4mbf.obj = NULL,  
@@ -150,6 +151,7 @@ addSpatialModel.asrtests <- function(asrtests.obj, spatial.model = "TPPS",
                                dropRowterm = dropRowterm, dropColterm = dropColterm, 
                                nsegs = nsegs, nestorder = nestorder, 
                                degree = degree, difforder = difforder, 
+                               usRandLinCoeffs = usRandLinCoeffs, 
                                rotateX = rotateX, ngridangles = ngridangles, 
                                which.rotacriterion = which.rotacriterion, 
                                nrotacores = nrotacores, 
@@ -173,6 +175,7 @@ addSpatialModelOnIC.asrtests <- function(asrtests.obj, spatial.model = "TPPS",
                                          dropRowterm = NULL, dropColterm = NULL, 
                                          nsegs = NULL, nestorder = c(1, 1), 
                                          degree = c(3,3), difforder = c(2,2), 
+                                         usRandLinCoeffs = TRUE, 
                                          rotateX = FALSE, ngridangles = c(18, 18), 
                                          which.rotacriterion = "AIC", 
                                          nrotacores = 1, 
@@ -251,6 +254,7 @@ addSpatialModelOnIC.asrtests <- function(asrtests.obj, spatial.model = "TPPS",
                                dropRowterm = dropRowterm, dropColterm = dropColterm, 
                                nsegs = nsegs, nestorder = nestorder, 
                                degree = degree, difforder = difforder, 
+                               usRandLinCoeffs = usRandLinCoeffs, 
                                rotateX = rotateX, ngridangles = ngridangles, 
                                asreml.opt = asreml.opt, 
                                tpps4mbf.obj = tpps4mbf.obj,
@@ -285,6 +289,7 @@ chooseSpatialModelOnIC.asrtests <- function(asrtests.obj, trySpatial = "all",
                                             row.corrFitfirst = TRUE, allow.corrsJointFit = TRUE, 
                                             dropRowterm = NULL, dropColterm = NULL, 
                                             nsegs = NULL, nestorder = c(1, 1), 
+                                            usRandLinCoeffs = TRUE, 
                                             rotateX = FALSE, ngridangles = c(18, 18), 
                                             which.rotacriterion = "AIC", nrotacores = 1, 
                                             asreml.option = "mbf", tpps4mbf.obj = NULL, 
@@ -390,6 +395,7 @@ chooseSpatialModelOnIC.asrtests <- function(asrtests.obj, trySpatial = "all",
                                              nsegs = nsegs, nestorder = nestorder, 
                                              degree = c(3,3), difforder = c(2,2), 
                                              rotateX = rotateX, ngridangles = ngridangles, 
+                                             usRandLinCoeffs = usRandLinCoeffs, 
                                              which.rotacriterion = which.rotacriterion, 
                                              nrotacores = nrotacores, 
                                              asreml.opt = asreml.opt, 
@@ -412,6 +418,7 @@ chooseSpatialModelOnIC.asrtests <- function(asrtests.obj, trySpatial = "all",
                                               dropRowterm = dropRowterm, dropColterm = dropColterm, 
                                               nsegs = nsegs, nestorder = nestorder, 
                                               degree = c(1,1), difforder = c(1,1), 
+                                              usRandLinCoeffs = FALSE, 
                                               rotateX = FALSE, ngridangles = c(0, 0), 
                                               which.rotacriterion = which.rotacriterion, 
                                               nrotacores = nrotacores, 
@@ -450,7 +457,7 @@ chooseSpatialModelOnIC.asrtests <- function(asrtests.obj, trySpatial = "all",
               best.spatial.IC = spatial.comp[min.asrt]))
 }
 
-getVpars <- function(asreml.obj, asr4, asr4.2)
+getVpars <- function(asreml.obj, asr4.2)
 {
   if (asr4.2)
   { 
@@ -466,9 +473,9 @@ getVpars <- function(asreml.obj, asr4, asr4.2)
 
 #Function to identify residual and correlation model terms that are currently fitted
 getSectionVpars <- function( asreml.obj, sections, stub, corr.facs, which = c("res", "ran"), 
-                             asr4, asr4.2)
+                             asr4.2)
 {
-  vpar <- getVpars(asreml.obj, asr4 = asr4, asr4.2 = asr4.2)
+  vpar <- getVpars(asreml.obj, asr4.2 = asr4.2)
   vpc <- vpar$vpc
   vpt <- vpar$vpt
 
@@ -685,11 +692,11 @@ chk4SingularCorrTerms <- function(asrtests.obj, corr.asrt, label,
   vpc.corr <- getSectionVpars(asrtests.obj$asreml.obj, 
                               sections = sections, stub = stub, 
                               corr.facs = corr.facs, 
-                              asr4 = asr4, asr4.2 = asr4.2)
+                              asr4.2 = asr4.2)
   
   
   #Determine the correlation terms, if any
-  vpt.corr <- getVpars(asrtests.obj$asreml.obj, asr4, asr4.2)$vpt
+  vpt.corr <- getVpars(asrtests.obj$asreml.obj, asr4.2)$vpt
   vpt.ran <- vpt.corr[names(vpc.corr$ran)]
   vpt.r <- vpt.ran[vpt.ran %in% c("R", "P", "C")]
   vpc.r <- vpc.corr$ran[names(vpt.r)]
@@ -1007,10 +1014,10 @@ fitCorrMod <- function(asrtests.obj, sections = NULL,
       vpc.corr <- getSectionVpars(corr.asrt$asreml.obj, 
                                   sections = sections, stub = stub, 
                                   corr.facs = facs, 
-                                  asr4 = asr4, asr4.2 = asr4.2)
+                                  asr4.2 = asr4.2)
 
       #Determine the correlation terms, if any
-      vpt.corr <- getVpars(corr.asrt$asreml.obj, asr4, asr4.2)$vpt
+      vpt.corr <- getVpars(corr.asrt$asreml.obj, asr4.2)$vpt
       vpt.ran <- vpt.corr[names(vpc.corr$ran)]
       vpt.r <- vpt.ran[vpt.ran %in% c("R", "P", "C")]
       vpc.r <- vpc.corr$ran[names(vpt.r)]
@@ -1041,9 +1048,9 @@ fitCorrMod <- function(asrtests.obj, sections = NULL,
           new.vpc.corr <- getSectionVpars(tmp.asrt$asreml.obj, 
                                           sections = sections, stub = stub, 
                                           corr.facs = facs, 
-                                          asr4 = asr4, asr4.2 = asr4.2)
-          #Change if residual is fixed and either all random correlation model terms are unbound 
-          #   or none have changed
+                                          asr4.2 = asr4.2)
+          #Change residual is fixed, and either (i) all random correlation model terms are unbound 
+          #   or (ii) none have changed
           n.new <- length(new.vpc.corr$ran)
           n.old <- length(vpc.corr$ran)
           if (new.vpc.corr$res == "F" && 
@@ -1062,7 +1069,7 @@ fitCorrMod <- function(asrtests.obj, sections = NULL,
                               update = update, IClikelihood = IClikelihood)
     
     #Determine if there is a correlation term
-    vpt.corr <- getVpars(corr.asrt$asreml.obj, asr4, asr4.2)$vpt
+    vpt.corr <- getVpars(corr.asrt$asreml.obj, asr4.2)$vpt
     vpt.corr <- vpt.corr[vpt.corr %in% c("R", "P", "C")]
     corr.term <- length(vpt.corr) > 0 
 
@@ -1081,8 +1088,8 @@ fitCorrMod <- function(asrtests.obj, sections = NULL,
         vpc.ran <- getSectionVpars(corr.asrt$asreml.obj, which = "ran",
                                    sections = sections, stub = stub, 
                                    corr.facs = facs, 
-                                   asr4 = asr4, asr4.2 = asr4.2)$ran
-        vpc.res <- getVpars(corr.asrt$asreml.obj, asr4, asr4.2)$vpc
+                                   asr4.2 = asr4.2)$ran
+        vpc.res <- getVpars(corr.asrt$asreml.obj, asr4.2)$vpc
         vpc.res <- vpc.res[grepl("!R$", names(vpc.res))]
         vpc.corr <- c(vpc.ran, vpc.res)
         
@@ -1092,7 +1099,7 @@ fitCorrMod <- function(asrtests.obj, sections = NULL,
           vpc.corr <- getSectionVpars(corr.asrt$asreml.obj, 
                                       sections = sections, stub = stub, 
                                       corr.facs = facs, 
-                                      asr4 = asr4, asr4.2 = asr4.2)
+                                      asr4.2 = asr4.2)
           #Only process if have bound residual and/or random corr model terms
           if (any(unlist(vpc.corr) %in% all.bounds.excl))
           {
@@ -1100,7 +1107,7 @@ fitCorrMod <- function(asrtests.obj, sections = NULL,
             vpc.bran <- vpc.corr$ran[vpc.corr$ran %in% all.bounds.excl]
             if (length(vpc.bran) > 0)
             { 
-              vpt.bran <- getVpars(corr.asrt$asreml.obj, asr4, asr4.2)$vpt[names(vpc.bran)]
+              vpt.bran <- getVpars(corr.asrt$asreml.obj, asr4.2)$vpt[names(vpc.bran)]
               #If any random correlations bound, remove corresponding term
               if (any(vpt.bran %in% c("R", "P", "C")))
               {
@@ -1122,7 +1129,7 @@ fitCorrMod <- function(asrtests.obj, sections = NULL,
                 vpc.corr <- getSectionVpars(corr.asrt$asreml.obj, 
                                             sections = sections, stub = stub, 
                                             corr.facs = facs, 
-                                            asr4 = asr4, asr4.2 = asr4.2)
+                                            asr4.2 = asr4.2)
               }
             }
             
@@ -1130,7 +1137,7 @@ fitCorrMod <- function(asrtests.obj, sections = NULL,
             if (!is.null(vpc.corr$res) && vpc.corr$res %in% all.bounds.excl)
             {
               vpc.ran <- vpc.corr$ran
-              vpt.ran <- getVpars(corr.asrt$asreml.obj, asr4, asr4.2)$vpt[names(vpc.ran)]
+              vpt.ran <- getVpars(corr.asrt$asreml.obj, asr4.2)$vpt[names(vpc.ran)]
               vpc.Vran <- vpc.ran[vpt.ran %in% c("V", "G")]
               if (length(vpc.Vran) > 0 && any(vpc.Vran %in% bounds.excl))
               {
@@ -1156,7 +1163,7 @@ fitCorrMod <- function(asrtests.obj, sections = NULL,
                   vpc.corr <- getSectionVpars(corr.asrt$asreml.obj, 
                                               sections = sections, stub = stub, 
                                               corr.facs = facs, 
-                                              asr4 = asr4, asr4.2 = asr4.2)
+                                              asr4.2 = asr4.2)
                 }              
               }
             }
@@ -1164,7 +1171,7 @@ fitCorrMod <- function(asrtests.obj, sections = NULL,
             
             if (length(vpc.corr$ran) > 0)
             { 
-              vpt.ran <- getVpars(corr.asrt$asreml.obj, asr4, asr4.2)$vpt[names(vpc.corr$ran)]
+              vpt.ran <- getVpars(corr.asrt$asreml.obj, asr4.2)$vpt[names(vpc.corr$ran)]
               vpc.Vran <- vpc.corr$ran[vpt.ran %in% c("V","G")]
               vpc.bVran <- vpc.Vran[vpc.Vran %in% all.bounds.excl]
             } else
@@ -1198,12 +1205,12 @@ fitCorrMod <- function(asrtests.obj, sections = NULL,
                   vpc.corr <- getSectionVpars(tmp.asrt$asreml.obj, 
                                               sections = sections, stub = stub, 
                                               corr.facs = facs, 
-                                              asr4 = asr4, asr4.2 = asr4.2)
+                                              asr4.2 = asr4.2)
                   #Check if a corr has gone bound and, it is has, remove it
                   vpc.bran <- vpc.corr$ran[vpc.corr$ran %in% all.bounds.excl]
                   if (length(vpc.bran) > 0)
                   { 
-                    vpt.bran <- getVpars(tmp.asrt$asreml.obj, asr4, asr4.2)$vpt[names(vpc.bran)]
+                    vpt.bran <- getVpars(tmp.asrt$asreml.obj, asr4.2)$vpt[names(vpc.bran)]
                     
                     #If any random correlations bound, remove corresponding term
                     if (any(vpt.bran %in% c("R", "P", "C")))
@@ -1242,7 +1249,7 @@ fitCorrMod <- function(asrtests.obj, sections = NULL,
                   vpc.corr <- getSectionVpars(corr.asrt$asreml.obj, 
                                               sections = sections, stub = stub, 
                                               corr.facs = facs, 
-                                              asr4 = asr4, asr4.2 = asr4.2)
+                                              asr4.2 = asr4.2)
                   kloop <- kloop + 1
                 } #end while loop
               } else
@@ -1693,6 +1700,7 @@ fitTPSModSect <- function(tspl.asrt, data, mat, ksect, sect.fac,
                           nsegs = NULL, nestorder = c(1, 1), 
                           degree = c(3,3), difforder = c(2,2), 
                           rotateX = FALSE, ngridangles = c(18,18), 
+                          usRandLinCoeffs = TRUE, 
                           which.rotacriterion = "AIC", nrotacores = 1, 
                           asreml.opt = "mbf", stub = "xx", 
                           allow.unconverged = TRUE, allow.fixedcorrelation = TRUE,
@@ -1757,6 +1765,7 @@ fitTPSModSect <- function(tspl.asrt, data, mat, ksect, sect.fac,
                              paste0("dev(",row.covar,")"), 
                              paste0("dev(",col.covar,")"))), 
                     collapse = " + ")
+
     #Fit the full P-spline model, without rotation
     if (rotateX)
       labunrot <- gsub("tensor", "unrotated tensor", lab)
@@ -1961,105 +1970,166 @@ fitTPSModSect <- function(tspl.asrt, data, mat, ksect, sect.fac,
     }
   }
   
-  #Prepare for fitting unstructured model to row and col marginal termsw
-  vpars <- names(tspl.asrt$asreml.obj$vparameters)
-  #repln <- as.data.frame(table(data[c(sections,row.covar,col.covar)]))
-  repln <- 1
-  
-  if (!is.null(sections))
-  {   
-    klev <- levels(data[[sections]])[ksect]
-    vpars <- vpars[grepl(klev, vpars)]
-    if (!asr4.2)
-      vpars <- gsub(paste0("'",klev,"'"), ksect, vpars)
-    repln <- length(levels(data[[sections]]))
-  }
-  
-  #If more than one col variable in the marginal random row term in this section, try unstructured model
-  rowmarg.vpar <- vpars[grepl("TP\\.C\\.", vpars)]
-  nr <- length(rowmarg.vpar)
-  if (nr > 1)
-  {
-    us.func <- ifelse(nr > 2, "corgh", "corh")
-    drop.ran <-paste(rowmarg.vpar, collapse = " + ") 
-    add.ran <- paste0("str( ~ ", drop.ran, ", ~ ", 
-                      us.func, "(", length(rowmarg.vpar), "):id(", mat$dim['nbr']*repln,"))")
-    if (asreml.opt == "mbf")
-      tspl.asrt <- do.call(fitfunc, 
-                           args = c(list(tspl.asrt, 
-                                         addRandom = add.ran,
-                                         dropRandom = drop.ran, 
-                                         mbf = mbf.lis,
-                                         label = "Try column-parameters covariance for random row terms", 
-                                         allow.unconverged = allow.unconverged, 
-                                         allow.fixedcorrelation = allow.fixedcorrelation,
-                                         checkboundaryonly = TRUE, 
-                                         update = update, 
-                                         maxit = maxit, 
-                                         IClikelihood = IClikelihood, 
-                                         which.IC = which.IC), 
-                                    inargs))
-    else
-      tspl.asrt <- do.call(fitfunc, 
-                           args = c(list(tspl.asrt, 
-                                         addRandom = add.ran,
-                                         dropRandom = drop.ran, 
-                                         group = grp,
-                                         label = "Try column-parameters covariance for random row terms", 
-                                         allow.unconverged = allow.unconverged, 
-                                         allow.fixedcorrelation = allow.fixedcorrelation,
-                                         checkboundaryonly = TRUE, 
-                                         update = update, 
-                                         maxit = maxit, 
-                                         IClikelihood = IClikelihood, 
-                                         which.IC = which.IC), 
-                                    inargs))
-  }
-  
-  #If more than one row variable in the marginal random col term in this section, try unstructured model
-  colmarg.vpar <- vpars[grepl("TP\\.R\\.", vpars)]
-  nc <- length(colmarg.vpar)
-  if (length(colmarg.vpar) > 1)
-  {
-    us.func <- ifelse(nc > 2, "corgh", "corh")
-    drop.ran <-paste(colmarg.vpar, collapse = " + ") 
-    add.ran <- paste0("str( ~ ", drop.ran, 
-                      ", ~ ", us.func, "(", nc, "):id(", mat$dim['nbc']*repln,"))")
-    if (asreml.opt == "mbf")
-      tspl.asrt <- do.call(fitfunc, 
-                           args = c(list(tspl.asrt, 
-                                         addRandom = add.ran,
-                                         dropRandom = drop.ran, 
-                                         mbf = mbf.lis,
-                                         label = "Try row-parameters covariance for random column terms", 
-                                         allow.unconverged = allow.unconverged, 
-                                         allow.fixedcorrelation = allow.fixedcorrelation,
-                                         checkboundaryonly = TRUE, 
-                                         update = FALSE, #to ensure clean refit
-                                         maxit = maxit, 
-                                         IClikelihood = IClikelihood, 
-                                         which.IC = which.IC), 
-                                    inargs))
-    else
-      tspl.asrt <- do.call(fitfunc, 
-                           args = c(list(tspl.asrt, 
-                                         addRandom = add.ran,
-                                         dropRandom = drop.ran, 
-                                         group = grp,
-                                         label = "Try row-parameters covariance for random column terms", 
-                                         allow.unconverged = allow.unconverged, 
-                                         allow.fixedcorrelation = allow.fixedcorrelation,
-                                         checkboundaryonly = TRUE, 
-                                         update = update, 
-                                         maxit = maxit, 
-                                         IClikelihood = IClikelihood, 
-                                         which.IC = which.IC), 
-                                    inargs))
+  #Prepare for fitting unstructured model to row and col marginal terms
+  if (usRandLinCoeffs)
+  { 
+    vpars.all <- names(tspl.asrt$asreml.obj$vparameters)
+    repln <- 1
+    
+    #Do not allow singularities in this section of the code
+    # ksing <-   get("asr_options", envir = getFromNamespace(".asremlEnv", "asreml"))$ai.sing
+    # print(ksing)
+    # asreml::asreml.options(ai.sing = FALSE)
+    
+    if (!is.null(sections))
+    {   
+      klev <- levels(data[[sections]])[ksect]
+      vpars.all <- vpars.all[grepl(klev, vpars.all)]
+      if (!asr4.2)
+        vpars.all <- gsub(paste0("'",klev,"'"), ksect, vpars.all)
+      repln <- length(levels(data[[sections]]))
+    }
+    
+    #If more than one col variable in the marginal random row term in this section, try unstructured model
+    rowmarg.vpar <- vpars.all[grepl("TP\\.C\\.", vpars.all)]
+    nr <- length(rowmarg.vpar)
+    if (nr > 1)
+    {
+      us.func <- ifelse(nr > 2, "corgh", "corh")
+      drop.ran <-paste(rowmarg.vpar, collapse = " + ") 
+      add.ran <- paste0("str( ~ ", drop.ran, ", ~ ", 
+                        us.func, "(", length(rowmarg.vpar), "):id(", mat$dim['nbr']*repln,"))")
+      lab.r <- "Try column-parameters covariance for random row terms"
+      if (asreml.opt == "mbf")
+        tmp.asrt <- do.call(fitfunc, 
+                            args = c(list(tspl.asrt, 
+                                          addRandom = add.ran,
+                                          dropRandom = drop.ran, 
+                                          mbf = mbf.lis,
+                                          label = lab.r, 
+                                          allow.unconverged = allow.unconverged, 
+                                          allow.fixedcorrelation = allow.fixedcorrelation,
+                                          checkboundaryonly = TRUE, #remove using bespoke code
+                                          update = FALSE, #to ensure clean refit
+                                          maxit = maxit, 
+                                          IClikelihood = IClikelihood, 
+                                          which.IC = which.IC), 
+                                     inargs))
+      else
+        tmp.asrt <- do.call(fitfunc, 
+                            args = c(list(tspl.asrt, 
+                                          addRandom = add.ran,
+                                          dropRandom = drop.ran, 
+                                          group = grp,
+                                          label = lab.r, 
+                                          allow.unconverged = allow.unconverged, 
+                                          allow.fixedcorrelation = allow.fixedcorrelation,
+                                          checkboundaryonly = TRUE, #remove using bespoke code
+                                          update = FALSE, #to ensure clean refit
+                                          maxit = maxit, 
+                                          IClikelihood = IClikelihood, 
+                                          which.IC = which.IC), 
+                                     inargs))
+      #Check that no marginal random col parameters are bound and, if they are, remove all corh (corgh) parameters
+      result <- getTestEntry(tmp.asrt, label = lab.r)
+      if (!grepl("Unswapped", result$action) && !grepl("Unchanged", result$action))
+      {
+        vpars <- getVpars(tmp.asrt$asreml.obj, asr4.2 = asr4.2)
+        vpc <- vpars$vpc
+        names(vpc) <- gsub('\"', "\'", names(vpc))
+        vpc.col <- names(vpc)[grepl(gsub(" \\+ ", "+", drop.ran), names(vpc), fixed = TRUE)]
+        if (length(vpc.col) > 0)
+        {
+          vpc.bound <- vpc[vpc.col]
+          if (any(vpc.bound %in% c("B", "S")))
+          {
+            test.summary <- addtoTestSummary(tmp.asrt$test.summary, terms = drop.ran, 
+                                             DF = result$DF, denDF = NA, p = NA, 
+                                             AIC = result$AIC, BIC = result$BIC, 
+                                             action = "Unchanged - Boundary")
+            tspl.asrt$test.summary <- test.summary
+          } else
+            tspl.asrt <- tmp.asrt #no bound terms
+        } else
+          tspl.asrt <- tmp.asrt #no terms found
+      } else
+        tspl.asrt <- tmp.asrt #model remained unchanged
+    }
+    
+    #If more than one row variable in the marginal random col term in this section, try unstructured model
+    vpars.all <- vpars.all[vpars.all %in% names(tspl.asrt$asreml.obj$vparameters)]
+    colmarg.vpar <- vpars.all[grepl("TP\\.R\\.", vpars.all)]
+    nc <- length(colmarg.vpar)
+    lab.c <- "Try row-parameters covariance for random column terms"
+    if (length(colmarg.vpar) > 1)
+    {
+      us.func <- ifelse(nc > 2, "corgh", "corh")
+      drop.ran <-paste(colmarg.vpar, collapse = " + ") 
+      add.ran <- paste0("str( ~ ", drop.ran, 
+                        ", ~ ", us.func, "(", nc, "):id(", mat$dim['nbc']*repln,"))")
+      if (asreml.opt == "mbf")
+        tmp.asrt <- do.call(fitfunc, 
+                            args = c(list(tspl.asrt, 
+                                          addRandom = add.ran,
+                                          dropRandom = drop.ran, 
+                                          mbf = mbf.lis,
+                                          label = lab.c, 
+                                          allow.unconverged = allow.unconverged, 
+                                          allow.fixedcorrelation = allow.fixedcorrelation,
+                                          checkboundaryonly = TRUE, #remove using bespoke code
+                                          update = FALSE, #to ensure clean refit
+                                          maxit = maxit, 
+                                          IClikelihood = IClikelihood, 
+                                          which.IC = which.IC), 
+                                     inargs))
+      else
+        tmp.asrt <- do.call(fitfunc, 
+                            args = c(list(tspl.asrt, 
+                                          addRandom = add.ran,
+                                          dropRandom = drop.ran, 
+                                          group = grp,
+                                          label = lab.c, 
+                                          allow.unconverged = allow.unconverged, 
+                                          allow.fixedcorrelation = allow.fixedcorrelation,
+                                          checkboundaryonly = TRUE, #remove using bespoke code
+                                          update = FALSE, #to ensure clean refit
+                                          maxit = maxit, 
+                                          IClikelihood = IClikelihood, 
+                                          which.IC = which.IC), 
+                                     inargs))
+      #Check that no marginal random col parameters are bound and, if they are, remove all corh (corgh) parameters
+      result <- getTestEntry(tmp.asrt, label = lab.c)
+      if (!grepl("Unswapped", result$action) && !grepl("Unchanged", result$action))
+      {
+        vpars <- getVpars(tmp.asrt$asreml.obj, asr4.2 = asr4.2)
+        vpc <- vpars$vpc
+        names(vpc) <- gsub('\"', "\'", names(vpc))
+        vpc.col <- names(vpc)[grepl(gsub(" \\+ ", "+", drop.ran), names(vpc), fixed = TRUE)]
+        if (length(vpc.col) > 0)
+        {
+          vpc.bound <- vpc[vpc.col]
+          if (any(vpc.bound %in% c("B", "S")))
+          {
+            test.summary <- addtoTestSummary(tmp.asrt$test.summary, terms = drop.ran, 
+                                             DF = result$DF, denDF = NA, p = NA, 
+                                             AIC = result$AIC, BIC = result$BIC, 
+                                             action = "Unchanged - Boundary")
+            tspl.asrt$test.summary <- test.summary
+          } else
+            tspl.asrt <- tmp.asrt #no bound terms
+        } else
+          tspl.asrt <- tmp.asrt #no terms found
+      } else
+        tspl.asrt <- tmp.asrt #model remained unchanged
+      
+      #Reinstate prior setting of ai.sing
+      # asreml::asreml.options(ai.sing = ksing)
+    }
   }
   tspl.asrt <- rmboundary(tspl.asrt, checkboundaryonly = checkboundaryonly, 
                           update = update, IClikelihood = IClikelihood)
   attr(tspl.asrt$asreml.obj, which = "theta.opt") <- theta.opt
-  
+
   return(tspl.asrt)
 }
 
@@ -2071,6 +2141,7 @@ fitTPPSMod <- function(asrtests.obj, sections = NULL,
                        dropRowterm = NULL, dropColterm = NULL, 
                        nsegs = NULL, nestorder = c(1, 1), 
                        degree = c(3,3), difforder = c(2,2), 
+                       usRandLinCoeffs = TRUE, 
                        rotateX = FALSE, ngridangles = c(18,18),
                        which.rotacriterion = "AIC", nrotacores = 1, 
                        asreml.opt = "mbf", 
@@ -2166,7 +2237,8 @@ fitTPPSMod <- function(asrtests.obj, sections = NULL,
                                sections = sections, 
                                row.covar = row.covar, col.covar = col.covar, 
                                nsegs = nsegs, nestorder = nestorder, 
-                               degree = degree, difforder = difforder,
+                               degree = degree, difforder = difforder, 
+                               usRandLinCoeffs = usRandLinCoeffs,
                                rotateX = rotateX, ngridangles = ngridangles, 
                                which.rotacriterion = which.rotacriterion, 
                                nrotacores = nrotacores, 

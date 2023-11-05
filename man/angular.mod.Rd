@@ -4,8 +4,7 @@
 \description{Applies the angular transformation to a vector of counts. A 
   modified transformation is used that is appropriate when N < 50 and the 
   proportion is not between 0.3 and 0.7. The transformation is given by 
-  \eqn{\sin^{-1}{\frac{count + 0.375}{n + 0.75}}}%
-  {arcsin( sqrt( (count + 0.375) / (n + 0.75) ) )}.}
+  \eqn{\sin^{-1}{\frac{count + 0.375}{n + 0.75}}}{arcsin( sqrt( (count + 0.375) / (n + 0.75) ) )}.}
 \usage{angular.mod(count, n)}
 \arguments{
  \item{count}{The numeric vector of counts.}

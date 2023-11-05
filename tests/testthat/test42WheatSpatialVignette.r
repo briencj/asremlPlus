@@ -52,32 +52,33 @@ test_that("Wheat_spatial_asreml42", {
   spatialEach.asrts[["corr"]] <- addSpatialModelOnIC(current.asrt, spatial.model = "corr", 
                                                      row.covar = "cRow", col.covar = "cColumn", 
                                                      row.factor = "Row", col.factor = "Column", 
-                                                     allow.fixedcorrelation = TRUE, 
-                                                     checkboundaryonly = TRUE, IClikelihood = "full")
+                                                     IClikelihood = "full")
   spatialEach.asrts[["corr"]] <- rmboundary(spatialEach.asrts[["corr"]], IClikelihood = "full")
 
   spatialEach.asrts[["TPNCSS"]] <- addSpatialModelOnIC(current.asrt, spatial.model = "TPNCSS", 
                                                        row.covar = "cRow", col.covar = "cColumn", 
                                                        row.factor = "Row", col.factor = "Column", 
-                                                       allow.fixedcorrelation = TRUE,
-                                                       checkboundaryonly = TRUE, IClikelihood = "full")
+                                                       dropRowterm = "Row", dropColterm = "Column",
+                                                       IClikelihood = "full")
   spatialEach.asrts[["TPNCSS"]] <- rmboundary(spatialEach.asrts[["TPNCSS"]], IClikelihood = "full")
   
   spatialEach.asrts[["TPPCS"]] <- addSpatialModelOnIC(current.asrt, spatial.model = "TPPS", 
                                                       row.covar = "cRow", col.covar = "cColumn", 
                                                       row.factor = "Row", col.factor = "Column", 
+                                                      dropRowterm = "Row", dropColterm = "Column",
                                                       degree = c(3,3), difforder = c(2,2), 
                                                       rotateX = TRUE, ngridangles = c(18,18), 
-                                                      asreml.option = "grp", allow.fixedcorrelation = TRUE,
-                                                      checkboundaryonly = TRUE, IClikelihood = "full")
+                                                      asreml.option = "grp", 
+                                                      IClikelihood = "full")
   spatialEach.asrts[["TPPCS"]] <- rmboundary(spatialEach.asrts[["TPPCS"]], IClikelihood = "full")
   
   spatialEach.asrts[["TPP1LS"]] <- addSpatialModelOnIC(current.asrt, spatial.model = "TPPS", 
                                                       row.covar = "cRow", col.covar = "cColumn", 
                                                       row.factor = "Row", col.factor = "Column", 
+                                                      dropRowterm = "Row", dropColterm = "Column",
                                                       degree = c(1,1), difforder = c(1,1),
-                                                      asreml.option = "grp", allow.fixedcorrelation = TRUE,
-                                                      checkboundaryonly = TRUE, IClikelihood = "full")
+                                                      asreml.option = "grp", 
+                                                      IClikelihood = "full")
   spatialEach.asrts[["TPP1LS"]] <- rmboundary(spatialEach.asrts[["TPP1LS"]], IClikelihood = "full")
   
   infoEach <- do.call(rbind, 
