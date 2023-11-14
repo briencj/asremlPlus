@@ -50,6 +50,9 @@ Note that many of the function below are S3 methods so that the suffix can be om
 \code{\link{convAsremlobj.asreml}}
       \tab Recreates an \code{asreml} object so that it is compatible with the \cr 
       \tab currently loaded \code{asreml} version. \cr
+\code{\link{convEffectNames2DataFrame.asreml}}
+      \tab Converts the effects names for a term stored in the component of an \cr
+      \tab \code{asreml} object into a \code{\link{data.frame}}. \cr
 \code{\link{facCombine.alldiffs}}
       \tab Combines several factors into one in the components of \cr
       \tab an \code{\link{alldiffs.object}}.  \cr
@@ -329,7 +332,7 @@ The functions whose names end in 'asrtests', which are most of the model functio
 Maintainer: \packageMaintainer{asremlPlus}
 }
 \references{Butler, D. G., Cullis, B. R., Gilmour, A. R., Gogel, B. J. and 
-            Thompson, R. (2018). \emph{{ASReml-R} Reference Manual Version 4.}  
+            Thompson, R. (2023). \emph{{ASReml-R} Reference Manual Version 4.2.}  
             VSN International Ltd, \url{https://asreml.kb.vsni.co.uk/}.
             
             Stefanova, K. T., Smith, A. B. & Cullis, B. R. (2009) Enhanced diagnostics for the 

@@ -8,8 +8,8 @@
             expanded = FALSE, envir = parent.frame(), ...)
 }
 \arguments{
- \item{asreml.obj}{An \code{asreml} object resulting from the fitting of 
-               a model using REML.}
+ \item{asreml.obj}{An object resulting from the fitting of 
+               a model using \code{asreml}.}
  \item{which}{A \code{character} listing the \code{\link{formula}}(e) to be extracted from the 
               \code{call} stored in \code{asreml.obj}. it should be some combination 
               of \code{fixed}, \code{random}, \code{residual}, \code{sparse} and 

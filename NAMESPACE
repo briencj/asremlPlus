@@ -31,6 +31,8 @@ export(addBacktransforms,
        chooseSpatialModelOnIC, 
        convAsremlobj.asreml,
        convAsremlobj,
+       convEffectNames2DataFrame.asreml,
+       convEffectNames2DataFrame,
        estimateV,
        estimateV.asreml,
        exploreLSDs,
@@ -179,7 +181,7 @@ S3method(addBacktransforms, alldiffs)
 S3method(addSpatialModel, asrtests)
 S3method(addSpatialModelOnIC, asrtests)
 S3method(allDifferences, data.frame)
-S3method(as.data.frame, effnames)
+#S3method(as.data.frame, effnames)
 S3method(changeModelOnIC, asrtests)
 S3method(bootREMLRT, asreml) 
 S3method(changeTerms, asrtests) 
@@ -187,6 +189,7 @@ S3method(chooseModel, asrtests)
 S3method(chooseModel, data.frame) 
 S3method(chooseSpatialModelOnIC, asrtests)
 S3method(convAsremlobj, asreml)
+S3method(convEffectNames2DataFrame, asreml)
 S3method(estimateV, asreml) 
 S3method(exploreLSDs, alldiffs) 
 S3method(facCombine, alldiffs)

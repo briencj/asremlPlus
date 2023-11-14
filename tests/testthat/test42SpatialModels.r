@@ -1354,6 +1354,20 @@ test_that("HEB25_heterovar_asreml42", {
   testthat::expect_true(all.equal(HEB25.spatialLM.asrts$spatial.IC[c(2,4:5),], infoEach[c(1,3:4), -3], 
                                   tolerance = 1e-05))
   
+  #Test convEffectNames2DataFrame.asreml
+  asreml.obj <- spatialEach.asrts[["corr"]]$asreml.obj
+  asreml.obj <- update(asreml.obj, aom = TRUE)
+  G.dat <- lapply(c("at(Smarthouse, 'NW'):Lanes:MainPosn", 
+                    "at(Smarthouse, 'NE'):Lanes:MainPosn"), 
+                  function(term, asreml.obj, use)
+                    t <- convEffectNames2DataFrame.asreml(asreml.obj, term = term, 
+                                                          use = use),
+                  asreml.obj = asreml.obj, use = "G.aom")  
+  testthat::expect_true(all(sapply(G.dat, nrow) == 264))
+  G.dat <- do.call(rbind, G.dat)
+  testthat::expect_true(nrow(G.dat) == 528)
+  testthat::expect_true(all(sapply(G.dat, is.factor)))
+  
   #Test spatial models on Lanes x Positions
   #Check makeTPPSplineMats - must be ordered for Smarthouse then Treatment.1
   tpsLP.mat <- makeTPPSplineMats(tmp.dat, sections = "Smarthouse", 
@@ -1488,5 +1502,20 @@ test_that("HEB25_heterovar_asreml42", {
   infoAIC <- infoCriteria(list(idh = HEB25.spatialLP.asrts$asrts$corr$asreml.obj, 
                             ds = HEB25.spatialLP.ds.asrts$asrts$corr$asreml.obj))["AIC"]
   testthat::expect_true((infoAIC$AIC[1] - infoAIC$AIC[2]) >5)
+
+  #Test convEffectNames2DataFrame.asreml
+  asreml.obj <- HEB25.spatialLP.ds.asrts$asrts$corr$asreml.obj
+  asreml.obj <- update(asreml.obj, aom = TRUE)
+  G.dat <- lapply(c("at(Smarthouse, 'NW'):Lanes:Positions", 
+                    "at(Smarthouse, 'NE'):Lanes:Positions"), 
+                  function(term, asreml.obj, use)
+                    t <- convEffectNames2DataFrame.asreml(asreml.obj, term = term, 
+                                                          use = use),
+                  asreml.obj = asreml.obj, use = "G.aom")  
+  testthat::expect_true(all(sapply(G.dat, nrow) == 528))
+  G.dat <- do.call(rbind, G.dat)
+  testthat::expect_true(nrow(G.dat) == 1056)
+  testthat::expect_true(all(sapply(G.dat, is.factor)))
+  
 })
 

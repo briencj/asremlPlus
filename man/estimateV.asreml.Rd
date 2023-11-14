@@ -65,11 +65,11 @@
           with the following functions in the \code{random} model: \code{at}, \code{str}, 
           \code{spl}, \code{dev}, \code{grp}, \code{fa} and \code{rr}. Additionally, it can deal 
           with the function \code{dsum} in the \code{residual} model. For further information see 
-          the ASReml-R User Guide Version 4 (Butler et al., 2018).
+          the ASReml-R User Guide Version 4 (Butler et al., 2023).
 }
 
 \references{Butler, D. G., Cullis, B. R., Gilmour, A. R., Gogel, B. J. and 
-            Thompson, R. (2018). \emph{{ASReml-R} Reference Manual Version 4.}  
+            Thompson, R. (2023). \emph{{ASReml-R} Reference Manual Version 4.2.}  
             VSN International Ltd, \url{https://asreml.kb.vsni.co.uk/}.}
 
 \author{Chris Brien}

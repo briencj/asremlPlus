@@ -1,5 +1,9 @@
 \name{news}
 \title{News for Package asremlPlus}
+\section{asremlPlus Version 4.4.22 (2023-11-14}{
+  \itemize{
+  \item Add the S3-method function convEffectNames2DataFrame.asreml.
+}}
 \section{asremlPlus Version 4.4.21 (2023-11-05}{
   \itemize{
   \item Increment version for resubmission to CRAN after fixing an S3 method declaration error.

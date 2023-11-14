@@ -124,7 +124,7 @@
 
 
 \references{Butler, D. G., Cullis, B. R., Gilmour, A. R., Gogel, B. J. and 
-            Thompson, R. (2018). \emph{{ASReml-R} Reference Manual Version 4.}  
+            Thompson, R. (2023). \emph{{ASReml-R} Reference Manual Version 4.2.}  
             VSN International Ltd, \url{https://asreml.kb.vsni.co.uk/}.}
 
 \author{Chris Brien}

@@ -18,6 +18,7 @@ testswapran <- function(asrtests.obj, ...) UseMethod("testswapran")
 
 bootREMLRT <- function(h0.asreml.obj, h1.asreml.obj, ...) UseMethod("bootREMLRT")
 convAsremlobj <- function(asreml.obj, ...) UseMethod("convAsremlobj")
+convEffectNames2DataFrame <- function(asreml.obj, ...) UseMethod("convEffectNames2DataFrame")
 estimateV <- function(asreml.obj, ...) UseMethod("estimateV")
 getFormulae <- function(asreml.obj, ...) UseMethod("getFormulae")
 infoCriteria <- function(object, ...) UseMethod("infoCriteria")
