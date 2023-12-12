@@ -1,5 +1,16 @@
 \name{news}
 \title{News for Package asremlPlus}
+\section{asremlPlus Version 4.4.23 (2023-12-12}{
+  \itemize{
+  \item Add the use of the R optimizer \code{nloptr::bobyqa} to search for the optimal angles for the rotation of the eigenvlues of the penalty matrix when fitting cubic P-splines using addSpatialModel.asrtests, addSpatialModelOnIC.asrtests or chooseSpatialModelOnIC.asrtests. This provides an alternative to searching over a two-dimensional grid of angles.
+  \item Fix a bug in the fits used in searching for optimal rotation angles by doing the search before any spatial P-spline models are fitted.
+  \item There has been several changes to the arguments  of makeTPPSplineMats.data.frame, addSpatialModel.asrtests, addSpatialModelOnIC.asrtests or chooseSpatialModelOnIC.asrtests as follows:
+  \itemize{
+    \item The default for \code{ngridangles} has changed to \code{NULL} to provide for using an optimizer to search for the optimal rotation.
+    \item The arguments \code{dropRowterm} and \code{dropColterm} have been replaced with the more general arguments \code{dropFixed} and \code{dropRandom}.
+    \item The default for \code{asreml.option} has changed from \code{mbf} to \code{grp}. While \code{grp} requires more storage that \code{mbf}, it is easier to apply \code{asreml} and \code{asrtests} methods to fitted models when \code{grp} is used.  
+    }
+}}
 \section{asremlPlus Version 4.4.22 (2023-11-14}{
   \itemize{
   \item Add the S3-method function convEffectNames2DataFrame.asreml.

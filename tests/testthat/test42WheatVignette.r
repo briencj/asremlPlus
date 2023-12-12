@@ -161,20 +161,20 @@ test_that("Wheat_asreml42", {
                                   label = "units", IClikelihood = "full")
   
   # Test Row autocorrelation
-  current.asrt <- changeModelOnIC(t.asrt, newResidual = "Row:ar1(Column)", 
+  current.asrt <- changeModelOnIC(current.asrt, newResidual = "Row:ar1(Column)", 
                                   label="Row autocorrelation", 
                                   IClikelihood = "full")
   
   # Test Col autocorrelation (depends on whether Row autocorrelation retained)
-  result <- getTestEntry(t.asrt, label = "Row autocorrelation")$action
+  result <- getTestEntry(current.asrt, label = "Row autocorrelation")$action
   testthat::expect_true(grepl("Unswapped", result))
   { 
     if (grepl("Unswapped", result) || grepl("Unchanged", result))
-      current.asrt <- changeModelOnIC(t.asrt, newResidual = "ar1(Row):Column", 
+      current.asrt <- changeModelOnIC(current.asrt, newResidual = "ar1(Row):Column", 
                                       label="Col autocorrelation", 
                                       IClikelihood = "full", update=FALSE)
     else
-      current.asrt <- changeModelOnIC(t.asrt, newResidual = "Row:Column", 
+      current.asrt <- changeModelOnIC(current.asrt, newResidual = "Row:Column", 
                                       label="Col autocorrelation", 
                                       IClikelihood = "full", update=FALSE)
   }

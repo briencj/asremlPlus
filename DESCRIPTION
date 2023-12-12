@@ -1,6 +1,6 @@
 Package: asremlPlus
-Version: 4.4.22
-Date: 2023-11-14
+Version: 4.4.23
+Date: 2023-12-12
 Title: Augments 'ASReml-R' in Fitting Mixed Models and Packages
         Generally in Exploring Prediction Differences
 Authors@R: person("Chris","Brien", role = c("aut","cre"),
@@ -8,7 +8,7 @@ Authors@R: person("Chris","Brien", role = c("aut","cre"),
          email = "chris.brien@adelaide.edu.au")
 Depends: R (>= 3.5.0)
 Imports: dae, devtools, doParallel, dplyr, ggplot2, foreach, grDevices, graphics, methods, 
-        qqplotr, parallel, reshape2, RColorBrewer, rlang, stats, stringr, sticky, utils
+        nloptr, qqplotr, parallel, reshape2, RColorBrewer, rlang, stats, stringr, sticky, utils
 Suggests: emmeans (>= 1.8.8), lattice, lmerTest, pbkrtest, R.rsp, testthat, tictoc
 Enhances: asreml
 VignetteBuilder: R.rsp

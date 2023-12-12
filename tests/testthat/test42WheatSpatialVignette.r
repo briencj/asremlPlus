@@ -58,16 +58,16 @@ test_that("Wheat_spatial_asreml42", {
   spatialEach.asrts[["TPNCSS"]] <- addSpatialModelOnIC(current.asrt, spatial.model = "TPNCSS", 
                                                        row.covar = "cRow", col.covar = "cColumn", 
                                                        row.factor = "Row", col.factor = "Column", 
-                                                       dropRowterm = "Row", dropColterm = "Column",
+                                                       dropRandom = "Row + Column",
                                                        IClikelihood = "full")
   spatialEach.asrts[["TPNCSS"]] <- rmboundary(spatialEach.asrts[["TPNCSS"]], IClikelihood = "full")
   
   spatialEach.asrts[["TPPCS"]] <- addSpatialModelOnIC(current.asrt, spatial.model = "TPPS", 
                                                       row.covar = "cRow", col.covar = "cColumn", 
                                                       row.factor = "Row", col.factor = "Column", 
-                                                      dropRowterm = "Row", dropColterm = "Column",
+                                                      dropRandom = "Row + Column",
                                                       degree = c(3,3), difforder = c(2,2), 
-                                                      rotateX = TRUE, ngridangles = c(18,18), 
+                                                      rotateX = TRUE, ngridangles = NULL, 
                                                       asreml.option = "grp", 
                                                       IClikelihood = "full")
   spatialEach.asrts[["TPPCS"]] <- rmboundary(spatialEach.asrts[["TPPCS"]], IClikelihood = "full")
@@ -75,11 +75,12 @@ test_that("Wheat_spatial_asreml42", {
   spatialEach.asrts[["TPP1LS"]] <- addSpatialModelOnIC(current.asrt, spatial.model = "TPPS", 
                                                       row.covar = "cRow", col.covar = "cColumn", 
                                                       row.factor = "Row", col.factor = "Column", 
-                                                      dropRowterm = "Row", dropColterm = "Column",
+                                                      dropRandom = "Row + Column",
                                                       degree = c(1,1), difforder = c(1,1),
                                                       asreml.option = "grp", 
                                                       IClikelihood = "full")
   spatialEach.asrts[["TPP1LS"]] <- rmboundary(spatialEach.asrts[["TPP1LS"]], IClikelihood = "full")
+  
   
   infoEach <- do.call(rbind, 
                       lapply(spatialEach.asrts, 
@@ -90,8 +91,8 @@ test_that("Wheat_spatial_asreml42", {
   spatial.asrts <- chooseSpatialModelOnIC(current.asrt, 
                                           row.covar = "cRow", col.covar = "cColumn",
                                           row.factor = "Row", col.factor = "Column",
-                                          dropRowterm = "Row", dropColterm = "Column",
-                                          rotateX = TRUE, ngridangles = c(18, 18), 
+                                          dropRandom = "Row + Column",
+                                          rotateX = TRUE, ngridangles = NULL, 
                                           asreml.option = "mbf", return.asrts = "all")
   
   print(spatial.asrts$spatial.IC)
@@ -103,7 +104,8 @@ test_that("Wheat_spatial_asreml42", {
   testthat::expect_true(all.equal(spatial.asrts$spatial.IC[2:4,], infoEach[1:3 ,-3], 
                                   tolerance = 0.5))
   #theta.opt == c(0,0) because rotation Unswapped
-  testthat::expect_true(all(attr(spatial.asrts$asrts$TPPCS$asreml.obj, which = "theta.opt")[[1]] == c(0,0)))
+  testthat::expect_true(all(abs(attr(spatial.asrts$asrts$TPPCS$asreml.obj, which = "theta.opt")[[1]] 
+                            - c(20.20269, 64.97291)) < 1e-04))
   
   current.asr <- spatial.asrts$asrts$TPNCSS$asreml.obj
   printFormulae(current.asr)

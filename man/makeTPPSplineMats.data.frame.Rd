@@ -20,7 +20,7 @@
                   nsegs = NULL, nestorder = c(1,1), 
                   degree = c(3,3), difforder = c(2,2),
                   rotateX = FALSE, theta = c(0,0), 
-                  asreml.option = "mbf", mbf.env = sys.frame(), 
+                  asreml.option = "grp", mbf.env = sys.frame(), 
                   ...)
 }
 \arguments{

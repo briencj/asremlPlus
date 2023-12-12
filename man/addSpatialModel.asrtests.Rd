@@ -32,13 +32,13 @@
                 row.factor = "Row", col.factor = "Col", 
                 corr.funcs = c("ar1", "ar1"), 
                 row.corrFitfirst = TRUE, allow.corrsJointFit = TRUE, 
-                dropRowterm = NULL, dropColterm = NULL, 
+                dropFixed = NULL, dropRandom = NULL, 
                 nsegs = NULL, nestorder = c(1,1), 
                 degree = c(3,3), difforder = c(2,2), 
                 usRandLinCoeffs = TRUE, 
-                rotateX = FALSE, ngridangles = c(18, 18), 
+                rotateX = FALSE, ngridangles = NULL, 
                 which.rotacriterion = "AIC", nrotacores = 1, 
-                asreml.option = "mbf", tpps4mbf.obj = NULL, 
+                asreml.option = "grp", tpps4mbf.obj = NULL, 
                 allow.unconverged = FALSE, allow.fixedcorrelation = FALSE,
                 checkboundaryonly = FALSE, update = FALSE, 
                 maxit = 30, IClikelihood = "full", ...)
@@ -109,22 +109,57 @@
                of the grid when separate fits have failed to fit any correlation 
                functions. This argument is available for when a joint fit 
                hangs the system.}
- \item{dropRowterm}{A single \code{character} string nominating a \code{\link{factor}} 
-               in the \code{\link{data.frame}} that has as many \code{levels} as there 
-               are unique values in \code{row.covar}. This argument is applicable for 
-               \code{spatial.model} set to \code{TPNCSS} or \code{TPPS}. It is used 
-               to remove a term corresponding to the \code{dropRowterm} and a random 
-               row deviations term based on \code{row.covar} will be included in the 
-               model. If the argument is \code{NULL}, it is assumed that such a term 
-               is not included in the fitted model stored in \code{asrtests.obj}.}
- \item{dropColterm}{A single \code{character} string nominating a \code{\link{factor}} 
-               in the \code{\link{data.frame}} that has as many \code{levels} as there 
-               are unique values in \code{col.covar}. This argument is applicable for 
-               \code{spatial.model} set to \code{TPNCSS} or \code{TPPS}. It is used 
-               to remove a term corresponding to the \code{dropColterm} and a random 
-               column deviations term based on \code{col.covar} will be included in the 
-               model. If the argument is \code{NULL}, it is assumed that such a term 
-               is not included in the fitted model stored in \code{asrtests.obj}.}
+ \item{dropFixed}{A single \code{character} string or a \code{character} vector of strings 
+               with an element for each level of \code{sections} in the same order as the 
+               \code{sections} levels. Each string, which if it is not \code{NA} and after 
+               the addition of \code{". ~ . -"} and conversion to a formula that is then 
+               expanded, specifies the  sum of a set of terms to be dropped from the fixed 
+               formula in fitting splines (\code{TPPS} and \code{TPNCSS}). The result is 
+               that the fitted model supplied in the \code{asrtests.obj}, that includes these 
+               terms, will be compared with the fitted model that has had them removed and 
+               a spatial model added.
+
+               An element that is \code{NA} indicates that no term pertaining to the 
+               corresponding \code{sections} level is to be removed. If \code{sections} 
+               is not \code{NULL} and a single \code{character} string has been supplied, 
+               the terms specified by the string are taken to be terms that are 
+               independent of the \code{sections} and will be removed when adding the 
+               spatial model for the first \code{sections}. 
+ 
+               The terms must match those in the \code{wald.tab} component of the 
+               \code{asrtests.obj}. The fixed terms will be reordered so that 
+               single-variable terms come first, followed by two-variable terms and 
+               so on. Note also that multiple terms specified using a single 
+               \code{asreml::at} function can only be dropped as a whole. If the term 
+               was specified using an \code{asreml::at} function with a single level, 
+               then it can be removed and either the level itself or its 
+               \code{\link{numeric}} position in the levels returned by the 
+               \code{\link{levels}} function can be specified.}
+ \item{dropRandom}{A single \code{character} string or a \code{character} vector of strings 
+               with an element for each level of \code{sections} in the same order as the 
+               \code{sections} levels. Each string, which if it is not \code{NA} and after 
+               the addition of \code{" ~ . -"} and conversion to a formula that is then 
+               expanded, specifies the  sum of a set of terms to be dropped from the random 
+               formula in fitting splines (\code{TPPS} and \code{TPNCSS}). The result is 
+               that the fitted model supplied in the \code{asrtests.obj}, that includes 
+               these terms, will be compared with the fitted model that has had them removed 
+               and a spatial model added.
+
+               An element that is \code{NA} indicates that no term pertaining to the 
+               corresponding \code{sections} level is to be removed. If \code{sections} 
+               is not \code{NULL} and a single \code{character} string has been supplied, 
+               the terms specified by the string are taken to be terms that are 
+               independent of the \code{sections} and will be removed when adding the 
+               spatial model for the first \code{sections}. 
+ 
+               The terms must match those in the \code{vparameters} component of the 
+               \code{asreml.obj} component in the \code{asrtests.obj}. Note also that 
+               multiple terms specified using a single \code{asreml::at} function 
+               can only be dropped as a whole. If the term was specified using 
+               an \code{asreml::at} function with a single level, then it can be 
+               removed and either the level itself or its \code{\link{numeric}} 
+               position in the levels returned by the \code{\link{levels}} function 
+               can be specified.}
  \item{nsegs}{A pair of \code{\link{numeric}} values giving the number of segments into
               which the column and row ranges are to be split, respectively, for fitting 
               a P-spline model (\code{TPPS}) (each value specifies the number of internal 
@@ -163,12 +198,15 @@
               rotation. Rotation of the eigenvectors is only relevant for 
               \code{difforder} values greater than 1 and has only been implemented for 
               \code{difforder} equal to 2.}
- \item{ngridangles}{A \code{\link{numeric}} of length 2. The numbers of angles between 
-              0 and 90 degrees for each of the row and column dimensions to be used in 
-              determining the optimal pair of angles for rotating the eignevectors of 
-              the penalty matrix of a P-spline (\code{TPSS}). Specifying factors of 90 
-              will result in integer-valued angles. The number of grid points, and hence 
-              re-analyses will be the product of the values of (\code{ngridangles} + 1).}
+ \item{ngridangles}{A \code{\link{numeric}} of length 2. If \code{NULL} (the default), 
+              the optimal pair of angles for rotating the eignevectors of the penalty 
+              matrix of a P-spline (\code{TPSS}) will be determined using a nonlinear 
+              optimizer (\code{nloptr::bobyqa}). Otherwise, its two values specify the 
+              numbers of angles between 0 and 90 degrees for each of the row and column 
+              dimensions to be used in determining the optimal pair of angles. Specifying 
+              factors of 90 will result in integer-valued angles. The number of grid 
+              points, and hence re-analyses will be the product of the values of 
+              (\code{ngridangles} + 1).}
  \item{which.rotacriterion}{A single \code{character} string nominating which of the 
               criteria, out of the \code{deviance}, the \code{likelihood}, the 
               \code{AIC} and the \code{BIC}, is to be used in determining the optimal 
@@ -331,7 +369,7 @@ infoCriteria(current.asrt$asreml.obj)
 spatial.asrt <- addSpatialModel(current.asrt, spatial.model = "TPPS", 
                                 row.covar = "cRow", col.covar = "cColumn",
                                 dropRowterm = "Row", dropColterm = "Column",
-                                rotateX = TRUE, ngridangles = c(30,30), 
+                                rotateX = TRUE, 
                                 which.rotacriterion = "dev", 
                                 nrotacores = parallel::detectCores(), 
                                 asreml.option = "mbf")

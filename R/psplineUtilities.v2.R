@@ -63,7 +63,7 @@ deviance.asr <- function(obj.asr)
 
 #' Function called by rotate.penalty.U to fit the rotation for a theta pair
 #' 
-fitRotation <- function(rot.asr, data, theta = c(0,0), 
+fitRotation <- function(theta = c(0,0), rot.asr, data, 
                         sections, ksect, row.covar, col.covar,
                         nsegs, nestorder, degree, difforder, 
                         stub, asreml.opt = "grp", mbf.env = sys.frame(), 
@@ -86,16 +86,6 @@ fitRotation <- function(rot.asr, data, theta = c(0,0),
     assign(Zmat.names[1], tps.XZmat[[ksect]]$BcZ.df, envir = mbf.env)
     assign(Zmat.names[2], tps.XZmat[[ksect]]$BrZ.df, envir = mbf.env)
     assign(Zmat.names[3], tps.XZmat[[ksect]]$BcrZ.df, envir = mbf.env)
-
-    # call <- rot.asr$call
-    # if (!is.null(languageEl(call, which = "R.param")))
-    #   languageEl(call, which = "R.param") <- NULL
-    # if (!is.null(languageEl(call, which = "G.param")))
-    #   languageEl(call, which = "G.param") <- NULL
-    # languageEl(call, which = "data") <- dat
-    # languageEl(call, which = "mbf") <- mbf.lis
-    # languageEl(call, which = "maxit") <- 30
-    # new.asr <- eval(call, envir = sys.frame())    
     new.asr <- newfit(rot.asr, data = dat, mbf = mbf.lis, maxit = maxit, 
                       update = FALSE)
   } else
@@ -107,12 +97,14 @@ fitRotation <- function(rot.asr, data, theta = c(0,0),
   if (which.rotacriterion == "deviance")
     crit1 <- deviance.asr(new.asr)
   if (which.rotacriterion == "likelihood")
-    crit1 <- infoCriteria(new.asr, IClikelihood = "full")$loglik
+    crit1 <- -infoCriteria(new.asr, IClikelihood = "full")$loglik
+  #Maximizing the likelihood is the same as minimizing -likelihood
   if (which.rotacriterion == "AIC")
     crit1 <- infoCriteria(new.asr, IClikelihood = "full")$AIC
   if (which.rotacriterion == "BIC")
     crit1 <- infoCriteria(new.asr, IClikelihood = "full")$BIC
-  criterion <- data.frame(theta1=theta[1], theta2=theta[2], crit=crit1)
+#  criterion <- data.frame(theta1=theta[1], theta2=theta[2], crit=crit1)
+  criterion <- crit1
   return(criterion)
 }
 
@@ -123,7 +115,7 @@ fitRotation <- function(rot.asr, data, theta = c(0,0),
 #'
 rotate.penalty.U <- function(rot.asr, data, sections, ksect, row.covar, col.covar,
                              nsegs, nestorder, degree, difforder, 
-                             rotateX, ngridangles, stub, 
+                             ngridangles, theta.init = c(45,45), stub, 
                              maxit = 30, 
                              which.rotacriterion = "AIC", nrotacores = 1,
                              asreml.opt = "grp", mbf.env = sys.frame())
@@ -135,88 +127,170 @@ rotate.penalty.U <- function(rot.asr, data, sections, ksect, row.covar, col.cova
   options <- c("deviance", "likelihood", "AIC", "BIC")
   which.rotacriterion <- options[check.arg.values(which.rotacriterion, options)]
 
-  if (!rotateX) 
-    stop("Internal function rotate.penalty.U has been called with rotateX = FALSE")
-  
-  if (nrotacores > 1 && asr4)
+  if (any(is.null(ngridangles)))
   {
-    if (grepl("Windows", Sys.getenv("OS")))
-    {
-      kTHREADS <- Sys.getenv("OMP_NUM_THREADS")
-      Sys.setenv("OMP_NUM_THREADS" = 1)
-    }
-    cl <- parallel::makeCluster(nrotacores)
-    doParallel::registerDoParallel(cl)
-    if (asr4.2)
-    {
-      kthreads <-   get("asr_options", envir = getFromNamespace(".asremlEnv", "asreml"))$threads
-      asreml::asreml.options(threads = 1)
-    }
-  }
-
-  criteria <- NULL
-  s <- proc.time()[3]
-  for (sc in 0:ngridangles[1])
-  {
-    theta1 <- 90*sc/ngridangles[1] #in degrees
-    if (nrotacores == 1 || !asr4)
-    {
-      for (sr in 0:ngridangles[2]) 
+    if (which.rotacriterion %in% c("likelihood"))
+      contrl = list(fnscale = -1)
+    else
+      contrl = list(fnscale = 1)
+    funct <- "bobyqa"
+    s <- proc.time()[3]
+    #optim is not available to users and is only retained in case bobyqa fails
+    #it does not do a bounded optimization
+    if (funct == "optim") 
+    {  
+      #Use optim to find the optimum
+      criterion <- optim(theta.init, fitRotation,  
+                         rot.asr = rot.asr, data = data, 
+                         sections = sections, ksect = ksect, 
+                         row.covar = row.covar, col.covar = col.covar,
+                         nsegs = nsegs, nestorder = nestorder,
+                         degree = degree, difforder = difforder, 
+                         stub = stub, asreml.opt = asreml.opt, 
+                         mbf.env = mbf.env, maxit = maxit, 
+                         which.rotacriterion = which.rotacriterion,
+                         control = contrl)
+      
+      if (criterion$convergence != 0)
       {
-        theta2 <- 90*sr/ngridangles[2] #in degrees
-        criterion <- fitRotation(rot.asr = rot.asr, data = data, 
-                                 theta = c(theta1, theta2), 
-                                sections = sections, ksect = ksect, 
-                                row.covar = row.covar, col.covar = col.covar,
-                                nsegs = nsegs, nestorder = nestorder,
-                                degree = degree, difforder = difforder, 
-                                mbf.env = mbf.env, stub = stub, 
-                                maxit = maxit, which.rotacriterion = which.rotacriterion)
-        criteria <- rbind(criteria, criterion)
+        mess <- paste("The optimizer `optim` has failed to converge with error", 
+                      criterion$convergence)
+        if (!is.null(criterion$message))
+          mess <- paste0(mess, ", and with the following message: ", criterion$message)
+        stop(mess)
       }
-    } else #use parallel processing - not working for "mbf"
-    { 
-      criterion <- foreach(sr = 0:ngridangles[2], .combine=rbind, .inorder = TRUE, 
-                           .packages = c("asreml","asremlPlus"))  %dopar%
-        { 
+      
+      #Extract the optimal rotation
+      theta.opt <- criterion$par
+      criterion <- criterion$value #only the optimal value is available
+      
+      if (any(theta.opt) < 0 || any(theta.opt > 90))
+      { 
+        mess <- paste("The optimizer `optim` has produced at least one optimal rotation angle outside the range [0, 90]")
+        mess <- paste0("The optimal rotation angles produced by `optim` are ", 
+                       paste0(theta.opt, collapse = " and "), 
+                       "; both should be in the interval [0, 90]")
+        stop(mess)
+      } 
+    } else # end optim section
+    {
+      #Use bobyqa to find optimum
+      criterion <- nloptr::bobyqa(theta.init, fitRotation,  
+                                 lower = c(0,0), upper = c(90,90), 
+                                 rot.asr = rot.asr, data = data, 
+                                 sections = sections, ksect = ksect, 
+                                 row.covar = row.covar, col.covar = col.covar,
+                                 nsegs = nsegs, nestorder = nestorder,
+                                 degree = degree, difforder = difforder, 
+                                 stub = stub, asreml.opt = asreml.opt, 
+                                 mbf.env = mbf.env, maxit = maxit, 
+                                 which.rotacriterion = which.rotacriterion)
+      
+      if (criterion$convergence < 0)
+      {
+        mess <- paste("The optimizer `bobyqa` has failed to converge with error", 
+                      criterion$convergence)
+        if (!is.null(criterion$message))
+          mess <- paste0(mess, ", and with the following message: ", criterion$message)
+        stop(mess)
+      }
+      
+      #Extract the optimal rotation
+      theta.opt <- criterion$par
+      criterion <- criterion$value #only the optimal value is available
+    } #end bobyqa section
+    elapsed <- proc.time()[3] - s
+    cat(paste0("elapsed time for ", funct, ":"), elapsed, "seconds\n")
+    #Because minimized -likelihood, reverse the sign of the likelihood
+    if (which.rotacriterion == "likelihood")
+      criterion <- -criterion
+  } else #end optimization section
+  {  
+    if (nrotacores > 1 && asr4)
+    {
+      if (grepl("Windows", Sys.getenv("OS")))
+      {
+        kTHREADS <- Sys.getenv("OMP_NUM_THREADS")
+        Sys.setenv("OMP_NUM_THREADS" = 1)
+      }
+      cl <- parallel::makeCluster(nrotacores)
+      doParallel::registerDoParallel(cl)
+      if (asr4.2)
+      {
+        kthreads <-   get("asr_options", envir = getFromNamespace(".asremlEnv", "asreml"))$threads
+        asreml::asreml.options(threads = 1)
+      }
+    }
+    
+    criteria <- NULL
+    s <- proc.time()[3]
+    for (sc in 0:ngridangles[1])
+    {
+      theta1 <- 90*sc/ngridangles[1] #in degrees
+      if (nrotacores == 1 || !asr4)
+      {
+        for (sr in 0:ngridangles[2]) 
+        {
           theta2 <- 90*sr/ngridangles[2] #in degrees
-          criterion <- fitRotation(rot.asr = rot.asr, data = data, 
-                                   theta = c(theta1, theta2), 
+          criterion <- fitRotation(theta = c(theta1, theta2), 
+                                   rot.asr = rot.asr, data = data, 
                                    sections = sections, ksect = ksect, 
                                    row.covar = row.covar, col.covar = col.covar,
                                    nsegs = nsegs, nestorder = nestorder,
                                    degree = degree, difforder = difforder, 
                                    mbf.env = mbf.env, stub = stub, 
                                    maxit = maxit, which.rotacriterion = which.rotacriterion)
+          criterion <- data.frame(theta1=theta1, theta2=theta2, crit=criterion)
+          criteria <- rbind(criteria, criterion)
         }
-      criteria <- rbind(criteria, criterion)
-    } 
+      } else #use parallel processing - not working for "mbf"
+      { 
+        criterion <- foreach(sr = 0:ngridangles[2], .combine=rbind, .inorder = TRUE, 
+                             .packages = c("asreml","asremlPlus"))  %dopar%
+          { 
+            theta2 <- 90*sr/ngridangles[2] #in degrees
+            criterion <- fitRotation(theta = c(theta1, theta2), 
+                                     rot.asr = rot.asr, data = data, 
+                                     sections = sections, ksect = ksect, 
+                                     row.covar = row.covar, col.covar = col.covar,
+                                     nsegs = nsegs, nestorder = nestorder,
+                                     degree = degree, difforder = difforder, 
+                                     mbf.env = mbf.env, stub = stub, 
+                                     maxit = maxit, which.rotacriterion = which.rotacriterion)
+            criterion <- data.frame(theta1=theta1, theta2=theta2, crit=criterion)
+          }
+        criteria <- rbind(criteria, criterion)
+      } 
+      
+      #    print(criteria)
+      theta <- criteria[c("theta1","theta2")][nrow(criteria),]
+      elapsed <- proc.time()[3] - s
+      
+      cat("sc:", sc, 
+          "thetas:", paste(theta, collapse = ", "), 
+          "elapsed time:", elapsed, "seconds\n")
+    }
     
-#    print(criteria)
-    theta <- criteria[c("theta1","theta2")][nrow(criteria),]
-    elapsed <- proc.time()[3] - s
+    if (nrotacores > 1 && asr4)
+    { 
+      if (asr4.2)
+        asreml::asreml.options(threads = kthreads)
+      stopCluster(cl)
+      if (grepl("Windows", Sys.getenv("OS")))
+        Sys.setenv("OMP_NUM_THREADS" = kTHREADS)
+    }
     
-    cat("sc:", sc, 
-        "thetas:", paste(theta, collapse = ", "), 
-        "elapsed time:", elapsed, "seconds\n")
+    #Find the optimal rotation
+    if (which.rotacriterion %in% c("likelihood"))
+      which.opt <- which.max(criteria$crit)
+    else
+      which.opt <- which.min(criteria$crit)
+    theta.opt <- as.numeric(criteria[which.opt, c("theta1", "theta2")])
+    criterion <- as.numeric(criteria$crit[which.opt])
+    if (which.rotacriterion == "likelihood")
+      criterion <- -criterion
   }
-  
-  if (nrotacores > 1 && asr4)
-  { 
-    if (asr4.2)
-      asreml::asreml.options(threads = kthreads)
-    stopCluster(cl)
-    if (grepl("Windows", Sys.getenv("OS")))
-      Sys.setenv("OMP_NUM_THREADS" = kTHREADS)
-  }
-
-#Find the optimal rotation
-  if (which.rotacriterion %in% c("likelihood"))
-    which.opt <- which.max(criteria$crit)
-  else
-    which.opt <- which.min(criteria$crit)
-  theta.opt <- as.numeric(criteria[which.opt, c("theta1", "theta2")])
-  return(list(theta.opt = theta.opt, criteria = criteria))
+  return(list(theta.opt = theta.opt, criterion = criterion))
 }
 
 #Function to set  the mbf.env in an asreml.obj, by default, to the current environment

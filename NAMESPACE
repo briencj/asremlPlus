@@ -157,7 +157,7 @@ exportClasses(alldiffs, asrtests, predictions.frame)
 import(dae)
 import(ggplot2, except = "stat_qq_line")
 importFrom("stats", "as.formula",  "fitted", "fitted.values", "formula", "median", 
-                    "model.matrix", "na.omit", "pchisq", "pf", "predict", "pt", "qnorm", "qt", 
+                    "model.matrix", "na.omit", "optim", "pchisq", "pf", "predict", "pt", "qnorm", "qt", 
                     "quantile", "resid", "pnorm", "rnorm", "runif", "simulate", "terms", 
                     "terms.formula", "update.formula")
 importFrom("devtools", "load_all")
@@ -166,6 +166,7 @@ importFrom("grDevices", "savePlot")
 importFrom("graphics", "hist")
 importFrom("dplyr", "anti_join", "left_join")
 importFrom("methods", "formalArgs", "getFunction", "languageEl", "languageEl<-", "validObject")
+importFrom("nloptr", "bobyqa")
 importFrom("qqplotr", "stat_qq_band","stat_qq_line", "stat_qq_point")
 
 importFrom("reshape2", "melt")

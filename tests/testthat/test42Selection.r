@@ -866,7 +866,7 @@ test_that("Fixedcorrelations_asreml42", {
   m2.asrt <- changeModelOnIC(m.asrt, addRandom = "units", label = "units", allow.fixedcorrelation = TRUE,
                              IClikelihood = "full")
   testthat::expect_equal(m2.asrt$test.summary$action[2], "Unswapped")
-  testthat::expect_true(grepl("units", as.character(getFormulae(m2.asrt$asreml.obj)$random)[2]))
+  testthat::expect_false(grepl("units", as.character(getFormulae(m2.asrt$asreml.obj)$random)[2]))
   summary(m2.asrt$asreml.obj)$varcomp
   testthat::expect_equal(unname(
          m2.asrt$asreml.obj$vparameters.con["Lane:Position!Lane!cor"]), "U")

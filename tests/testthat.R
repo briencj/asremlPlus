@@ -19,8 +19,8 @@ library(testthat)
 #test_check("asremlPlus", filter = "42Orange")
 #test_check("asremlPlus", filter = "42Parallel")
 #test_check("asremlPlus", filter = "42PredictionsFrame")
-#test_check("asremlPlus", filter = "42PredictionsPresentation")
-#test_check("asremlPlus", filter = "42REMLRTIC")
+#test_check("asremlPlus", filter = "42PredictionsPresentation") # do separately
+#test_check("asremlPlus", filter = "42REMLRTIC") # do separately
 #test_check("asremlPlus", filter = "42Selection")
 #test_check("asremlPlus", filter = "42Simulate")
 #test_check("asremlPlus", filter = "42Sortalldiffs")

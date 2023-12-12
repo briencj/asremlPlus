@@ -3,8 +3,8 @@
 {
   #  k <- tail(which(as.character(asrtests.obj$test.summary$terms)==label),1)
   k <- tail(findterm(label, as.character(asrtests.obj$test.summary$terms)),1)
-  if (k == 0)
-    stop("Label not found in test.summary of supplied asrtests.obj")
+  if (length(k) == 0 || k == 0)
+    stop(label, " not found in test.summary of supplied asrtests.obj")
   p <- asrtests.obj$test.summary$p
   return(p[k])
 }
@@ -13,8 +13,8 @@
 {
   k <- tail(which(as.character(asrtests.obj$test.summary$terms)==label),1)
   #k <- tail(findterm(label, as.character(asrtests.obj$test.summary$terms)),1)
-  if (k == 0)
-    stop("Label not found in test.summary of supplied asrtests.obj")
+  if (length(k) == 0 || k == 0)
+    stop(label, " not found in test.summary of supplied asrtests.obj")
   entry <- asrtests.obj$test.summary[k,]
   class(entry) <- "data.frame"
   return(entry)
