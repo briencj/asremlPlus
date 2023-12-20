@@ -269,7 +269,8 @@ test_that("predictPresent.asreml42", {
                                                      transform.power = 0, 
                                                      present = c("Type","Species","Sources"), 
                                                      tables = "differences", 
-                                                     level.length = 6))
+                                                     level.length = 6),
+                         regexp = "predict.asreml has not returned the sed component for the predictions as requested")
   #Example that does not produce predictions because has Date but not xDay
   testthat::expect_error(diff.list <- predictPresent(terms = "Date:Sources:Species", 
                                                      asreml.obj = current.asrt$asreml.obj, 
@@ -280,7 +281,8 @@ test_that("predictPresent.asreml42", {
                                                      transform.power = 0, 
                                                      present = c("Type","Species","Sources","Date"), 
                                                      tables = "differences", 
-                                                     level.length = 6))
+                                                     level.length = 6),
+                         regexp = "predict.asreml has not returned the sed component for the predictions as requested")
   
   #### Get the observed combinations of the factors and variables in classify
   class.facs <- c("Sources","Species","Date","xDay")
@@ -289,7 +291,7 @@ test_that("predictPresent.asreml42", {
   levs <- as.list(levs[levs$Freq != 0, class.facs])
   levs$xDay <- as.numfac(levs$xDay)
   
-  # parallel and levels are arguments from predict.asreml
+  # parallel and levels are arguments from predict.asreml - plotted against xDay because Date is nonnumeric in nature
   diff.list <- predictPresent.asreml(asreml.obj = current.asrt$asreml.obj, 
                                      terms = "Date:Sources:Species:xDay",
                                      x.num = "xDay", x.fac = "Date", 

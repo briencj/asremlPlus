@@ -1,18 +1,10 @@
----
-title: asremlPlus
-output:
-  html_document:
-    keep_md: yes
-  pdf_document: default
----
-
-
+# asremlPlus
 
 [![Project Status: Active:  The project has reached a stable, usable state and is being actively developed.](http://www.repostatus.org/badges/latest/active.svg)](http://www.repostatus.org/#active)
 [![minimal R version](https://img.shields.io/badge/R%3E%3D-2.10.0-6666ff.svg)](https://cran.r-project.org/)
 [![CRAN_Status_Badge](http://www.r-pkg.org/badges/version/asremlPlus)](https://cran.r-project.org/package=asremlPlus)
-[![packageversion](https://img.shields.io/badge/Package%20version-4.4.23-orange.svg?style=flat-square)](/commits/master)
-[![Last-changedate](https://img.shields.io/badge/last%20change-2023--12--12-yellowgreen.svg)](/commits/master)
+[![packageversion](https://img.shields.io/badge/Package%20version-4.4.24-orange.svg?style=flat-square)](/commits/master)
+[![Last-changedate](https://img.shields.io/badge/last%20change-2023--12--21-yellowgreen.svg)](/commits/master)
 [![Licence](https://img.shields.io/github/license/mashape/apistatus.svg)](http://choosealicense.com/licenses/mit/)
 [![Downloads](https://cranlogs.r-pkg.org/badges/last-week/asremlPlus)](commits/master)
 

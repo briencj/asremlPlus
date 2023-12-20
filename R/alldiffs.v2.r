@@ -1613,7 +1613,7 @@ exploreLSDs.alldiffs <- function(alldiffs.obj,  LSDtype = "overall", LSDby = NUL
 pickLSDstatistics.alldiffs <- function(alldiffs.obj, 
                                        LSDtype = "overall", LSDby = NULL, 
                                        alpha = 0.05, digits = 3, 
-                                       retain.zeroLSDs = FALSE, 
+                                       false.pos.wt = NULL, retain.zeroLSDs = FALSE, 
                                        zero.tolerance = .Machine$double.eps ^ 0.5, 
                                        ...)
 {
@@ -1632,11 +1632,18 @@ pickLSDstatistics.alldiffs <- function(alldiffs.obj,
                       no.errors <- lsd$false.pos[krow,] == 0 & lsd$false.neg[krow,] == 0
                       if (any(no.errors)) #no error
                         klsd <- colnames(no.errors)[min(which(no.errors))]
-                      else # get the LSD with the min false.pos and, amongst these, the min false.neg
+                      else 
                       {  
-                        no.pos <- which(lsd$false.pos[krow, ]  == min(lsd$false.pos[krow, ]))
-                        min.neg <- lsd$false.neg[krow, ][no.pos]
-                        klsd <- names(min.neg)[min(which(min.neg == min(min.neg)))]
+                        if (is.null(false.pos.wt)) # get the LSD with the min false.pos and, amongst these, the min false.neg
+                        {
+                          no.pos <- which(lsd$false.pos[krow, ]  == min(lsd$false.pos[krow, ]))
+                          min.neg <- lsd$false.neg[krow, ][no.pos]
+                          klsd <- names(min.neg)[min(which(min.neg == min(min.neg)))]
+                        } else # get the LSD with the min weight sum of false.pos and false.neg
+                        {
+                          false.no <- lsd$false.pos[krow, ] * false.pos.wt + lsd$false.neg[krow, ]
+                          klsd <- names(false.no)[min(which(false.no == min(false.no)))]
+                        }
                       }
                       klsd <- gsub("quant", "q", klsd)
                       return(klsd)

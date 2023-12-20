@@ -55,11 +55,9 @@
                  "\code{(Intercept)}".}
  \item{y}{A character string giving the name of the variable that is to be plotted 
                  on the Y axis.}
- \item{x.num}{A character string giving the name of the numeric covariate that 
-              corresponds to \code{x.fac}, is potentially included in terms in the 
-              fitted model and which corresponds to the x-axis variable. It should 
-              have the same number of unique values as the number of levels in 
-              \code{x.fac}.}
+\item{x.num}{A \code{\link{character}} string giving the name of the numeric covariate that 
+              (i) is potentially included in terms in the fitted model and (ii) is the 
+              x-axis variable for plots. Its values will not be converted to a \code{\link{factor}}.}
  \item{x.fac}{A character string giving the name of the factor that corresponds to 
               \code{x.num}, is potentially included in terms in the fitted model and 
               which corresponds to the x-axis variable. It should have the same 

@@ -218,18 +218,16 @@
              calculating the LSD statistics and each assigned LSD and the accuracy is expressed as a 
              proportion of the assigned LSD value. The calculated values are stored in the column named 
              \code{accuracyLSD} in an \code{\link{LSD.frame}}.}
-\item{x.num}{A character string giving the name of the numeric covariate that 
-              corresponds to \code{x.fac}, is potentially included in terms in the 
-              fitted model and which corresponds to the x-axis variable. It should 
-              have the same number of unique values as the number of levels in 
-              \code{x.fac}.}
- \item{x.fac}{A \code{character} string giving the name of the factor that corresponds to 
-              \code{x.num}, is potentially included in terms in the fitted model and 
-              which corresponds to the x-axis variable. It should have the same 
-              number of levels as the number of unique values in \code{x.num}. 
-              The levels of \code{x.fac} must be in the order in which they are to 
-              be plotted - if they are dates, then they should be in the form 
-              yyyymmdd, which can be achieved using \code{as.Date}. However, the levels 
+\item{x.num}{A \code{\link{character}} string giving the name of the numeric covariate that 
+              (i) is potentially included in terms in the fitted model and (ii) is the 
+              x-axis variable for plots. Its values will not be converted to a \code{\link{factor}}.}
+ \item{x.fac}{A \code{\link{character}} string giving the name of the factor that 
+              (i) corresponds to \code{x.num} and (ii) is potentially included in 
+               terms in the fitted model. It should have the same number of levels as the 
+              number of unique values in \code{x.num}. The levels of 
+              \code{x.fac} must be in the order in which they are to be plotted 
+              - if they are dates, then they should be in the form 
+              yyyymmdd, which can be achieved using \code{as.Date}. However, the levels
               can be non-numeric in nature, provided that \code{x.num} is also set.}
  \item{nonx.fac.order}{A \code{character vector} giving the order in which factors other 
               than \code{x.fac} are to be plotted in plots with multiple panels 

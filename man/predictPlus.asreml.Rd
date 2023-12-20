@@ -282,14 +282,11 @@
               \code{p.differences}, \code{sed}, \code{LSD} and \code{all}.
               These nominate which components of the \code{\link{alldiffs.object}} to print.}
 \item{x.num}{A \code{\link{character}} string giving the name of the numeric covariate that 
-              (i) corresponds to \code{x.fac}, (ii) is potentially included in 
-              terms in the fitted model, and (iii) which corresponds to the 
-              x-axis variable. It should have the same number of unique values 
-              as the number of levels in \code{x.fac}.}
+              (i) is potentially included in terms in the fitted model and (ii) is the 
+              x-axis variable for plots. Its values will not be converted to a \code{\link{factor}}.}
  \item{x.fac}{A \code{\link{character}} string giving the name of the factor that 
-              (i) corresponds to \code{x.num}, (ii) is potentially included in 
-               terms in the fitted model, and (iii) which corresponds to the 
-              x-axis variable. It should have the same number of levels as the 
+              (i) corresponds to \code{x.num} and (ii) is potentially included in 
+               terms in the fitted model. It should have the same number of levels as the 
               number of unique values in \code{x.num}. The levels of 
               \code{x.fac} must be in the order in which they are to be plotted 
               - if they are dates, then they should be in the form 
@@ -297,9 +294,9 @@
               can be non-numeric in nature, provided that \code{x.num} is also set.}
  \item{x.pred.values}{The values of \code{x.num} for which predicted values are 
               required. If \code{levels} is set for passing to \code{predict.asreml}, 
-              \code{x.pred.values} is ignored. Note that while \code{levels} is and
-              alternative to \code{x.pred.values}, it allows more general setting 
-              of the levels to be predicted.}
+              \code{x.pred.values} is ignored. Note that while \code{levels} is an
+              alternative to \code{x.pred.values}, \code{x.pred.values} allows more 
+              general setting of the levels to be predicted.}
  \item{x.plot.values}{The actual values to be plotted on the x axis. They are 
                needed when values different to those in \code{x.num} are to be 
                plotted or \code{x.fac} is to be plotted because there is no 

@@ -1,5 +1,10 @@
 \name{news}
 \title{News for Package asremlPlus}
+\section{asremlPlus Version 4.4.24 (2023-12-20}{
+  \itemize{
+  \item Fix a bug in plotLSDerrors so that the correct errors are now plotted.
+  \item Add argument \code{falso.pos.wt} to pickLSDstatistics.alldiffs, which when it is not \code{NULL} results in mininzing the weighted sum of the false.pos and false.neg comparisons of pairwise differences.
+}}
 \section{asremlPlus Version 4.4.23 (2023-12-12}{
   \itemize{
   \item Add the use of the R optimizer \code{nloptr::bobyqa} to search for the optimal angles for the rotation of the eigenvlues of the penalty matrix when fitting cubic P-splines using addSpatialModel.asrtests, addSpatialModelOnIC.asrtests or chooseSpatialModelOnIC.asrtests. This provides an alternative to searching over a two-dimensional grid of angles.

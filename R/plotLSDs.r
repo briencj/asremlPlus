@@ -423,8 +423,8 @@
       if (is.null(LSDby))
         stop("The LSDby attribute of the supplied alldiffs.object is NULL")
 
-      fac.combs.sed <- fac.combine(as.list(object$predictions[LSDby]), combine.levels = TRUE, 
-                                   sep =sep)
+      fac.combs.sed <- dae::fac.combine(as.list(object$predictions[LSDby]), combine.levels = TRUE, 
+                                        sep =sep)
       LSDresults <- matrix(nrow = nr, ncol = ncol(object$sed))
       
       for (lev in rownames(LSDapprox))
@@ -446,19 +446,20 @@
     if (length(lims) > 2)
       stop("There are more than two columns whose names end with .limit")
     lims <- c(lower = lims[grep("lower.", lims)], upper = lims[grep("upper", lims)])
+    lims.vals <- as.matrix(preds[c(lims)])
     #Calculate significances using the intervals
-    sig.approx <- apply(preds, MARGIN = 1, 
-                        FUN = function(irow, preds, lims) 
+    sig.approx <- apply(lims.vals, MARGIN = 1, 
+                        FUN = function(irow, lims.vals, lims) 
                         {
-                          apply(preds, MARGIN = 1, 
+                          apply(lims.vals, MARGIN = 1, 
                                 FUN = function(jrow, irow, lims)
                                 {
-                                  reslt <- (irow[lims["lower"]] >= jrow[lims["upper"]] | 
-                                              irow[lims["upper"]] <= jrow[lims["lower"]])
+                                  reslt <- (irow[lims["lower"]] >= jrow[lims["upper"]]) | 
+                                    (irow[lims["upper"]] <= jrow[lims["lower"]])
                                   return(reslt)
                                 }, irow = irow, lims = lims)
                         }, 
-                        preds = preds, lims = lims, simplify = FALSE)
+                        lims.vals = lims.vals, lims = lims, simplify = FALSE)
     sig.approx <- do.call(rbind, sig.approx)
     diag(sig.approx) <- NA
     rownames(sig.approx) <- colnames(sig.approx) <- rownames(object$p.differences)
@@ -560,8 +561,8 @@
                                         predictions = object$predictions
       ), stringsAsFactors = FALSE)
       names(facs.levs) <- facs
-      LSDres.dat$sections <- fac.combine(facs.levs[sections], combine.levels = TRUE)
-      LSDres.dat[LSD.fac] <- fac.combine(facs.levs[pairdiffs], combine.levels = TRUE)
+      LSDres.dat$sections <- dae::fac.combine(facs.levs[sections], combine.levels = TRUE)
+      LSDres.dat[LSD.fac] <- dae::fac.combine(facs.levs[pairdiffs], combine.levels = TRUE)
       return(LSDres.dat)
     }
     
@@ -582,8 +583,8 @@
       pairname <- paste(pairdiffs, collapse = ', ')
     }
     if (factors.per.grid > 0)
-      object$predictions$sections <- fac.combine(object$predictions[sections], 
-                                                 combine.levels = TRUE)
+      object$predictions$sections <- dae::fac.combine(object$predictions[sections], 
+                                                      combine.levels = TRUE)
     for (j in sect.lev)
     { 
       psect <- LSDres.dat[LSDres.dat$sections1==j & LSDres.dat$sections2==j, ]

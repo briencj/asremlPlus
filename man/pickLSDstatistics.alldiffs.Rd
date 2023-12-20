@@ -19,7 +19,7 @@
 \method{pickLSDstatistics}{alldiffs}(alldiffs.obj, 
                   LSDtype = "overall", LSDby = NULL, 
                   alpha = 0.05, digits = 3, 
-                  retain.zeroLSDs = FALSE, 
+                  false.pos.wt = NULL, retain.zeroLSDs = FALSE, 
                   zero.tolerance = .Machine$double.eps ^ 0.5, 
                   ...)}
 \arguments{
@@ -45,6 +45,13 @@
             predictions.}
 \item{digits}{A \code{\link{numeric}} specifying the number of significant digits to retain in rounding 
             the LSDs before determining the disinct rounded LSDs.}
+\item{false.pos.wt}{When it is not \code{NULL}, it should be a \code{\link{numeric}} that specifies the 
+            weight (e.g. 3) to apply to the number of false positives in calculating the weighted sums of  
+            the numbers of false positives and negatives in using different LSD statistics to compare 
+            pairs of predictions. The \code{LSDstatistic} that is chosen for making comparisons will be 
+            the one that minimizes the weighted sum. If it is \code{NULL}, the \code{LSDstatistic} 
+            will chosen as the one that minimizes the number of false negatives from amongst those that 
+            minimize the number of false positives.}
 \item{retain.zeroLSDs}{A \code{\link{logical}} indicating whether to retain or omit LSDs that are zero when 
              calculating the summaries of LSDs.}
 \item{zero.tolerance}{A \code{\link{numeric}} specifying the value such that if an LSD is less than it, it will be 
