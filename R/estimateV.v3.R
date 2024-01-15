@@ -83,12 +83,8 @@
     # Remove any ignore.terms from the random terms
     if (!is.null(ignore.terms))
     {
-      kignore <- na.omit(match(ignore.terms, ranterms))
-      if (length(kignore) > 0)
-      {
-        ranterms <- ranterms[-na.omit(match(ignore.terms, ranterms))]
-        G.param <- G.param[ranterms]
-      }
+      ranterms <- setdiff(ranterms, ignore.terms)
+      G.param <- G.param[ranterms]
     }
     
     #Process the random terms
@@ -98,24 +94,13 @@
       bound <- FALSE
       if (asr4)
       {
-        if (asr4.2)
-        {        
-          if (!is.null(bound.exclusions) && term %in% names(asreml.obj$vparameters.con))
-          {
-            bound <- (asreml.obj$vparameters.con[[term]] %in% bound.exclusions)
-            if (bound)
-              warning(paste(term, "not included in V because its bound is",
-                            asreml.obj$vparameters.con[[term]], sep = " "))
-          }
-        } else
-        {
-          if (!is.null(bound.exclusions) & term %in% names(vpc.char(asreml.obj)))
-          {
-            bound <- (vpc.char(asreml.obj)[[term]] %in% bound.exclusions)
-            if (bound)
-              warning(paste(term, "not included in V because its bound is",
-                            vpc.char(asreml.obj)[[term]], sep = " "))
-          }
+        vpc <- getVpars(asreml.obj, asr4.2 = asr4.2)$vpc
+        if (!is.null(bound.exclusions) && term %in% sapply(names(vpc), rmTermDescription))
+            {
+              vpc.term <- vpc[sapply(names(vpc), rmTermDescription) == term]
+              bound <- (all(vpc.term %in% bound.exclusions))
+              if (bound)
+                warning(paste(term, "not included in V because it is bound"))
         }
       } else
       {
@@ -212,40 +197,32 @@
           
           #Get Z and add term to V
           #Does it include a model that needs to use asreml.obj$design?
-          if ((any(unlist(lapply(G.param[[term]][2:length(G.param[[term]])], 
-                                 function(x)
-                                 {
-                                   need.design <- (x$model %in% design.specials)
-                                   return(need.design)
-                                 })))))
-          {
+          # if ((any(unlist(lapply(G.param[[term]][2:length(G.param[[term]])], 
+          #                        function(x)
+          #                        {
+          #                          need.design <- (x$model %in% design.specials)
+          #                          return(need.design)
+          #                        })))))
+          # {
             #Check whether have the design matrix
             if (is.null(asreml.obj$design))
             {
               asreml::asreml.options(design = TRUE)
-#              asreml.obj <- eval(call)
               asreml.obj <- asreml::update.asreml(asreml.obj)
             }
-            if (has.fa)
+          if (has.fa)
+          {
+            #Get Z for fa, removing columns for Comp effects
+            if (asr4.2)
             {
-              #Get Z for fa, removing columns for Comp effects
-              if (asr4.2)
-              {
-                cols <- req.levs
-              } else
-              {
-                cols <- c(1:length(full.levs))[match(req.levs, full.levs)]
-                cols <- paste(term, cols, sep = "")
-              }
-              Z <- asreml.obj$design[,match(cols, colnames(asreml.obj$design))]
-            } else # not fa
+              cols <- req.levs
+            } else
             {
-              Z <- as.matrix(getTermDesignMatrix(term, asreml.obj))
+              cols <- c(1:length(full.levs))[match(req.levs, full.levs)]
+              cols <- paste(term, cols, sep = "")
             }
-            Z <- as.matrix(Z)
-            V <- V + Z %*% G %*% t(as.matrix(Z))
-            
-          } else #not a special needing the design matrix
+            Z <- asreml.obj$design[,match(cols, colnames(asreml.obj$design))]
+          } else # not fa
           {
             if (grepl("+", term, fixed = TRUE)) #involves an str term?
             {
@@ -263,13 +240,37 @@
                 cols <- match(cols, colnames(asreml.obj$design))
                 Z <- asreml.obj$design[,cols]
               }
-              V <- V + Z %*% G %*% t(as.matrix(Z))
             } else #not a problem term
-            {
-              Z <- model.matrix(as.formula(paste("~ -1 +", term)), data = dat)
-              V <- V + Z %*% G %*% t(Z)
-            }
+              Z <- as.matrix(getTermDesignMatrix(term, asreml.obj))
           }
+          Z <- as.matrix(Z)
+          V <- V + Z %*% G %*% t(Z)
+          # } else #not a special needing the design matrix
+          # {
+          #   if (grepl("+", term, fixed = TRUE)) #involves an str term?
+          #   {
+          #     str.terms <- strsplit(term, split = "+", fixed = TRUE)[[1]]
+          #     if (asr4.2)
+          #     {
+          #       Z <- NULL
+          #       for (str.term in str.terms)
+          #         Z <- cbind(Z, getTermDesignMatrix(str.term, asreml.obj))
+          #     } else
+          #     {
+          #       cols <- NULL
+          #       for (str.term in str.terms)
+          #         cols <- c(cols, paste(str.term, 1:asreml.obj$noeff[str.term], sep = ""))
+          #       cols <- match(cols, colnames(asreml.obj$design))
+          #       Z <- asreml.obj$design[,cols]
+          #     }
+          #     print(G)
+          #     V <- V + Z %*% G %*% t(as.matrix(Z))
+          #   } else #not a problem term
+          #   {
+          #     Z <- model.matrix(as.formula(paste("~ -1 +", term)), data = dat)
+          #     V <- V + Z %*% G %*% t(Z)
+          #   }
+          # }
         } 
       }
     }
@@ -384,6 +385,8 @@
   if (!is.null(extra.matrix))
     V <- V + extra.matrix
   
+  V <- as.matrix(V)
+  colnames(V) <- rownames(V) <- NULL
   return(V)
 }
 
@@ -416,167 +419,232 @@ checkSpecial <- function(var, term, G.param, specials, residual = FALSE)
 ### Function to call a function to compute the G matrix for an asreml variance function
 "mat.Gvar" <- function(var, term, G.param, kspecial, cond.fac = "", ...)
 {
+  strterm <- grepl("\\+", term)
+  if (cond.fac != "")
+    cond.fac <- paste(cond.fac, "_", sep = "")
+  #Form correlation matrix
+  G <- switch(kspecial$cortype,
+              id = G.id(var = var, term = term, G.param = G.param, cond.fac = cond.fac, strterm = strterm),
+              ar1 = G.ar1(var = var, term = term, G.param = G.param, cond.fac = cond.fac, strterm = strterm),
+              ar2 = G.ar2(var = var, term = term, G.param = G.param, cond.fac = cond.fac, strterm = strterm),
+              ar3 = G.ar3(var = var, term = term, G.param = G.param, cond.fac = cond.fac, strterm = strterm),
+              sar = G.sar(var = var, term = term, G.param = G.param, cond.fac = cond.fac, strterm = strterm),
+              sar2 = G.sar2(var = var, term = term, G.param = G.param, cond.fac = cond.fac, strterm = strterm),
+              ma1 = G.ma1(var = var, term = term, G.param = G.param, cond.fac = cond.fac, strterm = strterm),
+              ma2 = G.ma2(var = var, term = term, G.param = G.param, cond.fac = cond.fac, strterm = strterm),
+              arma = G.arma(var = var, term = term, G.param = G.param, cond.fac = cond.fac, strterm = strterm),
+              exp = G.exp(var = var, term = term, G.param = G.param, cond.fac = cond.fac, strterm = strterm),
+              gau = G.gau(var = var, term = term, G.param = G.param, cond.fac = cond.fac, strterm = strterm),
+              cor = G.cor(var = var, term = term, G.param = G.param, cond.fac = cond.fac, strterm = strterm),
+              corb = G.corb(var = var, term = term, G.param = G.param, cond.fac = cond.fac, strterm = strterm),
+              corg = G.corg(var = var, term = term, G.param = G.param, cond.fac = cond.fac, strterm = strterm),
+              us = G.us(var = var, term = term, G.param = G.param, cond.fac = cond.fac, strterm = strterm), 
+              spl = G.spl(var = var, term = term, G.param = G.param, cond.fac = cond.fac, strterm = strterm), 
+              fa = G.fa(var = var, term = term, G.param = G.param, cond.fac = cond.fac, strterm = strterm), 
+              rr = G.rr(var = var, term = term, G.param = G.param, cond.fac = cond.fac, strterm = strterm), 
+              G.unknown(kspecial))
+  if (kspecial$final == "v")
   {
-    if (cond.fac != "")
-      cond.fac <- paste(cond.fac, "_", sep = "")
-    #Form correlation matrix
-    G <- switch(kspecial$cortype,
-                id = G.id(var = var, term = term, G.param = G.param, cond.fac = cond.fac),
-                ar1 = G.ar1(var = var, term = term, G.param = G.param, cond.fac = cond.fac),
-                ar2 = G.ar2(var = var, term = term, G.param = G.param, cond.fac = cond.fac),
-                ar3 = G.ar3(var = var, term = term, G.param = G.param, cond.fac = cond.fac),
-                sar = G.sar(var = var, term = term, G.param = G.param, cond.fac = cond.fac),
-                sar2 = G.sar2(var = var, term = term, G.param = G.param, cond.fac = cond.fac),
-                ma1 = G.ma1(var = var, term = term, G.param = G.param, cond.fac = cond.fac),
-                ma2 = G.ma2(var = var, term = term, G.param = G.param, cond.fac = cond.fac),
-                arma = G.arma(var = var, term = term, G.param = G.param, cond.fac = cond.fac),
-                exp = G.exp(var = var, term = term, G.param = G.param, cond.fac = cond.fac),
-                gau = G.gau(var = var, term = term, G.param = G.param, cond.fac = cond.fac),
-                cor = G.cor(var = var, term = term, G.param = G.param, cond.fac = cond.fac),
-                corb = G.corb(var = var, term = term, G.param = G.param, cond.fac = cond.fac),
-                corg = G.corg(var = var, term = term, G.param = G.param, cond.fac = cond.fac),
-                us = G.us(var = var, term = term, G.param = G.param, cond.fac = cond.fac), 
-                spl = G.spl(var = var, term = term, G.param = G.param, cond.fac = cond.fac), 
-                fa = G.fa(var = var, term = term, G.param = G.param, cond.fac = cond.fac), 
-                rr = G.rr(var = var, term = term, G.param = G.param, cond.fac = cond.fac), 
-                G.unknown(kspecial))
-    if (kspecial$final == "v")
-    {
-      if (kspecial$cortype == "id")
-        vpname <- paste(cond.fac, term,"!",var,sep = "")
-      else
-        vpname <- paste(cond.fac, term,"!",var,"!var",sep = "")
-      if (!is.na(G.param[[term]][[var]]$initial[vpname]))
-        G <- G.param[[term]][[var]]$initial[vpname] * G
-    }
-    if (kspecial$final == "h")
-    {
-      if (grepl("+", term, fixed = TRUE))
-        vpnames <- paste(cond.fac, term,"!",
-                         G.param[[term]][[var]]$model, "(", 
-                         G.param[[term]][[var]]$facnam,")_", 
-                         G.param[[term]][[var]]$levels, sep = "")
-      else
-        vpnames <- paste(cond.fac, term,"!",var,"_", 
-                         G.param[[term]][[var]]$levels, sep = "")
-      D <- G.param[[term]][[var]]$initial[vpnames]
-      D <- sqrt(diag(D, nrow = length(G.param[[term]][[var]]$levels))) 
-      G <- D %*% G %*% D
-    }
+    if (kspecial$cortype == "id")
+      vpname <- paste(cond.fac, term,"!",var,sep = "")
+    else
+      vpname <- paste(cond.fac, term,"!",var,"!var",sep = "")
+    if (!is.na(G.param[[term]][[var]]$initial[vpname]))
+      G <- G.param[[term]][[var]]$initial[vpname] * G
+  }
+  if (kspecial$final == "h")
+  {
+    if (strterm)
+      vpnames <- paste(cond.fac, term,"!",
+                       G.param[[term]][[var]]$model, "(", 
+                       G.param[[term]][[var]]$facnam,")_", 
+                       G.param[[term]][[var]]$levels, sep = "")
+    else
+      vpnames <- paste(cond.fac, term,"!",var,"_", 
+                       G.param[[term]][[var]]$levels, sep = "")
+    D <- G.param[[term]][[var]]$initial[vpnames]
+    D <- sqrt(diag(D, nrow = length(G.param[[term]][[var]]$levels))) 
+    G <- D %*% G %*% D
   }
   return(G)
 }
 
 
 ### Functions to obtain a matrix for one of the asreml variance functions
-G.id <- function(var, term, G.param, cond.fac = "")
+G.id <- function(var, term, G.param, cond.fac = "", strterm = FALSE)
 {
   #Generate identity matrix
   G <- mat.I(length(G.param[[term]][[var]]$levels))
   return(G)
 }
 
-G.ar1 <- function(var, term, G.param, cond.fac = "")
+G.ar1 <- function(var, term, G.param, cond.fac = "", strterm = FALSE)
 {
   #Get the correlation parameter and generate matrix
-  vpname <- paste(cond.fac, term,"!",var,"!cor", sep = "")
+  if (strterm)
+    vpname  <- paste(cond.fac, term,"!",
+                     G.param[[term]][[var]]$model, "(", 
+                     G.param[[term]][[var]]$facnam,")", 
+                     "!cor", sep = "")
+  else
+    vpname <- paste(cond.fac, term,"!",var,"!cor", sep = "")
   G <- mat.ar1(G.param[[term]][[var]]$initial[vpname], 
                length(G.param[[term]][[var]]$levels))
   return(G)
 }
 
-G.ar2 <- function(var, term, G.param, cond.fac = "")
+G.ar2 <- function(var, term, G.param, cond.fac = "", strterm = FALSE)
 {
   #Get the correlation parameter and generate matrix
-  vpnames <- paste(cond.fac, term,"!",var,"!cor", c(1:2), sep = "")
+  if (strterm)
+    vpnames  <- paste(cond.fac, term,"!",
+                      G.param[[term]][[var]]$model, "(", 
+                      G.param[[term]][[var]]$facnam,")", 
+                      "!cor",c(1:2), sep = "")
+  else
+    vpnames <- paste(cond.fac, term,"!",var,"!cor", c(1:2), sep = "")
   G <- mat.ar2(G.param[[term]][[var]]$initial[vpnames], 
                length(G.param[[term]][[var]]$levels))
   return(G)
 }
 
-G.ar3 <- function(var, term, G.param, cond.fac = "")
+G.ar3 <- function(var, term, G.param, cond.fac = "", strterm = FALSE)
 {
   #Get the correlation parameter and generate matrix
-  vpnames <- paste(cond.fac, term,"!",var,"!cor", c(1:3), sep = "")
-  G <- mat.ar2(G.param[[term]][[var]]$initial[vpnames], 
+  if (strterm)
+    vpnames  <- paste(cond.fac, term,"!",
+                      G.param[[term]][[var]]$model, "(", 
+                      G.param[[term]][[var]]$facnam,")", 
+                      "!cor",c(1:3), sep = "")
+  else
+    vpnames <- paste(cond.fac, term,"!",var,"!cor", c(1:3), sep = "")
+  G <- mat.ar3(G.param[[term]][[var]]$initial[vpnames], 
                length(G.param[[term]][[var]]$levels))
   return(G)
 }
 
-G.sar <- function(var, term, G.param, cond.fac = "")
+G.sar <- function(var, term, G.param, cond.fac = "", strterm = FALSE)
 {
   #Get the SAR parameter and generate matrix
-  vpname <- paste(cond.fac, term,"!",var,"!cor", sep = "")
+  if (strterm)
+    vpname  <- paste(cond.fac, term,"!",
+                     G.param[[term]][[var]]$model, "(", 
+                     G.param[[term]][[var]]$facnam,")", 
+                     "!cor", sep = "")
+  else
+    vpname <- paste(cond.fac, term,"!",var,"!cor", sep = "")
   G <- mat.sar(G.param[[term]][[var]]$initial[vpname], 
                length(G.param[[term]][[var]]$levels))
   return(G)
 }
 
-G.sar2 <- function(var, term, G.param, cond.fac = "")
+G.sar2 <- function(var, term, G.param, cond.fac = "", strterm = FALSE)
 {
   #Get the correlation parameter and generate matrix
-  vpnames <- paste(cond.fac, term,"!",var,"!cor", c(1:2), sep = "")
+  if (strterm)
+    vpnames  <- paste(cond.fac, term,"!",
+                      G.param[[term]][[var]]$model, "(", 
+                      G.param[[term]][[var]]$facnam,")", 
+                      "!cor",c(1:3), sep = "")
+  else
+    vpnames <- paste(cond.fac, term,"!",var,"!cor", c(1:2), sep = "")
+  
   G <- mat.sar2(G.param[[term]][[var]]$initial[vpnames], 
                 length(G.param[[term]][[var]]$levels))
   return(G)
 }
 
-G.ma1 <- function(var, term, G.param, cond.fac = "")
+G.ma1 <- function(var, term, G.param, cond.fac = "", strterm = FALSE)
 {
   #Get the SAR parameter and generate matrix
-  vpname <- paste(cond.fac, term,"!",var,"!cor", sep = "")
+  if (strterm)
+    vpname  <- paste(cond.fac, term,"!",
+                     G.param[[term]][[var]]$model, "(", 
+                     G.param[[term]][[var]]$facnam,")", 
+                     "!cor", sep = "")
+  else
+    vpname <- paste(cond.fac, term,"!",var,"!cor", sep = "")
   G <- mat.ma1(G.param[[term]][[var]]$initial[vpname], 
                length(G.param[[term]][[var]]$levels))
   return(G)
 }
 
-G.ma2 <- function(var, term, G.param, cond.fac = "")
+G.ma2 <- function(var, term, G.param, cond.fac = "", strterm = FALSE)
 {
   #Get the correlation parameter and generate matrix
-  vpnames <- paste(cond.fac, term,"!",var,"!cor", c(1:2), sep = "")
+  if (strterm)
+    vpnames  <- paste(cond.fac, term,"!",
+                      G.param[[term]][[var]]$model, "(", 
+                      G.param[[term]][[var]]$facnam,")", 
+                      "!cor",c(1:2), sep = "")
+  else
+    vpnames <- paste(cond.fac, term,"!",var,"!cor", c(1:2), sep = "")
   G <- mat.ma2(G.param[[term]][[var]]$initial[vpnames], 
                length(G.param[[term]][[var]]$levels))
   return(G)
 }
 
-G.arma <- function(var, term, G.param, cond.fac = "")
+G.arma <- function(var, term, G.param, cond.fac = "", strterm = FALSE)
 {
   #Get the correlation parameter and generate matrix
-  vpnames <- paste(cond.fac, term,"!",var,"!cor", c(1:2), sep = "")
+  if (strterm)
+    vpnames  <- paste(cond.fac, term,"!",
+                      G.param[[term]][[var]]$model, "(", 
+                      G.param[[term]][[var]]$facnam,")", 
+                      "!cor",c(1:2), sep = "")
+  else
+    vpnames <- paste(cond.fac, term,"!",var,"!cor", c(1:2), sep = "")
   G <- mat.arma(G.param[[term]][[var]]$initial[vpnames][1], 
                 G.param[[term]][[var]]$initial[vpnames][2], 
                 length(G.param[[term]][[var]]$levels))
   return(G)
 }
 
-G.exp <- function(var, term, G.param, cond.fac = "")
+G.exp <- function(var, term, G.param, cond.fac = "", strterm = FALSE)
 {
   #Get the correlation parameter and generate matrix
-  vpname <- paste(cond.fac, term,"!",var,"!pow", sep = "")
+  if (strterm)
+    vpname  <- paste(cond.fac, term,"!",
+                     G.param[[term]][[var]]$model, "(", 
+                     G.param[[term]][[var]]$facnam,")", 
+                     "!pow", sep = "")
+  else
+    vpname <- paste(cond.fac, term,"!",var,"!pow", sep = "")
   G <- mat.exp(G.param[[term]][[var]]$initial[vpname], 
                as.numeric(G.param[[term]][[var]]$levels))
   return(G)
 }
 
-G.gau <- function(var, term, G.param, cond.fac = "")
+G.gau <- function(var, term, G.param, cond.fac = "", strterm = FALSE)
 {
   #Get the correlation parameter and generate matrix
-  vpname <- paste(cond.fac, term,"!",var,"!pow", sep = "")
+  if (strterm)
+    vpname  <- paste(cond.fac, term,"!",
+                     G.param[[term]][[var]]$model, "(", 
+                     G.param[[term]][[var]]$facnam,")", 
+                     "!pow", sep = "")
+  else
+    vpname <- paste(cond.fac, term,"!",var,"!pow", sep = "")
   G <- mat.gau(G.param[[term]][[var]]$initial[vpname], 
                as.numeric(G.param[[term]][[var]]$levels))
   return(G)
 }
 
-G.cor <- function(var, term, G.param, cond.fac = "")
+G.cor <- function(var, term, G.param, cond.fac = "", strterm = FALSE)
 {
   #Get the correlation parameter and generate matrix
-  vpname <- paste(cond.fac, term,"!",var,"!cor", sep = "")
-  G <- G.param[[term]][[var]]$initial[vpname] * mat.J(length(G.param[[term]][[var]]$levels))
-  diag(G) <- 1 
+  if (strterm)
+    vpname  <- paste(cond.fac, term,"!",
+                     G.param[[term]][[var]]$model, "(", 
+                     G.param[[term]][[var]]$facnam,")", 
+                     "!cor", sep = "")
+  else
+    vpname <- paste(cond.fac, term,"!",var,"!cor", sep = "")
+  G <- mat.cor(G.param[[term]][[var]]$initial[vpname],  length(G.param[[term]][[var]]$levels))
   return(G)
 }
 
-G.corb <- function(var, term, G.param, cond.fac = "")
+G.corb <- function(var, term, G.param, cond.fac = "", strterm = FALSE)
 {
   asr4.2 <- isASReml4_2Loaded(4.2, notloaded.fault = FALSE)
   #Get the correlation parameter and generate matrix
@@ -584,14 +652,20 @@ G.corb <- function(var, term, G.param, cond.fac = "")
     nbands <- table(G.param[[1]][[var]]$con)["U"]
   else
     nbands <- table(G.param[[1]][[var]]$con)["P"]
-  vpnames <- paste(cond.fac, term,"!",var,"!cor", c(1:nbands), sep = "")
+  if (strterm)
+    vpnames  <- paste(cond.fac, term,"!",
+                      G.param[[term]][[var]]$model, "(", 
+                      G.param[[term]][[var]]$facnam,")", 
+                      "!cor",c(1:nbands), sep = "")
+  else
+    vpnames <- paste(cond.fac, term,"!",var,"!cor", c(1:nbands), sep = "")
   G <- mat.banded(c(1,G.param[[term]][[var]]$initial[vpnames]),
                   nrow = length(G.param[[term]][[var]]$levels),
                   ncol = length(G.param[[term]][[var]]$levels))
   return(G)
 }
 
-G.corg <- function(var, term, G.param, cond.fac = "")
+G.corg <- function(var, term, G.param, cond.fac = "", strterm = FALSE)
 {
   #Get the correlation parameter and generate matrix
   levs <- G.param[[term]][[var]]$levels
@@ -601,16 +675,18 @@ G.corg <- function(var, term, G.param, cond.fac = "")
   row <- row[lower.tri(row)]
   col <- matrix(indx$col, nrow = nlev, ncol = nlev, byrow = TRUE)
   col <- col[lower.tri(col)]
-  vpname <- paste(cond.fac, term,"!",var,"!",row,":!",var,"!",col,".cor", sep = "")
-  cor <- G.param[[term]][[var]]$initial[vpname] 
-  G <- diag(0,nrow = nlev)
-  G[lower.tri(G, diag = FALSE)] <- cor
-  G <- G +t(G)
-  diag(G) <- 1 
-  return(G)
+  if (strterm)
+    vpname  <- paste(cond.fac, term,
+                     "!", G.param[[term]][[var]]$model, "(", G.param[[term]][[var]]$facnam,")!", row, ":",
+                     "!", G.param[[term]][[var]]$model, "(", G.param[[term]][[var]]$facnam,")!", col, 
+                     ".cor", sep = "")
+  else
+    vpname <- paste(cond.fac, term,"!",var,"!",row,":!",var,"!",col,".cor", sep = "")
+  corg <- mat.corg(G.param[[term]][[var]]$initial[vpname], nlev)
+  return(corg)
 }
 
-G.us <- function(var, term, G.param, cond.fac = "")
+G.us <- function(var, term, G.param, cond.fac = "", strterm = FALSE)
 {
   el <- G.param[[term]][[var]]$initial
   G <- mat.I(length(G.param[[term]][[var]]$levels))
@@ -621,7 +697,7 @@ G.us <- function(var, term, G.param, cond.fac = "")
   return(G)
 }
 
-G.fa <- function(var, term, G.param, cond.fac = "")
+G.fa <- function(var, term, G.param, cond.fac = "", strterm = FALSE)
 {
   #Get loadings and specific variances
   est <- G.param[[term]][[var]]$initial
@@ -637,7 +713,7 @@ G.fa <- function(var, term, G.param, cond.fac = "")
   return(G)
 }
 
-G.rr <- function(var, term, G.param, cond.fac = "")
+G.rr <- function(var, term, G.param, cond.fac = "", strterm = FALSE)
 {
   #Get loadings and specific variances
   est <- G.param[[term]][[var]]$initial
@@ -652,7 +728,7 @@ G.rr <- function(var, term, G.param, cond.fac = "")
   return(G)
 }
 
-G.spl <- function(var, term, G.param, cond.fac = "")
+G.spl <- function(var, term, G.param, cond.fac = "", strterm = FALSE)
 {
   #Assuming that the parameterization in ASReml gives independent effects
   G <- mat.I(length(G.param[[term]][[var]]$levels))

@@ -9,7 +9,7 @@ test_that("Orange_estimateV_asreml42", {
   # Orange tree data from asreml examples
   data(orange)
   
-  ##Indepedent slope and intercept - with str
+  ##Independent slope and intercept - with str
   asreml.options(design = TRUE)
   asreml.obj <- asreml(circ ~x, 
                        random= ~ str( ~Tree/x, ~diag(2):id(5)) + spl(x) + spl(x):Tree,
@@ -24,7 +24,13 @@ test_that("Orange_estimateV_asreml42", {
     t(as.matrix(asreml.obj$design[,18:42]))
   V.g <- asreml.obj$sigma2 * (V.g + mat.I(nrow(orange)))
   V <- estimateV(asreml.obj)
-  testthat::expect_true(all(abs(V - V.g) < 1e-06))
+  testthat::expect_true(all.equal(as.matrix(V.g), V))
+  R2.adj <-R2adj(asreml.obj, include.which.random = ~ .)
+  testthat::expect_true(all(abs(R2.adj - 99.87164) < 1e-03))
+  R2.adj <-R2adj(asreml.obj, include.which.fixed = NULL, 
+                 include.which.random = ~ str( ~Tree/x, ~diag(2):id(5)))
+  testthat::expect_true(all(abs(R2.adj - 11.89991) < 1e-03))
+  
   
   asreml.obj <- asreml(circ ~x, 
                        random= ~ str( ~Tree/x, ~idh(2):id(Tree)) + spl(x) + spl(x):Tree,
@@ -33,6 +39,11 @@ test_that("Orange_estimateV_asreml42", {
   summary(asreml.obj)$varcomp
   V <- estimateV(asreml.obj)
   testthat::expect_true(all(abs(V - V.g) < 1e-06))
+  R2.adj <-R2adj(asreml.obj, include.which.random = ~ .)
+  testthat::expect_true(all(abs(R2.adj - 99.87164) < 1e-03))
+  R2.adj <-R2adj(asreml.obj, include.which.fixed = NULL, 
+                 include.which.random = ~ str( ~Tree/x, ~idh(2):id(Tree)))
+  testthat::expect_true(all(abs(R2.adj - 11.89991) < 1e-03))
   
   #Add dev
   asreml.obj <- asreml(circ ~ x,
@@ -53,8 +64,12 @@ test_that("Orange_estimateV_asreml42", {
   V.g <- V.g + asreml.obj$vparameters["dev(x)"] * asreml.obj$design[,colnos] %*%
     t(as.matrix(asreml.obj$design[,colnos]))
   V.g <- asreml.obj$sigma2 * (V.g + mat.I(nrow(orange)))
-  V <- estimateV(asreml.obj)
+  testthat::expect_warning(
+    V <- estimateV(asreml.obj),
+    regexp = "spl\\(x\\) not included in V because it is bound")
   testthat::expect_true(all(abs(V - V.g) < 1e-06))
+  R2.adj <-R2adj(asreml.obj, include.which.random = ~ .)
+  testthat::expect_true(all(abs(R2.adj - 99.81559) < 1e-03))
   
   ##Correlated slope and intercept + fixed Season
   asreml.obj <- asreml(circ ~ x + Season,
@@ -76,8 +91,15 @@ test_that("Orange_estimateV_asreml42", {
   V.g <- V.g + asreml.obj$vparameters["spl(x):Tree"] * asreml.obj$design[,colnos] %*%
     t(as.matrix(asreml.obj$design[,colnos]))
   V.g <- asreml.obj$sigma2 * (V.g + mat.I(nrow(orange)))
-  V <- estimateV(asreml.obj)
+  testthat::expect_warning(
+    V <- estimateV(asreml.obj),
+    regexp = "dev\\(x\\) not included in V because it is bound")
   testthat::expect_true(all(abs(V - V.g) < 1e-06))
+  R2.adj <- R2adj(asreml.obj, include.which.random = ~ .)
+  testthat::expect_true(all(abs(R2.adj - 99.8295) < 1e-03))
+  R2.adj <-R2adj(asreml.obj, include.which.fixed = NULL, 
+                 include.which.random = ~ str( ~Tree/x, ~us(2,init=c(5.0,-0.01,0.0001)):id(5)))
+  testthat::expect_true(all(abs(R2.adj - 14.91839) < 1e-03))
   
   #random slope
   asreml.obj <- asreml(circ ~x, 
@@ -92,8 +114,15 @@ test_that("Orange_estimateV_asreml42", {
   V.g <- V.g + asreml.obj$vparameters["dev(x)"] * asreml.obj$design[,18:24] %*%
     t(as.matrix(asreml.obj$design[,18:24]))
   V.g <- asreml.obj$sigma2 * (V.g + mat.I(nrow(orange)))
-  testthat::expect_warning(V <- estimateV(asreml.obj))
+  testthat::expect_warning(
+    V <- estimateV(asreml.obj),
+    regexp = "spl\\(x\\) not included in V because it is bound")
   testthat::expect_true(all(abs(V - V.g) < 1e-06))
+  R2.adj <-R2adj(asreml.obj, include.which.random = ~ .)
+  testthat::expect_true(all(abs(R2.adj - 99.34599) < 1e-03))
+  R2.adj <-R2adj(asreml.obj, include.which.fixed = NULL, 
+                 include.which.random = ~ Tree/x)
+  testthat::expect_true(all(abs(R2.adj - 16.05897) < 1e-03))
   
 
   #Overall spline and deviations based on factor - fails because cannot have a factor in dev

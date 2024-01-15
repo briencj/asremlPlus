@@ -96,6 +96,9 @@ ratioTransform.alldiffs <- function(alldiffs.obj, ratio.factor,
     stop(validalldifs)
   alldiffs.obj <- renameDiffsAttr(alldiffs.obj)
   
+  ## Check have the vcov component
+  if (all(is.null(alldiffs.obj$vcov)))
+    stop("The alldiffs.obj must have a non-null vcov component - use Vmatrix = TRUE when forming alddifs.obj")
   
   meth.options <- c("Fieller")
   method.opt <- meth.options[check.arg.values(method, meth.options)]

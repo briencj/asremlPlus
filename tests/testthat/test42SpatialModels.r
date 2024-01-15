@@ -996,8 +996,8 @@ test_that("Wheat76_corr_models_asreml42", {
                                   c(1720.891, 1667.540, 1643.467)) < 0.10))
 })  
 
-cat("#### Test for barley03 spatial models with asreml42\n")
-test_that("barely_spatial_models_asreml42", {
+cat("#### Test for spatial models with asreml42\n")
+test_that("spatial_models_barley_asreml42", {
   skip_if_not_installed("asreml")
   skip_on_cran()
   library(asreml)
@@ -1048,6 +1048,24 @@ test_that("barely_spatial_models_asreml42", {
   (infoEach <- do.call(rbind, infoEach))
   testthat::expect_true(all.equal(infoEach$AIC, c(-230.4462, -191.8063, -226.5424, -230.1942), 
                                   tolerance = 1e-02))
+  
+  #tests of R2adj
+  R2adj <- sapply(spatialEach.asrts, function(asrt) R2adj(asrt$asreml.obj, 
+                                                          include.which.fixed = ~ gen,
+                                                          orthogonalize = "eigen"))
+  testthat::expect_true(all(abs(R2adj - c(33.42414, 18.12542, 16.25089, 29.30381)) < 0.001))
+  R2adj.corr <- R2adj(spatialEach.asrts[["corr"]]$asreml.obj, 
+                      include.which.fixed = ~ ., include.which.random = ~ .)
+  testthat::expect_true(abs(R2adj.corr - 79.27872) < 1e-03)
+  R2adj.TPNCSS <- R2adj(spatialEach.asrts[["TPNCSS"]]$asreml.obj, 
+                        include.which.fixed = ~ ., include.which.random = ~ .)
+  testthat::expect_true(abs(R2adj.TPNCSS - 85.48129) < 1e-03)
+  R2adj.TPPCS <- R2adj(spatialEach.asrts[["TPPCS"]]$asreml.obj, 
+                       include.which.fixed = ~ ., include.which.random = ~ .)
+  testthat::expect_true(abs(R2adj.TPPCS - 87.78192) < 1e-03)
+  R2adj.TPP1LS <- R2adj(spatialEach.asrts[["TPP1LS"]]$asreml.obj, 
+                        include.which.fixed = ~ ., include.which.random = ~ .)
+  testthat::expect_true(abs(R2adj.TPP1LS - 90.82785) < 1e-03)
 })
 
 cat("#### Test for nonfitting spatial models with asreml42\n")

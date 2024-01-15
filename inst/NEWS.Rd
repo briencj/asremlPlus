@@ -1,5 +1,15 @@
 \name{news}
 \title{News for Package asremlPlus}
+\section{asremlPlus Version 4.4.25 (2024-01-15}{
+  \itemize{
+  \item Add an error for a \code{NULL} \code{vcov} component in the \code{alldiffs.obj} supplied to the ratioTransform.alldiffs function.
+  \item Add \code{printPlot} argument to plotPredictions.data.frame and change the function to return the plot.
+  \item Add function R2adj.asreml to calculate an adjusted coefficient of determination for linear mixed models.
+  \item Fixed bugs in estimateV for \code{asr_str} terms with non-diagonal variance structures. 
+  \item Rectify a problem in extracting the correct columns of the design matrix for some terms that affected estimateV.
+  \item Update the vignettes.
+  \item Add link to GitHub issues page for BugReports in DESCRIPTION file.
+}}
 \section{asremlPlus Version 4.4.24 (2023-12-20}{
   \itemize{
   \item Fix a bug in plotLSDerrors so that the correct errors are now plotted.

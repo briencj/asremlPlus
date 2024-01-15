@@ -1,6 +1,6 @@
 Package: asremlPlus
-Version: 4.4.24
-Date: 2023-12-20
+Version: 4.4.25
+Date: 2023-01-15
 Title: Augments 'ASReml-R' in Fitting Mixed Models and Packages
         Generally in Exploring Prediction Differences
 Authors@R: person("Chris","Brien", role = c("aut","cre"),
@@ -34,4 +34,5 @@ Description: Assists in automating the selection of terms to include in mixed mo
   The package 'asremPlus' can also be installed from <http://chris.brien.name/rpackages/>.
 License: MIT + file LICENSE
 URL: http://chris.brien.name
+BugReports: https://github.com/briencj/asremlPlus/issues
 NeedsCompilation: no

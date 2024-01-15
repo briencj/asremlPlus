@@ -3782,7 +3782,8 @@ findboundary.asreml <- function(asreml.obj, asr4, asr4.2)
                                          error.intervals = "Confidence", 
                                          interval.annotate = TRUE, 
                                          titles = NULL, y.title = NULL, 
-                                         filestem = NULL, ggplotFuncs = NULL, ...)
+                                         filestem = NULL, printPlot = TRUE, 
+                                         ggplotFuncs = NULL, ...)
   #a function to plot asreml predictions and associated statistics
 { 
   
@@ -4270,7 +4271,7 @@ findboundary.asreml <- function(asreml.obj, asr4, asr4.2)
     savePlot(filename = filename, type = "png")
     cat("\n#### Plot saved in ", filename,"\n")
   }
-  invisible()
+  invisible(pred.plot)
 }
 
 "predictPresent.asreml" <- function(asreml.obj, terms, 

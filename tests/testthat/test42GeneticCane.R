@@ -14,7 +14,7 @@ test_that("HEB25_estimateV_asreml42", {
   test.specials <- c( "ar1", "ar2", "ar3", "sar","sar2",
                       "ma1", "ma2", "arma", "exp", "gau", 
                       "cor")
-  vpar.vals <- c(-1.274424e-01, 0.0669068, -2.265849e-01, -1.238088e-01, -1.57972e-01, 
+  vpar.vals <- c(-0.1295442, 0.0669068, -2.265849e-01, -1.238088e-01, -1.57972e-01, 
                  1.200424e-01, -4.0854110e-02, 0, 3.116814e-08,  2.721824e-08, 4.134244e-02)
   # vpar.vals <- c(-1.278067e-01, 6.676302e-02, -2.265831e-01, -1.242148e-01, -1.580255e-01, 
   #                1.186700e-01, -4.063130e-02, 0, 1.937006e-07, 1.549264e-07, 4.164659e-02 )
@@ -41,13 +41,42 @@ test_that("HEB25_estimateV_asreml42", {
       vpar.vals[func]) > 1e-03)
      cat("Difference is ", abs(asreml.obj$vparameters[length(asreml.obj$vparameters)] - 
                                  vpar.vals[func]), "\n\n" )
-        testthat::expect_true(abs(asreml.obj$vparameters[length(asreml.obj$vparameters)] - 
+    testthat::expect_true(abs(asreml.obj$vparameters[length(asreml.obj$vparameters)] - 
                                 vpar.vals[func]) < 1e-02)
     V <- estimateV(asreml.obj)
     cat("\n",func,": ", V[2, 1], " and ",V.el[func],"\n\n")
     testthat::expect_true(abs(V[2, 1] - V.el[func]) < 0.5)
   }
   
+  ### Model with genetic variance only - test R estimated using estimateV
+  asreml::asreml.options(extra = 5, ai.sing = TRUE, fail = "soft")
+  models <- list(ar1 = mat.ar1, ar2 = mat.ar2, ar3 = mat.ar3, cor = mat.cor,
+                 sar = mat.sar, sar2 = mat.sar2, ma1 = mat.ma1, ma2 = mat.ma2, 
+                 exp = mat.exp, gau = mat.gau)
+  for (func in names(models))
+  {
+    ranform <- as.formula(paste("~ ar1(Col):", func, "(Row)", sep = ""))
+    asreml.obj <- asreml(tch ~ Control/Check, 
+                         random = ~ Col + Row + New,
+                         residual = ranform, 
+                         data=site2, maxit = 30,
+                         na.action=na.method(y="include", x="include"))
+    colcorr <- asreml.obj$vparameters[grepl("Col!cor", names(asreml.obj$vparameters))]
+    
+    if (func %in% c("exp", "gau"))
+    { 
+      rowcorrs <- asreml.obj$vparameters[grepl("Row!pow", names(asreml.obj$vparameters))]
+      R.calc <- asreml.obj$sigma2 * kronecker(mat.ar1(colcorr, 10), models[[func]](rowcorrs, c(1:24)))
+    }
+    else
+    { 
+      rowcorrs <- asreml.obj$vparameters[grepl("Row!cor", names(asreml.obj$vparameters))]
+      R.calc <- asreml.obj$sigma2 * kronecker(mat.ar1(colcorr, 10), models[[func]](rowcorrs, 24))
+    }
+    V <- estimateV(asreml.obj, which.matrix = "R")
+    testthat::expect_true(all.equal(R.calc, V))
+  }
+
   ### This had a bug, but seems to be working - it is now converging - now it is not
   testthat::expect_warning(
     asreml.obj <- asreml(tch ~ Control/Check, 
@@ -56,10 +85,42 @@ test_that("HEB25_estimateV_asreml42", {
                          data=site2, 
                          na.action=na.method(y="include", x="include")),
     regexp = "Some components changed by more than 1% on the last iteration")
-  testthat::expect_false(asreml.obj$converge)
+  testthat::expect_true(asreml.obj$converge)
   testthat::expect_equal(nrow(summary(asreml.obj)$varcomp), 8)
+  colcorr <- asreml.obj$vparameters[grepl("Col!cor", names(asreml.obj$vparameters))]
+  rowcorrs <- asreml.obj$vparameters[grepl("Row!cor", names(asreml.obj$vparameters))]
+  R.calc <- asreml.obj$sigma2 * kronecker(mat.ar1(colcorr, 10), mat.banded(c(1, rowcorrs), ncol = 24, nrow = 24))
+  V <- estimateV(asreml.obj, which.matrix = "R")
+  testthat::expect_true(all.equal(R.calc, V))
   
-  
+  ### Random model with New + cor - test G estimated using estimateV
+  for (func in names(models))
+  {
+    ranform <- as.formula(paste("~ New + ar1(Col):", func, "(Row)", sep = ""))
+    asreml.obj <- asreml(tch ~ Control/Check, 
+                         random = ranform, 
+                         data=site2, maxit = 30,
+                         na.action=na.method(y="include", x="include"))
+    colcorr <- asreml.obj$vparameters[grepl("Col!cor", names(asreml.obj$vparameters))]
+    
+    if (func %in% c("exp", "gau"))
+    { 
+      rowcorrs <- asreml.obj$vparameters[grepl("Row!pow", names(asreml.obj$vparameters))]
+      G.calc <- asreml.obj$vparameters["Col:Row"] * kronecker(mat.ar1(colcorr, 10), models[[func]](rowcorrs, c(1:24)))
+    }
+    else
+    { 
+      rowcorrs <- asreml.obj$vparameters[grepl("Row!cor", names(asreml.obj$vparameters))]
+      G.calc <- asreml.obj$vparameters["Col:Row"] * kronecker(mat.ar1(colcorr, 10), models[[func]](rowcorrs, 24))
+    }
+    Z.new <- as.matrix(asreml.obj$design[,grepl("New", colnames(asreml.obj$design))])
+    D <- diag(sqrt(asreml.obj$vparameters["New"]), nrow = 240, ncol = 240)
+    G.calc <- G.calc + D %*% (Z.new %*% t(Z.new)) %*% D
+    G.calc <- asreml.obj$sigma2 * G.calc
+    V <- estimateV(asreml.obj, which.matrix = "G")
+    dimnames(V) <- NULL
+    testthat::expect_true(all.equal(G.calc, V))
+  }
   
   ### Model with genetic competition without pedigree
   asreml.options(design = TRUE)

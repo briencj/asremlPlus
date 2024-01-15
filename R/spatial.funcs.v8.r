@@ -463,20 +463,6 @@ chooseSpatialModelOnIC.asrtests <- function(asrtests.obj, trySpatial = "all",
               best.spatial.IC = spatial.comp[min.asrt]))
 }
 
-getVpars <- function(asreml.obj, asr4.2)
-{
-  if (asr4.2)
-  { 
-    vpc <- asreml.obj$vparameters.con
-    vpt <- asreml.obj$vparameters.type
-  } else
-  {
-    vpc <- vpc.char(asreml.obj)
-    vpt <- vpt.char(asreml.obj)
-  }
-  return(list(vpc = vpc, vpt = vpt))
-}
-
 #Function to identify residual and correlation model terms that are currently fitted
 getSectionVpars <- function( asreml.obj, sections, stub, corr.facs, which = c("res", "ran"), 
                              asr4.2)

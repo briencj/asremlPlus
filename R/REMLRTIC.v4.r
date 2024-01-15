@@ -411,3 +411,151 @@ infoCriteria.asreml <- function(object, DF = NULL,
   return(ic)
 }
 
+"R2adj.asreml" <- function(asreml.obj, 
+                           include.which.fixed = ~ ., orthogonalize = "hybrid", 
+                           include.which.random = NULL, 
+                           bound.exclusions = c("F","B","S","C"), ...)
+{
+  asr4 <- isASRemlVersionLoaded(4, notloaded.fault = FALSE)
+  if (!asr4)
+    stop("R2adj.asreml requires asreml 4.x or later.")
+  asr4.2 <- isASReml4_2Loaded(4.2, notloaded.fault = FALSE)
+
+  #Check that have a valid object of class asreml
+  validasr <- validAsreml(asreml.obj)  
+  if (is.character(validasr))
+    stop(validasr)
+  
+  #Check whether Gaussian or other family
+  call.args <- rlang::call_match(asreml.obj$call, fn = asreml::asreml,  defaults = TRUE)
+  #Check which of a Gaussian, GLM or other distribution/model
+  if ("asr_gaussian" != rlang::call_name(call.args$family))
+    stop("R2adj.asreml has only been implemented for linear mixed models that assume normality")
+  
+  #Check that neither include.which.random nor include.which.fixed is NULL
+  if (is.null(include.which.random) && is.null(include.which.fixed))
+    stop("Cannot have both include.which.random and include.which.fixed set to NULL")
+  
+  options <- c("eigenmethods", "hybrid")
+  orthogonalize <- options[check.arg.values(orthogonalize, options)]
+
+  #Check whether have the design matrix
+  if (is.null(asreml.obj$design))
+  {
+    asreml::asreml.options(design = TRUE)
+    asreml.obj <- asreml::update.asreml(asreml.obj)
+  }
+  
+  #Estimate the V for the fitted model
+  V <- estimateV(asreml.obj)
+  n <- nrow(V)
+  ASV <- sum(diag((V - (matrix(rep(1, n*n), nrow = n)/n) %*% V))) / (n-1)
+  
+  #Get the design matrix and effects for the fitted fixed model
+  beta <- asreml.obj$coefficients$fixed
+  colnames <- rownames(beta)
+  X <- as.matrix(asreml.obj$design[, colnames])
+  fit <- X %*% beta
+  Pfit <- fit - mean(fit)
+  var.beta <- t(X) %*% dae::mat.ginv(V) %*% X
+  var.beta <- dae::mat.ginv(var.beta)
+  PX <- X - (matrix(rep(1, n*n), nrow = n) /n) %*% X
+  ASSB <- (t(Pfit) %*% Pfit - sum(diag(t(PX) %*% PX %*% var.beta))) / (n-1)
+  
+  #Get the contribution of the specified fixed terms
+  ASSBfix <- 0
+  if (!all(is.null(include.which.fixed)))
+  {
+    if (!inherits(include.which.fixed, what = "formula"))
+      stop("include.which.fixed must be a formula")
+    if (include.which.fixed == ~ .)
+      ASSBfix <- ASSB
+    else
+    {
+      fixterms <- attr(asreml.obj$coefficients$fixed, which = "terms")$tname[-1]
+      incl.fixterms <- getTerms.formula(include.which.fixed)
+      if (!all(is.null(incl.fixterms))) #include.which.fixed is not null
+        incl.fixterms <- sapply(incl.fixterms, 
+                                function(term, fixterms)
+                                {
+                                  term <- fixterms[findterm(term, fixterms)]
+                                  if (length(term) == 0) term <- NA
+                                  return(term)
+                                }, fixterms = fixterms)
+        if (any(is.na(match(incl.fixterms, fixterms))))
+          stop(paste("The following terms are not amongst the fixed terms in the fixed formula: ", 
+                     paste(incl.fixterms[is.na(match(incl.fixterms, fixterms))], 
+                           collapse = ", "), sep = ""))
+      if (length(setdiff(fixterms, incl.fixterms)) == 0)
+        ASSBfix <- ASSB
+      else
+      {
+        #use dae:pstructure to get the set of the fixed-term orthogonal projection operators 
+        dat <- asreml.obj$call$data
+        if (is.symbol(dat))
+          dat <- eval(dat)
+        Xs <- lapply(fixterms, getTermDesignMatrix, asreml.obj = asreml.obj)
+        names(Xs) <- fixterms
+        Q.G = projector(matrix(1, nrow=n, ncol=n)/n)
+        Qs <- lapply(Xs, function(X, Q.G)
+        {
+          X <- as.matrix(X)
+          X <- cbind(matrix(1, nrow = nrow(X), ncol = 1), X)
+          Q <- X %*% ginv(t(X) %*% X) %*% t(X)
+          Q <- projector(Q - Q.G)
+          return(Q)
+        }, Q.G = Q.G)
+        #Othogonalize the Qs
+        Qs <- dae::porthogonalize(projectors = Qs, formula = NULL, grandMean = FALSE, 
+                                  orthogonalize = orthogonalize, labels = "terms", 
+                                  marginality = NULL, check.marginality = FALSE, 
+                                  omit.projectors = FALSE, 
+                                  which.criteria = c("aefficiency","eefficiency","order"), 
+                                  aliasing.print = FALSE)$Q
+        Q <- matrix(0, nrow = n, ncol = n)
+        for (term in incl.fixterms)
+          Q <- Q + Qs[[term]]
+        QX <- Q %*% X
+        Qfit <- Q %*% fit
+        ASSBfix <- (t(Qfit) %*% Qfit - sum(diag(t(QX) %*% QX %*% var.beta))) / (n-1)
+      }
+    }
+  }
+  
+  #Get the contribution of the specified random terms
+  ASVran <- 0
+  if (!is.null(include.which.random))
+  {
+    if (!inherits(include.which.random, what = "formula"))
+      stop("include.which.random must be a formula")
+    if (include.which.random == ~ .)
+      G <- estimateV(asreml.obj, which.matrix = "G")
+    else
+    {
+      G.param <- asreml.obj$G.param
+      ranterms <- names(G.param)
+      incl.ranterms <- getTerms.formula(include.which.random)
+      incl.ranterms <- convTerms2Vparnames(incl.ranterms)
+      incl.ranterms <- lapply(incl.ranterms, findterm, termlist = ranterms)
+      incl.ranterms <- unlist(sapply(incl.ranterms, function(term) names(term)))
+      if (!all(is.null(incl.ranterms)))
+        if (any(is.na(match(incl.ranterms, ranterms))))
+          stop(paste("The following terms are not amongst the variance parameters: ", 
+                     paste(incl.ranterms[is.na(match(incl.ranterms, ranterms))], 
+                           collapse = ", "), sep = ""))
+      
+      ignore.terms <- setdiff(ranterms, incl.ranterms)
+      if (length(ignore.terms) == 0)
+        ignore.terms = NULL
+      G <- estimateV(asreml.obj, which.matrix = "G", ignore.terms = ignore.terms)
+    }
+    #Calculate ASVran
+    ASVran <- sum(diag(G -  mean(G))) / (n-1)
+  }
+  
+  #Calculate R2adj
+  R2.adj <-  as.vector((ASSBfix + ASVran) / (ASSB + ASV) * 100)
+  
+  return(R2.adj)
+}
+

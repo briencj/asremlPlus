@@ -18,7 +18,7 @@
                 graphics.device = NULL,
                 error.intervals = "Confidence", interval.annotate = TRUE,
                 titles = NULL, y.title = NULL, 
-                filestem = NULL, ggplotFuncs = NULL, ...)
+                filestem = NULL, printPlot = TRUE, ggplotFuncs = NULL, ...)
 }
 \arguments{
  \item{data}{A \code{\link{predictions.frame}}, or \code{data.frame}, containing the 
@@ -101,6 +101,7 @@
                in output (e.g. tables and graphs). Here they will be used for 
               axis labels for nonresponse variables. For response variable labels 
               see \code{y.title}.}
+ \item{y.title}{The title to be displayed on the y axis of any plot.} 
  \item{filestem}{A character sting giving the beginning of the name of the file in which to 
               save the plot. If \code{filestem = NULL}, the plot is not saved. The remainder 
               of the file name will be generated automatically and consists of the 
@@ -108,7 +109,8 @@
               \code{Bar} or \code{Line} and, if \code{error.intervals} 
               is not \code{"none"}, one of \code{SE}, \code{CI} or \code{LSI}. The
               file will be saved as a `png' file in the current work directory.}
- \item{y.title}{The title to be displayed on the y axis of any plot.} 
+ \item{printPlot}{A \code{logical} indicating whether or not the a plot is to be printed. This would 
+                be used when just the returned \code{ggplot} object is required.}
  \item{ggplotFuncs}{A \code{\link{list}}, each element of which contains the 
                 results of evaluating a \code{\link{ggplot}} function. 
                 It is created by calling the \code{\link{list}} function with 
@@ -116,7 +118,7 @@
                 These functions are applied in creating the \code{ggplot} object for plotting.}
  \item{\dots}{further arguments passed to \code{ggplot}.}
 }
-\value{no values are returned.}
+\value{An object of class "\link{ggplot}", which can be plotted using \code{print} or otherwise manipulated.}
 
 \author{Chris Brien}
 \seealso{\code{\link{allDifferences.data.frame}}, \code{\link{predictPresent.asreml}}, 

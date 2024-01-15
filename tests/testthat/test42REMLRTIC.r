@@ -365,4 +365,53 @@ test_that("Formulae_wheat94_asreml42", {
   
 })
 
+cat("#### Test for R2adj.asreml on Oats with asreml42\n")
+test_that("R2adj_asreml42", {
+  skip_if_not_installed("asreml")
+  skip_on_cran()
+  library(dae)
+  library(asreml)
+  library(asremlPlus)
+  data(Oats.dat)
   
+  #Test a model with no random terms
+  m0.asr <- asreml(Yield ~ Nitrogen*Variety, 
+                   data=Oats.dat)
+  R2.adj <- R2adj.asreml(m0.asr)
+  wald.tab <- wald.asreml(m0.asr)
+  summary(tab <- aov(Yield ~ Nitrogen*Variety, 
+                     data=Oats.dat))
+  treatSSqs <- wald.tab[grepl("Nitrogen" ,rownames(wald.tab)) | grepl("Variety" ,rownames(wald.tab)), "Sum of Sq"]
+  treatSSq <- sum(treatSSqs)
+  totalSSq <- 71 * var(Oats.dat$Yield)
+  R2 <- treatSSq/totalSSq*100
+  R2adj.calc <- (1 - ((1-(R2/100))*(71/(72-12))))*100
+  R2.adj <- R2adj(m0.asr)
+  testthat::expect_true(abs(R2.adj - R2adj.calc) < 1e-05)
+  R2.adj.N <- R2adj(m0.asr, include.which.fixed = ~ Nitrogen)
+  R2.adj.V <- R2adj(m0.asr, include.which.fixed = ~ Variety)
+  R2.adj.NV <- R2adj(m0.asr, include.which.fixed = ~ Nitrogen:Variety)
+  #Check that sum of R2s for the individual fixed terms equal the overall R2
+  testthat::expect_true(abs(R2.adj - (R2.adj.N + R2.adj.V + R2.adj.NV)) < 1e-05)
+  #Test two terms
+  R2.adj.N_V <- R2adj(m0.asr, include.which.fixed = ~ Nitrogen + Variety)
+  testthat::expect_true(abs(R2.adj.N_V - (R2.adj.N + R2.adj.V)) < 1e-05)
+  
+  #Trying to calculate the adjusted R2 manually - not far off
+  R2adj.calc.N <- (1 - ((1-(treatSSqs[1]/(totalSSq)))*(71/(72-3))))*100
+  R2adj.calc.V <- (1 - ((1-(treatSSqs[2]/(totalSSq)))*(71/(72-2))))*100
+  R2adj.calc.NV <- (1 - ((1-(treatSSqs[3]/(totalSSq)))*(71/(72-6))))*100
+  (R2adj.calc.N + R2adj.calc.V + R2adj.calc.NV)
+  
+  #Test a model with random terms
+  m1.asr <- asreml(Yield ~ Nitrogen*Variety, 
+                   random=~Blocks/Wplots,
+                   data=Oats.dat)
+  R2.adj.fix <- R2adj(m1.asr)
+  testthat::expect_true(abs(R2.adj.fix - 37.18736) < 1e-02)
+  R2.adj.ran <- R2adj(m1.asr, include.which.fixed = NULL, include.which.random = ~ .)
+  testthat::expect_true(abs(R2.adj.ran - 38.62742) < 1e-02)
+  R2.adj <- R2adj(m1.asr, include.which.random = ~ .)
+  testthat::expect_true(abs(R2.adj - 75.81478) < 1e-03)
+  testthat::expect_true(abs(R2.adj - (R2.adj.fix + R2.adj.ran)) < 1e-05)
+})

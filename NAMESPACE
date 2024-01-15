@@ -107,6 +107,8 @@ export(addBacktransforms,
        print.wald.tab, 
        printFormulae,
        printFormulae.asreml,
+       R2adj,
+       R2adj.asreml,
        ratioTransform,
        ratioTransform.alldiffs,
        recalcLSD, 
@@ -226,6 +228,7 @@ S3method(print, wald.tab)
 S3method(printFormulae, asreml)
 S3method(pairdiffsTransform, alldiffs)
 S3method(pickLSDstatistics, alldiffs)
+S3method(R2adj, asreml)
 S3method(ratioTransform, alldiffs)
 S3method(recalcWaldTab, asrtests)
 S3method(REMLRT, asreml) 

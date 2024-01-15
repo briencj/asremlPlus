@@ -42,9 +42,25 @@ test_that("MET_estimateV_asreml42", {
     V.g <- V.g + asreml.obj$vparameters[term] * (design[, cols] %*% 
                                                    t(as.matrix(design[, cols])))
   }
-  V.g <- asreml.obj$sigma2 * (V.g + mat.I(n))
+  V.g <- as.matrix(asreml.obj$sigma2 * (V.g + mat.I(n)))
   Vat <- estimateV(asreml.obj)
-  testthat::expect_true(all(abs(Vat - V.g) < 1e-06))
+  testthat::expect_true(all.equal(Vat, V.g))
+  R2.adj <- R2adj(asreml.obj)
+  testthat::expect_true(all(abs(R2.adj - 86.26097) < 1e-04))
+  set.daeTolerance(1e-04, 1e-04)
+  R2.adj <- R2adj(asreml.obj, orthogonalize = "eigenmethods", 
+                  include.which.fixed = as.formula(paste("~", 
+                                                         paste0("at(expt, '", levels(comb.dat$expt)[1:5], 
+                                                                "'):rep", collapse = " + "))))
+  testthat::expect_true(all(abs(R2.adj - 50.50252) < 1e-04))
+  R2.adj <- R2adj(asreml.obj, include.which.fixed = NULL, 
+                  include.which.random = ~ at(expt, 'tcnue10'):dev(vcol))
+  testthat::expect_true(all(abs(R2.adj - 0.7028481) < 1e-04))
+  R2.adj <- R2adj(asreml.obj, include.which.fixed = NULL, 
+                  include.which.random = ~ at(expt, 'tcnue10'):dev(vcol) + 
+                    at(expt, 'rsnue11'):dev(vcol) + at(expt, 'tarlee13'):dev(vcol))
+  testthat::expect_true(all(abs(R2.adj - 1.019012) < 1e-04))
+  
   
   #Test fa
   asreml.obj <-asreml(fixed = GY.tha ~  + at(expt, c(1:5)):rep + at(expt, c(1)):vrow + 

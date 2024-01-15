@@ -269,3 +269,181 @@ test_that("Wheat_estimateV_asreml42", {
   
 })
 
+cat("#### Test estimateV str for orange with asreml42\n")
+test_that("Orange_estimateV_str_asreml42", {
+  skip_if_not_installed("asreml")
+  skip_on_cran()
+  library(dae)
+  library(asreml)
+  library(asremlPlus)
+  # Orange tree data from asreml examples
+  data(orange)
+  
+  orange <- within(orange, 
+                   {
+                     x2 <- x^2
+                     cx <- x - mean(unique(2))
+                     cx2 <- cx^2
+                   })
+  asreml.options(design = TRUE)
+  asreml::asreml.options(extra = 5, ai.sing = TRUE, fail = "soft")
+  
+  ##Independent quadratic terms - with diag
+  asreml.obj <- asreml(circ ~x, 
+                       random= ~ str( ~Tree/(x + x2), ~diag(3):id(5)),
+                       data = orange, maxit = 30)
+  (asreml.obj$vparameters)
+  
+  G.g <- kronecker(diag(asreml.obj$vparameters[1:3]), mat.I(5))
+  Z <- as.matrix(asreml.obj$design[,3:17] )
+  V.g <- asreml.obj$sigma2 *(Z %*% G.g %*% t(Z))
+  G <- estimateV(asreml.obj, which.matrix = "G")
+  testthat::expect_true(all(abs(G - V.g) < 1e-06))
+  
+  #idh
+  asreml.obj <- asreml(circ ~x, 
+                       random= ~ str( ~Tree/(x + x2), ~idh(3):id(Tree)),
+                       data = orange, maxit = 30)
+  (asreml.obj$vparameters)
+  G.g <- kronecker(diag(asreml.obj$vparameters[1:3]), mat.I(5))
+  Z <- as.matrix(asreml.obj$design[,3:17] )
+  V.g <- asreml.obj$sigma2 *(Z %*% G.g %*% t(Z))
+  G <- estimateV(asreml.obj, which.matrix = "G")
+  testthat::expect_true(all(abs(G - V.g) < 1e-06))
+  
+  ##Correlated slope and intercept + fixed Season
+  asreml.obj <- asreml(circ ~ x,
+                       random = ~ str( ~Tree/(x + x2), ~us(3, init = c(1.2, 0.8, 1.2, 0.8,0.8,1.2)):id(5)),
+                       data = orange, maxit=500)     
+  (asreml.obj$vparameters)
+  G.g <- kronecker(matrix(asreml.obj$vparameters[c(1,2,4, 2,3,5, 4:6)], nrow = 3), mat.I(5))
+  Z.3_17 <- as.matrix(asreml.obj$design[,3:17] )
+  V.g <- asreml.obj$sigma2 *(Z %*% G.g %*% t(Z))
+  G <- estimateV(asreml.obj, which.matrix = "G", bound.exclusions = NULL)
+  testthat::expect_true(all.equal(G, V.g))
+  
+  ##Correlated slope and intercept - corg
+  asreml.obj <- asreml(circ ~ x,
+                       random = ~ str( ~Tree/(x + x2), ~corg(3):id(5)),
+                       data = orange, maxit=20)   
+  (vpar <- asreml.obj$vparameters)
+  g <- diag(1, nrow = 3)
+  g[1,2] <- g[2,1] <- vpar[1]
+  g[1,3] <- g[3,1] <- vpar[2]
+  g[2,2] <- g[2,3] <- vpar[3]
+  G.g <- kronecker(matrix(g, nrow = 3), mat.I(5))
+  Z <- as.matrix(asreml.obj$design[,3:17] )
+  V.g <- asreml.obj$sigma2 *(Z %*% G.g %*% t(Z))
+  G <- estimateV(asreml.obj, which.matrix = "G", bound.exclusions = NULL)
+  #mulltiply G by 10 because G.param has the initial value 0.1 stored instead of 1, the correlations being bound
+  testthat::expect_true(all.equal(G*10, V.g, tol = 1e-03))
+  
+  ##Correlated slope and intercept - cor
+  asreml.obj <- asreml(circ ~ x,
+                       random = ~ str( ~Tree/(x + x2), ~cor(3):id(5)),
+                       data = orange, maxit=20)   
+  (vpar <- asreml.obj$vparameters)
+  g <- matrix(vpar[1], nrow = 3, ncol = 3)
+  diag(g) <- 1
+  G.g <- kronecker(matrix(g, nrow = 3), mat.I(5))
+  Z <- as.matrix(asreml.obj$design[,3:17] )
+  V.g <- asreml.obj$sigma2 *(Z %*% G.g %*% t(Z))
+  G <- estimateV(asreml.obj, which.matrix = "G", bound.exclusions = NULL)
+  #mulltiply G by 10 because G.param has the initial value 0.1 stored instead of 1, the correlations being bound
+  testthat::expect_true(all.equal(G*10,V.g, tol = 1e-03)) 
+  
+  ##Correlated slope and intercept - ar1
+  asreml.obj <- asreml(circ ~ x,
+                       random = ~ str( ~Tree/(x + x2), ~ar1(3):id(5)),
+                       data = orange, maxit=20)   
+  (vpar <- asreml.obj$vparameters)
+  g <- mat.ar1(vpar[1], 3)
+  G.g <- kronecker(matrix(g, nrow = 3), mat.I(5))
+  Z <- as.matrix(asreml.obj$design[,3:17] )
+  V.g <- asreml.obj$sigma2 *(Z %*% G.g %*% t(Z))
+  G <- estimateV(asreml.obj, which.matrix = "G", bound.exclusions = NULL)
+  testthat::expect_true(all.equal(G*10, V.g, tol = 1e-03))
+  
+  ##Correlated slope and intercept - ar2
+  asreml.obj <- asreml(circ ~ x,
+                       random = ~ str( ~Tree/(x + x2), ~ar2(3):id(5)),
+                       data = orange, maxit=20)   
+  (vpar <- asreml.obj$vparameters)
+  g <- mat.ar2(vpar[1:2], 3)
+  G.g <- kronecker(matrix(g, nrow = 3), mat.I(5))
+  Z <- as.matrix(asreml.obj$design[,3:17] )
+  V.g <- asreml.obj$sigma2 *(Z %*% G.g %*% t(Z))
+  G <- estimateV(asreml.obj, which.matrix = "G", bound.exclusions = NULL)
+  testthat::expect_true(all.equal(G*10, V.g, tol = 1e-03))
+  
+  ##Correlated slope and intercept - ma1
+  asreml.obj <- asreml(circ ~ x,
+                       random = ~ str( ~Tree/(x + x2), ~ma1(3):id(5)),
+                       data = orange, maxit=20)   
+  (vpar <- asreml.obj$vparameters)
+  g <- mat.ma1(vpar[1], 3)
+  G.g <- kronecker(matrix(g, nrow = 3), mat.I(5))
+  Z <- as.matrix(asreml.obj$design[,3:17] )
+  V.g <- asreml.obj$sigma2 *(Z %*% G.g %*% t(Z))
+  G <- estimateV(asreml.obj, which.matrix = "G", bound.exclusions = NULL)
+  testthat::expect_true(all.equal(G*10, V.g, tol = 1e-03))
+  
+  ##Correlated slope and intercept - sar
+  asreml.obj <- asreml(circ ~ x,
+                       random = ~ str( ~Tree/(x + x2), ~sar(3):id(5)),
+                       data = orange, maxit=20)   
+  (vpar <- asreml.obj$vparameters)
+  g <- mat.sar(vpar[1], 3)
+  G.g <- kronecker(matrix(g, nrow = 3), mat.I(5))
+  Z <- as.matrix(asreml.obj$design[,3:17] )
+  V.g <- asreml.obj$sigma2 *(Z %*% G.g %*% t(Z))
+  G <- estimateV(asreml.obj, which.matrix = "G", bound.exclusions = NULL)
+  testthat::expect_true(all.equal(G*10, V.g, tol = 1e-03))
+  
+})
+
+
+cat("#### Test for corr random models with asreml42\n")
+test_that("corr_random_barley_asreml42", {
+  skip_if_not_installed("asreml")
+  skip_on_cran()
+  library(dae)
+  library(asreml)
+  library(asremlPlus)
+  
+  asreml::asreml.options(extra = 5, ai.sing = TRUE, fail = "soft")
+  asreml.options(design = TRUE)
+  
+  #This data is for the Durban 2003 barley data cited in Piepho, Boer and Williams (2022)
+  data("barley.dat")
+  
+  #Fit initial model - Row and column random
+  current.asr <- do.call(asreml, 
+                         list(yield ~ rep + gen, 
+                              random = ~ row + col,
+                              data=barley.dat, maxit = 50))
+  info <- infoCriteria(current.asr, IClikelihood = "full")
+  testthat::expect_equal(info$varDF, 3)
+  testthat::expect_lt(abs(info$AIC - -484.1135), 0.10)
+  
+  #Create an asrtests object, removing boundary terms
+  init.asrt <- as.asrtests(current.asr, NULL, NULL, IClikelihood = "full", 
+                           label = "Random row and col effects")
+  init.asrt <- rmboundary(init.asrt)
+  
+  corr.asrt <- addSpatialModel(init.asrt, spatial.model = "corr", 
+                               row.covar = "crow", col.covar = "ccol",
+                               row.factor = "row", col.factor = "col")
+  asreml.obj <- corr.asrt$asreml.obj
+  (asreml.obj$vparameters)
+  (asreml.obj$vparameters.con)
+
+  #Test of estimate V
+  G <- estimateV(asreml.obj, which.matrix = "G")
+  G.g <- asreml.obj$vparameters[1]*kronecker(mat.ar1(asreml.obj$vparameters[2], 34), 
+                                             mat.ar1(asreml.obj$vparameters[3], 16))
+  Z <- as.matrix(asreml.obj$design[,276:length(colnames(asreml.obj$design))])
+  V.g <- asreml.obj$sigma2 *(Z %*% G.g %*% t(Z))
+  testthat::expect_true(all.equal(V.g, G))
+})
+

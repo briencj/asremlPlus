@@ -128,8 +128,6 @@ Note that many of the function below are S3 methods so that the suffix can be om
       \tab Refits an \code{asreml} model with changed arguments by extracting, \cr
       \tab modifying and evaluating its \code{call}  - an alternate to \cr 
       \tab update.asreml. \cr
-using either a call to 'update.asreml' or a direct \cr
-      \tab  call to 'asreml'. \cr
 \code{\link{reparamSigDevn.asrtests}}
        \tab Reparamterizes each random (deviations) term \cr
        \tab involving 'devn.fac' to a fixed term and ensures \cr
@@ -145,7 +143,7 @@ using either a call to 'update.asreml' or a direct \cr
        \tab for terms in the 'random' and 'residual' arguments of an \cr
        \tab 'asreml' call. \cr
 \cr
-(iv) Model selection \cr\cr
+(iv) Model selection and description \cr\cr
 
 \code{\link{addto.test.summary}}
        \tab Adds a row to a \code{test.summary} \code{data.frame}. \cr
@@ -171,6 +169,9 @@ using either a call to 'update.asreml' or a direct \cr
        \tab Computes AIC and BIC for models. \cr
 \code{\link{infoCriteria.list}}
        \tab Computes AIC and BIC for models. \cr
+\code{\link{R2adj.asreml}}
+       \tab Calculates the adjusted coefficient of determination for a \cr
+       \tab specified combination of fixed and random terms.     \cr
 \code{\link{recalcWaldTab.asrtests}}
        \tab Recalculates the denDF, F.inc and P values for a table \cr
        \tab of Wald test statistics obtained using 'wald.asreml'. \cr

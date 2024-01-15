@@ -336,9 +336,34 @@ checkNamesInData <- function(Names, data)
   # terms <- as.character(update.formula(form, ~.))
   # terms <- stringr::str_trim(unlist(strsplit(terms[length(terms)], 
   #                                            split = "+", fixed = TRUE)))
-  form <- (update.formula(form, ~.))
+  form <- update.formula(form, ~.)
   terms <- attr(as.terms.object(form, ...), "term.labels")
   terms <- gsub('\\\"', "'", terms)
+  
+  return(terms)
+}
+
+"convTerms2Vparnames" <- function(terms)
+{
+  
+  #Deal with any str function in the formula
+  if (any(grepl("str\\(", terms)))
+  {
+    terms <- sapply(terms, function(term)
+    {
+      if (grepl("str\\(", term))
+      {
+        start <- stringr::str_locate(term, "~")[1,1]
+        end <- stringr::str_locate(term, ",")[1,1]
+        term <- stringr::str_sub(term, start = start, end = end-1)
+        term <- as.formula(paste("~",term))
+        term <- (update.formula(term, ~.))
+        term <- gsub(" ", "", term)[2]
+      }
+      return(term)
+    })
+  }
+  
   return(terms)
 }
 
@@ -487,6 +512,20 @@ chk4TermInFormula <- function(form, term, asreml.obj)
   return(var)
 }
 
+getVpars <- function(asreml.obj, asr4.2)
+{
+  if (asr4.2)
+  { 
+    vpc <- asreml.obj$vparameters.con
+    vpt <- asreml.obj$vparameters.type
+  } else
+  {
+    vpc <- vpc.char(asreml.obj)
+    vpt <- vpt.char(asreml.obj)
+  }
+  return(list(vpc = vpc, vpt = vpt))
+}
+
 "getVarCode" <- function(var, asreml.obj)
   #A function that returns a code for a variable
   # 0 for an integer or numeric with no sys function
@@ -553,20 +592,27 @@ chk4TermInFormula <- function(form, term, asreml.obj)
   return(term.types)
 }
 
+#Function that replaces startsWith, startsWith not being able to deal with special regular expressiion characters
+"beginsWith" <- function(x, prefix)
+  grepl(paste0("^",prefix), x)
+
+
 #This function identifies the names of the rows or columns that correspond to the effects for term.
 #The argument `use` identifies which component of an asreml.obj is to be used to obtain the effect names.
 #Possible values are: fixed.coeffs, random.coeffs, G.aom or design. 
-"getTermEffectNames" <- function(term, asreml.obj, use = "design", sep = ":")
+"getTermEffectNames" <- function(term, asreml.obj, use = "design.matrix", sep = ":")
 {
   asr4.2 <- isASReml4_2Loaded(4.2, notloaded.fault = TRUE)
   if (asr4.2)
   { 
     vars <- fac.getinTerm(term, asr4.2 = asr4.2)
+    # vars <- gsub("\\(", "\\\\(", vars)
+    # vars <- gsub("\\)", "\\\\)", vars)
     nvars <- length(vars)
     
     #Get the effects names from the object in use
     if (use == "fixed.coeffs")
-      effnames <- rownames(asreml.obj$coefficients$random)
+      effnames <- rownames(asreml.obj$coefficients$fixed)
     else
     {
       if (use == "random.coeffs")
@@ -575,7 +621,7 @@ chk4TermInFormula <- function(form, term, asreml.obj)
       {
         if (use == "G.aom")
           effnames <- rownames(asreml.obj$aom$G)
-        else if (use == "design")
+        else if (use == "design.matrix")
         {
           effnames <- colnames(asreml.obj$design)
         } else
@@ -590,15 +636,30 @@ chk4TermInFormula <- function(form, term, asreml.obj)
     effnames <- effnames[len.nvars]
     col.vars <- col.vars[len.nvars]
     col.vars <- as.data.frame(do.call(rbind, col.vars))
+    # #Remove any effect nos
+    # col.vars <- as.data.frame(lapply(col.vars, function(col)
+    # {
+    #   if (any(grepl("_", col)))
+    #   {
+    #     col <- strsplit(col, split = "_")
+    #     col <- sapply(col, function(x) x <- x[[1]])
+    #   }
+    #   return(col)
+    # }))
     #Determine which columns have the same vars, in any order, as the term; select effnames that do
     which.cols <- apply(col.vars, MARGIN = 1, 
                         FUN = function(krow, vars)
                         {
-                          all(sapply(vars, function(v, krow) any(startsWith(krow, v)), krow = krow))
+                          all(sapply(vars, function(v, krow) 
+                            {
+                            if (any(startsWith(krow, paste0(v,"_")))) #term with a level
+                              TRUE
+                            else #must match exactly if does not include a level
+                              any(krow == v)
+                          }, krow = krow))
                         }, vars = vars)
     effnames <- effnames[which.cols]
-  }
-  else
+  } else
   { 
     if (use == "fixed.coeffs")
       effnames <- rownames(asreml.obj$coefficients$fixed)[
@@ -624,12 +685,12 @@ chk4TermInFormula <- function(form, term, asreml.obj)
   }
   if (length(effnames) == 0)
     effnames <- NULL
-  else
-  {
-    #grp terms do not have a known number of columns
-    if (term %in% names(asreml.obj$noeff) && length(effnames) != asreml.obj$noeff[term])
-      stop(paste("Error in finding the columns in ", use,  " for ", term, sep=""))
-  }
+  # else
+  # {
+  #   #grp terms do not have a known number of columns
+  #   if (term %in% names(asreml.obj$noeff) && length(effnames) != asreml.obj$noeff[term])
+  #     stop(paste("Error in finding the columns in ", use,  " for ", term, sep=""))
+  # }
   return(effnames)
 }
 
@@ -690,9 +751,11 @@ convEffectNames2DataFrame.asreml <- function(asreml.obj, term, use = "design.mat
 
 "getTermDesignMatrix" <- function(term, asreml.obj, sep = ":")
 {
-  colnams <- getTermEffectNames(term, asreml.obj, use = "design", sep = sep)
+  colnams <- getTermEffectNames(term, asreml.obj, use = "design.matrix", sep = sep)
+  terms <- rbind(attr(asreml.obj$coefficients$fixed, which = "terms"),
+                 attr(asreml.obj$coefficients$random, which = "terms"))
   #grp terms do not have a known number of columns
-  if (term %in% names(asreml.obj$noeff) && length(colnams) != asreml.obj$noeff[term])
+  if (term %in% names(asreml.obj$noeff) && length(colnams) != terms$n[terms$tname == term])
     stop(paste("Error in finding the columns in the design matrix for ",term,sep=""))
   Z <- asreml.obj$design[, colnams]
   return(Z)

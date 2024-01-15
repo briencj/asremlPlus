@@ -1,0 +1,265 @@
+---
+title: "Using `asremlPlus`, in conjunction with `asreml`, to do a linear mixed model analysis of a wheat experiment using hypothesis tests"
+author: "Chris Brien"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output: 
+  pdf_document: default
+---
+
+This vignette shows how to use `asremlPlus` (Brien, 2024), in conjunction with `asreml` (Butler et al., 2020), to employ hypothesis tests to select the terms to be included in a mixed model for an experiment that involves spatial variation. It also illustrates diagnostic checking and prediction production and presentation for this experiment. Here, `asremlPlus` and `asreml` are packages for the `R` Statistical Computing environment (R Core Team, 2024).
+
+It is divided into the following main sections:
+
+1. Set up the maximal model for this experiment
+2. Perform a series of hypothesis tests to select a linear mixed model for the data
+3. Diagnostic checking using residual plots and variofaces
+4. Prediction production and presentation
+
+# 1. Set up the maximal model for this experiment
+
+```{r setup, include=TRUE}
+library(knitr)
+opts_chunk$set("tidy" = FALSE, comment = NA)
+suppressMessages(library(asreml, quietly=TRUE))
+packageVersion("asreml")
+suppressMessages(library(asremlPlus))
+packageVersion("asremlPlus")
+suppressMessages(library(qqplotr, quietly=TRUE))
+options(width = 100)
+```
+
+## Get data available in asremlPlus
+
+The data are from a 1976 spring wheat experiment and are taken from Gilmour et al. (1995). An analysis is presented in the `asreml` manual by Butler et al. (2020, Section 7.6), although they suggest that it is a barley experiment.
+
+```{r data, include = TRUE}
+data(Wheat.dat)
+```
+
+## Fit the maximal model
+
+In the following a model is fitted that has the terms that would be included for a balanced lattice. In addition, a term WithinColPairs has been included to allow for extraneous variation arising between pairs of adjacent lanes. Also, separable ar1 residual autocorrelation has been included. This model represents the maximal anticipated model, 
+
+```{r first, include = TRUE}
+current.asr <- asreml(yield ~ WithinColPairs + Variety, 
+                      random = ~ Rep/(Row + Column) + units,
+                      residual = ~ ar1(Row):ar1(Column), 
+                      maxit = 30, data=Wheat.dat)
+```
+
+The warning from `asreml` is probably due to a bound term.
+
+## Initialize a testing sequence by loading the current fit into an asrtests object
+
+A label and the information criteria based on the full likelihood (Verbyla, 2019) are included in the `test.summary` stored in the `asrtests` object.
+
+```{r initial, include = TRUE}
+  current.asrt <- as.asrtests(current.asr, NULL, NULL, 
+                              label = "Maximal model", IClikelihood = "full")
+```
+
+## Check for and remove any boundary terms
+
+```{r check}
+current.asrt <- rmboundary(current.asrt, IClikelihood = "full")
+summary(current.asrt$asreml.obj)$varcomp
+print(current.asrt, which = "testsummary")
+```
+
+Rep has been removed because it has been constrained to zero. Following the recommendation of Littel et al. (2006, p. 150), the bound on all variance components is set to unconstrained (U)  using `setvariances.asreml` so as to avoid bias in the estimate of the residual variance. Alternatively, one could move Rep to the fixed model.
+
+## Unbind Rep, Row and Column components and reload into an asrtests object
+
+```{r unbind}
+current.asr <- setvarianceterms(current.asr$call, 
+                                terms = c("Rep", "Rep:Row", "Rep:Column"), 
+                                bounds = "U")
+current.asrt <- as.asrtests(current.asr, wald.tab = NULL, test.summary = current.asrt$test.summary, 
+                            IClikelihood = "full", label = "Max model & Unbound components")
+current.asrt <- rmboundary(current.asrt)
+summary(current.asrt$asreml.obj)$varcomp
+print(current.asrt, which = "testsummary")
+print(current.asrt, which = "pseudoanova")
+```
+
+Now the Rep component estimate is negative.
+
+The `test.summary` output has been extended, by supplying the previous `test.summary` to `as.asrtests`, to show that there is a new starting model. The pseudo-anova table shows that Varieties are highly significant ($p < 0.001$)
+
+# 2. Perform a series of hypothesis tests to select a linear mixed model for the data
+
+The hypothesis tests in this section are Wald tests for fixed terms, with denominator degrees of freedom calculated using the Kenward-Rogers adjustment (Kenward and Rogers (1997), and Restricted Maximum Likelihood Ratio Tests (REMLRT) for random terms.
+
+## Check the term for within Column pairs (a post hoc factor)
+
+The information criteria based on the full likelihood (Verbyla, 2019) is also included in the `test.summary` stored in the `asrtests` object.
+
+```{r covariate}
+current.asrt <- testranfix(current.asrt, term = "WithinColPairs", 
+                           drop.fix.ns=TRUE, IClikelihood = "full")
+print(current.asrt)
+```
+
+
+It is clear in the call to `testranfix` that the model is being changed by dropping the `withinColPairs` term, which could also be achieved using `update.asreml`. However, an `asremlPlus` model-changing function  operates on an  `asrtests` object, that includes an `asreml` object, and, except for `changeTerms.asrtests`, results in an `asrtests` object that may contain the changed model or the supplied model depending on the results of hypothesis tests or comparisons of information  criteria. In addition, the result of the test or comparison will be added to a `test.summary` data.frame stored in the new `asrtests` object and, if the model was changed, the `wald.tab` in the new `asrtests` object will have been updated for the new model.
+
+In this case, as can be seen from the summary of `current.asrt` after the call, the $p$-value for the  `withinColPairs` was greater than 0.05 and so now the model stored in `current.asrt` does not include `withinColPAirs`. The `wald.tab` has been updated for the new model.
+
+## Test the nugget term
+
+The nugget term represents non-spatial variance, such as random plot and measurement error. It is fitted using the `asreml` reserved word `units`.
+
+```{r nugget}
+current.asrt <- testranfix(current.asrt, "units", positive=TRUE, IClikelihood = "full")
+```
+
+## Test Row autocorrelation
+
+We begin testing the autocorrelation by dropping the Row autocorrelation. Because of messages about the instability of the fit, `iterate.asrtests` is used to execute extra iterations of the fitting process.
+
+```{r rowar1}
+current.asrt <- testresidual(current.asrt, "~ Row:ar1(Column)", 
+                             label="Row autocorrelation", 
+                             simpler=TRUE, IClikelihood = "full")
+current.asrt <- iterate(current.asrt)
+```
+
+## Test Column autocorrelation (depends on whether Row autocorrelation retained)
+
+The function `getTestPvalue` is used to get the p-value for the Row autocorrelation test. If it is significant then the Column autocorrelation is tested by by dropping the Column autocorrelation, while retaining the Row autocorrelation. Otherwise the model with just Row autocorrelation, whose fit is returned via `current.asrt` after the test, is compared to one with no autocorrelation. 
+
+```{r colar1}
+(p <- getTestPvalue(current.asrt, label = "Row autocorrelation"))
+{ if (p <= 0.05)
+  current.asrt <- testresidual(current.asrt, "~ ar1(Row):Column", 
+                               label="Col autocorrelation", 
+                               simpler=TRUE, IClikelihood = "full")
+  else
+    current.asrt <- testresidual(current.asrt, "~ Row:Column", 
+                                 label="Col autocorrelation", 
+                                 simpler=TRUE, IClikelihood = "full")
+}
+```
+
+## Output the results
+
+```{r results}
+print(current.asrt)
+printFormulae(current.asrt$asreml.obj)
+print(R2adj(current.asrt$asreml.obj, include.which.random = ~ .))
+```
+
+The `test.summary` shows is that the model with Row and without Column autocorrelation failed to converge. The `asreml.obj` in `current.asrt` contains the model selected by the selection process, which has been printed using `printFormulae.asrtests`. It is clear that no changes were made to the variance terms. The adjusted $R^2$ value shows that the fixed and random terms in the fitted model account for 45\% of the total variation in the yield. 
+
+# 3. Diagnosing checking using residual plots and variofaces
+
+## Get current fitted asreml object and update to include standardized residuals
+
+```{r update}
+current.asr <- current.asrt$asreml.obj
+current.asr <- update(current.asr, aom=TRUE)
+Wheat.dat$res <- residuals(current.asr, type = "stdCond")
+Wheat.dat$fit <- fitted(current.asr)
+```
+
+## Do diagnostic checking
+
+### Do residuals-versus-fitted values plot
+
+```{r resfit}
+with(Wheat.dat, plot(fit, res))
+```
+
+### Plot variofaces
+
+```{r VarioF}
+variofaces(current.asr, V=NULL, units="addtores", 
+           maxiter=50, update = FALSE, 
+           ncores = parallel::detectCores())
+```
+
+The variofaces are the lag 1 plots of the sample semivariogram with simulated confidence envelopes (Stefanova et al., 2009). 
+
+### Plot normal quantile plot
+
+The plot is obtained using the `ggplot` function with extensions available from the `qqplotr` package (Almeida, A., Loy, A. and Hofmann, H., 2023).
+
+```{r Nplot}
+suppressWarnings(
+  ggplot(data = Wheat.dat, mapping = aes(sample = res)) +
+    stat_qq_band(bandType = "ts") + stat_qq_line() + stat_qq_point() +
+    labs(x = "Theoretical Quantiles", y = "Sample Quantiles",
+         title = "Normal probability plot") +
+    theme(plot.title = element_text(size = 12, face = "bold")) + theme_bw())
+```
+
+# 4. Prediction production and presentation
+
+## Get Variety predictions and all pairwise prediction differences and p-values
+
+```{r WheatPreds}
+Var.diffs <- predictPlus(classify = "Variety", 
+                         asreml.obj=current.asr, 
+                         error.intervals="halfLeast",
+                         wald.tab=current.asrt$wald.tab, 
+                         sortFactor = "Variety",
+                         tables = "predictions")
+```
+
+We have set `error.intervals` to `halfLeast` so that the limits for so that the limits for each $\textsf{prediction} \pm (0.5\textsf{ LSD})$ are calculated. When these are plotted overlapping error bars indicate predictions that are not significant, while those that do not overlap are significantly different (Snee, 1981).
+
+Also set was `sortFactor`, so that the results would be ordered for the values of the predictions for Variety.
+
+The function `predictPlus` returns an `alldiffs` object, a list consisting of the following components:
+
+* `predictions`: the predictions, their standard errors and error intervals;
+
+* `vcov`: the variance matrix of the predictions;
+
+* `differences`: all pairwise differences between the predictions, 
+
+* `p.differences`: p-values for all pairwise differences between the predictions;
+
+* `sed`: the standard errors of all pairwise differences between the predictions; 
+
+* `LSD`: the mean, minimum and maximum LSDs.
+
+
+## Plot the Variety predictions, with halfLSD intervals, and the p-values
+
+```{r plotPreds}
+plotPredictions(Var.diffs$predictions, 
+                classify = "Variety", y = "predicted.value", 
+                error.intervals = "half")
+plotPvalues(Var.diffs)
+```
+
+# References
+
+Almeida, A., Loy, A. and Hofmann, H. (2023) `qqplotr`: *Quantile-Quantile plot extensions for 'ggplot2'*, Version 0.0.6. <https://cran.r-project.org/package=qqplotr/> or <https://github.com/aloy/qqplotr/>.
+
+Brien, C. J. (2024) `asremlPlus`: *Augments ASReml-R in fitting mixed models and packages generally in exploring prediction differences*. Version 4.4.25. <https://cran.r-project.org/package=asremlPlus/> or <http://chris.brien.name/rpackages/>.
+
+Butler, D. G., Cullis, B. R., Gilmour, A. R., Gogel, B. J. and Thompson, R. (2023). *ASReml-R Reference Manual Version 4.2.* VSN International Ltd, <https://asreml.kb.vsni.co.uk/>.
+
+Gilmour, A. R., Thompson, R., & Cullis, B. R. (1995). Average Information REML: 
+            An Efficient Algorithm for Variance Parameter Estimation in Linear 
+            Mixed Models. *Biometrics*, **51**, 1440--1450. 
+
+Kenward, M. G., & Roger, J. H. (1997). Small sample inference for fixed effects from restricted maximum likelihood. *Biometrics*, **53**, 983-997.
+            
+Littell, R. C., Milliken, G. A., Stroup, W. W., Wolfinger, R. D., & Schabenberger, O. (2006). *SAS for Mixed Models* (2nd ed.). Cary, N.C.: SAS Press.
+
+R Core Team (2023) `R`: *A language and environment for statistical
+computing*. Vienna, Austria: R Foundation for Statistical Computing.
+<https://www.r-project.org/>.
+
+Snee, R. D. (1981). Graphical Display and Assessment of Means. *Biometrics*, **37**, 835--836. 
+
+Stefanova, K. T., Smith, A. B. & Cullis, B. R. (2009) Enhanced diagnostics for the 
+            spatial analysis of field trials. *Journal of Agricultural, Biological, 
+            and Environmental Statistics*, **14**, 392--410.
+            
+Verbyla, A. P. (2019). A note on model selection using information criteria for general 
+            linear models estimated using REML. *Australian & New Zealand Journal of Statistics*, 
+            **61**, 39-50.<https://doi.org/10.1111/anzs.12254/>.
