@@ -2,7 +2,7 @@
 \alias{addto.test.summary}
 \title{Adds a row to a \code{test.summary} \code{data.frame}.}
 \description{A row that summarizes the result of a proposed change to a model is added to a 
-             \code{test.summary} \code{data.frame}. Only the values of those arguments for whch there 
+             \code{test.summary} \code{data.frame}. Only the values of those arguments for which there 
              are columns in \code{test.summary} will be included in the row.}
 
 \usage{addto.test.summary(test.summary, terms, DF = 1, denDF = NA, 

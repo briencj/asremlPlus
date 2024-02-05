@@ -2,7 +2,7 @@
 \alias{alldiffs.object}
 \alias{alldiffs-class}
 \title{Description of an alldiffs object}
-\description{An object of S3-class \code{alldiffs} that that stores the predictions for a model, 
+\description{An object of S3-class \code{alldiffs} that stores the predictions for a model, 
              along with supplied statistics for all pairwise differences. While 
              \code{\link{alldiffs.object}} can be constructed by defining a \code{list} with 
              the appropriate components, it can be formed by passing the components to 

@@ -2,7 +2,7 @@
 \alias{plotLSDs.data.frame}
 \title{Plots a heat map of computed LSD-values for pairwise differences between predictions.}
 \description{Produces a heat-map plot of the computed  LSD values for pairwise differences between 
-             predictions that are stored in in a \code{data.frame}. The \code{data.frame} includes 
+             predictions that are stored in a \code{data.frame}. The \code{data.frame} includes 
              two factors whose levels specify, for each LSD value, which combinations of factor 
              levels are being compared.}
 \usage{\method{plotLSDs}{data.frame}(object, LSD = "LSDs", x, y, alpha = 0.05, 
@@ -21,7 +21,7 @@
              the labels of the LSD values that are to be plotted as the rows.}
  \item{alpha}{A \code{\link{numeric}} giving the significance level for the LSD.}
  \item{triangles}{A \code{character} indicating whether the plot should include the 
-             \code{lower}, \code{upper} or \code{both} traingle(s). Here it is only used 
+             \code{lower}, \code{upper} or \code{both} triangle(s). Here it is only used 
               to adjust gridlines for the omission of the diagonal.}
  \item{gridspacing}{A \code{numeric} specifying the number(s) of rows and columns 
              that form groups in the grid of differences. This is most useful when  
@@ -34,7 +34,7 @@
  \item{axis.labels}{A \code{character} string giving the label to use for both the x- and y-axis.}
  \item{axis.text.size}{A \code{\link{numeric}} giving the size of the \code{labels} on the axes   
                   of the \code{heatmap}.}
- \item{colours}{A vector of of colours to be passed to the \code{ggplot} function 
+ \item{colours}{A vector of colours to be passed to the \code{ggplot} function 
                 \code{scale\_colour\_gradientn}.}
  \item{ggplotFuncs}{A \code{\link{list}}, each element of which contains the 
                 results of evaluating a \code{\link{ggplot}} function. 
@@ -43,7 +43,7 @@
                 These functions are applied in creating the \code{ggplot} object.}
  \item{printPlot}{A \code{logical} indicating whether or not the a plot is to be printed. This would 
                 be used when just the returned \code{ggplot} object is required.}
- \item{\dots}{Provision for passsing arguments to functions called internally - 
+ \item{\dots}{Provision for passing arguments to functions called internally - 
             not used at present.}
  }
 \value{An object of class "\link{ggplot}", which can be plotted using \code{print} or otherwise manipulated.}

@@ -16,7 +16,7 @@
 %}
 \value{A \code{data.frame} that can be a component of an \code{\link{alldiffs.object}} and that 
        contains LSD values and statistics to be used in determining the significance of the 
-       pairwise diffrences. In particular, they are used in calculating 
+       pairwise differences. In particular, they are used in calculating 
        \code{halfLeastSignificant} limits to be included in a \code{predictions.frame}.
 
        Exactly what an \code{LSD.frame} contains is 
@@ -33,7 +33,7 @@
        \code{maximumLSD}, \code{assignedLSD}, \code{accuracyLSD}, \code{falsePos} and 
        \code{falseNeg}.
        \enumerate{
-        \item \code{c}: This gives the number of pairwise coomparison of predictions for the combinations of 
+        \item \code{c}: This gives the number of pairwise comparison of predictions for the combinations of 
              the factor levels given by the row name. If the row name is \code{overall} then it is for 
              all predictions.
         \item \code{minimumLSD, meanLSD, maximumLSD}: These are computed for either \code{overall}, 

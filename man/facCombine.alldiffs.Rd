@@ -9,7 +9,7 @@
              changes are made to the other components and the attributes of the 
              \code{\link{alldiffs.object}}. If any of the factors to be combined are in 
              \code{LSDby}, they are removed from the \code{LSDby}, unless the factors to 
-             be combined are exactlly those in the \code{LSDby}. 
+             be combined are exactly those in the \code{LSDby}. 
              The levels of the \code{factors} are combined using \code{fac.combine} 
              from the \code{dae} package.}
 \usage{\method{facCombine}{alldiffs}(object, factors, order="standard", 

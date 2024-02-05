@@ -28,6 +28,7 @@ library(testthat)
 #test_check("asremlPlus", filter = "42Variofaces")
 #test_check("asremlPlus", filter = "42WheatSpatialVignette") # do separately
 #test_check("asremlPlus", filter = "42WheatVignette") # do separately
+#test_check("asremlPlus", filter = "42[a-g]")
 #test_check("asremlPlus", filter = "42S[a-o]")
 #test_check("asremlPlus", filter = "42[A-R]")
 #test_check("asremlPlus", filter = "42[V-W]")

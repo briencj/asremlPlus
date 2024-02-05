@@ -36,12 +36,12 @@
        (ii) \code{wald.tab}, and (iii) \code{test.summary}.}
  \item{checkboundaryonly}{If \code{TRUE} then boundary and singular terms are not removed by 
               \code{\link{rmboundary.asrtests}}; a warning is issued instead.}
- \item{IClikelihood}{A \code{character} that controls both the occurence and the type 
+ \item{IClikelihood}{A \code{character} that controls both the occurrence and the type 
                     of likelihood for information criterion in the \code{test.summary} 
                     of the new \code{\link{asrtests.object}}. If \code{none}, none are 
                     included. Otherwise, if \code{REML}, then the AIC and BIC based 
                     on the Restricted Maximum Likelihood are included; if \code{full}, 
-                    then the AIC and BIC based on the full likelihood, evaluated using 
+                    then the AIC and BIC based on the full likelihood, evaluated using
                     REML estimates, are included. 
                     (See also \code{\link{infoCriteria.asreml}}.)}
  \item{trace}{If \code{TRUE} then partial iteration details are displayed when ASReml-R 

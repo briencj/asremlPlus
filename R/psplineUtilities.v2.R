@@ -61,6 +61,31 @@ deviance.asr <- function(obj.asr)
   dev
 }
 
+#Function to set  the mbf.env in an asreml.obj, by default, to the current environment
+setmbfenv.asreml <- function(asreml.obj, dat, mbf.env = sys.frame(), ...)
+{ 
+  attr(dat, which = "mbf.env") <- mbf.env
+  if (!is.null(asreml.obj$mf) && !is.null(attr(asreml.obj$mf, which = "mbf.env")))
+    attr(asreml.obj$mf, which = "mbf.env") <- mbf.env
+  #Set the mbf.env in the model.frame attribute
+  if (is.null(asreml.obj$mf)) #mf is not in mf component and so must be an RDS file
+  {
+    mf.file <- asreml.obj$call$model.frame
+    mf <- readRDS(file = mf.file)
+    attr(mf, which = "mbf.env") <- mbf.env
+    saveRDS(mf, file = mf.file)
+  } else
+  {
+    if (inherits(asreml.obj$mf, what = "asr.model.frame") ||
+        inherits(asreml.obj$mf, what = "asreml.model.frame"))
+      attr(asreml.obj$mf, which = "mbf.env") <- mbf.env
+    else
+      stop("For asreml.option set to mbf, cannot find the asreml model frame to set the mbf environment")
+  }
+  asreml.obj <- newfit(asreml.obj, data = dat)
+  return(asreml.obj)
+}
+
 #' Function called by rotate.penalty.U to fit the rotation for a theta pair
 #' 
 fitRotation <- function(theta = c(0,0), rot.asr, data, 
@@ -293,27 +318,146 @@ rotate.penalty.U <- function(rot.asr, data, sections, ksect, row.covar, col.cova
   return(list(theta.opt = theta.opt, criterion = criterion))
 }
 
-#Function to set  the mbf.env in an asreml.obj, by default, to the current environment
-setmbfenv.asreml <- function(asreml.obj, dat, mbf.env = sys.frame(), ...)
-{ 
-  attr(dat, which = "mbf.env") <- mbf.env
-  if (!is.null(asreml.obj$mf) && !is.null(attr(asreml.obj$mf, which = "mbf.env")))
-    attr(asreml.obj$mf, which = "mbf.env") <- mbf.env
-  #Set the mbf.env in the model.frame attribute
-  if (is.null(asreml.obj$mf)) #mf is not in mf component and so must be an RDS file
+getRotationThetas <- function(init.asrt, data, mat, sections, 
+                              row.covar, col.covar, dropFixed, dropRandom, 
+                              nsegs, nestorder, degree, difforder,
+                              rotateX, ngridangles, which.rotacriterion, nrotacores, 
+                              asreml.opt, maxit, 
+                              allow.unconverged, allow.fixedcorrelation,
+                              checkboundaryonly, update, 
+                              IClikelihood, which.IC)
+{
+  if (!rotateX) 
+    stop("Internal function getRotationThetas has been called with rotateX = FALSE")
+  
+  #Fit spatial TPPS to sections
+  nsect <- calc.nsect(data, sections)
+  theta.opt <- list()
+  for (ksect in 1:nsect)
   {
-    mf.file <- asreml.obj$call$model.frame
-    mf <- readRDS(file = mf.file)
-    attr(mf, which = "mbf.env") <- mbf.env
-    saveRDS(mf, file = mf.file)
-  } else
-  {
-    if (inherits(asreml.obj$mf, what = "asr.model.frame") ||
-        inherits(asreml.obj$mf, what = "asreml.model.frame"))
-      attr(asreml.obj$mf, which = "mbf.env") <- mbf.env
+    if (nsect == 1)
+    { 
+      stub = "xx"
+      sect.fac <- NULL
+      lab <- paste0("Try tensor P-splines")
+    }
     else
-      stop("For asreml.option set to mbf, cannot find the asreml model frame to set the mbf environment")
+    { 
+      stub <- levels(data[[sections]])[ksect]
+      sect.fac <- paste0("at(", sections, ",  '", stub, "'):")
+      lab <- paste0("Try tensor P-splines for ", sections, " ",stub)
+    }
+    
+    #Determine terms specified by dropFixed and dropRandome to remove from the model?
+    drop.fix <- dropFixed[ksect]; if (!is.null(drop.fix) && is.na(drop.fix)) drop.fix <- NULL
+    drop.ran <- dropRandom[ksect]; if (!is.null(drop.ran) && is.na(drop.ran)) drop.ran <- NULL
+    
+    nfixterms <- difforder[1] * difforder[2] 
+    if (nfixterms > 1)
+      fix.ch <- paste(paste0(sect.fac, paste0("TP.CR.", 2:nfixterms)), collapse = " + ")
+    else
+      fix.ch <- NULL
+    
+    if (asreml.opt == "mbf")
+    {
+      #Set the mbf.env in asreml.obj to the current environment
+      mbf.env <- sys.frame()
+      asreml.obj <- init.asrt$asreml.obj
+      asreml.obj <- setmbfenv(asreml.obj, dat = asreml.obj$call$data, mbf.env = mbf.env)
+      
+      #Assign basis data.frames to the current environment
+      Zmat.names <- paste0(paste0(c("BcZ", "BrZ", "BcrZ"), stub), ".df")
+      if (any(sapply(Zmat.names, exists, envir = mbf.env)))
+        warning("THe following objects are being overwritten: ", 
+                paste(Zmat.names[sapply(Zmat.names, exists, envir = parent.frame(2))], 
+                      collapse = ", "))
+      assign(Zmat.names[1], mat[[ksect]]$BcZ.df, envir = mbf.env)
+      assign(Zmat.names[2], mat[[ksect]]$BrZ.df, envir = mbf.env)
+      assign(Zmat.names[3], mat[[ksect]]$BcrZ.df, envir = mbf.env)
+      
+      mbf.lis <- mat[[ksect]]$mbflist
+      
+      #Set the mbf.env in asreml.obj to the current environment
+      mbf.env <- sys.frame()
+      asreml.obj <- init.asrt$asreml.obj
+      asreml.obj <- setmbfenv(asreml.obj, dat = asreml.obj$call$data, mbf.env = mbf.env)
+      
+      ran.rot.ch <- paste(paste0(sect.fac,  
+                                 c(paste0("TP.C.",1:difforder[1],":mbf(TP.row)"), 
+                                   paste0("TP.R.",1:difforder[2],":mbf(TP.col)")),
+                                 collapse = " + ")) 
+      #Fit the reduced random model
+      rot.asrt <- do.call(changeTerms, 
+                          args = list(init.asrt, 
+                                      addFixed = fix.ch,
+                                      dropFixed = drop.fix[ksect], 
+                                      addRandom = ran.rot.ch,
+                                      dropRandom = drop.ran[ksect], 
+                                      mbf = mbf.lis,
+                                      label = "Fit model for rotation gridding", 
+                                      allow.unconverged = TRUE, 
+                                      allow.fixedcorrelation = TRUE,
+                                      checkboundaryonly = TRUE, 
+                                      update = update, 
+                                      maxit = maxit, 
+                                      IClikelihood = IClikelihood, 
+                                      which.IC = which.IC))
+      rot.asr <- rot.asrt$asreml.obj
+      
+      #Find the optimal thetas
+      theta_opt <- rotate.penalty.U(rot.asr, data, sections = sections, ksect = ksect, 
+                                    row.covar = row.covar, col.covar = col.covar,
+                                    nsegs = nsegs, nestorder = nestorder,
+                                    degree = degree, difforder = difforder,
+                                    ngridangles = ngridangles, 
+                                    which.rotacriterion = which.rotacriterion, 
+                                    nrotacores = nrotacores, maxit = maxit, 
+                                    asreml.opt = "grp", mbf.env = sys.frame(), 
+                                    stub = stub)
+      theta.opt <- c(theta.opt, list(theta_opt$theta.opt))
+      cat("\n#### Optimal thetas:", paste(theta_opt$theta.opt, collapse = ", "), 
+          " with criterion", theta_opt$criterion,  "\n\n")
+    } else #grp
+    {    
+      grp <- mat[[ksect]]$grp
+      
+      ran.rot.ch <- paste(paste0(sect.fac,  
+                                 c(paste0("grp(TP.C.",1:difforder[1],"_frow)"), 
+                                   paste0("grp(TP.R.",1:difforder[2],"_fcol)")), 
+                                 collapse = " + "))
+      #Fit the reduced random model
+      rot.asrt <- do.call(changeTerms, 
+                          args = list(init.asrt, 
+                                      addFixed = fix.ch,
+                                      dropFixed = drop.fix[ksect], 
+                                      addRandom = ran.rot.ch,
+                                      dropRandom = drop.ran[ksect], 
+                                      group = grp,
+                                      label = "Fit model for rotation gridding", 
+                                      allow.unconverged = TRUE, 
+                                      allow.fixedcorrelation = TRUE,
+                                      checkboundaryonly = TRUE, 
+                                      update = update, 
+                                      maxit = maxit, 
+                                      IClikelihood = IClikelihood, 
+                                      which.IC = which.IC))
+      rot.asr <- rot.asrt$asreml.obj
+      
+      #Find the optimal thetas
+      theta_opt <- rotate.penalty.U(rot.asr, data, sections = sections, ksect = ksect, 
+                                    row.covar = row.covar, col.covar = col.covar,
+                                    nsegs = nsegs, nestorder = nestorder,
+                                    degree = degree, difforder = difforder,
+                                    ngridangles = ngridangles, 
+                                    which.rotacriterion = which.rotacriterion, 
+                                    nrotacores = nrotacores, maxit = maxit, 
+                                    stub = stub, mbf.env = sys.frame())
+      theta.opt <- c(theta.opt, list(theta_opt$theta.opt))
+      cat("\n#### Optimal thetas:", paste(theta_opt$theta.opt, collapse = ", "), 
+          " with criterion", theta_opt$criterion,  "\n\n")
+    }
   }
-  asreml.obj <- newfit(asreml.obj, data = dat)
-  return(asreml.obj)
+  
+  return(theta.opt)
 }
+

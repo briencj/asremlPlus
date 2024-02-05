@@ -4,7 +4,7 @@
 \title{Gets the entry for a test recorded in the test.summary data.frame of an \code{\link{asrtests.object}}}
 \description{Matches the \code{label} in the \code{term} column of the \code{test.summary} \code{data.frame} 
   in the supplied \code{\link{asrtests.object}} and extracts the line for it. It only matches 
-  the last occurence of \code{label}.}
+  the last occurrence of \code{label}.}
 \usage{
 \method{getTestEntry}{asrtests}(asrtests.obj, label, ...)}
 \arguments{

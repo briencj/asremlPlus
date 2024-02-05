@@ -19,7 +19,7 @@ a mixed model using \code{asreml}.
                the fit of a model;
          \item \code{wald.tab}: A \code{data.frame} containing a pseudo-anova 
                table for the fixed terms produced by \code{wald.asreml}. It has 
-               \code{rownames} that corresond to the fixed terms that were 
+               \code{rownames} that correspond to the fixed terms that were 
                fitted and four columns. If denominator degrees of freedom were 
                calculated then the columns are \code{DF}, \code{denDF}, 
                \code{F.inc}, \code{Pr}; otherwise the columns are \code{Df}, 

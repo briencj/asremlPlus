@@ -16,7 +16,7 @@
               degrees of freedom when \code{wald.asreml} is called. Can be \code{none} 
               to suppress the computations, \code{numeric} for numerical methods,
               \code{algebraic} for algebraic methods or \code{default}, the default, 
-              to autommatically choose numeric or algebraic computations depending 
+              to automatically choose numeric or algebraic computations depending 
               on problem size. The denominator degrees of freedom are calculated 
               according to Kenward and Roger (1997) for fixed terms in the dense 
               part of the model.}

@@ -207,6 +207,32 @@ checkEllipsisArgs <- function(funcs, inargs, pkg = NULL)
   invisible()
 }
 
+getTpsmmb.args <- function(inargs)
+{   
+  if (length(names(inargs)))
+  {
+    tpsmmb.args <- formalArgs(getFunction("tpsmmb", where = rlang::ns_env("asremlPlus")))
+    tpsmmb.args <- inargs[intersect(tpsmmb.args, names(inargs))]
+  } else
+    tpsmmb.args <- list()
+  return(tpsmmb.args)
+}
+
+
+#Function to separate checking of tpsmmb args from other arguments
+# - needed because tpsmmb is not an asremlPlus exported function
+checkEllipsisArgs_tpsmmb <- function(funcs, inargs, pkg = NULL)
+{
+  if (length(names(inargs)))
+  {
+    tpsmmb.args <- getTpsmmb.args(inargs)
+    other.inargs <- inargs[setdiff(names(inargs), names(tpsmmb.args))]
+    checkEllipsisArgs(funcs, other.inargs, pkg = NULL)
+  } else
+    tpsmmb.args <- list()
+  invisible(tpsmmb.args)
+}
+
 checkNamesInData <- function(Names, data)
 {
   if (!all(Names %in% names(data)))
@@ -636,16 +662,6 @@ getVpars <- function(asreml.obj, asr4.2)
     effnames <- effnames[len.nvars]
     col.vars <- col.vars[len.nvars]
     col.vars <- as.data.frame(do.call(rbind, col.vars))
-    # #Remove any effect nos
-    # col.vars <- as.data.frame(lapply(col.vars, function(col)
-    # {
-    #   if (any(grepl("_", col)))
-    #   {
-    #     col <- strsplit(col, split = "_")
-    #     col <- sapply(col, function(x) x <- x[[1]])
-    #   }
-    #   return(col)
-    # }))
     #Determine which columns have the same vars, in any order, as the term; select effnames that do
     which.cols <- apply(col.vars, MARGIN = 1, 
                         FUN = function(krow, vars)

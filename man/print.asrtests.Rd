@@ -1,7 +1,7 @@
 \name{print.asrtests}
 \alias{print.asrtests}
 \title{Prints the values in an \code{\link{asrtests.object}}}
-\description{Prints a \code{summary} of the asreml object, the \code{pseusdanova} and 
+\description{Prints a \code{summary} of the asreml object, the \code{pseudoanova} and 
              the test.summary \code{data.frame} that are stored in the 
              \code{\link{asrtests.object}}.}
 \usage{\method{print}{asrtests}(x, which = "key", colourise = FALSE, ...)}

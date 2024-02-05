@@ -2,7 +2,7 @@
 \alias{bootREMLRT.asreml}
 \alias{bootREMLRT}
 \title{Uses the parametric bootstrap to calculate the p-value for a REML ratio test to compare two models.}
-\description{Extracts the REML log likelhood for two \code{asreml} objects 
+\description{Extracts the REML log likelihood for two \code{asreml} objects 
   and forms the observed REML ratio statistic. It assumes that the second 
   \code{asreml} object is the result of fitting a model that is a reduced 
   version of the model for the first object and is considered to the null model. 
@@ -73,7 +73,7 @@
                in conjunction with \code{estimateV.asreml} as a workaround to include components 
                of the variance matrix for variance functions that have not been implemented                
                in \code{estimateV}.}
- \item{fixed.spline.terms}{A \code{character} vector giving one or mor spline terms in the 
+ \item{fixed.spline.terms}{A \code{character} vector giving one or more spline terms in the 
                \code{random} model that are regarded as fixed  and so are to be ignored 
                because they are not regarded as contributing to the variance. The term 
                names are those given in the \code{vparameters} component of the 
@@ -114,11 +114,11 @@
                          can be retrieved using \code{attr(REMLRT.sim, which = "na.action")}; it 
                          contains a list of the simulation numbers that were abandoned because 
                          \code{max.retries} failed to converge for both models.}
-\item{\bold{nunconverged:} the number of unconverged analyses for each bootstap sample, the 
+\item{\bold{nunconverged:} the number of unconverged analyses for each bootstrap sample, the 
                   maximum being \code{max.retries}.}}
 }
 
-\note{A boostrap sample is generated using a multivariate normal distribution with expected value as 
+\note{A bootstrap sample is generated using a multivariate normal distribution with expected value as 
       specified by \code{means} and variance matrix given by \code{V}. Each simulated sample 
       is analysed according to the reduced model and, provided this analysis converges, 
       according to the full.model. If one of these analyses fails to converge, it is 

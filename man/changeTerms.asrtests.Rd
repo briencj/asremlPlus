@@ -2,7 +2,7 @@
 \alias{changeTerms.asrtests}
 \alias{changeTerms}
 \title{Adds and drops terms from one or both of the fixed or random model, replaces 
-       the residual (rcov) model with a new model and changes bounds or intial 
+       the residual (rcov) model with a new model and changes bounds or initial 
        values of terms.}
 \description{The specified terms are simply added or dropped, without testing, from 
        either the fixed or random model and/or the residual (rcov) model replaced. 
@@ -102,7 +102,7 @@
               degrees of freedom when \code{wald.asreml} is called. Can be \code{none} 
               to suppress the computations, \code{numeric} for numerical methods,
               \code{algebraic} for algebraic methods or \code{default}, the default, 
-              to autommatically choose numeric or algebraic computations depending 
+              to automatically choose numeric or algebraic computations depending 
               on problem size. The denominator degrees of freedom are calculated 
               according to Kenward and Roger (1997) for fixed terms in the dense 
               part of the model.}
@@ -138,7 +138,7 @@
                     applied to all the terms in \code{terms}. 
                     If any of the initial.values are equal to NA then they are 
                     left unchanged for those terms.}
- \item{IClikelihood}{A \code{character} that controls both the occurence and the type 
+ \item{IClikelihood}{A \code{character} that controls both the occurrence and the type 
                     of likelihood for information criterion in the \code{test.summary} 
                     of the new \code{\link{asrtests.object}}. If \code{none}, none are 
                     included. Otherwise, if \code{REML} and \code{family} is set to 

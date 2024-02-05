@@ -6,7 +6,7 @@
 \description{Given an \code{\link{alldiffs.object}}, adds or replaces \code{error.intervals} 
              for its \code{prediction} component. If the \code{backtransforms} component is 
              present, the \code{transform.power}, \code{offset} and \code{scale} will be 
-             retieved from the \code{backtransforms} attributes, ignoring the values for the 
+             retrieved from the \code{backtransforms} attributes, ignoring the values for the 
              function's arguments, and the backtransformed 
              \code{error.intervals} will also be calculated. 
 }
@@ -112,7 +112,7 @@
              combination of their levels and values, there will be or is a row in the \code{\link{LSD.frame}} 
              stored in the \code{LSD} component of the \code{\link{alldiffs.object}} when \code{LSDtype} is 
              \code{factor.combinatons}.}
-\item{LSDstatistic}{A \code{\link{character}} nominating one or more of \code{minmum}, \code{q10}, \code{q25},  
+\item{LSDstatistic}{A \code{\link{character}} nominating one or more of \code{minimum}, \code{q10}, \code{q25},  
              \code{mean}, \code{median}, \code{q75}, \code{q90} or \code{maximum} as the value(s) to be 
              stored in the \code{assignedLSD} column in an \code{\link{LSD.frame}}; the values in the 
              \code{assignedLSD} column are used in computing \code{halfLeastSignificant} \code{error.intervals}. 
@@ -134,7 +134,7 @@
              \code{accuracyLSD} in an \code{\link{LSD.frame}}.}
 \item{retain.zeroLSDs}{A \code{\link{logical}} indicating whether to retain or omit LSDs that are zero when 
              calculating the summaries of LSDs.}
-\item{zero.tolerance}{A \code{\link{numeric}} specifying the value such that if an LSD is less than it, it will be 
+\item{zero.tolerance}{A \code{\link{numeric}} specifying the value such that if an LSD is less than it, the LSD will be 
             considered to be zero.}
 \item{\dots}{further arguments passed to \code{\link{recalcLSD.alldiffs}}.}
 }

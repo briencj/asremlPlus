@@ -5,7 +5,7 @@
 \description{Given an \code{\link{alldiffs.object}} with an \code{sed} component, 
              \code{\link{exploreLSDs.alldiffs}} is used to calculate the LSD values for each set of 
              prediction comparisons specified by \code{LSDtype} and \code{LSDby} using each of the 
-             statistics \code{minmum}, \code{q10}, \code{q25},  \code{mean}, \code{median}, \code{q75}, 
+             statistics \code{minimum}, \code{q10}, \code{q25},  \code{mean}, \code{median}, \code{q75}, 
              \code{q90}  and \code{maximum}. Then the numbers of false positives and 
              false negatives resulting from employing each of the calculated LSDs is obtained. For 
              each set of comparisons, the LSD value(s) with the lowest number of false positives are 
@@ -44,7 +44,7 @@
 \item{alpha}{A \code{\link{numeric}} specifying the significance level for an LSD to compare a pair of 
             predictions.}
 \item{digits}{A \code{\link{numeric}} specifying the number of significant digits to retain in rounding 
-            the LSDs before determining the disinct rounded LSDs.}
+            the LSDs before determining the distinct rounded LSDs.}
 \item{false.pos.wt}{When it is not \code{NULL}, it should be a \code{\link{numeric}} that specifies the 
             weight (e.g. 3) to apply to the number of false positives in calculating the weighted sums of  
             the numbers of false positives and negatives in using different LSD statistics to compare 
@@ -54,14 +54,14 @@
             minimize the number of false positives.}
 \item{retain.zeroLSDs}{A \code{\link{logical}} indicating whether to retain or omit LSDs that are zero when 
              calculating the summaries of LSDs.}
-\item{zero.tolerance}{A \code{\link{numeric}} specifying the value such that if an LSD is less than it, it will be 
+\item{zero.tolerance}{A \code{\link{numeric}} specifying the value such that if an LSD is less than it, the LSD will be 
             considered to be zero.}
-\item{\dots}{Provision for passsing arguments to functions called internally - 
+\item{\dots}{Provision for passing arguments to functions called internally - 
             not used at present.}
 }
 \value{A \code{\link{character}} of length one for \code{LSDby} set to \code{overall} or of length equal to the 
              number of observed combinations of the values of the \code{\link{factor}s} and \code{\link{numeric}s} 
-             in \code{LSDby}. Each element of the returned \code{\link{character}} is one of \code{minmum}, 
+             in \code{LSDby}. Each element of the returned \code{\link{character}} is one of \code{minimum}, 
              \code{q10}, \code{q25},  \code{mean}, \code{median}, \code{q75}, \code{q90} or \code{maximum}, 
              reflecting the value(s) of the LSD from amongst those calculated that minimizes the number of false 
              positives; if there is more than one such value, then the element will be correspond to the value 

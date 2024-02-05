@@ -9,7 +9,7 @@
  \item{asreml.obj}{An \code{asreml} object with  
                    a component named \code{call} (from a previous 
                    call to either \code{asreml} or \code{update.asreml}).}
- \item{\dots}{Provision for passsing arguments to functions called internally - 
+ \item{\dots}{Provision for passing arguments to functions called internally - 
             not used at present.}
 }
 \value{An \code{asreml} object.}

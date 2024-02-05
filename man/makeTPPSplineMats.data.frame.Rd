@@ -9,7 +9,7 @@
        \code{\link{addSpatialModelOnIC.asrtests}} and 
        \code{\link{chooseSpatialModelOnIC.asrtests}} when fitting \code{TPPS} models 
        for local spatial variation. There are two methods available, controlled by 
-       \code{asrem.option} for creating and storing the basis functions. 
+       \code{asreml.option} for creating and storing the basis functions. 
        This function is most likely to be called directly when \code{mbf} has been used 
        in creating an \code{asreml.object} and it is desired to use the object in a 
        session subsequent to the session in which the object was created.
@@ -52,25 +52,27 @@
               multiple of the order of nesting.}
  \item{degree}{A \code{\link{numeric}}  of length 2. The degree of polynomial spline to 
               be used for column and row dimensions respectively, in fitting a P-spline 
-              (\code{TPSS}).}
+              (\code{TPPS}).}
  \item{difforder}{A \code{\link{numeric}} of length 2. The order of differencing for 
               column and row dimensions, respectively, in fitting a P-spline 
-              (\code{TPSS}).}
+              (\code{TPPS}).}
  \item{rotateX}{A \code{\link{logical}} indicating whether to rotate the eigenvectors of the 
               penalty matrix, as described by Piepho, Boer and Williams (2022), when 
-              fitting a P-spline (\code{TPSS}). Setting \code{rotateX} to \code{TRUE} 
-              results in an optimized rotation produced by exploring 
-              a two-dimensional grid of rotation angle pairs, and for each pair 
-              analyzing the data under a model that omits the random interaction terms. 
-              The angle pair with the minimum deviance is used to apply an optimized 
-              rotation. Rotation of the eigenvectors is only relevant for 
-              \code{difforder} values greater than 1 and has only been implemented for 
-              \code{difforder} equal to 2.}
+              fitting a P-spline (\code{TPPS}). Setting \code{rotateX} to \code{TRUE} 
+              results in a search for an optimized rotation under a model that omits 
+              the random spline interaction terms. If \code{ngridangles} is set to 
+              \code{NULL}, the optimal rotation us found using an optimizer 
+              (\code{nloptr::bobyqa}). Otherwise, the optimal rotation is found by 
+              exploring the fit over a  two-dimensional grid of rotation angle pairs. 
+              The optimization seeks to optimize the criterion nominated in 
+              \code{which.rotacriterion}. Rotation of the eigenvectors is only relevant 
+              for \code{difforder} values greater than 1 and has only been implemented 
+              for \code{difforder} equal to 2.}
  \item{theta}{A \code{\link{numeric}} of length 2. The angle (in degrees) to be used in 
-              rotating the eignevectors of the penalty matrix of a P-spline (\code{TPSS}).}
+              rotating the eignevectors of the penalty matrix of a P-spline (\code{TPPS}).}
  \item{asreml.option}{A single \code{character} string specifying whether the \code{grp} or 
               \code{mbf} methods are to be used to supply externally formed covariate 
-              matrices to \code{asreml} when fitting a P-spline (\code{TPSS}). Compared 
+              matrices to \code{asreml} when fitting a P-spline (\code{TPPS}). Compared 
               to the \code{mbf} method, the \code{grp} method is somewhat faster, but 
               creates large \code{\link{asrtests.object}}s for which the time it takes 
               to save them can exceed any gains in execution speed. The \code{grp} 
@@ -94,7 +96,7 @@ and to allow rotation of the penalty matrix for the linear component of the inte
 Each combination of a \code{row.covar} and a \code{col.covar} does not have to specify a 
 single observation; for example, to fit a local spatial variation model to the main units 
 of a split-unit design, each combination would correspond to a main unit and all subunits 
-of the main unit would would have the same combination.
+of the main unit would have the same combination.
 
 The data for experiment can be divided \code{sections} and the spline bases and associated 
 data will be produced for each section. If there is more than one \code{sections}, then a 
@@ -103,7 +105,7 @@ a section contains:
 }
 
 \value{A \code{\link{list}} of length equal to the number of sections is produced. Each of 
-       these components is a \code{\link{list}} with 8 or 9 compnents. The component 
+       these components is a \code{\link{list}} with 8 or 9 components. The component 
        named \code{data.plus}, being the input \code{\link{data.frame}} to which has been added 
        the columns required to fit the \code{TPPS} model (the \code{\link{data.frame}} stored 
        in the \code{data} component holds only the covariates from \code{data}).
@@ -125,7 +127,7 @@ a section contains:
        \item \code{TP.CR.n} for n=1:(diff.c*diff.r) = interaction between the
              two X parts for use in fixed model. The first variate is 
              a constant term which should be omitted from the model when the constant 
-             (1) is present. If all elements areincluded in the model then the 
+             (1) is present. If all elements are included in the model then the 
              constant term should be omitted,eg. 
              \code{y ~ -1 + TP.CR.1 + TP.CR.2 + TP.CR.3 + TP.CR.4 + other terms...}
        \item when \code{asreml="grp"} or \code{"sepgrp"}, the spline basis 

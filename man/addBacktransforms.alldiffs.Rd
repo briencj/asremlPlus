@@ -31,7 +31,7 @@
               \code{identity}, \code{log}, \code{inverse}, \code{sqrt}, \code{logit}, 
               \code{probit}, and \code{cloglog}.  The \code{predicted.values} and 
               \code{error.intervals}, if not \code{StandardError} intervals, will be 
-              back-transformed using the inverse fucntion of the \code{transform.function}. 
+              back-transformed using the inverse function of the \code{transform.function}. 
               The \code{standard.error} column will be set to \code{NA}, unless (i) 
               \code{asreml} returns columns named \code{transformed.value} and 
               \code{approx.se}, as well as those called \code{predicted.values} and 
@@ -46,14 +46,14 @@
               \code{alldiffs.obj}. Note that the values that end up in the \code{standard errors} 
               column are approximate for the backtransformed values and are not used in 
               calculating \code{error.intervals}.}
- \item{\dots}{Provision for passsing arguments to functions called internally - 
+ \item{\dots}{Provision for passing arguments to functions called internally - 
             not used at present.}
 }
 \value{An \code{\link{alldiffs.object}} with components 
        \code{predictions}, \code{vcov}, \code{differences}, \code{p.differences}, 
        \code{sed}, \code{LSD} and \code{backtransforms}.
 
-       The \code{backtransforms} component will have the attributes (i) \code{LSDtpe}, 
+       The \code{backtransforms} component will have the attributes (i) \code{LSDtype}, 
        \code{LSDby} and \code{LSDstatistic} added from the \code{predictions} component and 
        (ii) \code{transform.power}, \code{offset}, \code{scale}, and \code{link}.
 }

@@ -13,7 +13,7 @@
        must have fewer parameters. The test is a REML ratio test that is performed using 
        \code{\link{REMLRT.asreml}}, \bold{which is only valid if the models are nested}. 
        It compares the newly fitted model with the fit of the model in 
-       \code{asrtest.obj}. A row is added to the \code{test.summary} 
+       \code{asrtests.obj}. A row is added to the \code{test.summary} 
        \code{data.frame} using the supplied \code{label}. If the newly fitted model 
        is retained, any boundary terms are then removed using 
        \code{\link{rmboundary.asrtests}}. If the models are not nested, then using 
@@ -32,7 +32,7 @@
             bounds = "P", initial.values = NA, ...)}
 \arguments{
  \item{asrtests.obj}{an \code{\link{asrtests.object}} for a fitted model that is a list 
-                containing the componets (i) \code{asreml.obj}, (ii) \code{wald.tab} 
+                containing the components (i) \code{asreml.obj}, (ii) \code{wald.tab} 
                 (iii) \code{test.summary}.}
  \item{oldterms}{Terms, stored as a \code{character}, that are to be removed from the 
                  random model using \code{asreml}. The names of the terms must 
@@ -101,11 +101,11 @@
               degrees of freedom when \code{wald.asreml} is called. Can be \code{none} 
               to suppress the computations, \code{numeric} for numerical methods,
               \code{algebraic} for algebraic methods or \code{default}, the default, 
-              to autommatically choose numeric or algebraic computations depending 
+              to automatically choose numeric or algebraic computations depending 
               on problem size. The denominator degrees of freedom are calculated 
               according to Kenward and Roger (1997) for fixed terms in the dense 
               part of the model.}
- \item{IClikelihood}{A \code{character} that controls both the occurence and the type 
+ \item{IClikelihood}{A \code{character} that controls both the occurrence and the type 
                     of likelihood for information criterion in the \code{test.summary} 
                     of the new \code{\link{asrtests.object}}. If \code{none}, none are 
                     included. Otherwise, if \code{REML}, then the AIC and BIC based 
@@ -158,7 +158,7 @@
                    \code{\link{as.asrtests}}.}
 }
 \value{An \code{\link{asrtests.object}} for a fitted model that is a list 
-                containing the componets (i) \code{asreml.obj}, (ii) \code{wald.tab} 
+                containing the components (i) \code{asreml.obj}, (ii) \code{wald.tab} 
                 (iii) \code{test.summary}.
        If the \code{term} is not in the model, then the supplied \code{asreml} 
        object will be returned. Also, \code{reml.test} will have the likelihood 

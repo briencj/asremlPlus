@@ -422,7 +422,7 @@ test_that("Wheat_spatial_models_asreml42", {
                                         dropRandom = c("Row + Column"), 
                                         nsect = 2,
                                         asreml.option = "grp"), 
-    regexp = "the argument\\(s\\) nsect are not legal arguments for 'changeModelOnIC', 'asreml'")
+    regexp = "the argument\\(s\\) nsect are not legal arguments for 'changeModelOnIC.asrtests', 'asreml'")
   
   # Try TPPS model with grp
   grp.asrt <- addSpatialModelOnIC(init.asrt, spatial.model = "TPPS", 
@@ -594,11 +594,11 @@ test_that("Wheat_spatial_models_asreml42", {
 
   #Try TPP1LS spline
   current.asrt <- addSpatialModelOnIC(init.asrt, spatial.model = "TPPS", 
-                                  row.covar = "cRow", col.covar = "cColumn", 
-                                  row.factor = "Row", col.factor = "Column", 
-                                  dropRandom = "Row + Column", 
-                                  difforder = c(1,1), degree = c(1,1),
-                                  asreml.option = "mbf", IClikelihood = "full")
+                                      row.covar = "cRow", col.covar = "cColumn", 
+                                      row.factor = "Row", col.factor = "Column", 
+                                      dropRandom = "Row + Column", 
+                                      difforder = c(1,1), degree = c(1,1),
+                                      asreml.option = "mbf", IClikelihood = "full")
   info <- infoCriteria(current.asrt$asreml.obj, IClikelihood = "full")
   testthat::expect_equal(info$varDF, 3)
   testthat::expect_lt(abs(info$AIC - 1710.282), 0.10)
@@ -904,6 +904,20 @@ test_that("Wheat76_corr_models_asreml42", {
                            label = "Random Row and Column effects")
   init.asrt <- rmboundary(init.asrt)
   
+  # Try corb(Row):corb(Colum) with corr.orders 0 - Column fits order 2
+  current.asrt <- addSpatialModel(init.asrt, spatial.model = "corr", 
+                                  row.covar = "cRow", col.covar = "cColumn",
+                                  row.factor = "Row", col.factor = "Column",
+                                  corr.funcs = c("corb", "corb"), corr.orders = c(0,0))
+  info <- infoCriteria(current.asrt$asreml.obj, IClikelihood = "full")
+  testthat::expect_equal(info$varDF, 6)
+  testthat::expect_lt(abs(info$AIC - 1668.77), 0.10)
+  vpars <- c("P","P","P","U","U","U","F")
+  names(vpars) <- c("Row", "Column", "Row:Column", "Row:Column!Row!cor1", 
+                    "Row:Column!Column!cor1", "Row:Column!Column!cor2", "units!R")
+  testthat::expect_equal(vpars, current.asrt$asreml.obj$vparameters.con)
+  testthat::expect_equal(nrow(current.asrt$test.summary), 8)
+  
   # Try Row:ar1(Column) model
   current.asrt <- addSpatialModel(init.asrt, spatial.model = "corr", 
                                   row.covar = "cRow", col.covar = "cColumn",
@@ -994,6 +1008,321 @@ test_that("Wheat76_corr_models_asreml42", {
   testthat::expect_equal(names(spatial.asrts$asrts), c("corr", "TPPCS"))
   testthat::expect_true(all(abs(spatial.asrts$spatial.IC$AIC - 
                                   c(1720.891, 1667.540, 1643.467)) < 0.10))
+})  
+
+cat("#### Test for PSA_NW corb spatial models with asreml42\n")
+test_that("PSA_NW_corb_models_asreml42", {
+  skip_if_not_installed("asreml")
+  skip_on_cran()
+  library(dae)
+  library(asreml)
+  library(asremlPlus)
+  
+  data("PSA.NW.dat")
+  #####Split Smarthouse into N & S
+  tmp.dat <- within(PSA.NW.dat, 
+                    {
+                      Half <- fac.recast(Lane, newlevels = rep(1:2, each = 12))
+                      HLane <- fac.recast(Lane, newlevels = rep(1:12, times = 2))
+                    })
+  
+  asreml::asreml.options(extra = 5, ai.sing = TRUE, fail = "soft")
+  
+  #Fit initial model - Lane and Position fixed
+  current.asr <- do.call(asreml, 
+                         list(PSA.14 ~ Lane + Position, 
+                              data=PSA.NW.dat, maxit = 50))
+  info <- infoCriteria(current.asr, IClikelihood = "full")
+  testthat::expect_equal(info$varDF, 1)
+  testthat::expect_lt(abs(info$AIC - 758.7896), 0.10)
+  
+  #Create an asrtests object, removing boundary terms
+  init.asrt <- as.asrtests(current.asr, NULL, NULL, IClikelihood = "full", 
+                           label = "Start with no spatial modelling")
+  init.asrt <- rmboundary(init.asrt)
+
+  new.asrt <- changeTerms(init.asrt, newResidual = "Lane:Position")  
+  #Fit a single-band corb model
+  current.asrt <- addSpatialModel(init.asrt, spatial.model = "corr", 
+                                  row.covar = "cLane", col.covar = "cPosn", 
+                                  row.factor = "Lane", col.factor = "Position",
+                                  corr.funcs = c("corb", "corb"), corr.orders = c(1, 1), 
+                                  IClikelihood = "full")
+  testthat::expect_warning(
+    info <- infoCriteria(current.asrt$asreml.obj, IClikelihood = "full"),
+    regexp = "The following bound terms were discounted:")
+  testthat::expect_equal(info$varDF, 3)
+  testthat::expect_lt(abs(info$AIC - 758.6511), 0.10)
+  vpars <- c("P","U","U","F")
+  names(vpars) <- c("Lane:Position", "Lane:Position!Lane!cor1", 
+                    "Lane:Position!Position!cor1", "units!R")
+  testthat::expect_equal(current.asrt$asreml.obj$vparameters.con, vpars)
+  
+  #Fit a single-band corb model with Residual Lane:Position
+  new.asrt <- changeTerms(init.asrt, newResidual = "Lane:Position")  
+  current.asrt <- addSpatialModel(new.asrt, spatial.model = "corr", 
+                                  row.covar = "cLane", col.covar = "cPosn", 
+                                  row.factor = "Lane", col.factor = "Position",
+                                  corr.funcs = c("corb", "corb"), corr.orders = c(1, 1), 
+                                  IClikelihood = "full")
+  testthat::expect_warning(
+    info <- infoCriteria(current.asrt$asreml.obj, IClikelihood = "full"),
+    regexp = "The following bound terms were discounted:")
+  testthat::expect_equal(info$varDF, 3)
+  testthat::expect_lt(abs(info$AIC - 758.6511), 0.10)
+  vpars <- c("P","U","U","F")
+  names(vpars) <- c("Lane:Position", "Lane:Position!Lane!cor1", 
+                    "Lane:Position!Position!cor1", "Lane:Position!R")
+  testthat::expect_equal(current.asrt$asreml.obj$vparameters.con, vpars)
+
+  #Fit a single-band corb model with unneeded set.terms
+  current.asrt <- addSpatialModel(init.asrt, spatial.model = "corr", 
+                                  row.covar = "cLane", col.covar = "cPosn", 
+                                  row.factor = "Lane", col.factor = "Position",
+                                  corr.funcs = c("corb", "corb"), corr.orders = c(1, 1), 
+                                  set.terms = "units!R", ignore.suffices = FALSE, 
+                                  bounds = "F", 
+                                  IClikelihood = "full")
+  info <- infoCriteria(current.asrt$asreml.obj, IClikelihood = "full")
+  testthat::expect_equal(info$varDF, 3)
+  testthat::expect_lt(abs(info$AIC - 758.6511), 0.10)
+  
+  # Try Lane:corb(Position) model
+  current.asrt <- addSpatialModel(init.asrt, spatial.model = "corr", 
+                                  row.covar = "cLane", col.covar = "cPosn", 
+                                  row.factor = "Lane", col.factor = "Position",
+                                  corr.funcs = c("corb", ""), corr.orders = c(1, 0), 
+                                  IClikelihood = "full")
+  info <- infoCriteria(current.asrt$asreml.obj, IClikelihood = "full")
+  testthat::expect_equal(info$varDF, 2)
+  testthat::expect_lt(abs(info$AIC - 754.4723), 0.10)
+  vpars <- c("P","U","F")
+  names(vpars) <- c("Position:Lane", "Position:Lane!Lane!cor1", "units!R")
+  testthat::expect_equal(current.asrt$asreml.obj$vparameters.con, vpars)
+  
+  # Fit a three-band corb model
+  current.asrt <- addSpatialModel(init.asrt, spatial.model = "corr", 
+                                  row.covar = "cLane", col.covar = "cPosn", 
+                                  row.factor = "Lane", col.factor = "Position",
+                                  corr.funcs = c("corb", "corb"), corr.orders = c(3, 3), 
+                                  IClikelihood = "full")
+  info <- infoCriteria(current.asrt$asreml.obj, IClikelihood = "full")
+  testthat::expect_equal(info$varDF, 7)
+  testthat::expect_lt(abs(info$AIC - 768.0436), 0.10)
+  vpars <- c("P",rep("U",6),"F")
+  names(vpars) <- c("Lane:Position", "Lane:Position!Lane!cor1", 
+                    "Lane:Position!Lane!cor2", "Lane:Position!Lane!cor3", 
+                    "Lane:Position!Position!cor1", "Lane:Position!Position!cor2", 
+                    "Lane:Position!Position!cor3", "units!R")
+  testthat::expect_equal(current.asrt$asreml.obj$vparameters.con, vpars)
+  
+
+  # Fit up to 10-band corb model
+  current.asrt <- addSpatialModel(init.asrt, spatial.model = "corr", 
+                                  row.covar = "cLane", col.covar = "cPosn", 
+                                  row.factor = "Lane", col.factor = "Position",
+                                  corr.funcs = c("corb", "corb"), corr.orders = c(0, 0), 
+                                  IClikelihood = "full")
+  info <- infoCriteria(current.asrt$asreml.obj, IClikelihood = "full")
+  testthat::expect_equal(info$varDF, 3)
+  testthat::expect_lt(abs(info$AIC - 758.6511), 0.10)
+  testthat::expect_equal(current.asrt$test.summary$terms, 
+                         c("Start with no spatial modelling", 
+                           "Add random Lane:Position and fix residual", 
+                           "Try corb(Lane, b = 1)", "Try corb(Lane, b = 2)", 
+                           "Try corb(Position, b = 1)", "Try corb(Position, b = 2)",
+                           "Force positive nugget (residual) variance"))
+  
+  # Fit ar1 for Lane and up to 10-band corb model for Position
+  current.asrt <- addSpatialModel(init.asrt, spatial.model = "corr", 
+                                  row.covar = "cLane", col.covar = "cPosn", 
+                                  row.factor = "Lane", col.factor = "Position",
+                                  corr.funcs = c("ar1", "corb"), corr.orders = c(0, 0), 
+                                  IClikelihood = "full")
+  info <- infoCriteria(current.asrt$asreml.obj, IClikelihood = "full")
+  testthat::expect_equal(info$varDF, 3)
+  testthat::expect_lt(abs(info$AIC - 757.5911 ), 0.10)
+  testthat::expect_equal(current.asrt$test.summary$terms, 
+                         c("Start with no spatial modelling", 
+                           "Add random Lane:Position and fix residual", 
+                           "Try ar1(Lane)", 
+                           "Try corb(Position, b = 1)", "Try corb(Position, b = 2)",
+                           "Force positive nugget (residual) variance"))
+
+  #### Fit separate model to two Halves of the Smarthouse  
+  #Fit initial model - Lane and Position fixed and separate dsum terms
+  current.asr <- do.call(asreml, 
+                         list(PSA.14 ~ at(Half, 1):Lane + at(Half, 2):Lane + 
+                                at(Half, 1):Position + at(Half, 2):Position, 
+                              residual = ~ dsum(~ Lane:Position | Half, levels = 1) + 
+                                dsum(~ Lane:Position | Half, levels = 2), 
+                              data=tmp.dat, maxit = 50))
+  info <- infoCriteria(current.asr, IClikelihood = "full")
+  testthat::expect_equal(info$varDF, 2)
+  testthat::expect_lt(abs(info$AIC - 785.3443), 0.10)
+  
+  #Create an asrtests object, removing boundary terms
+  init.asrt <- as.asrtests(current.asr, NULL, NULL, IClikelihood = "full", 
+                           label = "Start with no spatial modelling")
+  init.asrt <- rmboundary(init.asrt)
+  
+  #Fit a single-band corb model to each Half using separate dsum terms
+  current.asrt <- addSpatialModel(init.asrt, spatial.model = "corr", 
+                                  sections = "Half",
+                                  row.covar = "cLane", col.covar = "cPosn", 
+                                  row.factor = "Lane", col.factor = "Position",
+                                  corr.funcs = c("corb", "corb"), corr.orders = c(1, 1), 
+                                  IClikelihood = "full")
+  testthat::expect_warning(
+    info <- infoCriteria(current.asrt$asreml.obj, IClikelihood = "full"),
+    regexp = "The following bound terms were discounted:")
+  testthat::expect_equal(info$varDF, 4)
+  testthat::expect_lt(abs(info$AIC - 785.6476), 0.10)
+  vpars <- c("P","U","U","P","F","F")
+  names(vpars) <- c("at(Half, '1'):Lane:Position",
+                    "at(Half, '1'):Lane:Position!Lane!cor1", 
+                    "at(Half, '1'):Lane:Position!Position!cor1", 
+                    "at(Half, '2'):Lane:Position", "Half_1!R", "Half_2!R")
+  testthat::expect_equal(current.asrt$asreml.obj$vparameters.con, vpars)
+  
+  #Fit an ar1 model for a single dsum term
+  current.asrt <- addSpatialModel(init.asrt, spatial.model = "corr", 
+                                  sections = "Half",
+                                  row.covar = "cLane", col.covar = "cPosn", 
+                                  row.factor = "Lane", col.factor = "Position",
+                                  corr.funcs = c("ar1", "ar1"), 
+                                  IClikelihood = "full")
+  testthat::expect_warning(
+    info <- infoCriteria(current.asrt$asreml.obj, IClikelihood = "full"),
+    regexp = "The following bound terms were discounted:")
+  testthat::expect_equal(info$varDF, 7)
+  testthat::expect_lt(abs(info$AIC - 790.7611 ), 0.10)
+  vpars <- c("P","U","U","P","U","U","P","F")
+  names(vpars) <- c("at(Half, '1'):Lane:Position",
+                    "at(Half, '1'):Lane:Position!Lane!cor", 
+                    "at(Half, '1'):Lane:Position!Position!cor", 
+                    "at(Half, '2'):Lane:Position", 
+                    "at(Half, '2'):Lane:Position!Lane!cor", 
+                    "at(Half, '2'):Lane:Position!Position!cor", 
+                    "Half_1!R", "Half_2!R")
+  testthat::expect_equal(current.asrt$asreml.obj$vparameters.con, vpars)
+  
+  #Fit initial model - Lane and Position fixed and a single dsum term
+  current.asr <- do.call(asreml, 
+                         list(PSA.14 ~ at(Half, 1):Lane + at(Half, 2):Lane + 
+                                at(Half, 1):Position + at(Half, 2):Position, 
+                              residual = ~ dsum(~ Lane:Position | Half), 
+                              data=tmp.dat, maxit = 50))
+  info <- infoCriteria(current.asr, IClikelihood = "full")
+  testthat::expect_equal(info$varDF, 2)
+  testthat::expect_lt(abs(info$AIC - 785.3443), 0.10)
+  
+  #Create an asrtests object, removing boundary terms
+  init.asrt <- as.asrtests(current.asr, NULL, NULL, IClikelihood = "full", 
+                           label = "Start with no spatial modelling")
+  init.asrt <- rmboundary(init.asrt)
+  
+  #Fit a single-band corb model to each Half using a single dsum term
+  current.asrt <- addSpatialModel(init.asrt, spatial.model = "corr", 
+                                  sections = "Half",
+                                  row.covar = "cLane", col.covar = "cPosn", 
+                                  row.factor = "Lane", col.factor = "Position",
+                                  corr.funcs = c("corb", "corb"), corr.orders = c(1, 1), 
+                                  IClikelihood = "full")
+  testthat::expect_warning(
+    info <- infoCriteria(current.asrt$asreml.obj, IClikelihood = "full"),
+    regexp = "The following bound terms were discounted:")
+  testthat::expect_equal(info$varDF, 4)
+  testthat::expect_lt(abs(info$AIC - 785.6476), 0.10)
+  vpars <- c("P","U","U","P","F","F")
+  names(vpars) <- c("at(Half, '1'):Lane:Position",
+                    "at(Half, '1'):Lane:Position!Lane!cor1", 
+                    "at(Half, '1'):Lane:Position!Position!cor1", 
+                    "at(Half, '2'):Lane:Position", "Half_1!R", "Half_2!R")
+  testthat::expect_equal(current.asrt$asreml.obj$vparameters.con, vpars)
+  
+  #Fit up to a 10-band corb model to each Half using a single dsum term
+  current.asrt <- addSpatialModel(init.asrt, spatial.model = "corr", 
+                                  sections = "Half",
+                                  row.covar = "cLane", col.covar = "cPosn", 
+                                  row.factor = "Lane", col.factor = "Position",
+                                  corr.funcs = c("corb", "corb"), corr.orders = c(0, 0), 
+                                  IClikelihood = "full")
+  info <- infoCriteria(current.asrt$asreml.obj, IClikelihood = "full")
+  testthat::expect_equal(info$varDF, 4)
+  testthat::expect_lt(abs(info$AIC - 785.6476), 0.10)
+  testthat::expect_equal(current.asrt$test.summary$terms, 
+                         c("Start with no spatial modelling", 
+                           "Add random at(Half, '1'):Lane:Position and fix residual for Half 1", 
+                           "Try corb(Lane, b = 1) for Half 1", 
+                           "Try corb(Lane, b = 2) for Half 2", 
+                           "Try corb(Position, b = 1) for Half 1", 
+                           "Try corb(Position, b = 2) for Half 1", 
+                           "Force positive nugget with Half_1!R", 
+                           "Add random at(Half, '2'):Lane:Position and fix residual for Half 2",
+                           "Try corb(Lane, b = 1) for Half 2", 
+                           "Try corb(Position, b = 1) for Half 2", 
+                           "Try corb(Lane, b = 1) and corb(Position, b = 1) for Half 2"))
+  
+  
+  #Fit an ar1 model for a single dsum term
+  current.asrt <- addSpatialModel(init.asrt, spatial.model = "corr", 
+                                  sections = "Half",
+                                  row.covar = "cLane", col.covar = "cPosn", 
+                                  row.factor = "Lane", col.factor = "Position",
+                                  corr.funcs = c("ar1", "ar1"), 
+                                  IClikelihood = "full")
+  testthat::expect_warning(
+    info <- infoCriteria(current.asrt$asreml.obj, IClikelihood = "full"),
+    regexp = "The following bound terms were discounted:")
+  testthat::expect_equal(info$varDF, 7)
+  testthat::expect_lt(abs(info$AIC - 790.7611 ), 0.10)
+  vpars <- c("P","U","U","P","U","U","P","F")
+  names(vpars) <- c("at(Half, '1'):Lane:Position",
+                    "at(Half, '1'):Lane:Position!Lane!cor", 
+                    "at(Half, '1'):Lane:Position!Position!cor", 
+                    "at(Half, '2'):Lane:Position", 
+                    "at(Half, '2'):Lane:Position!Lane!cor", 
+                    "at(Half, '2'):Lane:Position!Position!cor", 
+                    "Half_1!R", "Half_2!R")
+  testthat::expect_equal(current.asrt$asreml.obj$vparameters.con, vpars)
+
+  #Fit initial model - Lane and Position fixed with idh
+  current.asr <- do.call(asreml, 
+                         list(PSA.14 ~ at(Half, 1):Lane + at(Half, 2):Lane + 
+                                at(Half, 1):Position + at(Half, 2):Position, 
+                              residual = ~ idh(Half):HLane:Position, 
+                              data=tmp.dat, maxit = 50))
+  info <- infoCriteria(current.asr, IClikelihood = "full")
+  testthat::expect_equal(info$varDF, 2)
+  testthat::expect_lt(abs(info$AIC - 785.3443), 0.10)
+  
+  #Create an asrtests object, removing boundary terms
+  init.asrt <- as.asrtests(current.asr, NULL, NULL, IClikelihood = "full", 
+                           label = "Start with no spatial modelling")
+  init.asrt <- rmboundary(init.asrt)
+  
+  #Fit a single-band corb model to each Half using a single idh terms
+  current.asrt <- addSpatialModel(init.asrt, spatial.model = "corr", 
+                                  sections = "Half",
+                                  row.covar = "cLane", col.covar = "cPosn", 
+                                  row.factor = "Lane", col.factor = "Position",
+                                  corr.funcs = c("corb", "corb"), corr.orders = c(1, 1), 
+                                  IClikelihood = "full")
+  testthat::expect_warning(
+    info <- infoCriteria(current.asrt$asreml.obj, IClikelihood = "full"),
+    regexp = "The following bound terms were discounted:")
+  testthat::expect_equal(info$varDF, 4)
+  testthat::expect_lt(abs(info$AIC - 785.6476), 0.10)
+  vpars <- c("P","U","U","P","F","F","F")
+  names(vpars) <- c("at(Half, '1'):Lane:Position",
+                    "at(Half, '1'):Lane:Position!Lane!cor1", 
+                    "at(Half, '1'):Lane:Position!Position!cor1", 
+                    "at(Half, '2'):Lane:Position", 
+                    "Half:HLane:Position!R", "Half:HLane:Position!Half_1", 
+                    "Half:HLane:Position!Half_2")
+  testthat::expect_equal(current.asrt$asreml.obj$vparameters.con, vpars)
+
 })  
 
 cat("#### Test for spatial models with asreml42\n")
@@ -1433,20 +1762,24 @@ test_that("HEB25_heterovar_asreml42", {
   testthat::expect_equal(names(tpsLM.mat), c("NW", "NE"))
   testthat::expect_equal(c(nrow(tpsLM.mat$NW$data), nrow(tpsLM.mat$NE$data)), c(264, 264))
   testthat::expect_equal(c(ncol(tpsLM.mat$NW$data), ncol(tpsLM.mat$NE$data)), c(348, 348))
-  testthat::expect_equal(c(nrow(tpsLM.mat$NW$data.plus), nrow(tpsLM.mat$NE$data.plus)), c(1056, 1056))
-  testthat::expect_equal(c(ncol(tpsLM.mat$NW$data.plus), ncol(tpsLM.mat$NE$data.plus)), c(401, 401))
+  testthat::expect_equal(c(nrow(tpsLM.mat$NW$data.plus), nrow(tpsLM.mat$NE$data.plus)), 
+                         c(1056, 1056))
+  testthat::expect_equal(c(ncol(tpsLM.mat$NW$data.plus), ncol(tpsLM.mat$NE$data.plus)), 
+                         c(401, 401))
   #Check that order of dat.plus is the same as in the original tmp.dat
   testthat::expect_equal(tpsLM.mat$NW$data.plus$Snapshot.ID.Tag, tmp.dat$Snapshot.ID.Tag)
   
   #Choose best model for L x M spatial variation
-  HEB25.spatialLM.asrts <- chooseSpatialModelOnIC(HEB25.idh.asrt, 
-                                                  sections = "Smarthouse", 
-                                                  row.covar = "cLane", col.covar = "cMainPosn",
-                                                  row.factor = "Lanes", col.factor = "MainPosn",
-                                                  asreml.option = "grp", return.asrts = "all")
+  HEB25.spatialLM.asrts <- 
+    chooseSpatialModelOnIC(HEB25.idh.asrt, 
+                           sections = "Smarthouse", 
+                           row.covar = "cLane", col.covar = "cMainPosn",
+                           row.factor = "Lanes", col.factor = "MainPosn",
+                           asreml.option = "grp", return.asrts = "all")
   testthat::expect_true(all(abs(HEB25.spatialLM.asrts$spatial.IC$AIC - 
                                   c(525.5955, 488.4491, 474.0910, 473.2412, 479.7447) < 1e-03)))
-  testthat::expect_equal(names(HEB25.spatialLM.asrts$asrts), c("corr",  "TPNCSS", "TPPCS",  "TPP1LS"))
+  testthat::expect_equal(names(HEB25.spatialLM.asrts$asrts), 
+                         c("corr",  "TPNCSS", "TPPCS",  "TPP1LS"))
   summ <- summary(HEB25.spatialLM.asrts$asrts$TPPCS$asreml.obj)$varcomp
   summ$bound[summ$bound == " "] <- "P" #hack to overcome asreml returning spaces
   testthat::expect_equal(nrow(summ), 18)
@@ -1459,34 +1792,40 @@ test_that("HEB25_heterovar_asreml42", {
   
   #Check that calculated spatial.IC is the same as those for models fitted using addSpatialModel
   spatialEach.asrts <- list()
-  spatialEach.asrts[["corr"]] <- addSpatialModelOnIC(HEB25.idh.asrt, spatial.model = "corr", 
-                                                     sections = "Smarthouse", 
-                                                     row.covar = "cLane", col.covar = "cMainPosn",
-                                                     row.factor = "Lanes", col.factor = "MainPosn")
+  spatialEach.asrts[["corr"]] <- 
+    addSpatialModelOnIC(HEB25.idh.asrt, spatial.model = "corr", 
+                        sections = "Smarthouse", 
+                        row.covar = "cLane", col.covar = "cMainPosn",
+                        row.factor = "Lanes", col.factor = "MainPosn")
   testthat::expect_true(any(grepl("NW", spatialEach.asrts[["corr"]]$test.summary$terms)) & 
                           any(grepl("NE", spatialEach.asrts[["corr"]]$test.summary$terms)))
-  spatialEach.asrts[["TPNCSS"]] <- addSpatialModel(HEB25.idh.asrt, spatial.model = "TPN", 
-                                                   sections = "Smarthouse", 
-                                                   row.covar = "cLane", col.covar = "cMainPosn")
+  spatialEach.asrts[["TPNCSS"]] <- 
+    addSpatialModel(HEB25.idh.asrt, spatial.model = "TPN", 
+                    sections = "Smarthouse", 
+                    row.covar = "cLane", col.covar = "cMainPosn")
   testthat::expect_true(any(grepl("NW", spatialEach.asrts[["TPNCSS"]]$test.summary$terms)) & 
                           any(grepl("NE", spatialEach.asrts[["TPNCSS"]]$test.summary$terms)))
-  spatialEach.asrts[["TPPCS"]] <- addSpatialModel(HEB25.idh.asrt, spatial.model = "TPPS", 
-                                                  sections = "Smarthouse", 
-                                                  row.covar = "cLane", col.covar = "cMainPosn",
-                                                  asreml.option = "grp")
+  spatialEach.asrts[["TPPCS"]] <- 
+    addSpatialModel(HEB25.idh.asrt, spatial.model = "TPPS", 
+                    sections = "Smarthouse", 
+                    row.covar = "cLane", col.covar = "cMainPosn",
+                    asreml.option = "grp")
   testthat::expect_true(any(grepl("NW", spatialEach.asrts[["TPPCS"]]$test.summary$terms)) & 
                           any(grepl("NE", spatialEach.asrts[["TPPCS"]]$test.summary$terms)))
-  spatialEach.asrts[["TPP1LS"]] <- addSpatialModel(HEB25.idh.asrt, spatial.model = "TPPS",
-                                                   sections = "Smarthouse", 
-                                                   row.covar = "cLane", col.covar = "cMainPosn",
-                                                   degree = c(1,1), difforder = c(1,1),
-                                                   asreml.option = "grp")
+  spatialEach.asrts[["TPP1LS"]] <- 
+    addSpatialModel(HEB25.idh.asrt, spatial.model = "TPPS",
+                    sections = "Smarthouse", 
+                    row.covar = "cLane", col.covar = "cMainPosn",
+                    degree = c(1,1), difforder = c(1,1),
+                    asreml.option = "grp")
   testthat::expect_true(any(grepl("NW", spatialEach.asrts[["TPP1LS"]]$test.summary$terms)) & 
                           any(grepl("NE", spatialEach.asrts[["TPP1LS"]]$test.summary$terms)))
   infoEach <- do.call(rbind, 
                       lapply(spatialEach.asrts, 
-                             function(asrt) infoCriteria(asrt$asreml.obj, IClikelihood = "full")))
-  testthat::expect_true(all.equal(HEB25.spatialLM.asrts$spatial.IC[c(2,4:5),], infoEach[c(1,3:4), -3], 
+                             function(asrt) infoCriteria(asrt$asreml.obj, 
+                                                         IClikelihood = "full")))
+  testthat::expect_true(all.equal(HEB25.spatialLM.asrts$spatial.IC[c(2,4:5),], 
+                                  infoEach[c(1,3:4), -3], 
                                   tolerance = 1e-05))
   
   #Test convEffectNames2DataFrame.asreml
@@ -1512,17 +1851,20 @@ test_that("HEB25_heterovar_asreml42", {
   testthat::expect_equal(c(nrow(tpsLP.mat$NW$data), nrow(tpsLP.mat$NE$data)), c(528, 528))
   testthat::expect_equal(c(ncol(tpsLP.mat$NW$data), ncol(tpsLP.mat$NE$data)), c(634, 634))
   testthat::expect_equal(c(nrow(tpsLP.mat$NW$data.plus), nrow(tpsLP.mat$NE$data.plus)), c(1056, 1056))
-  testthat::expect_equal(c(ncol(tpsLP.mat$NW$data.plus), ncol(tpsLP.mat$NE$data.plus)), c(687, 687))
+  testthat::expect_equal(c(ncol(tpsLP.mat$NW$data.plus), ncol(tpsLP.mat$NE$data.plus)), 
+                         c(687, 687))
   
   #Choose best model for L x P spatial variation
-  HEB25.spatialLP.asrts <- chooseSpatialModelOnIC(HEB25.idh.asrt,  
-                                                  sections = "Smarthouse", 
-                                                  row.covar = "cLane", col.covar = "cPosition",
-                                                  row.factor = "Lanes", col.factor = "Positions",
-                                                  asreml.option = "grp", return.asrts = "all")
+  HEB25.spatialLP.asrts <- 
+    chooseSpatialModelOnIC(HEB25.idh.asrt,  
+                           sections = "Smarthouse", 
+                           row.covar = "cLane", col.covar = "cPosition",
+                           row.factor = "Lanes", col.factor = "Positions",
+                           asreml.option = "grp", return.asrts = "all")
   testthat::expect_true(all(abs(HEB25.spatialLP.asrts$spatial.IC$AIC - 
                                   c(525.5955, 486.4039, 471.5088, 472.8215, 476.6325) < 0.1)))
-  testthat::expect_equal(names(HEB25.spatialLP.asrts$asrts), c("corr",  "TPNCSS", "TPPCS",  "TPP1LS"))
+  testthat::expect_equal(names(HEB25.spatialLP.asrts$asrts), 
+                         c("corr",  "TPNCSS", "TPPCS",  "TPP1LS"))
   summ <- summary(HEB25.spatialLP.asrts$asrts$TPPCS$asreml.obj)$varcomp
   summ$bound[summ$bound == " "] <- "P" #hack to overcome asreml returning spaces
   testthat::expect_equal(nrow(summ), 19)
@@ -1534,12 +1876,13 @@ test_that("HEB25_heterovar_asreml42", {
                                        "P","P","P","F","P","B","P","P"))
   
   #Return two P-spline models with rotation  for L x P spatial variation
-  HEB25Rot.spatialLP.asrts <- chooseSpatialModelOnIC(HEB25.idh.asrt,  trySpatial = c("TPPCS", "TPP1LS"),
-                                                     sections = "Smarthouse", 
-                                                     row.covar = "cLane", col.covar = "cPosition",
-                                                     row.factor = "Lanes", col.factor = "Positions",
-                                                     rotateX = TRUE, ngridangles = NULL,
-                                                     asreml.option = "grp", return.asrts = "all")
+  HEB25Rot.spatialLP.asrts <- 
+    chooseSpatialModelOnIC(HEB25.idh.asrt,  trySpatial = c("TPPCS", "TPP1LS"),
+                           sections = "Smarthouse", 
+                           row.covar = "cLane", col.covar = "cPosition",
+                           row.factor = "Lanes", col.factor = "Positions",
+                           rotateX = TRUE, ngridangles = NULL,
+                           asreml.option = "grp", return.asrts = "all")
   testthat::expect_true(all(abs(HEB25Rot.spatialLP.asrts$spatial.IC$AIC - 
                                   c(525.5955, 467.3558 , 476.6325) < 0.1)))
   testthat::expect_equal(names(HEB25Rot.spatialLP.asrts$asrts), c("TPPCS",  "TPP1LS"))
@@ -1562,7 +1905,7 @@ test_that("HEB25_heterovar_asreml42", {
                        list(fixed = Dry.Weight ~ Smarthouse + Check + Treatment.1 + 
                               Check:Treatment.1, 
                             random = ~ us(Treatment.1):Genotype.ID + 
-                              (at(Smarthouse, 'NW') + at(Smarthouse, 'NE')):Zones:Mainplots,  #nugget terms
+                              (at(Smarthouse, 'NW') + at(Smarthouse, 'NE')):Zones:Mainplots, #nugget terms
                             residual = ~ dsum(~ Zones:Mainplots | Treat.Smarthouse), 
                             data = tmp.dat, na.action=na.method(y="include", x="include"), 
                             maxit = 100, trace = FALSE))
@@ -1580,14 +1923,16 @@ test_that("HEB25_heterovar_asreml42", {
   #print(HEB25.ds.asrt)
   
   #Choose best model for L x M spatial variation when variance specified using dsum
-  HEB25.spatialLM.ds.asrts <- chooseSpatialModelOnIC(HEB25.ds.asrt, 
-                                                     sections = "Smarthouse", 
-                                                     row.covar = "cLane", col.covar = "cMainPosn",
-                                                     row.factor = "Lanes", col.factor = "MainPosn",
-                                                     asreml.option = "grp", return.asrts = "all")
+  HEB25.spatialLM.ds.asrts <- 
+    chooseSpatialModelOnIC(HEB25.ds.asrt, 
+                           sections = "Smarthouse", 
+                           row.covar = "cLane", col.covar = "cMainPosn",
+                           row.factor = "Lanes", col.factor = "MainPosn",
+                           asreml.option = "grp", return.asrts = "all")
   testthat::expect_true(all(abs(HEB25.spatialLM.ds.asrts$spatial.IC$AIC - 
                                   c(525.5954, 488.4492, 474.0911, 473.2411, 479.7447) < 1e-03)))
-  testthat::expect_equal(names(HEB25.spatialLM.ds.asrts$asrts), c("corr",  "TPNCSS", "TPPCS",  "TPP1LS"))
+  testthat::expect_equal(names(HEB25.spatialLM.ds.asrts$asrts), 
+                         c("corr",  "TPNCSS", "TPPCS",  "TPP1LS"))
   #Check TPPCS
   summ.idh <- summary(HEB25.spatialLM.asrts$asrts$TPPCS$asreml.obj)$varcomp
   summ.idh$bound[summ.idh$bound == " "] <- "P" #hack to overcome asreml returning spaces
@@ -1607,18 +1952,21 @@ test_that("HEB25_heterovar_asreml42", {
                                           "P","P","P","P","P","P"))
   #Two components are missing from dsum
   testthat::expect_equal(rownames(summ.idh)[c(1:8)], rownames(summ.ds)[1:8])
-  # testthat::expect_true(all.equal(summ.idh[-c(6,7,11), 1:2], summ.ds[, 1:2], tolerance = 0.1, 
+  # testthat::expect_true(all.equal(summ.idh[-c(6,7,11), 1:2], 
+  #                                 summ.ds[, 1:2], tolerance = 0.1, 
   #                                 check.attributes = FALSE))
   
   #Choose best model for L x M spatial variation when variance specified using dsum
-  HEB25.spatialLP.ds.asrts <- chooseSpatialModelOnIC(HEB25.ds.asrt,  
-                                                     sections = "Smarthouse", 
-                                                     row.covar = "cLane", col.covar = "cPosition",
-                                                     row.factor = "Lanes", col.factor = "Positions",
-                                                     asreml.option = "grp", return.asrts = "all")
+  HEB25.spatialLP.ds.asrts <- 
+    chooseSpatialModelOnIC(HEB25.ds.asrt,  
+                           sections = "Smarthouse", 
+                           row.covar = "cLane", col.covar = "cPosition",
+                           row.factor = "Lanes", col.factor = "Positions",
+                           asreml.option = "grp", return.asrts = "all")
   testthat::expect_true(all(abs(HEB25.spatialLP.ds.asrts$spatial.IC$AIC - 
                                   c(525.5954, 480.4911, 471.5088, 472.8214, 476.6324) < 0.1)))
-  testthat::expect_equal(names(HEB25.spatialLP.ds.asrts$asrts), c("corr",  "TPNCSS", "TPPCS",  "TPP1LS"))
+  testthat::expect_equal(names(HEB25.spatialLP.ds.asrts$asrts), 
+                         c("corr",  "TPNCSS", "TPPCS",  "TPP1LS"))
   #Check TPPCS
   summ.idh <- summary(HEB25.spatialLP.asrts$asrts$TPPCS$asreml.obj)$varcomp
   summ.idh$bound[summ$bound == " "] <- "P" #hack to overcome asreml returning spaces
@@ -1632,8 +1980,9 @@ test_that("HEB25_heterovar_asreml42", {
   summ.ds <- summary(HEB25.spatialLP.ds.asrts$asrts$corr$asreml.obj)$varcomp
   testthat::expect_equal(rownames(summ.idh)[c(1:4,7:9)], rownames(summ.ds)[c(1:4,8:10)])
   #idh and ds do not give equivalent answers
-  #testthat::expect_true(all.equal(summ.idh[-11,"component"], summ.ds[,"component"], tolerance = 1e-03, 
-  #                                 check.attributes = FALSE))
+  #testthat::expect_true(all.equal(summ.idh[-11,"component"], 
+  #                                summ.ds[,"component"], tolerance = 1e-03, 
+  #                                check.attributes = FALSE))
   infoAIC <- infoCriteria(list(idh = HEB25.spatialLP.asrts$asrts$corr$asreml.obj, 
                             ds = HEB25.spatialLP.ds.asrts$asrts$corr$asreml.obj))["AIC"]
   testthat::expect_true((infoAIC$AIC[1] - infoAIC$AIC[2]) >5)

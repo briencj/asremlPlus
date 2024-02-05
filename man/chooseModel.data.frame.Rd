@@ -21,7 +21,7 @@
 }
 \arguments{
  \item{object}{a \code{\link{data.frame}} object containing the results of hypothesis tests for a 
-              set of terms. It components shoud include \code{terms}, \code{p.values}, 
+              set of terms. It components should include \code{terms}, \code{p.values}, 
               and, if not set to \code{NA}, \code{DF} and \code{denDF}.}
  \item{terms}{A \code{character} giving the name of the column in \code{object} containing the 
               terms corresponding to the \code{p.values}. If \code{NULL}, it is assumed that 
@@ -56,7 +56,7 @@
               The names of the rows and columns should match the those elements of 
               \code{terms} that are to be tested.}
  \item{alpha}{The significance level for the hypothesis testing.}
- \item{\dots}{Provision for passsing arguments to functions called internally - 
+ \item{\dots}{Provision for passing arguments to functions called internally - 
             not used at present.}
 }
 \value{A list containing:
@@ -66,7 +66,7 @@
                provided \code{omit.DF =} \code{FALSE}, it has the same columns as a 
               \code{test.summary} from an \code{\link{asrtests.object}}
          \item \code{sig.tests}: a \code{character vector} whose elements are the 
-                the significant terms amongst those tested.}
+                significant terms amongst those tested.}
 }
 
 \author{Chris Brien}

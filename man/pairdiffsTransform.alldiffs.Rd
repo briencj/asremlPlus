@@ -10,7 +10,7 @@
              contains the differences between predictions with this pair of levels for all of 
              the combinations of the levels of the other factors in the \code{classify} of the 
              \code{\link{alldiffs.object}}. These prediction differences are obtained using 
-             \code{\link{linTransform}} by forming a suitable contrast matrix to specfy 
+             \code{\link{linTransform}} by forming a suitable contrast matrix to specify 
              the \code{linear.transformation}. This function has the advantage that the 
              factors indexing the differences are included in the components of the 
              \code{\link{alldiffs.object}}s.
@@ -131,7 +131,7 @@
              combination of their levels and values, there will be or is a row in the \code{\link{LSD.frame}} 
              stored in the \code{LSD} component of the \code{\link{alldiffs.object}} when \code{LSDtype} is 
              \code{factor.combinatons}.}
-\item{LSDstatistic}{A \code{\link{character}} nominating one or more of \code{minmum}, \code{q10}, \code{q25},  
+\item{LSDstatistic}{A \code{\link{character}} nominating one or more of \code{minimum}, \code{q10}, \code{q25},  
              \code{mean}, \code{median}, \code{q75}, \code{q90} or \code{maximum} as the value(s) to be 
              stored in the \code{assignedLSD} column in an \code{\link{LSD.frame}}; the values in the 
              \code{assignedLSD} column are used in computing \code{halfLeastSignificant} \code{error.intervals}. 

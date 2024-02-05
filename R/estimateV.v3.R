@@ -649,7 +649,7 @@ G.corb <- function(var, term, G.param, cond.fac = "", strterm = FALSE)
   asr4.2 <- isASReml4_2Loaded(4.2, notloaded.fault = FALSE)
   #Get the correlation parameter and generate matrix
   if (asr4.2)
-    nbands <- table(G.param[[1]][[var]]$con)["U"]
+    nbands <- table(G.param[[term]][[var]]$con)["U"]
   else
     nbands <- table(G.param[[1]][[var]]$con)["P"]
   if (strterm)

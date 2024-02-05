@@ -10,7 +10,7 @@
        (i) a table of all pairwise differences of the predictions, 
        (ii) the p-value of each pairwise difference, and 
        (iii) the minimum, mean, maximum and accuracy of LSD values. 
-       Predictions that are aliased (or nonestimable) are removed from the 
+       Predictions that are aliased (or inestimable) are removed from the 
        \code{predictions} component of the \code{\link{alldiffs.object}} and 
        standard errors of differences involving them are removed from the \code{sed} 
        component. 
@@ -31,7 +31,7 @@
        than the absolute value of the observed difference divided by its standard error. The 
        p-values are stored in the \code{p.differences} component. The degrees of freedom of 
        the t-distribution is the degrees of freedom stored in the \code{tdf} attribute of 
-       the \code{\link{alldiffs.object}}. This t-distibrution is also used in calculating 
+       the \code{\link{alldiffs.object}}. This t-distribution is also used in calculating 
        the LSD statistics stored in the \code{LSD} component of the \code{\link{alldiffs.object}}.
 }
 \usage{
@@ -126,7 +126,7 @@
              combination of their levels and values, there will be or is a row in the \code{\link{LSD.frame}} 
              stored in the \code{LSD} component of the \code{\link{alldiffs.object}} when \code{LSDtype} is 
              \code{factor.combinatons}.}
-\item{LSDstatistic}{A \code{\link{character}} nominating one or more of \code{minmum}, \code{q10}, \code{q25},  
+\item{LSDstatistic}{A \code{\link{character}} nominating one or more of \code{minimum}, \code{q10}, \code{q25},  
              \code{mean}, \code{median}, \code{q75}, \code{q90} or \code{maximum} as the value(s) to be 
              stored in the \code{assignedLSD} column in an \code{\link{LSD.frame}}; the values in the 
              \code{assignedLSD} column are used in computing \code{halfLeastSignificant} \code{error.intervals}. 
@@ -148,7 +148,7 @@
              \code{accuracyLSD} in an \code{\link{LSD.frame}}.}
 \item{retain.zeroLSDs}{A \code{\link{logical}} indicating whether to retain or omit LSDs that are zero when 
              calculating the summaries of LSDs.}
-\item{zero.tolerance}{A \code{\link{numeric}} specifying the value such that if an LSD is less than it, it will be 
+\item{zero.tolerance}{A \code{\link{numeric}} specifying the value such that if an LSD is less than it, the LSD will be 
             considered to be zero.}
 \item{backtransforms}{A \code{data.frame} containing the backtransformed values of the predicted 
                     values  that is consistent with the \code{predictions} component, except 
@@ -212,7 +212,7 @@
               \code{identity}, \code{log}, \code{inverse}, \code{sqrt}, \code{logit}, 
               \code{probit}, and \code{cloglog}.  The \code{predicted.values} and 
               \code{error.intervals}, if not \code{StandardError} intervals, will be 
-              back-transformed using the inverse fucntion of the \code{transform.function}. 
+              back-transformed using the inverse function of the \code{transform.function}. 
               The \code{standard.error} column will be set to \code{NA}, unless (i) 
               \code{asreml} returns columns named \code{transformed.value} and 
               \code{approx.se}, as well as those called \code{predicted.values} and 

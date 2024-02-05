@@ -58,7 +58,7 @@
 \arguments{
 \item{alldiffs.obj}{An \code{\link{alldiffs.object}}.}
 \item{classify}{A \code{\link{character}} string giving the variables that 
-                 define the margins of the multiway table correponding to the 
+                 define the margins of the multiway table corresponding to the 
                  \code{predictions} in \code{alldiffs.obj}. 
                  Multiway tables are specified by forming an interaction type 
                  term from the classifying variables, that is, separating the 
@@ -84,7 +84,7 @@
                \code{A} and \code{B} being made additive for the \code{\link{factor}s} 
                \code{A} and \code{B}. The submodel space corresponding to \code{A + B} is 
                a subspace of the space \code{A:B}. In this case both the submodel and the 
-               the classify involve only the factors A and B. To fit an intercept-only 
+               classify involve only the factors A and B. To fit an intercept-only 
                submodel, specify \code{linear.transformation} to be the formula \code{~1}.
                
                If a \code{\link{matrix}} is provided then it will be 
@@ -183,7 +183,7 @@
              combination of their levels and values, there will be or is a row in the \code{\link{LSD.frame}} 
              stored in the \code{LSD} component of the \code{\link{alldiffs.object}} when \code{LSDtype} is 
              \code{factor.combinatons}.}
-\item{LSDstatistic}{A \code{\link{character}} nominating one or more of \code{minmum}, \code{q10}, \code{q25},  
+\item{LSDstatistic}{A \code{\link{character}} nominating one or more of \code{minimum}, \code{q10}, \code{q25},  
              \code{mean}, \code{median}, \code{q75}, \code{q90} or \code{maximum} as the value(s) to be 
              stored in the \code{assignedLSD} column in an \code{\link{LSD.frame}}; the values in the 
              \code{assignedLSD} column are used in computing \code{halfLeastSignificant} \code{error.intervals}. 
@@ -204,7 +204,7 @@
              proportion of the assigned LSD value. The calculated values are stored in the column named 
              \code{accuracyLSD} in an \code{\link{LSD.frame}}.}
 \item{zero.tolerance}{A \code{\link{numeric}} specifying the value such that if a \code{predicted.value}, 
-             its variance-covariance, or an \code{LSD} is less than it, it will be 
+             its variance-covariance, or an \code{LSD} is less than it, the LSD will be 
              considered to be zero.}
 \item{response}{A \code{character} specifying the response variable for the 
                     predictions. It is stored as an attribute to the \code{\link{alldiffs.object}} .}
@@ -250,7 +250,7 @@
        and LSD statistics.
 
        If the supplied \code{\link{alldiffs.object}} contained a \code{backtransforms} 
-       componnent, then the returned \code{\link{alldiffs.object}} will contain 
+       component, then the returned \code{\link{alldiffs.object}} will contain 
        a \code{backtransforms} component with the backtransformed linear transformation 
        of the predictions. The backtransformation will, after backtransforming for any 
        power transformation, subtract the \code{offset} and then divide by the \code{scale}.

@@ -24,13 +24,13 @@
               degrees of freedom when \code{wald.asreml} is called. Can be \code{none} 
               to suppress the computations, \code{numeric} for numerical methods,
               \code{algebraic} for algebraic methods or \code{default}, the default, 
-              to autommatically choose numeric or algebraic computations depending 
+              to automatically choose numeric or algebraic computations depending 
               on problem size. The denominator degrees of freedom are calculated 
               according to Kenward and Roger (1997) for fixed terms in the dense 
               part of the model.}
  \item{dDF.na}{The method to use to obtain substitute denominator degrees of freedom. 
               when the numeric or algebraic methods produce an \code{NA}. If 
-              \code{dDF.na = "none"}, no subtitute denominator degrees of freedom 
+              \code{dDF.na = "none"}, no substitute denominator degrees of freedom 
               are employed; if \code{dDF.na = "residual"}, 
               the residual degrees of freedom from \code{asreml.obj$nedf} are used; 
               if \code{dDF.na = "maximum"}, the maximum of those denDF that are available, 

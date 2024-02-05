@@ -31,7 +31,7 @@
             \code{asreml.obj}.}
  \item{sep}{A \code{\link{character}} specifying the separator of factors/variables 
             in the \code{term}.}
- \item{\dots}{Provision for passsing arguments to functions called internally - 
+ \item{\dots}{Provision for passing arguments to functions called internally - 
             not used at present.}
 }
 \value{A \code{\link{data.frame}} with columns for the factors and variables in \code{term}. 

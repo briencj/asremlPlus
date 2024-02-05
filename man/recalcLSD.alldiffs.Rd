@@ -47,7 +47,7 @@ to modify both the error.intervals and the \code{\link{LSD.frame}}.}
              combination of their levels and values, there will be or is a row in the \code{\link{LSD.frame}} 
              stored in the \code{LSD} component of the \code{\link{alldiffs.object}} when \code{LSDtype} is 
              \code{factor.combinatons}.}
-\item{LSDstatistic}{A \code{\link{character}} nominating one or more of \code{minmum}, \code{q10}, \code{q25},  
+\item{LSDstatistic}{A \code{\link{character}} nominating one or more of \code{minimum}, \code{q10}, \code{q25},  
              \code{mean}, \code{median}, \code{q75}, \code{q90} or \code{maximum} as the value(s) to be 
              stored in the \code{assignedLSD} column in an \code{\link{LSD.frame}}; the values in the 
              \code{assignedLSD} column are used in computing \code{halfLeastSignificant} \code{error.intervals}. 
@@ -71,7 +71,7 @@ to modify both the error.intervals and the \code{\link{LSD.frame}}.}
               It is stored as an attribute to the \code{\link{alldiffs.object}}.}
 
 \item{\dots}{further arguments passed to \code{\link{allDifferences.data.frame}}; 
-              attributes \code{tranform.power}, \code{offset} and \code{scale} cannot be passed.}
+              attributes \code{transform.power}, \code{offset} and \code{scale} cannot be passed.}
 }
 \value{An \code{\link{alldiffs.object}} with components 
        \code{predictions}, \code{vcov}, \code{differences}, \code{p.differences} 

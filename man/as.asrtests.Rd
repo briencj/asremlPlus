@@ -2,7 +2,7 @@
 \alias{as.asrtests}
 \title{Forms an asrtests object that stores (i) a fitted asreml object, 
        (ii) a pseudo-anova table for the fixed terms and (iii) a history of 
-       changes and hypthesis testing used in obtaining the model.}
+       changes and hypothesis testing used in obtaining the model.}
 \description{An \code{\link{asrtests.object}} that is a \code{list} consisting of 
              the components \code{asreml.obj}, \code{wald.tab} and \code{test.summary}.
 
@@ -11,7 +11,7 @@
 
              If there is no \code{wald.tab}, \code{wald.asreml} is called. In all cases, 
              \code{\link{recalcWaldTab}} is called and any changes made as specified by the 
-             the \code{\link{recalcWaldTab}} arguments supplied via \code{\dots}.
+             \code{\link{recalcWaldTab}} arguments supplied via \code{\dots}.
 
              The \code{label} argument can be used to include an entry in \code{test.summary} 
              for the starting model. If a \code{label} is included, (i) the information criteria 
@@ -41,7 +41,7 @@ as.asrtests(asreml.obj, wald.tab = NULL, test.summary = NULL,
               degrees of freedom when \code{wald.asreml} is called. Can be \code{none} 
               to suppress the computations, \code{numeric} for numerical methods,
               \code{algebraic} for algebraic methods or \code{default}, the default, 
-              to autommatically choose numeric or algebraic computations depending 
+              to automatically choose numeric or algebraic computations depending 
               on problem size. The denominator degrees of freedom are calculated 
               according to Kenward and Roger (1997) for fixed terms in the dense 
               part of the model.}
@@ -49,7 +49,7 @@ as.asrtests(asreml.obj, wald.tab = NULL, test.summary = NULL,
               \code{test.summary} to indicate as far as is possible the nature of the 
               model that has been fitted. The \code{action} column in \code{test.summary} 
               will be \code{Starting model}.}
- \item{IClikelihood}{A \code{character} that controls both the occurence and the type 
+ \item{IClikelihood}{A \code{character} that controls both the occurrence and the type 
                     of likelihood for information criterion in the \code{test.summary} 
                     of the new \code{\link{asrtests.object}}. If \code{none}, none are 
                     included. Otherwise, if \code{REML}, then the AIC and BIC based 

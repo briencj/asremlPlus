@@ -40,7 +40,7 @@
                in conjunction with \code{estimateV.asreml} as a workaround to include components 
                of the variance matrix for variance functions that have not been implemented                
                in \code{estimateV}.}
- \item{fixed.spline.terms}{A \code{character} vector giving one or mor spline terms in the 
+ \item{fixed.spline.terms}{A \code{character} vector giving one or more spline terms in the 
                \code{random} model that are regarded as fixed  and so are to be ignored because 
                they are not regarded as contributing to the variance. The term names are those
                given in the \code{vparameters} component of the \code{asreml} object or the 
@@ -50,7 +50,7 @@
                     will result in a variance parameter in the \code{random} model being excluded 
                     from contributing to the variance. If set to \code{NULL} then none will
                     be excluded.}
- \item{\dots}{Provision for passsing arguments to functions called internally - 
+ \item{\dots}{Provision for passing arguments to functions called internally - 
             not used at present.}
 }
  \value{A \code{matrix} containing the estimated variance matrix.}

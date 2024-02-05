@@ -17,7 +17,7 @@ test_that("GLMdiffs_budworm_asreml42", {
   df$numalive <- df$N-df$numdead
   df$p <- df$numdead/df$N
   
-  
+  asreml.options(pworkspace = "1gb")
   as1 <- asreml(p ~ ldose + sex, family=asr_binomial(total=N), data=df)
   testthat::expect_warning(
     diffs <- predictPlus(as1, classify = "sex:ldose", levels = list(ldose = 0:5),

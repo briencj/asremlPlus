@@ -4,7 +4,7 @@
 \title{Plots a heat map of computed LSD values for pairwise differences between predictions.}
 \description{Produces a heat-map plot of the computed  LSD values for pairwise differences between 
              predictions by multiplying the values stored in the \code{sed} component of an 
-             \code{all.diffs} object by the \code{t}-value for the \code{df} stored in the  
+             \code{alldiffs} object by the \code{t}-value for the \code{df} stored in the  
              \code{tdf} attribute of the object. 
              This component is generally a matrix whose rows and columns 
              are labelled by the levels of one or more factors, the set of labels being 
@@ -51,7 +51,7 @@
              greater than zero. Grids are most useful when two or more factors index the 
              rows and columns of each plot.}
   \item{triangles}{A \code{character} indicating whether the plot should include the 
-             \code{lower}, \code{upper} or \code{both} traingle(s).}
+             \code{lower}, \code{upper} or \code{both} triangle(s).}
 \item{title}{A \code{character} string giving the main title for the plot and to which 
               is appended the levels combination of the sectioning factors, if any, for each plot.}
  \item{axis.labels}{A \code{logical} indicating whether a label is to be added to the x- and y-axes. 
@@ -62,7 +62,7 @@
                   of the \code{heatmap}.}
  \item{sep}{A \code{character} giving the characters separating the levels of different 
                factors in the row and column names of the \code{sed} component. }
- \item{colours}{A vector of of colours to be passed to the \code{ggplot} function 
+ \item{colours}{A vector of colours to be passed to the \code{ggplot} function 
                 \code{scale\_colour\_gradientn}.}
  \item{ggplotFuncs}{A \code{\link{list}}, each element of which contains the 
                 results of evaluating a \code{\link{ggplot}} function. 

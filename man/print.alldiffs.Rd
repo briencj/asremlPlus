@@ -3,7 +3,7 @@
 \title{Prints the values in an \code{\link{alldiffs.object}} in a nice format.}
 \description{Prints the predictions and standard errors from a fitted model, 
   including the attributes of the \code{\link{predictions.frame}}. Also prints out all 
-  pairwise differences between the predictions to 2 signigicant figures,  
+  pairwise differences between the predictions to 2 significant figures,  
   along with their p-values and standard errors to 4 decimal places. If LSDs are 
   requested the mean, minimum and maximum LSDs will be printed.}
 \usage{\method{print}{alldiffs}(x, which = "all", colourise = FALSE, ...)}

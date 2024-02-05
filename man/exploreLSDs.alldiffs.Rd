@@ -45,16 +45,16 @@
 \item{alpha}{A \code{\link{numeric}} specifying the significance level for an LSD to compare a pair of 
             predictions.}
 \item{digits}{A \code{\link{numeric}} specifying the number of significant digits to retain in rounding 
-            the LSDs before determining the disinct rounded LSDs.}
+            the LSDs before determining the distinct rounded LSDs.}
 \item{retain.zeroLSDs}{A \code{\link{logical}} indicating whether to retain or omit LSDs that are zero when 
              calculating the summaries of LSDs.}
-\item{zero.tolerance}{A \code{\link{numeric}} specifying the value such that if an LSD is less than it, it will be 
+\item{zero.tolerance}{A \code{\link{numeric}} specifying the value such that if an LSD is less than it, the LSD will be 
             considered to be zero.}
 \item{plotHistogram}{A \code{\link{logical}} indicating whether or not histograms of the LSD values are to 
             be plotted. The \code{LSDtype} argument controls whether one histogram of all LSD values is 
             plotted or histograms are plotted for each combination of the levels of the factors specified 
             by the \code{LSDby} argument.}
-\item{\dots}{Provision for passsing arguments to functions called internally - 
+\item{\dots}{Provision for passing arguments to functions called internally - 
             not used at present.}
 }
 \value{A \code{\link{list}} with components 

@@ -3,8 +3,8 @@
 [![Project Status: Active:  The project has reached a stable, usable state and is being actively developed.](http://www.repostatus.org/badges/latest/active.svg)](http://www.repostatus.org/#active)
 [![minimal R version](https://img.shields.io/badge/R%3E%3D-2.10.0-6666ff.svg)](https://cran.r-project.org/)
 [![CRAN_Status_Badge](http://www.r-pkg.org/badges/version/asremlPlus)](https://cran.r-project.org/package=asremlPlus)
-[![packageversion](https://img.shields.io/badge/Package%20version-4.4.25-orange.svg?style=flat-square)](/commits/master)
-[![Last-changedate](https://img.shields.io/badge/last%20change-2024--01--15-yellowgreen.svg)](/commits/master)
+[![packageversion](https://img.shields.io/badge/Package%20version-4.4.27-orange.svg?style=flat-square)](/commits/master)
+[![Last-changedate](https://img.shields.io/badge/last%20change-2024--02--05-yellowgreen.svg)](/commits/master)
 [![Licence](https://img.shields.io/github/license/mashape/apistatus.svg)](http://choosealicense.com/licenses/mit/)
 [![Downloads](https://cranlogs.r-pkg.org/badges/last-week/asremlPlus)](commits/master)
 
@@ -45,14 +45,13 @@ If you have not previously installed `asremlPlus` then you could first install i
 
 Otherwise, you will need to install its dependencies manually:
 
-`install.packages(c("dae", "ggplot2", "reshape", "plyr", "dplyr", "stringr", "RColorBrewer", `
-`                   "foreach", "parallel", "doParallel"))`
+`install.packages(c("dae", "devtools", "doParallel", "dplyr", "foreach", "ggplot2", 
+"nloptr", "parallel", "qqplotr", `
+`"RColorBrewer", "reshape2", "rlang", "sticky", "stringr"))`
 
 ## What is does
 
-It assists in automating the testing of terms in mixed models when `asreml-R` is used 
-to fit the models. A history of the fitting of a sequence of models is kept in a data frame. 
-Procedures are available for choosing models that conform to the hierarchy or marginality principle. It can also be used to display, in tables and graphs, predictions obtained from a mixed model using your favourite model fitting functions and to explore differences between predictions. As a general rule functions that are methods for `asreml` and `asrtests` objects require `asreml-R`; on the other hand, functions that are methods for `alldiffs` and `data.frame` objects do not require `asreml-R`.
+It assists in automating the selection of terms to include in mixed models when 'asreml-R' is used to fit the models. A history of the fitting of a sequence of models is kept in a data frame. Procedures are available for choosing models that conform to the hierarchy or marginality principle and for fitting and choosing between two-dimensional spatial models using correlation, natural cubic smoothing spline and P-spline models. Having obtained predictions from a linear mixed model using your favourite model fitting functions, it can also be used to compute linear functions and contrasts of predictions, to investigate prediction differences and to plot predictions. As a general rule, functions that are methods for `asreml` and `asrtests` objects require `asreml-R`; on the other hand, functions that are methods for `alldiffs` and `data.frame` objects do not require `asreml-R`.
 
 The use of the package is exemplified in four vignettes: [Wheat.analysis vignette](./vignettes/Wheat.analysis.pdf), [Wheat.infoCriteria vignette](./vignettes/Wheat.infoCriteria.pdf), [Ladybird asreml vignette](./vignettes/Ladybird.asreml.pdf) and [Ladybird lm vignette](./vignettes/Ladybird.asreml.pdf). They can be accessed via `vignette(name, package = "asremlPlus")`, where `name` is one of `"Wheat.analysis"`, `"Wheat.infoCriteria"`, `"Ladybird.asreml"` or `"Ladybird.lm"`.
 
@@ -60,17 +59,17 @@ The content falls into the following natural groupings:
 
 (i) Data, 
 
-(ii) Object manipulation functions, 
+(ii) Model modification functions, 
 
-(iii) Model modification functions, 
+(iii) Model selection and description functions, 
 
-(iv) Model testing functions, 
+(iv) Model diagnostics and simulation functions, 
 
-(v) Model diagnostics functions, 
+(v) Prediction production and presentation functions, 
 
-(vi) Prediction production and presentation functions, 
+(vi) Response transformation functions, 
 
-(vii) Response transformation functions, and 
+(vii) Object manipulation functions, and 
 
 (viii) Miscellaneous functions. 
 
@@ -78,16 +77,19 @@ For a list of the functions for each group, see the help for `asremlPlus-package
   
 ## What it needs  
   
-To use those functon in `asremlPlus` that are methods for `asreml` or `asrtests` objects, you must have a licensed version of the package `asreml`. It provides a computationally efficient algorithm for fitting mixed models using Residual Maximum Likelihood. It can be purchased from 'VSNi' <http://www.vsni.co.uk/> as `asreml-R`, who will supply a zip file for local installation/updating.
+To use those functon in `asremlPlus` that are methods for `asreml` or `asrtests` objects, you must have a licensed version of the package `asreml`. It provides a computationally efficient algorithm for fitting mixed models using Residual Maximum Likelihood. A license can be purchased from 'VSNi' <http://www.vsni.co.uk/> as `asreml-R`, who will supply a zip file for local installation/updating.
   
-  It also imports [dae](<https://CRAN.R-project.org/package=dae>), [doParallel](<https://CRAN.R-project.org/package=doParallel>), [dplyr](<https://CRAN.R-project.org/package=dplyr>), [foreach](<https://CRAN.R-project.org/package=foreach>), [ggplot2](<https://CRAN.R-project.org/package=ggplot2>), 
+  It also imports [dae](<https://CRAN.R-project.org/package=dae>), 
+[devtools](<https://CRAN.R-project.org/package=devtools>), 
+[doParallel](<https://CRAN.R-project.org/package=doParallel>), [dplyr](<https://CRAN.R-project.org/package=dplyr>), [foreach](<https://CRAN.R-project.org/package=foreach>), [ggplot2](<https://CRAN.R-project.org/package=ggplot2>), 
 'graphics',
 `grDevices`, 
 `methods`, 
+[nloptr](<https://CRAN.R-project.org/package=nloptr>), 
 [parallel](<https://CRAN.R-project.org/package=parallel>), 
-[plyr](<https://CRAN.R-project.org/package=plyr>),
+[qqplotr](<https://CRAN.R-project.org/package=qqplotr>), 
 [RColorBrewer](<https://CRAN.R-project.org/package=RColorBrewer>), 
-[reshape](<https://CRAN.R-project.org/package=reshape>), 
+[reshape2](<https://CRAN.R-project.org/package=reshape>), 
 [rlang](<https://CRAN.R-project.org/package=rlang>), 
 `stats`, 
 [sticky](<https://CRAN.R-project.org/package=sticky>), 

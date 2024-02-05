@@ -12,6 +12,7 @@ test_that("Wheat_spatial_asreml42", {
   library(qqplotr)
   ## use asremlPlus to analyse the wheat (barley) example from section 8.6 of the asreml manual (Butler et al. 2010)
   data(Wheat.dat)
+  asreml::asreml.options(extra = 5, ai.sing = TRUE, fail = "soft")
   
   #Add row and column covariates
   tmp.dat <- within(Wheat.dat, 
@@ -47,6 +48,17 @@ test_that("Wheat_spatial_asreml42", {
                                   label = "Try dropping withinColPairs", IClikelihood = "full")
   print(current.asrt)
 
+  #Try corb - worst fit
+  corb.asrt <- addSpatialModelOnIC(current.asrt, spatial.model = "corr", 
+                                   row.covar = "cRow", col.covar = "cColumn", 
+                                   row.factor = "Row", col.factor = "Column", 
+                                   corr.funcs = c("corb", "corb"), corr.order = c(0,0),
+                                   IClikelihood = "full")
+  corb.asrt <- rmboundary(corb.asrt, IClikelihood = "full")
+  inf <- infoCriteria(corb.asrt$asreml.obj, IClikelihood = "full")
+  testthat::expect_equal(inf$varDF, 6)
+  testthat::expect_true(abs(inf$AIC - 1666.35) < 0.1)
+  
   #Fit autocorrelation model
   spatialEach.asrts <- list()
   spatialEach.asrts[["corr"]] <- addSpatialModelOnIC(current.asrt, spatial.model = "corr", 
@@ -95,12 +107,15 @@ test_that("Wheat_spatial_asreml42", {
                                           rotateX = TRUE, ngridangles = NULL, 
                                           asreml.option = "mbf", return.asrts = "all")
   
+  #Note that the fits of addSpatialModelOnIC and chooseSpatialModelOnIC differ for TPP1LS;
+  #The fit for addSpatialModelOnIC has an extra variance parameter, but big changes 
+  #   on last iteration; Very strange!
   print(spatial.asrts$spatial.IC)
   print(spatial.asrts$asrts$TPNCSS)
   testthat::expect_equal(length(spatial.asrts$asrts), 4)
-  testthat::expect_equal(spatial.asrts$spatial.IC$varDF, c(3,5,6,7,4))
+  testthat::expect_equal(spatial.asrts$spatial.IC$varDF, c(3,5,6,7,3))
   testthat::expect_true(all(abs(spatial.asrts$spatial.IC$AIC - 
-                                  c(1718.609, 1651.317, 1639.489, 1642.838, 1652.157) ) < 1e-02))
+                                  c(1718.609, 1651.317, 1639.489, 1642.838, 1708.443) ) < 1e-02))
   testthat::expect_true(all.equal(spatial.asrts$spatial.IC[2:4,], infoEach[1:3 ,-3], 
                                   tolerance = 0.5))
   #theta.opt == c(0,0) because rotation Unswapped

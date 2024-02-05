@@ -66,7 +66,7 @@
                \code{A} and \code{B} being made additive for the \code{\link{factor}s} 
                \code{A} and \code{B}. The submodel space corresponding to \code{A + B} is 
                a subspace of the space \code{A:B}. In this case both the submodel and the 
-               the classify involve only the factors A and B. To fit an intercept-only 
+               classify involve only the factors A and B. To fit an intercept-only 
                submodel, specify \code{linear.transformation} to be the formula \code{~1}.
                
                If a \code{\link{matrix}} is provided then it will be 
@@ -99,7 +99,7 @@
               It is stored as an attribute to the \code{\link{alldiffs.object}}.}
  \item{wald.tab}{A \code{\link{data.frame}} containing the pseudo-anova table for the 
                fixed terms produced by a call to \code{wald.asreml}. The main 
-               use of it here is in determinining the degrees of freedom for 
+               use of it here is in determining the degrees of freedom for 
                calculating confidence or half-LSD \code{error.intervals} and p-values, 
                the latter to be stored in the \code{p.differences} component of the 
                \code{alldiffs.object} that is created.}
@@ -107,7 +107,7 @@
               when the numeric or algebraic methods produce an \code{NA}. Consistent with 
               when no denDF are available, the default is \code{"residual"} and so the residual 
               degrees of freedom from \code{asreml.obj$nedf} are used. If 
-              \code{dDF.na = "none"}, no subtitute denominator degrees of freedom 
+              \code{dDF.na = "none"}, no substitute denominator degrees of freedom 
               are employed; if \code{dDF.na = "maximum"}, the maximum of those denDF 
               that are available, excluding that for the Intercept, is used; if all 
               denDF are \code{NA}, \code{asreml.obj$nedf} is used. If 
@@ -120,7 +120,7 @@
               Its values will be used when \code{denDF} in a test for a fixed effect
               is \code{NA}. This vector must be the same length as the number of 
               fixed terms, including (Intercept) whose value could be \code{NA}.}
- \item{pairwise}{A logical indicating whether all pairise differences of the
+ \item{pairwise}{A logical indicating whether all pairwise differences of the
                 \code{predictions} and their standard errors and p-values are to be 
                 computed and stored. If \code{tables} is equal to \code{"differences"} 
                 or \code{"all"} or \code{error.intervals} is equal to 
@@ -198,7 +198,7 @@
              combination of their levels and values, there will be or is a row in the \code{\link{LSD.frame}} 
              stored in the \code{LSD} component of the \code{\link{alldiffs.object}} when \code{LSDtype} is 
              \code{factor.combinatons}.}
-\item{LSDstatistic}{A \code{\link{character}} nominating one or more of \code{minmum}, \code{q10}, \code{q25},  
+\item{LSDstatistic}{A \code{\link{character}} nominating one or more of \code{minimum}, \code{q10}, \code{q25},  
              \code{mean}, \code{median}, \code{q75}, \code{q90} or \code{maximum} as the value(s) to be 
              stored in the \code{assignedLSD} column in an \code{\link{LSD.frame}}; the values in the 
              \code{assignedLSD} column are used in computing \code{halfLeastSignificant} \code{error.intervals}. 
@@ -255,7 +255,7 @@
               \code{x.num} or \code{x.fac} are involved in \code{classify} for 
               the predictions, \code{panels} determines whether or not a single 
               panel or multiple panels in a single window are produced. The 
-              \code{panels} argument is ignored for for bar charts.}
+              \code{panels} argument is ignored for bar charts.}
  \item{graphics.device}{A \code{character} specifying a graphics device for plotting. 
               The default is \cr\code{graphics.device = NULL}, which will result 
               in plots being produced on the current graphics device. Setting it to 
@@ -281,7 +281,7 @@
 \item{transform.power}{A \code{\link{numeric}} specifying the power of a transformation, if 
               one has been applied to the response variable. Unless it is equal 
               to 1, the default, back-transforms of the predictions will be 
-              obtained and stored in the \code{backtransorms} component of the 
+              obtained and stored in the \code{backtransforms} component of the 
               \code{\link{alldiffs.object}}. The \code{plots} and \code{tables} arguments 
               control the plotting and output of the \code{predictions} and 
               \code{backtransforms}. 
@@ -291,7 +291,7 @@
 \item{offset}{A number that has been added to each value of the response after any scaling 
                and before applying any power transformation. Unless it is equal to 0, the 
                default, back-transforms of the predictions will be obtained and stored in 
-               the \code{backtransorms} component of the \code{\link{alldiffs.object}}. 
+               the \code{backtransforms} component of the \code{\link{alldiffs.object}}. 
                The \code{plots} and \code{tables} arguments 
               control the plotting and output of the \code{predictions} and 
               \code{backtransforms}. The backtransformation will, after 
@@ -299,7 +299,7 @@
 \item{scale}{A number by which each value of the response has been multiply before adding 
                any offset and applying any power transformation. Unless it is equal to 1, the
                default, back-transforms of the predictions will be obtained and stored in 
-               the \code{backtransorms} component of the \code{\link{alldiffs.object}}. 
+               the \code{backtransforms} component of the \code{\link{alldiffs.object}}. 
                The \code{plots} and \code{tables} arguments 
               control the plotting and output of the \code{predictions} and 
               \code{backtransforms}. The backtransformation will, after backtransforming 
@@ -312,7 +312,7 @@
               \code{identity}, \code{log}, \code{inverse}, \code{sqrt}, \code{logit}, 
               \code{probit}, and \code{cloglog}.  The \code{predicted.values} and 
               \code{error.intervals}, if not \code{StandardError} intervals, will be 
-              back-transformed using the inverse fucntion of the \code{transform.function}. 
+              back-transformed using the inverse function of the \code{transform.function}. 
               The \code{standard.error} column will be set to \code{NA}, unless (i) 
               \code{asreml} returns columns named \code{transformed.value} and 
               \code{approx.se}, as well as those called \code{predicted.values} and 

@@ -2,8 +2,8 @@
 \alias{REMLRT.asreml}
 \alias{REMLRT}
 \title{Performs a REML ratio test to compare two models.}
-\description{Extracts the REML log likelhood and the number of variance 
-  parameters from two \code{asreml} objects. It assumes that that the 
+\description{Extracts the REML log likelihood and the number of variance 
+  parameters from two \code{asreml} objects. It assumes that the 
   first \code{asreml} object corresponds to the null hypothesis and 
   the second \code{asreml} object to the alternative hypothesis for the 
   test being conducted. That is, the second 
@@ -56,7 +56,7 @@
                     will result in a variance parameter being excluded from the count of 
                     estimated variance parameters. If set to \code{NULL} then none will
                     be excluded.}
- \item{\dots}{Provision for passsing arguments to functions called internally - 
+ \item{\dots}{Provision for passing arguments to functions called internally - 
             not used at present.}
 }
 \value{A \code{data.frame} containing the log of the likelihood ratio, its degrees of 
@@ -79,7 +79,7 @@
 
       The test statistic is calculated as \eqn{2(log(REML)_1 - log(REML)_0)}{2(log(REML)_1 - log(REML)_0)}.
 
-      This procedure is only approriate when the null hypothesis is that 
+      This procedure is only appropriate when the null hypothesis is that 
       (i) all parameters are on the boundary of the parameter space (ii) all 
       parameters are in the interior of the parameter space, or (iii) there 
       are two parameters, one of which is on the boundary and the other is not. 

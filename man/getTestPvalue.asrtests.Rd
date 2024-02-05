@@ -4,7 +4,7 @@
 \title{Gets the p-value for a test recorded in the test.summary data.frame of an \code{\link{asrtests.object}}}
 \description{Matches the \code{label} in the \code{term} column of the \code{test.summary} \code{data.frame} 
   in the supplied \code{\link{asrtests.object}} and extracts its p-value. It only matches 
-  the last occurence of \code{label}.}
+  the last occurrence of \code{label}.}
 \usage{
 \method{getTestPvalue}{asrtests}(asrtests.obj, label, ...)}
 \arguments{
@@ -16,7 +16,7 @@
               the \code{term} argument supplied to \code{\link{testranfix.asrtests}. 
                Other arguments will be relevant for other 
               test functions.}}
- \item{\dots}{provision for passsing arguments to functions called internally - 
+ \item{\dots}{provision for passing arguments to functions called internally - 
             not used at present.}
 }
 \value{An \code{numeric} containing the p-value. It can be \code{NA}, for example when a p-value could not be calculated.

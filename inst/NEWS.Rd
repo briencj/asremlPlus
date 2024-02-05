@@ -1,19 +1,31 @@
 \name{news}
 \title{News for Package asremlPlus}
+\section{asremlPlus Version 4.4.27 (2024-02-05}{
+  \itemize{
+  \item Spell check the manual. 
+  \item Revise the detection of variance parameters involving \code{sections} in addSpatialModel.asrtests, addSpatialModelOnIC.asrtests and chooseSpatialModelOnIC.asrtests.
+}}
+\section{asremlPlus Version 4.4.26 (2024-02-01}{
+  \itemize{
+  \item Implement bespoke strategy for fitting \code{corb} correlation models that first fits a random units length term and constrains the residual variance to one. Then, the corb models are fitted and, when \code{corr.orders} is set to 0, up to 10 correlation bands are fitted depending on whether additonal bands improve an information criterion. 
+  \item Fix a bug in estimateV when a \code{corb} function is involved in a variance term and asreml version 4.2 is being used.
+  \item Minor corrections to documentation for makeTPPSplineMats.data.frame, addSpatialModel.asrtests, addSpatialModelOnIC.asrtests or chooseSpatialModelOnIC.asrtests.
+  \item Fixed bugs in passing the arguments for setvarianceterms.call via \ldots from addSpatialModel.asrtests, addSpatialModelOnIC.asrtests and chooseSpatialModelOnIC.asrtests to changeTerms and changeModelOnIC.asrtests.
+  \item Minor revisions to documentation for R2adj.asreml.
+}}
 \section{asremlPlus Version 4.4.25 (2024-01-15}{
   \itemize{
   \item Add an error for a \code{NULL} \code{vcov} component in the \code{alldiffs.obj} supplied to the ratioTransform.alldiffs function.
   \item Add \code{printPlot} argument to plotPredictions.data.frame and change the function to return the plot.
   \item Add function R2adj.asreml to calculate an adjusted coefficient of determination for linear mixed models.
-  \item Fixed bugs in estimateV for \code{asr_str} terms with non-diagonal variance structures. 
-  \item Rectify a problem in extracting the correct columns of the design matrix for some terms that affected estimateV.
+  \item Fixed bugs in estimateV for \code{asr_str} terms with non-diagonal variance structures.   \item Rectify a problem in extracting the correct columns of the design matrix for some terms that affected estimateV.
   \item Update the vignettes.
   \item Add link to GitHub issues page for BugReports in DESCRIPTION file.
 }}
 \section{asremlPlus Version 4.4.24 (2023-12-20}{
   \itemize{
   \item Fix a bug in plotLSDerrors so that the correct errors are now plotted.
-  \item Add argument \code{falso.pos.wt} to pickLSDstatistics.alldiffs, which when it is not \code{NULL} results in mininzing the weighted sum of the false.pos and false.neg comparisons of pairwise differences.
+  \item Add argument \code{false.pos.wt} to pickLSDstatistics.alldiffs, which when it is not \code{NULL} results in mininzing the weighted sum of the false.pos and false.neg comparisons of pairwise differences.
 }}
 \section{asremlPlus Version 4.4.23 (2023-12-12}{
   \itemize{

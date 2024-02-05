@@ -50,7 +50,7 @@
                     For \code{object} a \code{list} only a single value 
                     that is used for all components of the \code{list} has been 
                     implemented.}
- \item{\dots}{Provision for passsing arguments to functions called internally - 
+ \item{\dots}{Provision for passing arguments to functions called internally - 
             not used at present.}
 }
 \value{A \code{\link{data.frame}} containing the numbers of estimated fixed (fixedDF) and variance (varDF) 
@@ -77,8 +77,8 @@
          \code{F} (\code{Fixed}), \code{B} (\code{Boundary}), \code{C} (\code{Constrained}) and 
          \code{S} (\code{Singular}).  
 
-         The calculation of the information criteria is an adaption of the code supplied in File S1 
-         of Verbyla (2019). The log-likeliood is calculated as 
+         The calculation of the information criteria is an adaptation of the code supplied in File S1 
+         of Verbyla (2019). The log-likelihood is calculated as 
          \code{loglik = log(REML) - log(|C|)/2}, 
          where C is the inverse coefficient matrix; the term involving \bold{C} is omitted for \code{REML}. 
          The AIC is calculated as \code{- 2 * loglik + 2 * (varDF + fixedDF)} 
@@ -93,7 +93,7 @@
 \seealso{\code{\link{REMLRT.asreml}}, \code{\link{changeTerms.asrtests}}, \code{\link{changeModelOnIC.asrtests}}}
 \examples{\dontrun{
    data(Wheat.dat)
-   ## Fit several models to the wheat data and caclulate their ICs
+   ## Fit several models to the wheat data and calculate their ICs
    # Fit initial model
    m.max <- asreml(yield ~ Rep + WithinColPairs + Variety, 
                    random = ~ Row + Column + units,

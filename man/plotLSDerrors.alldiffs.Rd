@@ -65,7 +65,7 @@
              greater than zero. Grids are most useful when two or more factors index the 
              rows and columns of each plot.}
   \item{triangles}{A \code{character} indicating whether the plot should include the 
-             \code{lower}, \code{upper} or \code{both} traingle(s).}
+             \code{lower}, \code{upper} or \code{both} triangle(s).}
 \item{title}{A \code{character} string giving the main title for the plot and to which 
               is appended the levels combination of the sectioning factors, if any, for each plot.}
  \item{axis.labels}{A \code{logical} indicating whether a label is to be added to the x- and y-axes. 
@@ -76,7 +76,7 @@
                   of the \code{heatmap}.}
  \item{sep}{A \code{character} giving the characters separating the levels of different 
                factors in the row and column names of the \code{sed} component. }
- \item{colours}{A vector of of colours to be passed to the \code{ggplot} function 
+ \item{colours}{A vector of colours to be passed to the \code{ggplot} function 
                 \code{scale\_colour\_gradientn}.}
  \item{ggplotFuncs}{A \code{\link{list}}, each element of which contains the 
                 results of evaluating a \code{\link{ggplot}} function. 

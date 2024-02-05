@@ -4,7 +4,7 @@
 \description{Loads the specified version of \code{asreml}, provided that it is not already loaded. If the version of \code{asreml} is not the required version, then the loaded version is unloaded first.}
 \usage{loadASRemlVersion(version = 4, ...)}
 \arguments{
- \item{version}{The \code{version} that is to be loaded, the vesion consisting of just the initial 
+ \item{version}{The \code{version} that is to be loaded, the version consisting of just the initial 
                 characters that are significant in the version that should be loaded. 
                 For example, the default value of 4 implies that any version that 
                 begins with \code{"4"} is acceptable. It is used to check that the 

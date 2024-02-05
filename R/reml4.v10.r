@@ -1072,7 +1072,7 @@ atLevelsMatch <- function(new, old, call, single.new.term = FALSE, always.levels
           }
     }
   }
-
+  
   if (is.null(set.terms))
   { 
     if (update)
@@ -1115,6 +1115,8 @@ atLevelsMatch <- function(new, old, call, single.new.term = FALSE, always.levels
     if (asr4)
     {
       gamma.table <- gamma.start$vparameters.table
+      gamma.table <- gamma.table[!grepl("<NotEstimated>", gamma.table$Component),]
+      rownames(gamma.table) <- NULL
       gammas <- gamma.table$Component
     }
     else
@@ -1125,7 +1127,8 @@ atLevelsMatch <- function(new, old, call, single.new.term = FALSE, always.levels
     k <- unlist(lapply(1:nt, 
                        FUN=function(i, set.terms, termslist, ignore.suffices=TRUE)
                        { 
-                         k <- findterm(set.terms[i], termslist, rmDescription=ignore.suffices[i])
+                         k <- findterm(set.terms[i], termslist, 
+                                       rmDescription=ignore.suffices[i])
                          return(k)
                        }, 
                        set.terms=set.terms,
@@ -1152,6 +1155,7 @@ atLevelsMatch <- function(new, old, call, single.new.term = FALSE, always.levels
     languageEl(call, which = "G.param") <- gamma.table
     languageEl(call, which = "R.param") <- gamma.table
   }
+  
   
   #deal with args coming via ...
   tempcall <- list(...)

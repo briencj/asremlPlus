@@ -67,7 +67,7 @@
               yyyymmdd, which can be achieved using \code{as.Date}. However, the levels
               can be non-numeric in nature, provided that \code{x.num} is also set.}
  \item{nonx.fac.order}{A character vector giving the order in which factors other 
-              than \code{x.fac} are to be plotted in facetted plots (i.e. where the 
+              than \code{x.fac} are to be plotted in faceted plots (i.e. where the 
               number of non x factors is greater than 1). The first factor in the vector 
               will be plotted on the X axis (if there is no \code{x.num} or 
               \code{x.fac}. Otherwise, the order of plotting the factors is in 

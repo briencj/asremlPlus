@@ -81,13 +81,13 @@
               degrees of freedom when \code{wald.asreml} is called. Can be \code{none} 
               to suppress the computations, \code{numeric} for numerical methods,
               \code{algebraic} for algebraic methods or \code{default}, the default, 
-              to autommatically choose numeric or algebraic computations depending 
+              to automatically choose numeric or algebraic computations depending 
               on problem size. The denominator degrees of freedom are calculated 
               according to Kenward and Roger (1997) for fixed terms in the dense 
               part of the model.}
  \item{dDF.na}{The method to use to obtain substitute denominator degrees of freedom. 
               when the numeric or algebraic methods produce an \code{NA}. If 
-              \code{dDF.na = "none"}, no subtitute denominator degrees of freedom 
+              \code{dDF.na = "none"}, no substitute denominator degrees of freedom 
               are employed; if \code{dDF.na = "residual"}, 
               the residual degrees of freedom from \code{asreml.obj$nedf} are used; 
               if \code{dDF.na = "maximum"}, the maximum of those denDF that are available, 
@@ -144,7 +144,7 @@
                     applied to all the terms in \code{terms}. 
                     If any of the initial.values are equal to NA then they are 
                     left unchanged for those terms.}
- \item{IClikelihood}{A \code{character} that controls both the occurence and the type 
+ \item{IClikelihood}{A \code{character} that controls both the occurrence and the type 
                     of likelihood for information criterion in the \code{test.summary} 
                     of the new \code{\link{asrtests.object}}. If \code{none}, none are 
                     included. Otherwise, if \code{REML}, then the AIC and BIC based 
@@ -161,7 +161,7 @@
                components (i) \code{asreml.obj}, (ii) \code{wald.tab}, and 
                (iii) \code{test.summary}.;
          \item \code{sig.tests}: a \code{character vector} whose elements are the 
-                the significant terms amongst those tested.}
+                significant terms amongst those tested.}
 }
 \references{Kenward, M. G., & Roger, J. H. (1997). Small sample inference for fixed effects from restricted maximum likelihood. 
             \emph{Biometrics}, \bold{53}, 983-997.}

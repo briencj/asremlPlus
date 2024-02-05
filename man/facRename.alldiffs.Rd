@@ -4,7 +4,7 @@
 \title{Renames \code{\link{factor}}s in the \code{prediction} component of an 
        \code{\link{alldiffs.object}}.}
 \description{Renames \code{\link{factor}}s in the \code{prediction} component of an 
-       \code{\link{alldiffs.object}}. These changes are propogated to the other 
+       \code{\link{alldiffs.object}}. These changes are propagated to the other 
         components and attributes of the \code{\link{alldiffs.object}}.}
 \usage{\method{facRename}{alldiffs}(object, factor.names, newnames,  ...)}
 \arguments{
@@ -15,7 +15,7 @@
  \item{newnames}{A \code{\link{character}} containing the new names of the 
                      \code{\link{factor}}s in the \code{prediction} component 
                      of \code{object}.}
- \item{\dots}{Provision for passsing arguments to functions called internally - 
+ \item{\dots}{Provision for passing arguments to functions called internally - 
             not used at present.}
 }
 \value{A modified \code{\link{alldiffs.object}}.}

@@ -20,6 +20,7 @@ test_that("HEB25_estimateV_asreml42", {
   summary(HEB25.asr)$varcomp
   Vus <- estimateV(HEB25.asr)
   Vus[1:10, 1:9]
+  testthat::expect_false(abs(Vus[1,1] - sum(summary(HEB25.asr)$varcomp$component[c(1,2,6)])) > 10)
   
   #corv(Treatment):Genotype
   HEB25.asr <- asreml(fixed = Height ~ Smarthouse + Check + Treatment.1 + 
@@ -31,7 +32,7 @@ test_that("HEB25_estimateV_asreml42", {
   summary(HEB25.asr)$varcomp
   V <- estimateV(HEB25.asr)
   V[1:10, 1:9]
-  testthat::expect_false(abs(V[1,1] - 7526212) > 10)
+  testthat::expect_false(abs(V[1,1] - sum(summary(HEB25.asr)$varcomp$component[c(1,3,5)])) > 10)
   
   #corh(Treatment):Genotype
   HEB25.asr <- asreml(fixed = Height ~ Smarthouse + Check + Treatment.1 + 
@@ -43,8 +44,8 @@ test_that("HEB25_estimateV_asreml42", {
   summary(HEB25.asr)$varcomp
   V <- estimateV(HEB25.asr)
   V[1:10, 1:9]
-  testthat::expect_false(abs(V[1,1] - 8233920) > 10)
-  
+  testthat::expect_false(abs(V[1,1] - sum(summary(HEB25.asr)$varcomp$component[c(1,3,6)])) > 10)
+
   #corgh(Treatment):Genotype
   HEB25.asr <- asreml(fixed = Height ~ Smarthouse + Check + Treatment.1 + 
                         Smarthouse:xMainPosn + Smarthouse:xLane + Check:Treatment.1, 

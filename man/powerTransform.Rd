@@ -46,7 +46,7 @@
              to which the transformed variable is to be appended.}
 }
 \value{A \code{list} with a component named \code{data} that is the \code{data.frame} containing the 
-       transformed variable, a component named tvar.name that is a \code{character string} 
+       transformed variable, a component named \code{tvar.name} that is a \code{character string} 
        that is the name of the transformed variable in \code{data}, and a component named 
        \code{titles} that extends the \code{list} supplied in the \code{titles} argument to 
        include a generated title for the transformed title, the name of the new component being 

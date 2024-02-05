@@ -1,7 +1,7 @@
 \name{simulate.asreml}
 \alias{simulate.asreml}
-\title{Produce sets of simulated data from a multivariate normal distribtion and save 
-quantites related to the simulated data}
+\title{Produce sets of simulated data from a multivariate normal distribution and save 
+quantities related to the simulated data}
 \description{Produce in parallel sets of simulated data corresponding to an \code{asreml} model,
              along with its fitted values and residuals. A variance matrix \code{V},
              corresponding to the \code{random} and \code{residual} models must be 
@@ -34,7 +34,7 @@ quantites related to the simulated data}
               any of the models.}
  \item{trace}{If \code{TRUE} then partial iteration details are displayed when ASReml-R 
               functions are invoked; if \code{FALSE} then no output is displayed.}
- \item{which}{The quantites from the simulated data set to be stored. Any combination of
+ \item{which}{The quantities from the simulated data set to be stored. Any combination of
               \code{"response"}, \code{"residuals"} and \code{"fitted"}, or \code{"all"}. 
               If \code{residuals} and/or \code{fitted} is specified, those for the 
               analysis stored in \code{object} will be added to the \code{data.frame} 
