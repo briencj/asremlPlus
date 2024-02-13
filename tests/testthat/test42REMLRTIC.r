@@ -393,9 +393,15 @@ test_that("R2adj_asreml42", {
   R2.adj.NV <- R2adj(m0.asr, include.which.fixed = ~ Nitrogen:Variety)
   #Check that sum of R2s for the individual fixed terms equal the overall R2
   testthat::expect_true(abs(R2.adj - (R2.adj.N + R2.adj.V + R2.adj.NV)) < 1e-05)
+  R2.adj.int <- R2adj(m0.asr, include.which.fixed = ~ . -(Nitrogen + Variety))
+  testthat::expect_true(abs(R2.adj.int - R2.adj.NV) < 1e-05)
+  testthat::expect_equal(attr(R2.adj.int, which = "fixed"), ~Nitrogen:Variety)
   #Test two terms
   R2.adj.N_V <- R2adj(m0.asr, include.which.fixed = ~ Nitrogen + Variety)
   testthat::expect_true(abs(R2.adj.N_V - (R2.adj.N + R2.adj.V)) < 1e-05)
+  R2.adj.main <- R2adj(m0.asr, include.which.fixed = ~ . - (Nitrogen:Variety))
+  testthat::expect_true(abs(R2.adj.main - R2.adj.N_V) < 1e-03)
+  testthat::expect_equal(attr(R2.adj.main, which = "fixed"), ~Nitrogen+Variety)
   
   #Trying to calculate the adjusted R2 manually - not far off
   R2adj.calc.N <- (1 - ((1-(treatSSqs[1]/(totalSSq)))*(71/(72-3))))*100
@@ -414,4 +420,14 @@ test_that("R2adj_asreml42", {
   R2.adj <- R2adj(m1.asr, include.which.random = ~ .)
   testthat::expect_true(abs(R2.adj - 75.81478) < 1e-03)
   testthat::expect_true(abs(R2.adj - (R2.adj.fix + R2.adj.ran)) < 1e-05)
+  testthat::expect_equal(attr(R2.adj, which = "random"), ~.)
+  
+  #Test removing a random term
+  R2.adj.Block <- R2adj(m1.asr, include.which.random = ~ . - Blocks:Wplots)
+  testthat::expect_true(abs(R2.adj.Block - 61.94141) < 0.01)
+  testthat::expect_equal(attr(R2.adj.Block, which = "random"), ~Blocks)
+  R2.adj.BlockWplots <- R2adj(m1.asr, include.which.random = ~ . - Blocks)
+  #Test removing a fixed term
+  testthat::expect_true(abs(R2.adj.BlockWplots - 51.06073) < 1e-03)
+  testthat::expect_equal(attr(R2.adj.BlockWplots, which = "random"), ~Blocks:Wplots)
 })

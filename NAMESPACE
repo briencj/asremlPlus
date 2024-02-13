@@ -158,10 +158,11 @@ export(addBacktransforms,
 exportClasses(alldiffs, asrtests, predictions.frame)
 import(dae)
 import(ggplot2, except = "stat_qq_line")
-importFrom("stats", "as.formula",  "fitted", "fitted.values", "formula", "median", 
-                    "model.matrix", "na.omit", "optim", "pchisq", "pf", "predict", "pt", 
-                    "qnorm", "qt", "quantile", "resid", "pnorm", "rnorm", "runif", 
-                    "simulate", "terms", "terms.formula", "update.formula")
+importFrom("stats", "as.formula", "asOneSidedFormula",  "fitted", "fitted.values", 
+                    "formula", "median", "model.matrix", "na.omit", "optim", 
+                    "pchisq", "pf", "predict", "pt", "qnorm", "qt", "quantile", 
+                    "resid", "pnorm", "rnorm", "runif", "simulate", 
+                    "terms", "terms.formula", "update.formula")
 importFrom("devtools", "load_all")
 importFrom("RColorBrewer", "brewer.pal")
 importFrom("grDevices", "savePlot")

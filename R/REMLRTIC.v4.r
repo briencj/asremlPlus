@@ -447,114 +447,146 @@ infoCriteria.asreml <- function(object, DF = NULL,
   }
   
   #Estimate the V for the fitted model
+  missing.termmatrix <- NULL
   V <- estimateV(asreml.obj)
-  n <- nrow(V)
-  ASV <- sum(diag((V - (matrix(rep(1, n*n), nrow = n)/n) %*% V))) / (n-1)
-  
-  #Get the design matrix and effects for the fitted fixed model
-  beta <- asreml.obj$coefficients$fixed
-  colnames <- rownames(beta)
-  X <- as.matrix(asreml.obj$design[, colnames])
-  fit <- X %*% beta
-  Pfit <- fit - mean(fit)
-  var.beta <- t(X) %*% dae::mat.ginv(V) %*% X
-  var.beta <- dae::mat.ginv(var.beta)
-  PX <- X - (matrix(rep(1, n*n), nrow = n) /n) %*% X
-  ASSB <- (t(Pfit) %*% Pfit - sum(diag(t(PX) %*% PX %*% var.beta))) / (n-1)
-  
-  #Get the contribution of the specified fixed terms
-  ASSBfix <- 0
-  if (!all(is.null(include.which.fixed)))
-  {
-    if (!inherits(include.which.fixed, what = "formula"))
-      stop("include.which.fixed must be a formula")
-    if (include.which.fixed == ~ .)
-      ASSBfix <- ASSB
-    else
+  if (!all(is.na(V)) && is.null(attr(V, which = "missing.termmatrix")))
+  {  
+    n <- nrow(V)
+    ASV <- sum(diag((V - (matrix(rep(1, n*n), nrow = n)/n) %*% V))) / (n-1)
+    
+    #Get the design matrix and effects for the fitted fixed model
+    beta <- asreml.obj$coefficients$fixed
+    colnames <- rownames(beta)
+    X <- as.matrix(asreml.obj$design[, colnames])
+    fit <- X %*% beta
+    Pfit <- fit - mean(fit)
+    var.beta <- t(X) %*% dae::mat.ginv(V) %*% X
+    var.beta <- dae::mat.ginv(var.beta)
+    PX <- X - (matrix(rep(1, n*n), nrow = n) /n) %*% X
+    ASSB <- (t(Pfit) %*% Pfit - sum(diag(t(PX) %*% PX %*% var.beta))) / (n-1)
+    
+    #Get the contribution of the specified fixed terms
+    ASSBfix <- 0
+    if (!all(is.null(include.which.fixed)))
     {
-      fixterms <- attr(asreml.obj$coefficients$fixed, which = "terms")$tname[-1]
-      incl.fixterms <- getTerms.formula(include.which.fixed)
-      if (!all(is.null(incl.fixterms))) #include.which.fixed is not null
-        incl.fixterms <- sapply(incl.fixterms, 
-                                function(term, fixterms)
-                                {
-                                  term <- fixterms[findterm(term, fixterms)]
-                                  if (length(term) == 0) term <- NA
-                                  return(term)
-                                }, fixterms = fixterms)
-        if (any(is.na(match(incl.fixterms, fixterms))))
-          stop(paste("The following terms are not amongst the fixed terms in the fixed formula: ", 
-                     paste(incl.fixterms[is.na(match(incl.fixterms, fixterms))], 
-                           collapse = ", "), sep = ""))
-      if (length(setdiff(fixterms, incl.fixterms)) == 0)
+      if (!inherits(include.which.fixed, what = "formula"))
+        stop("include.which.fixed must be a formula")
+      if (include.which.fixed == ~ .)
         ASSBfix <- ASSB
       else
       {
-        #use dae:pstructure to get the set of the fixed-term orthogonal projection operators 
-        dat <- asreml.obj$call$data
-        if (is.symbol(dat))
-          dat <- eval(dat)
-        Xs <- lapply(fixterms, getTermDesignMatrix, asreml.obj = asreml.obj)
-        names(Xs) <- fixterms
-        Q.G = projector(matrix(1, nrow=n, ncol=n)/n)
-        Qs <- lapply(Xs, function(X, Q.G)
+        #This converts the levels in at terms in both formulae to be double, not single, quoted
+        fixterms <- attr(asreml.obj$coefficients$fixed, which = "terms")$tname[-1]
+        include.which.fixed <- update.formula(as.formula(paste0('~',
+                                                                paste(fixterms, 
+                                                                      collapse = ' + '))), 
+                                              include.which.fixed)
+        #This reinstates single quotes around levels in at function
+        incl.fixterms <- getTerms.formula(include.which.fixed)
+        if (!all(is.null(incl.fixterms))) #include.which.fixed is not null
+          incl.fixterms <- sapply(incl.fixterms, 
+                                  function(term, fixterms)
+                                  {
+                                    term <- fixterms[findterm(term, fixterms)]
+                                    if (length(term) == 0) term <- NA
+                                    return(term)
+                                  }, fixterms = fixterms)
+        if (any(is.na(match(incl.fixterms, fixterms))))
+        { 
+          warning(paste("The following terms are not amongst the fitted fixed terms and will be ignored: ", 
+                        paste(incl.fixterms[is.na(match(incl.fixterms, fixterms))], 
+                              collapse = ", "), sep = ""))
+          incl.fixterms <- incl.fixterms[incl.fixterms %in% fixterms]
+        }
+        if (length(setdiff(fixterms, incl.fixterms)) == 0)
+          ASSBfix <- ASSB
+        else
         {
-          X <- as.matrix(X)
-          X <- cbind(matrix(1, nrow = nrow(X), ncol = 1), X)
-          Q <- X %*% ginv(t(X) %*% X) %*% t(X)
-          Q <- projector(Q - Q.G)
-          return(Q)
-        }, Q.G = Q.G)
-        #Othogonalize the Qs
-        Qs <- dae::porthogonalize(projectors = Qs, formula = NULL, grandMean = FALSE, 
-                                  orthogonalize = orthogonalize, labels = "terms", 
-                                  marginality = NULL, check.marginality = FALSE, 
-                                  omit.projectors = FALSE, 
-                                  which.criteria = c("aefficiency","eefficiency","order"), 
-                                  aliasing.print = FALSE)$Q
-        Q <- matrix(0, nrow = n, ncol = n)
-        for (term in incl.fixterms)
-          Q <- Q + Qs[[term]]
-        QX <- Q %*% X
-        Qfit <- Q %*% fit
-        ASSBfix <- (t(Qfit) %*% Qfit - sum(diag(t(QX) %*% QX %*% var.beta))) / (n-1)
+          #use dae:pstructure to get the set of the fixed-term orthogonal projection operators 
+          dat <- asreml.obj$call$data
+          if (is.symbol(dat))
+            dat <- eval(dat)
+          Xs <- lapply(fixterms, getTermDesignMatrix, asreml.obj = asreml.obj)
+          names(Xs) <- fixterms
+          Q.G = projector(matrix(1, nrow=n, ncol=n)/n)
+          Qs <- lapply(Xs, function(X, Q.G)
+          {
+            X <- as.matrix(X)
+            X <- cbind(matrix(1, nrow = nrow(X), ncol = 1), X)
+            Q <- X %*% ginv(t(X) %*% X) %*% t(X)
+            Q <- projector(Q - Q.G)
+            return(Q)
+          }, Q.G = Q.G)
+          #Othogonalize the Qs
+          suppressWarnings(
+            Qs <- dae::porthogonalize(projectors = Qs, formula = NULL, grandMean = FALSE, 
+                                      orthogonalize = orthogonalize, labels = "terms", 
+                                      marginality = NULL, check.marginality = FALSE, 
+                                      omit.projectors = FALSE, 
+                                      which.criteria = "none", 
+                                      aliasing.print = FALSE)$Q)
+          Q <- matrix(0, nrow = n, ncol = n)
+          for (term in incl.fixterms)
+            Q <- Q + Qs[[term]]
+          QX <- Q %*% X
+          Qfit <- Q %*% fit
+          ASSBfix <- (t(Qfit) %*% Qfit - sum(diag(t(QX) %*% QX %*% var.beta))) / (n-1)
+        }
       }
     }
-  }
-  
-  #Get the contribution of the specified random terms
-  ASVran <- 0
-  if (!is.null(include.which.random))
-  {
-    if (!inherits(include.which.random, what = "formula"))
-      stop("include.which.random must be a formula")
-    if (include.which.random == ~ .)
-      G <- estimateV(asreml.obj, which.matrix = "G")
-    else
+    
+    #Get the contribution of the specified random terms
+    ASVran <- 0
+    if (!is.null(include.which.random))
     {
-      G.param <- asreml.obj$G.param
-      ranterms <- names(G.param)
-      incl.ranterms <- getTerms.formula(include.which.random)
-      incl.ranterms <- convTerms2Vparnames(incl.ranterms)
-      incl.ranterms <- lapply(incl.ranterms, findterm, termlist = ranterms)
-      incl.ranterms <- unlist(sapply(incl.ranterms, function(term) names(term)))
-      if (!all(is.null(incl.ranterms)))
-        if (any(is.na(match(incl.ranterms, ranterms))))
-          stop(paste("The following terms are not amongst the variance parameters: ", 
-                     paste(incl.ranterms[is.na(match(incl.ranterms, ranterms))], 
-                           collapse = ", "), sep = ""))
+      if (!inherits(include.which.random, what = "formula"))
+        stop("include.which.random must be a formula")
+      if (include.which.random == ~ .)
+        G <- estimateV(asreml.obj, which.matrix = "G")
+      else
+      {
+        #This converts the levels in at terms in both formulae to be double, not single, quoted
+        ranterms <- attr(asreml.obj$coefficients$random, which = "terms")$tname
+        include.which.random <- update.formula(as.formula(paste0('~', 
+                                                                 paste(ranterms, 
+                                                                       collapse = ' + '))), 
+                                               include.which.random)
+        #This reinstates single quotes around levels in at function
+        incl.ranterms <- getTerms.formula(include.which.random)
+        incl.ranterms <- convTerms2Vparnames(incl.ranterms)
+        if (!all(is.null(incl.ranterms)))
+          if (any(is.na(match(incl.ranterms, ranterms))))
+            warning(paste("The following terms are not amongst the variance parameters and will be ignored: ", 
+                          paste(incl.ranterms[is.na(match(incl.ranterms, ranterms))], 
+                                collapse = ", "), sep = ""))
+        #This removes terms that are not in ranterms
+        incl.ranterms <- lapply(incl.ranterms, findterm, termlist = ranterms)
+        incl.ranterms <- unlist(sapply(incl.ranterms, function(term) names(term)))
+
+        ignore.terms <- setdiff(ranterms, incl.ranterms)
+        if (length(ignore.terms) == 0)
+          ignore.terms = NULL
+        G <- estimateV(asreml.obj, which.matrix = "G", ignore.terms = ignore.terms)
+      }
       
-      ignore.terms <- setdiff(ranterms, incl.ranterms)
-      if (length(ignore.terms) == 0)
-        ignore.terms = NULL
-      G <- estimateV(asreml.obj, which.matrix = "G", ignore.terms = ignore.terms)
+      #Calculate ASVran
+      if (!all(is.na(G)) && is.null(attr(G, which = "missing.termmatrix")))
+        ASVran <- sum(diag(G -  mean(G))) / (n-1)
+      else
+        missing.termmatrix <- attr(V, which = "missing.termmatrix")
     }
-    #Calculate ASVran
-    ASVran <- sum(diag(G -  mean(G))) / (n-1)
-  }
-  
+  } else
+    missing.termmatrix <- attr(V, which = "missing.termmatrix")
+
   #Calculate R2adj
-  R2.adj <-  as.vector((ASSBfix + ASVran) / (ASSB + ASV) * 100)
+  if (is.null(missing.termmatrix))
+  { 
+    R2.adj <-  as.vector((ASSBfix + ASVran) / (ASSB + ASV) * 100)
+    attr(R2.adj, which = "fixed") <- include.which.fixed
+    attr(R2.adj, which = "random") <- include.which.random
+  } else
+    R2.adj <- NA
+  attr(R2.adj, which = "missing.termmatrix") <- missing.termmatrix
   
   return(R2.adj)
 }

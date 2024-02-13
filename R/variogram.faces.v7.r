@@ -95,6 +95,9 @@
     V <- estimateV(asreml.obj, extra.matrix = extra.matrix, ignore.terms = ignore.terms, 
                    fixed.spline.terms = fixed.spline.terms, 
                    bound.exclusions = bound.exclusions)
+    if (all(is.na(V)))
+      stop("Could not create design matrices for the term(s): ", 
+           paste(attr(V, which = "missing.termmatrix"), collapse = ", "))
     n <- nrow(V)
   }
   else #check supplied V

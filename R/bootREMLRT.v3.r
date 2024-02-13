@@ -122,6 +122,9 @@ bootREMLRT.asreml <- function(h0.asreml.obj, h1.asreml.obj,
     V <- estimateV(h0.asreml.obj, extra.matrix = extra.matrix, ignore.terms = ignore.terms, 
                    fixed.spline.terms = fixed.spline.terms, 
                    bound.exclusions = bound.exclusions)
+    if (all(is.na(V)))
+      stop("Could not create design matrices for the term(s): ", 
+           paste(attr(V, which = "missing.termmatrix"), collapse = ", "))
     n <- nrow(V)
   }
   else #check supplied V

@@ -660,21 +660,24 @@ getVpars <- function(asreml.obj, asr4.2)
     #reduce to columns of same length as term
     len.nvars <- unlist(lapply(col.vars, length)) == nvars
     effnames <- effnames[len.nvars]
-    col.vars <- col.vars[len.nvars]
-    col.vars <- as.data.frame(do.call(rbind, col.vars))
-    #Determine which columns have the same vars, in any order, as the term; select effnames that do
-    which.cols <- apply(col.vars, MARGIN = 1, 
-                        FUN = function(krow, vars)
-                        {
-                          all(sapply(vars, function(v, krow) 
+    if (length(effnames) > 0)
+    {
+      col.vars <- col.vars[len.nvars]
+      col.vars <- as.data.frame(do.call(rbind, col.vars))
+      #Determine which columns have the same vars, in any order, as the term; select effnames that do
+      which.cols <- apply(col.vars, MARGIN = 1, 
+                          FUN = function(krow, vars)
+                          {
+                            all(sapply(vars, function(v, krow) 
                             {
-                            if (any(startsWith(krow, paste0(v,"_")))) #term with a level
-                              TRUE
-                            else #must match exactly if does not include a level
-                              any(krow == v)
-                          }, krow = krow))
-                        }, vars = vars)
-    effnames <- effnames[which.cols]
+                              if (any(startsWith(krow, paste0(v,"_")))) #term with a level
+                                TRUE
+                              else #must match exactly if does not include a level
+                                any(krow == v)
+                            }, krow = krow))
+                          }, vars = vars)
+      effnames <- effnames[which.cols]
+    }
   } else
   { 
     if (use == "fixed.coeffs")
@@ -771,9 +774,39 @@ convEffectNames2DataFrame.asreml <- function(asreml.obj, term, use = "design.mat
   terms <- rbind(attr(asreml.obj$coefficients$fixed, which = "terms"),
                  attr(asreml.obj$coefficients$random, which = "terms"))
   #grp terms do not have a known number of columns
-  if (term %in% names(asreml.obj$noeff) && length(colnams) != terms$n[terms$tname == term])
-    stop(paste("Error in finding the columns in the design matrix for ",term,sep=""))
-  Z <- asreml.obj$design[, colnams]
+  #Does the no. cols in the  design matrix equal the number of effects in the coefficents? 
+  if (term %in% names(asreml.obj$noeff) && !is.null(colnams) && 
+      length(colnams) != terms$n[terms$tname == term])
+  {
+    #A fixed term?
+    if (term %in% attr(asreml.obj$coefficients$fixed, which = "terms"))
+      coeffnams <- getTermEffectNames(term, asreml.obj, use = "fixed.coeffs", sep = sep)
+    else #Random term
+    {  
+      if (term %in% attr(asreml.obj$coefficients$random, which = "terms")$tname)
+        coeffnams <- getTermEffectNames(term, asreml.obj, use = "random.coeffs", sep = sep)
+      else #Can't find term
+        stop("Could not find term on fixed and random coeficients")
+    }
+    
+    #Have both sets of names, so add zero cols to the design matrix to make them the same
+    if (all(colnams %in% coeffnams))
+    { 
+      Z <- matrix(0, nrow = nrow(asreml.obj$design), ncol = terms$n[terms$tname == term])
+      colnames(Z) <- coeffnams
+      for (nam in colnams)
+        Z[,nam] <- asreml.obj$design[ ,nam]
+    } else
+      stop(paste0("For ", term, ", cannot match the ", length(colnams), 
+                  " columns in the design matrix, with the ", terms$n[terms$tname == term], 
+                  " elements in the coefficients component"))
+  } else
+  { 
+    if (is.null(colnams))
+      Z <- NULL
+    else
+      Z <- asreml.obj$design[, colnams]
+  } 
   return(Z)
 }
 
@@ -897,15 +930,18 @@ vpt.char <- function (object)
   nonzero.x <- (svd.x$d > svd.x$d[1] * tol)
   rank.x <- sum(nonzero.x)
   geninv.x <- matrix(0, dim(x)[1], dim(x)[2])
-  if (rank.x)
   { 
     i <- matrix((1:length(nonzero.x))[nonzero.x], rank.x, 2)
     geninv.x[i] <- 1/svd.x$d[nonzero.x]
     if (all(nonzero.x))
       geninv.x <- svd.x$v %*% geninv.x %*% t(svd.x$u)
     else 
-      geninv.x <- svd.x$v[, nonzero.x] %*% geninv.x[nonzero.x, nonzero.x] %*% 
-      t(svd.x$u[, nonzero.x])
+    {  
+      v <- svd.x$v[, nonzero.x]
+      if (rank.x == 1)
+        v <- matrix(v, ncol = 1)
+      geninv.x <- v %*% geninv.x[nonzero.x, nonzero.x] %*% t(v)
+    }
   }
   geninv.x
 }

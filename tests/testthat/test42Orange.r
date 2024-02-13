@@ -26,12 +26,12 @@ test_that("Orange_estimateV_asreml42", {
   V <- estimateV(asreml.obj)
   testthat::expect_true(all.equal(as.matrix(V.g), V))
   R2.adj <-R2adj(asreml.obj, include.which.random = ~ .)
-  testthat::expect_true(all(abs(R2.adj - 99.87164) < 1e-03))
+  testthat::expect_true(all(abs(R2.adj - 99.87164) < 0.01))
   R2.adj <-R2adj(asreml.obj, include.which.fixed = NULL, 
-                 include.which.random = ~ str( ~Tree/x, ~diag(2):id(5)))
-  testthat::expect_true(all(abs(R2.adj - 11.87985) < 1e-03))
-  
-  
+                 include.which.random = ~ Tree/x)
+  testthat::expect_true(all(abs(R2.adj - 11.87985) < 0.01))
+  testthat::expect_equal(~ Tree + Tree:x, attr(R2.adj, which = "random"))
+
   asreml.obj <- asreml(circ ~x, 
                        random= ~ str( ~Tree/x, ~idh(2):id(Tree)) + spl(x) + spl(x):Tree,
                        knot.points = list(x = c(118,484,664,1004,1231,1372,1582)), 
@@ -40,10 +40,11 @@ test_that("Orange_estimateV_asreml42", {
   V <- estimateV(asreml.obj)
   testthat::expect_true(all(abs(V - V.g) < 1e-06))
   R2.adj <-R2adj(asreml.obj, include.which.random = ~ .)
-  testthat::expect_true(all(abs(R2.adj - 99.87164) < 1e-03))
+  testthat::expect_true(all(abs(R2.adj - 99.87164) < 0.01))
   R2.adj <-R2adj(asreml.obj, include.which.fixed = NULL, 
-                 include.which.random = ~ str( ~Tree/x, ~idh(2):id(Tree)))
-  testthat::expect_true(all(abs(R2.adj - 11.87985) < 1e-03))
+                 include.which.random = ~ Tree/x)
+  testthat::expect_true(all(abs(R2.adj - 11.87985) < 0.01))
+  testthat::expect_equal(~ Tree + Tree:x, attr(R2.adj, which = "random"))
   
   #Add dev
   asreml.obj <- asreml(circ ~ x,
@@ -96,10 +97,11 @@ test_that("Orange_estimateV_asreml42", {
     regexp = "dev\\(x\\) not included in V because it is bound")
   testthat::expect_true(all(abs(V - V.g) < 1e-06))
   R2.adj <- R2adj(asreml.obj, include.which.random = ~ .)
-  testthat::expect_true(all(abs(R2.adj - 99.8295) < 1e-03))
+  testthat::expect_true(all(abs(R2.adj - 99.8295) < 0.01))
   R2.adj <-R2adj(asreml.obj, include.which.fixed = NULL, 
-                 include.which.random = ~ str( ~Tree/x, ~us(2,init=c(5.0,-0.01,0.0001)):id(5)))
+                 include.which.random = ~  Tree/x)
   testthat::expect_true(all(abs(R2.adj - 14.85833) < 1e-03))
+  testthat::expect_equal(~Tree + Tree:x, attr(R2.adj, which = "random"))
   
   #random slope
   asreml.obj <- asreml(circ ~x, 

@@ -53,7 +53,12 @@
  \item{\dots}{Provision for passing arguments to functions called internally - 
             not used at present.}
 }
- \value{A \code{matrix} containing the estimated variance matrix.}
+ \value{A \code{matrix} containing the estimated variance matrix. It has an attribute 
+        \code{missing.termmatrix} (use \code{attr(x, which = "missing.termmatrix")} to access the 
+        atrribute). It will be \code{NULL}, unless the design matrix could not be obtained for 
+        one or more model terms. If is is not \code{NULL}, it will be a list of terms that could  
+        not be produced for inclusion in the variance matrix estimate, and \code{NA} will be 
+        returned for the estimated variance matrix.}
 
  \details{The information about the variance parameters in the fitted mixed model are obtained 
           from the \code{G.param} and \code{R.param} components of the \code{asreml} object. The 

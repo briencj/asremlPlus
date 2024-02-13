@@ -41,6 +41,7 @@
   dat <- eval(call$data)
   n <- nrow(dat)
   V <- matrix(0, nrow = n, ncol = n)
+  incomplete <- NULL
   
   G.param <- asreml.obj$G.param
   ranterms <- names(G.param)
@@ -106,18 +107,18 @@
       {
         bound <- names(asreml.obj$gammas.con)
         names(bound) <- names(asreml.obj$gammas)
-        
       }
       if (!bound)
       {
         #Is current term units or special free (idv for variance and id for all other components)?
-        if (term == "units" | (G.param[[term]]$variance$model == "idv" & 
-                               (all(unlist(lapply(G.param[[term]][2:length(G.param[[term]])], 
-                                                  function(x)
-                                                  {
-                                                    is.id <- (x$model == "id" )
-                                                    return(is.id)
-                                                  }))))))
+        if (term == "units" || !grepl("at\\(", term) && 
+                               (G.param[[term]]$variance$model == "idv" && 
+                                (all(unlist(lapply(G.param[[term]][2:length(G.param[[term]])], 
+                                                   function(x)
+                                                   {
+                                                     is.id <- (x$model == "id" )
+                                                     return(is.id)
+                                                   }))))))
         {
           if (term == "units")
           {
@@ -231,7 +232,11 @@
               {
                 Z <- NULL
                 for (str.term in str.terms)
-                  Z <- cbind(Z, getTermDesignMatrix(str.term, asreml.obj))
+                {  
+                  z <- getTermDesignMatrix(str.term, asreml.obj)
+                  if (!all(is.null(z)))
+                    Z <- cbind(Z, z)
+                }
               } else
               {
                 cols <- NULL
@@ -241,10 +246,25 @@
                 Z <- asreml.obj$design[,cols]
               }
             } else #not a problem term
-              Z <- as.matrix(getTermDesignMatrix(term, asreml.obj))
+            { 
+              Z <- getTermDesignMatrix(term, asreml.obj)
+              if (!all(is.null(Z)))
+                Z <- as.matrix(getTermDesignMatrix(term, asreml.obj))
+            }
           }
-          Z <- as.matrix(Z)
-          V <- V + Z %*% G %*% t(Z)
+          if (all(is.null(Z)))
+          { 
+            incomplete <- c(incomplete, term)
+            warning("The design matrix for ", term, 
+                    paste(" could not be extracted from the design component of the asreml object", 
+                          "and is not included in the variance matrix estimate"))
+          }
+          else
+          {
+            Z <- as.matrix(Z)
+            if (!all(is.null(Z)))
+              V <- V + Z %*% G %*% t(Z)
+          }
           # } else #not a special needing the design matrix
           # {
           #   if (grepl("+", term, fixed = TRUE)) #involves an str term?
@@ -387,6 +407,10 @@
   
   V <- as.matrix(V)
   colnames(V) <- rownames(V) <- NULL
+  if (!is.null(incomplete))
+    V <- NA
+  attr(V, which = "missing.termmatrix") <- incomplete
+  
   return(V)
 }
 
@@ -412,7 +436,8 @@ checkSpecial <- function(var, term, G.param, specials, residual = FALSE)
                " in the ",formula, " formula.", sep = ""))
     
   }
-  return(list(cortype = cortype, final = final))
+ 
+   return(list(cortype = cortype, final = final))
 }
 
 
