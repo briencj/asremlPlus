@@ -629,6 +629,7 @@ fitCorrMod <- function(asrtests.obj, sections = NULL,
         ran.term <- paste0(rterms[1], ":", rterms[2])
         if (nsect > 1)
           ran.term <- paste0("at(", sections, ", '",stub, "'):", ran.term)
+        
         tmp.asrt <- do.call(fitfunc, 
                             c(list(corr.asrt, 
                                    addRandom = ran.term, 
@@ -675,6 +676,7 @@ fitCorrMod <- function(asrtests.obj, sections = NULL,
           drop.spatvar <- spat.var
         else
           drop.spatvar <- NULL
+
         tmp.asrt <- do.call(fitfunc, 
                             c(list(corr.asrt, label = lab, 
                                    addRandom = ran.term, dropRandom = drop.spatvar, 

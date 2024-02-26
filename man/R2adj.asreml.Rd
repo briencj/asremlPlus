@@ -73,12 +73,15 @@
  \item{\dots}{Provision for passing arguments to functions called internally - 
             not used at present.}
 }
- \value{A \code{numeric} that is the adjusted R2, expressed as a percentage. It has an attribute 
-        \code{missing.termmatrix} (use \code{attr(x, which = "missing.termmatrix")} to access the 
-        atrribute). It will be \code{NULL}, unless the design matrix could not be obtained for 
-        one or more model terms. If is is not \code{NULL}, it will be a list of terms that could  
-        not be produced for inclusion in the variance matrix estimate, and \code{NA} will be 
-        returned for the adjusted R2.}
+ \value{A \code{numeric} that is the adjusted R2, expressed as a percentage. It has attributes 
+        \code{include.which.fixed}, \code{include.which.random} and \code{missing.termmatrix} 
+        (use \code{attr(x, which = "name")} to access the attribute \code{name}). 
+        The \code{missing.termmatrix} attribute will be \code{NULL}, unless the design matrix 
+        could not be obtained for one or more model terms. If is is not \code{NULL}, it will be 
+        a list of terms whose design matices could not be produced  and so are not included in 
+        the variance matrix estimate. An \code{NA} will be returned for the adjusted R2 if 
+        \code{missing.termmatrix} is not \code{NULL} or a generalized inverse could 
+        not be computed for the variance matrix estimate.}
 
  \details{The method used to compute the adjusted R2 under a linear mixes model (LMM) is that 
           described by Piepho (2023). Here, the method has been extended to allow computation  
@@ -113,7 +116,9 @@
         for fixed terms; substitute \code{random} for \code{fixed} to see the names of the 
         random terms. For fixed terms. the term names are the same as those in the 
         Wald table produced by \code{wald.asreml}, and, for random terms, the same as those 
-        in the \code{vparameters} component of the \code{asreml.obj}. 
+        in the \code{vparameters} component of the \code{asreml.obj}. Two \code{asreml} 
+        \code{\link{formula}} functions whose terms can differ from their formulation in a 
+        model \code{\link{formula}} are \code{at} and \code{str}.)
              
         The function \code{estimateV.asreml} is used to calculate the variance matrices 
         required in calculating the adjusted R2.
@@ -137,7 +142,8 @@
   R2.adj.tot <- R2adj.asreml(current.asr, include.which.random = ~ .)
   R2.adj.tot <- R2adj.asreml(current.asr, include.which.random = ~ Blocks)
   R2.adj.add <- R2adj.asreml(current.asr, include.which.fixed = ~ Nitrogen + Variety)
-  R2.adj.int <- R2adj.asreml(current.asr, include.which.fixed = ~ . - (Nitrogen + Variety))
+  R2.adj.int <- R2adj.asreml(current.asr, 
+                             include.which.fixed = ~ . - (Nitrogen + Variety))
   R2.adj.int <- R2adj.asreml(current.asr, include.which.fixed = ~ Nitrogen:Variety)
 }}
 \keyword{asreml}

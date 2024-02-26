@@ -67,21 +67,22 @@ test_that("MET_estimateV_asreml42", {
   #No fixed terms and a specified random term
   R2.adj <- R2adj(asreml.obj, include.which.fixed = NULL, 
                   include.which.random = ~ at(expt, 'tcnue10'):dev(vcol))
-  testthat::expect_true(all(abs(R2.adj - 0.8970704) < 1e-02))
+  testthat::expect_true(all(abs(R2.adj - 0.7028481) < 1e-02))
   testthat::expect_equal(attr(R2.adj, which = "random"), ~at(expt, 'tcnue10'):dev(vcol))
   #No fixed terms and three specified random terms
   R2.adj <- R2adj(asreml.obj, include.which.fixed = NULL, 
                   include.which.random = ~ at(expt, 'tcnue10'):dev(vcol) + 
                     at(expt, 'rsnue11'):dev(vcol) + at(expt, 'tarlee13'):dev(vcol))
-  testthat::expect_true(all(abs(R2.adj - 1.213282) < 1e-04))
+  testthat::expect_true(all(abs(R2.adj - 1.019012) < 1e-04))
   testthat::expect_equal(attr(R2.adj, which = "random"), 
                          ~at(expt, 'tcnue10'):dev(vcol)+dev(vcol):at(expt, 'rsnue11')+dev(vcol):at(expt, 'tarlee13'))
-  #No fixed terms and minus a single bound random at term using actual level as in coefficients$random
+   #No fixed terms and minus a single bound random at term using actual level as in coefficients$random
   R2.adj <- R2adj(asreml.obj, include.which.fixed = NULL, 
                   include.which.random = ~ . - at(expt, 'tarlee13'):units)
-  testthat::expect_true(all(abs(R2.adj - 2.729147) < 1e-02))
+  testthat::expect_true(all(abs(R2.adj - 2.741433) < 1e-02))
   testthat::expect_true(attr(R2.adj, which = "random") == 
-                           ~at(expt, "pnnue10"):spl(vcol) + at(expt, "tcnue10"):dev(vcol) + 
+                           ~at(expt, "mtnue10"):dev(vrow) + at(expt, "pnnue10"):spl(vcol) + 
+                          at(expt, "tcnue10"):dev(vcol) + 
                           dev(vcol):at(expt, "rsnue11") + dev(vcol):at(expt, "tarlee13"))
   #No fixed terms and minus a single random at term using ordinal level
   R2.adj <- R2adj(asreml.obj, include.which.fixed = NULL, 
@@ -90,22 +91,23 @@ test_that("MET_estimateV_asreml42", {
                               as.character(attr(R2.adj, which = "random"))[2])) #term still in formula
   #No fixed terms and all random terms - provides benchmark
   R2.adj <- R2adj(asreml.obj, include.which.fixed = NULL, include.which.random = ~ .) 
-  testthat::expect_true(all(abs(R2.adj - 2.729147) < 1e-02))
+  testthat::expect_true(all(abs(R2.adj - 2.741433) < 1e-02))
   testthat::expect_true(attr(R2.adj, which = "random") == ~.)
   #No fixed terms and minus one of a compound random at term using actual level
   R2.adj <- R2adj(asreml.obj, include.which.fixed = NULL, 
                   include.which.random = ~ . - at(expt, 'tarlee13'):dev(vcol))
-  testthat::expect_true(all(abs(R2.adj - 2.565417) < 1e-02))
-  testthat::expect_true(attr(R2.adj, which = "random") == #term not removed because compound term
-                           ~at(expt, "pnnue10"):spl(vcol) + at(expt, "tcnue10"):dev(vcol) + 
-                           dev(vcol):at(expt, "rsnue11") + at(expt, "tarlee13"):units)
+  testthat::expect_true(all(abs(R2.adj - 2.577726) < 1e-02))
+  testthat::expect_true(attr(R2.adj, which = "random") == 
+                           ~at(expt, "mtnue10"):dev(vrow) + at(expt, "pnnue10"):spl(vcol) + 
+                           at(expt, "tcnue10"):dev(vcol) + dev(vcol):at(expt, "rsnue11") + 
+                           at(expt, "tarlee13"):units)
 
   
   ## Test fixed model term removal
   #No random terms and minus a single fixed term using actual level
   R2.adj <- R2adj(asreml.obj, include.which.fixed = ~ . - at(expt, 'mtnue10'):vrow, 
                   orthogonalize = "eigen")
-  testthat::expect_true(all(abs(R2.adj - 86.28281) < 1e-02))
+  testthat::expect_true(all(abs(R2.adj - 86.27269) < 1e-02))
   testthat::expect_false(grepl('at\\(expt, \\"mtnue10\\"\\):vrow', 
                               as.character(attr(R2.adj, which = "fixed"))[2]))
   #No random terms and minus two single fixed terms using actual level from a compound term
@@ -146,7 +148,7 @@ test_that("MET_estimateV_asreml42", {
   #No fixed terms and minus a single bound random at term using actual level as in coefficients$random
   R2.adj <- R2adj(asreml.obj, include.which.fixed = NULL, 
                   include.which.random = ~ . - at(expt, 'tarlee13'):units)
-  testthat::expect_true(all(abs(R2.adj - 2.729147) < 1e-02))
+  testthat::expect_true(all(abs(R2.adj - 2.741433) < 1e-02))
   testthat::expect_false(grepl('at\\(expt, \\"tarlee13\\"\\):units', 
                               as.character(attr(R2.adj, which = "random"))[2])) #term still in formula
   #No random terms and minus two single fixed terms using actual level from a compound term

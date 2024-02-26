@@ -449,7 +449,7 @@ infoCriteria.asreml <- function(object, DF = NULL,
   #Estimate the V for the fitted model
   missing.termmatrix <- NULL
   V <- estimateV(asreml.obj)
-  if (!all(is.na(V)) && is.null(attr(V, which = "missing.termmatrix")))
+  if (all(!is.na(V)) && is.null(attr(V, which = "missing.termmatrix")))
   {  
     n <- nrow(V)
     ASV <- sum(diag((V - (matrix(rep(1, n*n), nrow = n)/n) %*% V))) / (n-1)
@@ -460,14 +460,23 @@ infoCriteria.asreml <- function(object, DF = NULL,
     X <- as.matrix(asreml.obj$design[, colnames])
     fit <- X %*% beta
     Pfit <- fit - mean(fit)
-    var.beta <- t(X) %*% dae::mat.ginv(V) %*% X
-    var.beta <- dae::mat.ginv(var.beta)
-    PX <- X - (matrix(rep(1, n*n), nrow = n) /n) %*% X
-    ASSB <- (t(Pfit) %*% Pfit - sum(diag(t(PX) %*% PX %*% var.beta))) / (n-1)
+    Vinv <- dae::mat.ginv(V)
+    if (any(is.na(Vinv)))
+    {  
+      if (!all(is.null(include.which.fixed))) #var.beta not available to compute ASSBfix
+        warning("Unable to obtain the generalized inverse of the the estimated variance matrix required to compute the fixed contribution")
+      ASSB <- NA
+    } else
+    {
+      var.beta <- t(X) %*% Vinv %*% X
+      var.beta <- dae::mat.ginv(var.beta)
+      PX <- X - (matrix(rep(1, n*n), nrow = n) /n) %*% X
+      ASSB <- (t(Pfit) %*% Pfit - sum(diag(t(PX) %*% PX %*% var.beta))) / (n-1)
+    }
     
     #Get the contribution of the specified fixed terms
     ASSBfix <- 0
-    if (!all(is.null(include.which.fixed)))
+    if (!all(is.null(include.which.fixed)) && !is.na(ASSB))
     {
       if (!inherits(include.which.fixed, what = "formula"))
         stop("include.which.fixed must be a formula")
@@ -483,6 +492,7 @@ infoCriteria.asreml <- function(object, DF = NULL,
                                               include.which.fixed)
         #This reinstates single quotes around levels in at function
         incl.fixterms <- getTerms.formula(include.which.fixed)
+
         if (!all(is.null(incl.fixterms))) #include.which.fixed is not null
           incl.fixterms <- sapply(incl.fixterms, 
                                   function(term, fixterms)
@@ -513,7 +523,7 @@ infoCriteria.asreml <- function(object, DF = NULL,
           {
             X <- as.matrix(X)
             X <- cbind(matrix(1, nrow = nrow(X), ncol = 1), X)
-            Q <- X %*% ginv(t(X) %*% X) %*% t(X)
+            Q <- X %*% dae::mat.ginv(t(X) %*% X) %*% t(X)
             Q <- projector(Q - Q.G)
             return(Q)
           }, Q.G = Q.G)
@@ -554,15 +564,16 @@ infoCriteria.asreml <- function(object, DF = NULL,
         #This reinstates single quotes around levels in at function
         incl.ranterms <- getTerms.formula(include.which.random)
         incl.ranterms <- convTerms2Vparnames(incl.ranterms)
+        #This removes terms that are not in ranterms and results in terms named as in ranterms
+        incl.ranterms <- lapply(incl.ranterms, findterm, termlist = ranterms)
+        incl.ranterms <- sapply(incl.ranterms, function(term, ranterms) ranterms[term], ranterms = ranterms)
         if (!all(is.null(incl.ranterms)))
           if (any(is.na(match(incl.ranterms, ranterms))))
             warning(paste("The following terms are not amongst the variance parameters and will be ignored: ", 
                           paste(incl.ranterms[is.na(match(incl.ranterms, ranterms))], 
                                 collapse = ", "), sep = ""))
-        #This removes terms that are not in ranterms
-        incl.ranterms <- lapply(incl.ranterms, findterm, termlist = ranterms)
-        incl.ranterms <- unlist(sapply(incl.ranterms, function(term) names(term)))
-
+        
+        #Work out ranterms to be ignored and get the G matrix
         ignore.terms <- setdiff(ranterms, incl.ranterms)
         if (length(ignore.terms) == 0)
           ignore.terms = NULL
@@ -570,7 +581,7 @@ infoCriteria.asreml <- function(object, DF = NULL,
       }
       
       #Calculate ASVran
-      if (!all(is.na(G)) && is.null(attr(G, which = "missing.termmatrix")))
+      if (all(!is.na(G)) && is.null(attr(G, which = "missing.termmatrix")))
         ASVran <- sum(diag(G -  mean(G))) / (n-1)
       else
         missing.termmatrix <- attr(V, which = "missing.termmatrix")
@@ -581,7 +592,15 @@ infoCriteria.asreml <- function(object, DF = NULL,
   #Calculate R2adj
   if (is.null(missing.termmatrix))
   { 
-    R2.adj <-  as.vector((ASSBfix + ASVran) / (ASSB + ASV) * 100)
+    #Deal with case where ginv for V cannot be obtained and it is not needed for non-null include.which.fixed
+    if (all(is.null(include.which.fixed)) && is.na(ASSB))
+    {  
+      if (is.symbol(dat))
+        dat <- eval(dat)
+      denom <- var(dat[as.character(asreml.obj$call$fixed)[2]], na.rm = TRUE)
+    } else
+      denom = ASSB + ASV
+    R2.adj <-  as.vector((ASSBfix + ASVran) / denom * 100)
     attr(R2.adj, which = "fixed") <- include.which.fixed
     attr(R2.adj, which = "random") <- include.which.random
   } else

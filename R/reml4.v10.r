@@ -167,6 +167,8 @@
       stop(validwald)
   } else #form wald.tab
   { 
+    # dat <- asreml.obj$call$data
+    # if (is.symbol(dat)) asreml.obj$call$data <- eval(dat)
     wald.tab <- asreml::wald.asreml(asreml.obj, denDF = denDF, trace = FALSE, ...)
     wald.tab <- chkWald(wald.tab)
   }
