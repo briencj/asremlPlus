@@ -1,12 +1,23 @@
 checkTrySpatial <- function(trySpatial)
 {
-  trySpat.opts <- c("none", "corr", "TPNCSS", "TPPCS", "TPP1LS", "all")
+  trySpat.opts <- c("none", "corr", "TPNCSS", "TPPCS", "TPPSC2", "TPP1LS", "TPPSL1", "all")
   trySpatial <- trySpat.opts[unlist(lapply(trySpatial, check.arg.values, options=trySpat.opts))]
+  if ("TPPCS" %in% trySpatial)
+  { 
+    trySpatial <- gsub("TPPCS", "TPPSC2", trySpatial)
+    warning("TPPCS in trySpatial has been changed to the new abbreviation TPPSC2")
+  }
+  if ("TPP1LS" %in% trySpatial)
+  { 
+    trySpatial <- gsub("TPP1LS", "TPPSL1", trySpatial)
+    warning("TPP1LS in trySpatial has been changed to the new abbreviation TPPSL1")
+  }
+  trySpatial <- unique(trySpatial)
   
   if (length(intersect(trySpatial, trySpat.opts)) == 0)
     stop("trySpatial must be one of ", paste0(trySpat.opts, collapse = ", "))
   if ("all" %in% trySpatial)
-    trySpatial <- c("corr", "TPNCSS", "TPPCS", "TPP1LS")
+    trySpatial <- c("corr", "TPNCSS", "TPPSC2", "TPPSL1")
   if ("none" %in% trySpatial && length(trySpatial) > 1)
     trySpatial <= "none"
   return(trySpatial)

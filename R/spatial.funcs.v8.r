@@ -325,10 +325,10 @@ chooseSpatialModelOnIC.asrtests <- function(asrtests.obj, trySpatial = "all",
                                    IClikelihood = ic.lik, spatial.IC = spatial.IC)
     }
     
-    #Fit a residual spatial model involving TPPCS
-    if ("TPPCS" %in% trySpatial)
+    #Fit a residual spatial model involving TPPSC2
+    if ("TPPSC2" %in% trySpatial)
     { 
-      spatial.asrts[["TPPCS"]] <- fitTPPSMod(asrtests.obj, sections = sections, 
+      spatial.asrts[["TPPSC2"]] <- fitTPPSMod(asrtests.obj, sections = sections, 
                                              row.covar = row.covar, col.covar = col.covar, 
                                              dropFixed = dropFixed, dropRandom = dropRandom, 
                                              nsegs = nsegs, nestorder = nestorder, 
@@ -345,14 +345,14 @@ chooseSpatialModelOnIC.asrtests <- function(asrtests.obj, trySpatial = "all",
                                              update = update, chooseOnIC = TRUE, 
                                              maxit = maxit, IClikelihood = ic.lik, which.IC = ic.type, 
                                              ...)
-      spatial.IC <- calcSpatialICs(spatial.asrt = spatial.asrts[["TPPCS"]] , spatial.mod = "TPPCS", 
+      spatial.IC <- calcSpatialICs(spatial.asrt = spatial.asrts[["TPPSC2"]] , spatial.mod = "TPPSC2", 
                                    IClikelihood = ic.lik, spatial.IC = spatial.IC)
     }
     
-    #Fit a residual spatial model involving TPP1LS
-    if ("TPP1LS" %in% trySpatial)
+    #Fit a residual spatial model involving TPPSL1
+    if ("TPPSL1" %in% trySpatial)
     { 
-      spatial.asrts[["TPP1LS"]] <- fitTPPSMod(asrtests.obj, sections = sections, 
+      spatial.asrts[["TPPSL1"]] <- fitTPPSMod(asrtests.obj, sections = sections, 
                                               row.covar = row.covar, col.covar = col.covar, 
                                               dropFixed = dropFixed, dropRandom = dropRandom, 
                                               nsegs = nsegs, nestorder = nestorder, 
@@ -366,7 +366,7 @@ chooseSpatialModelOnIC.asrtests <- function(asrtests.obj, trySpatial = "all",
                                               update = update, chooseOnIC = TRUE, 
                                               maxit = maxit, IClikelihood = ic.lik, which.IC = ic.type, 
                                               ...)
-      spatial.IC <- calcSpatialICs(spatial.asrt = spatial.asrts[["TPP1LS"]] , spatial.mod = "TPP1LS", 
+      spatial.IC <- calcSpatialICs(spatial.asrt = spatial.asrts[["TPPSL1"]] , spatial.mod = "TPPSL1", 
                                    IClikelihood = ic.lik, spatial.IC = spatial.IC)
     }
     
@@ -378,9 +378,9 @@ chooseSpatialModelOnIC.asrtests <- function(asrtests.obj, trySpatial = "all",
     {
       #pick one in the order given below
       if ("nonspatial" %in% names(min.asrt)) min.asrt <- min.asrt["nonspatial"]
-      if ("TPPCS" %in% names(min.asrt)) min.asrt <- min.asrt["TPPCS"]
+      if ("TPPSC2" %in% names(min.asrt)) min.asrt <- min.asrt["TPPSC2"]
       if ("TPNCSS" %in% names(min.asrt)) min.asrt <- min.asrt["TPNCSS"]
-      if ("TPP1LS" %in% names(min.asrt)) min.asrt <- min.asrt["TPP1LS"]
+      if ("TPPSL1" %in% names(min.asrt)) min.asrt <- min.asrt["TPPSL1"]
       if ("corr" %in% names(min.asrt)) min.asrt <- min.asrt["corr"]
     }
     #If return only best, get the best asrtests.obj

@@ -1,5 +1,10 @@
 \name{news}
 \title{News for Package asremlPlus}
+\section{asremlPlus Version 4.4.30 (2024-03-03}{
+  \itemize{
+  \item For chooseSpatialModelOnIC.asrtests, change the abbreviations for the two P-spline models from \code{TPPCS} and \code{TPP1LS} to \code{TPPSC2} and \code{TPPSL1}. If the call to chooseSpatialModelOnIC.asrtests includes the former  abbreviations, they will be converted to the new abbreviatons and all output will be labelled with the new abbreviations.
+  \item Revise the deocumentation of the P-spline details for addSpatialModel.asrtests, addSpatialModelOnIC.asrtests or chooseSpatialModelOnIC.asrtests.
+}}
 \section{asremlPlus Version 4.4.29 (2024-02-26}{
   \itemize{
   \item For R2adj.asreml, correct the check that terms to be included in the random model for calculating \code{R2.adj} are in the fitted model so that a warning is no longer issued when a term for inclusion differs from a fitted term only in the order of the factors/variables comprising the terms.  

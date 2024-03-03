@@ -592,7 +592,7 @@ test_that("Wheat_spatial_models_asreml42", {
   testthat::expect_equal(info$varDF, 5)
   testthat::expect_lt(abs(info$AIC - 1653.096), 0.10)
 
-  #Try TPP1LS spline
+  #Try TPPSL1 spline
   current.asrt <- addSpatialModelOnIC(init.asrt, spatial.model = "TPPS", 
                                       row.covar = "cRow", col.covar = "cColumn", 
                                       row.factor = "Row", col.factor = "Column", 
@@ -611,33 +611,33 @@ test_that("Wheat_spatial_models_asreml42", {
                                           dropRandom = c("Row + Column"), 
                                           asreml.option = "grp", return.asrts = "all")
   testthat::expect_equal(length(spatial.asrts$asrts), 4)
-  testthat::expect_equal(names(spatial.asrts$asrts), c("corr", "TPNCSS", "TPPCS", "TPP1LS"))
+  testthat::expect_equal(names(spatial.asrts$asrts), c("corr", "TPNCSS", "TPPSC2", "TPPSL1"))
   testthat::expect_true(all(rownames(spatial.asrts$spatial.IC) == 
-                              c("nonspatial", "corr", "TPNCSS", "TPPCS", "TPP1LS")))
+                              c("nonspatial", "corr", "TPNCSS", "TPPSC2", "TPPSL1")))
   testthat::expect_true(all(abs(spatial.asrts$spatial.IC$AIC - 
                                   c(1720.891, 1653.096, 1639.792, 1643.467, 1710.282)) < 0.10))
   testthat::expect_equal(spatial.asrts$best.spatial.mod, "TPNCSS")
   
   #Fit two models and return both
-  spatial.asrts <- chooseSpatialModelOnIC(init.asrt, trySpatial = c("TPN", "TPPC"), 
+  spatial.asrts <- chooseSpatialModelOnIC(init.asrt, trySpatial = c("TPN", "TPPSC"), 
                                           row.covar = "cRow", col.covar = "cColumn",
                                           dropRandom = c("Row + Column"), 
                                           asreml.option = "grp", return.asrts = "all")
   testthat::expect_equal(length(spatial.asrts$asrts), 2)
-  testthat::expect_equal(names(spatial.asrts$asrts), c("TPNCSS", "TPPCS"))
-  testthat::expect_true(all(rownames(spatial.asrts$spatial.IC) == c("nonspatial", "TPNCSS", "TPPCS")))
+  testthat::expect_equal(names(spatial.asrts$asrts), c("TPNCSS", "TPPSC2"))
+  testthat::expect_true(all(rownames(spatial.asrts$spatial.IC) == c("nonspatial", "TPNCSS", "TPPSC2")))
   testthat::expect_true(all(abs(spatial.asrts$spatial.IC$AIC - c(1720.891, 1639.792, 1643.467)) < 0.10))
   
   #Fit all models with Row and Column random and return all
-  spatial.asrts <- chooseSpatialModelOnIC(init.asrt, trySpatial = c("corr", "TPN", "TPPC", "TPP1"), 
+  spatial.asrts <- chooseSpatialModelOnIC(init.asrt, trySpatial = c("corr", "TPN", "TPPSC", "TPPSL"), 
                                           row.covar = "cRow", col.covar = "cColumn",
                                           row.factor = "Row", col.factor = "Column",
                                           dropRandom = c("Row + Column"), 
                                           asreml.option = "grp", return.asrts = "all")
   testthat::expect_equal(length(spatial.asrts$asrts), 4)
-  testthat::expect_equal(names(spatial.asrts$asrts), c("corr", "TPNCSS", "TPPCS", "TPP1LS"))
+  testthat::expect_equal(names(spatial.asrts$asrts), c("corr", "TPNCSS", "TPPSC2", "TPPSL1"))
   testthat::expect_true(all(rownames(spatial.asrts$spatial.IC) == 
-                              c("nonspatial", "corr", "TPNCSS", "TPPCS", "TPP1LS")))
+                              c("nonspatial", "corr", "TPNCSS", "TPPSC2", "TPPSL1")))
   testthat::expect_true(all(abs(spatial.asrts$spatial.IC$AIC - 
                                   c(1720.891, 1653.096, 1639.792, 1643.467, 1710.282)) < 0.10))
   
@@ -649,11 +649,11 @@ test_that("Wheat_spatial_models_asreml42", {
   spatialEach.asrts[["TPNCSS"]] <- addSpatialModel(init.asrt, spatial.model = "TPN", 
                                                    row.covar = "cRow", col.covar = "cColumn",
                                                    dropRandom = c("Row + Column"))
-  spatialEach.asrts[["TPPCS"]] <- addSpatialModel(init.asrt, spatial.model = "TPPS", 
+  spatialEach.asrts[["TPPSC2"]] <- addSpatialModel(init.asrt, spatial.model = "TPPS", 
                                                   row.covar = "cRow", col.covar = "cColumn",
                                                   dropRandom = c("Row + Column"),
                                                   asreml.option = "grp")
-  spatialEach.asrts[["TPP1LS"]] <- addSpatialModel(init.asrt, spatial.model = "TPPS", 
+  spatialEach.asrts[["TPPSL1"]] <- addSpatialModel(init.asrt, spatial.model = "TPPS", 
                                                    row.covar = "cRow", col.covar = "cColumn",
                                                    dropRandom = c("Row + Column"),
                                                    degree = c(1,1), difforder = c(1,1),
@@ -750,9 +750,9 @@ test_that("Wheat_spatial_models_asreml42", {
                                           dropFixed = c("Row + Column"),
                                           asreml.option = "grp", return.asrts = "all")
   testthat::expect_equal(length(spatial.asrts$asrts), 4)
-  testthat::expect_equal(names(spatial.asrts$asrts), c("corr", "TPNCSS", "TPPCS", "TPP1LS"))
+  testthat::expect_equal(names(spatial.asrts$asrts), c("corr", "TPNCSS", "TPPSC2", "TPPSL1"))
   testthat::expect_true(all(rownames(spatial.asrts$spatial.IC) == 
-                              c("nonspatial", "corr", "TPNCSS", "TPPCS", "TPP1LS")))
+                              c("nonspatial", "corr", "TPNCSS", "TPPSC2", "TPPSL1")))
   testthat::expect_true(all(abs(spatial.asrts$spatial.IC$AIC - 
                                   c(1690.964, 1653.978, 1639.792, 1643.467, 1690.964)) < 0.10))
   
@@ -764,11 +764,11 @@ test_that("Wheat_spatial_models_asreml42", {
   spatialEach.asrts[["TPNCSS"]] <- addSpatialModel(init.asrt, spatial.model = "TPN", 
                                                    row.covar = "cRow", col.covar = "cColumn",
                                                    dropFixed = c("Row + Column"))
-  spatialEach.asrts[["TPPCS"]] <- addSpatialModel(init.asrt, spatial.model = "TPPS", 
+  spatialEach.asrts[["TPPSC2"]] <- addSpatialModel(init.asrt, spatial.model = "TPPS", 
                                                   row.covar = "cRow", col.covar = "cColumn",
                                                   dropFixed = c("Row + Column"),
                                                   asreml.option = "grp")
-  spatialEach.asrts[["TPP1LS"]] <- addSpatialModel(init.asrt, spatial.model = "TPPS",
+  spatialEach.asrts[["TPPSL1"]] <- addSpatialModel(init.asrt, spatial.model = "TPPS",
                                                    row.covar = "cRow", col.covar = "cColumn",
                                                    dropFixed = c("Row + Column"),
                                                    degree = c(1,1), difforder = c(1,1),
@@ -947,13 +947,13 @@ test_that("Wheat76_corr_models_asreml42", {
   testthat::expect_equal(names(current.asrt$asreml.obj$vparameters), 
                          c("Row", "Column", "Column:cRow", "Column:cRow!cRow!pow", "units!R"))
   
-  #Compare lvr and TPP1LS models
+  #Compare lvr and TPPSL1 models
   spatial.asrts <- list()
   spatial.asrts[["lvr"]] <- addSpatialModel(init.asrt, spatial.model = "corr", 
                                             row.covar = "cRow", col.covar = "cColumn",
                                             row.factor = "Row", col.factor = "Column",
                                             corr.funcs = c("lvr", "lvr"))
-  spatial.asrts[["TPP1LS"]] <- addSpatialModel(init.asrt, spatial.model = "TPPS",
+  spatial.asrts[["TPPSL1"]] <- addSpatialModel(init.asrt, spatial.model = "TPPS",
                                                row.covar = "cRow", col.covar = "cColumn",
                                                dropRandom = c("Row + Column"),
                                                degree = c(1,1), difforder = c(1,1),
@@ -998,14 +998,14 @@ test_that("Wheat76_corr_models_asreml42", {
                          c("Row", "Column", "Column:Row", "Column:Row!Row!cor", "units!R"))
   
   #Fit a correlation model with id to check spatial.IC
-  spatial.asrts <- chooseSpatialModelOnIC(init.asrt, trySpatial = c("corr",  "TPPC"), 
+  spatial.asrts <- chooseSpatialModelOnIC(init.asrt, trySpatial = c("corr",  "TPPSC"), 
                                           row.covar = "cRow", col.covar = "cColumn",
                                           row.factor = "Row", col.factor = "Column", 
                                           corr.funcs = c("id", "ar1"),
                                           dropRandom = c("Row + Column"),
                                           asreml.option = "grp", return.asrts = "all")
   testthat::expect_equal(length(spatial.asrts$asrts), 2)
-  testthat::expect_equal(names(spatial.asrts$asrts), c("corr", "TPPCS"))
+  testthat::expect_equal(names(spatial.asrts$asrts), c("corr", "TPPSC2"))
   testthat::expect_true(all(abs(spatial.asrts$spatial.IC$AIC - 
                                   c(1720.891, 1667.540, 1643.467)) < 0.10))
 })  
@@ -1358,11 +1358,11 @@ test_that("spatial_models_barley_asreml42", {
   spatialEach.asrts[["TPNCSS"]] <- addSpatialModel(init.asrt, spatial.model = "TPN", 
                                                    row.covar = "crow", col.covar = "ccol",
                                                    dropRandom = c("row + col"))
-  spatialEach.asrts[["TPPCS"]] <- addSpatialModel(init.asrt, spatial.model = "TPPS", 
+  spatialEach.asrts[["TPPSC2"]] <- addSpatialModel(init.asrt, spatial.model = "TPPS", 
                                                   row.covar = "crow", col.covar = "ccol",
                                                   dropRandom = c("row + col"),
                                                   asreml.option = "grp")
-  spatialEach.asrts[["TPP1LS"]] <- addSpatialModel(init.asrt, spatial.model = "TPPS", 
+  spatialEach.asrts[["TPPSL1"]] <- addSpatialModel(init.asrt, spatial.model = "TPPS", 
                                                    row.covar = "crow", col.covar = "ccol",
                                                    dropRandom = c("row + col"),
                                                    degree = c(1,1), difforder = c(1,1),
@@ -1389,12 +1389,12 @@ test_that("spatial_models_barley_asreml42", {
   R2adj.TPNCSS <- R2adj(spatialEach.asrts[["TPNCSS"]]$asreml.obj, 
                         include.which.fixed = ~ ., include.which.random = ~ .)
   testthat::expect_true(abs(R2adj.TPNCSS - 85.47652) < 1e-03)
-  R2adj.TPPCS <- R2adj(spatialEach.asrts[["TPPCS"]]$asreml.obj, 
+  R2adj.TPPSC2 <- R2adj(spatialEach.asrts[["TPPSC2"]]$asreml.obj, 
                        include.which.fixed = ~ ., include.which.random = ~ .)
-  testthat::expect_true(abs(R2adj.TPPCS - 87.78192) < 1e-03)
-  R2adj.TPP1LS <- R2adj(spatialEach.asrts[["TPP1LS"]]$asreml.obj, 
+  testthat::expect_true(abs(R2adj.TPPSC2 - 87.78192) < 1e-03)
+  R2adj.TPPSL1 <- R2adj(spatialEach.asrts[["TPPSL1"]]$asreml.obj, 
                         include.which.fixed = ~ ., include.which.random = ~ .)
-  testthat::expect_true(abs(R2adj.TPP1LS - 90.82785) < 1e-03)
+  testthat::expect_true(abs(R2adj.TPPSL1 - 90.82785) < 1e-03)
 })
 
 cat("#### Test for nonfitting spatial models with asreml42\n")
@@ -1437,26 +1437,26 @@ test_that("nonfit_spatial_models_asreml42", {
   testthat::expect_true(abs(spatial.asrts$spatial.IC$AIC - 892.861) < 1e-04)
   
   #Fit two models and return both - neither fits
-  spatial.asrts <- chooseSpatialModelOnIC(init.asrt, trySpatial = c("TPN", "TPPC"), 
+  spatial.asrts <- chooseSpatialModelOnIC(init.asrt, trySpatial = c("TPN", "TPPSC"), 
                                           row.covar = "cRow", col.covar = "cCol",
                                           row.factor = "Row", col.factor = "Column", 
                                           dropRandom = c("Row + Column"),
                                           asreml.option = "grp", return.asrts = "all")
   testthat::expect_equal(length(spatial.asrts$asrts), 2)
-  testthat::expect_equal(names(spatial.asrts$asrts), c("TPNCSS", "TPPCS"))
-  testthat::expect_true(all(rownames(spatial.asrts$spatial.IC) == c("nonspatial", "TPNCSS", "TPPCS")))
+  testthat::expect_equal(names(spatial.asrts$asrts), c("TPNCSS", "TPPSC2"))
+  testthat::expect_true(all(rownames(spatial.asrts$spatial.IC) == c("nonspatial", "TPNCSS", "TPPSC2")))
   testthat::expect_true(all(abs(spatial.asrts$spatial.IC$AIC - 
                                   c(892.861, 892.861, 892.861)) < 0.10))
   
   #Fit all models and return all - corr fits
-  spatial.asrts <- chooseSpatialModelOnIC(init.asrt, trySpatial = c("corr", "TPN", "TPPC"), 
+  spatial.asrts <- chooseSpatialModelOnIC(init.asrt, trySpatial = c("corr", "TPN", "TPPSC"), 
                                           row.covar = "cRow", col.covar = "cCol",
                                           row.factor = "Row", col.factor = "Column", 
                                           dropRandom = c("Row + Column"),
                                           asreml.option = "grp", return.asrts = "all")
   testthat::expect_equal(length(spatial.asrts$asrts), 3)
-  testthat::expect_equal(names(spatial.asrts$asrts), c("corr", "TPNCSS", "TPPCS"))
-  testthat::expect_true(all(rownames(spatial.asrts$spatial.IC) == c("nonspatial", "corr", "TPNCSS", "TPPCS")))
+  testthat::expect_equal(names(spatial.asrts$asrts), c("corr", "TPNCSS", "TPPSC2"))
+  testthat::expect_true(all(rownames(spatial.asrts$spatial.IC) == c("nonspatial", "corr", "TPNCSS", "TPPSC2")))
   #The spline models AIC are greater than the nonspatial model and so chooseModelOnIC returns the nonspatial AIC for them
   testthat::expect_true(all(abs(na.omit(spatial.asrts$spatial.IC$AIC) - 
                                   c(892.861, 888.5976, 892.861, 892.861)) < 0.10))
@@ -1469,11 +1469,11 @@ test_that("nonfit_spatial_models_asreml42", {
                                                      row.factor = "Row", col.factor = "Column")
   spatialEach.asrts[["TPNCSS"]] <- addSpatialModel(init.asrt, spatial.model = "TPN", 
                                                    row.covar = "cRow", col.covar = "cCol")
-  spatialEach.asrts[["TPPCS"]] <- addSpatialModel(init.asrt, spatial.model = "TPPS", 
+  spatialEach.asrts[["TPPSC2"]] <- addSpatialModel(init.asrt, spatial.model = "TPPS", 
                                                   row.covar = "cRow", col.covar = "cCol",
                                                   dropRandom = c("Row + Column"),
                                                   asreml.option = "grp")
-  spatialEach.asrts[["TPP1LS"]] <- addSpatialModel(init.asrt, spatial.model = "TPPS",
+  spatialEach.asrts[["TPPSL1"]] <- addSpatialModel(init.asrt, spatial.model = "TPPS",
                                                    row.covar = "cRow", col.covar = "cCol",
                                                    dropRandom = c("Row + Column"),
                                                    degree = c(1,1), difforder = c(1,1),
@@ -1779,8 +1779,8 @@ test_that("HEB25_heterovar_asreml42", {
   testthat::expect_true(all(abs(HEB25.spatialLM.asrts$spatial.IC$AIC - 
                                   c(525.5955, 488.4491, 474.0910, 473.2412, 479.7447) < 1e-03)))
   testthat::expect_equal(names(HEB25.spatialLM.asrts$asrts), 
-                         c("corr",  "TPNCSS", "TPPCS",  "TPP1LS"))
-  summ <- summary(HEB25.spatialLM.asrts$asrts$TPPCS$asreml.obj)$varcomp
+                         c("corr",  "TPNCSS", "TPPSC2",  "TPPSL1"))
+  summ <- summary(HEB25.spatialLM.asrts$asrts$TPPSC2$asreml.obj)$varcomp
   summ$bound[summ$bound == " "] <- "P" #hack to overcome asreml returning spaces
   testthat::expect_equal(nrow(summ), 18)
   testthat::expect_true(all((summ$bound[-14] == "P")))
@@ -1805,21 +1805,21 @@ test_that("HEB25_heterovar_asreml42", {
                     row.covar = "cLane", col.covar = "cMainPosn")
   testthat::expect_true(any(grepl("NW", spatialEach.asrts[["TPNCSS"]]$test.summary$terms)) & 
                           any(grepl("NE", spatialEach.asrts[["TPNCSS"]]$test.summary$terms)))
-  spatialEach.asrts[["TPPCS"]] <- 
+  spatialEach.asrts[["TPPSC2"]] <- 
     addSpatialModel(HEB25.idh.asrt, spatial.model = "TPPS", 
                     sections = "Smarthouse", 
                     row.covar = "cLane", col.covar = "cMainPosn",
                     asreml.option = "grp")
-  testthat::expect_true(any(grepl("NW", spatialEach.asrts[["TPPCS"]]$test.summary$terms)) & 
-                          any(grepl("NE", spatialEach.asrts[["TPPCS"]]$test.summary$terms)))
-  spatialEach.asrts[["TPP1LS"]] <- 
+  testthat::expect_true(any(grepl("NW", spatialEach.asrts[["TPPSC2"]]$test.summary$terms)) & 
+                          any(grepl("NE", spatialEach.asrts[["TPPSC2"]]$test.summary$terms)))
+  spatialEach.asrts[["TPPSL1"]] <- 
     addSpatialModel(HEB25.idh.asrt, spatial.model = "TPPS",
                     sections = "Smarthouse", 
                     row.covar = "cLane", col.covar = "cMainPosn",
                     degree = c(1,1), difforder = c(1,1),
                     asreml.option = "grp")
-  testthat::expect_true(any(grepl("NW", spatialEach.asrts[["TPP1LS"]]$test.summary$terms)) & 
-                          any(grepl("NE", spatialEach.asrts[["TPP1LS"]]$test.summary$terms)))
+  testthat::expect_true(any(grepl("NW", spatialEach.asrts[["TPPSL1"]]$test.summary$terms)) & 
+                          any(grepl("NE", spatialEach.asrts[["TPPSL1"]]$test.summary$terms)))
   infoEach <- do.call(rbind, 
                       lapply(spatialEach.asrts, 
                              function(asrt) infoCriteria(asrt$asreml.obj, 
@@ -1864,8 +1864,8 @@ test_that("HEB25_heterovar_asreml42", {
   testthat::expect_true(all(abs(HEB25.spatialLP.asrts$spatial.IC$AIC - 
                                   c(525.5955, 486.4039, 471.5088, 472.8215, 476.6325) < 0.1)))
   testthat::expect_equal(names(HEB25.spatialLP.asrts$asrts), 
-                         c("corr",  "TPNCSS", "TPPCS",  "TPP1LS"))
-  summ <- summary(HEB25.spatialLP.asrts$asrts$TPPCS$asreml.obj)$varcomp
+                         c("corr",  "TPNCSS", "TPPSC2",  "TPPSL1"))
+  summ <- summary(HEB25.spatialLP.asrts$asrts$TPPSC2$asreml.obj)$varcomp
   summ$bound[summ$bound == " "] <- "P" #hack to overcome asreml returning spaces
   testthat::expect_equal(nrow(summ), 19)
   testthat::expect_true(all((summ$bound[-15] == "P")))
@@ -1877,7 +1877,7 @@ test_that("HEB25_heterovar_asreml42", {
   
   #Return two P-spline models with rotation  for L x P spatial variation
   HEB25Rot.spatialLP.asrts <- 
-    chooseSpatialModelOnIC(HEB25.idh.asrt,  trySpatial = c("TPPCS", "TPP1LS"),
+    chooseSpatialModelOnIC(HEB25.idh.asrt,  trySpatial = c("TPPSC2", "TPPSL1"),
                            sections = "Smarthouse", 
                            row.covar = "cLane", col.covar = "cPosition",
                            row.factor = "Lanes", col.factor = "Positions",
@@ -1885,18 +1885,18 @@ test_that("HEB25_heterovar_asreml42", {
                            asreml.option = "grp", return.asrts = "all")
   testthat::expect_true(all(abs(HEB25Rot.spatialLP.asrts$spatial.IC$AIC - 
                                   c(525.5955, 467.3558 , 476.6325) < 0.1)))
-  testthat::expect_equal(names(HEB25Rot.spatialLP.asrts$asrts), c("TPPCS",  "TPP1LS"))
-  summ <- summary(HEB25Rot.spatialLP.asrts$asrts$TPPCS$asreml.obj)$varcomp
+  testthat::expect_equal(names(HEB25Rot.spatialLP.asrts$asrts), c("TPPSC2",  "TPPSL1"))
+  summ <- summary(HEB25Rot.spatialLP.asrts$asrts$TPPSC2$asreml.obj)$varcomp
   summ$bound[summ$bound == " "] <- "P" #hack to overcome asreml returning spaces
   testthat::expect_equal(nrow(summ), 16)
   testthat::expect_true(all((summ$bound[-c(12)] == "P")))
   testthat::expect_true(all((summ$bound[12] == "F")))
-  summ <- summary(HEB25Rot.spatialLP.asrts$asrts$TPP1LS$asreml.obj)$varcomp
+  summ <- summary(HEB25Rot.spatialLP.asrts$asrts$TPPSL1$asreml.obj)$varcomp
   summ$bound[summ$bound == " "] <- "P" #hack to overcome asreml returning spaces
   testthat::expect_equal(nrow(summ), 17)
   testthat::expect_true(all((summ$bound[-13] == "P")))
   testthat::expect_true(all((summ$bound[13] == "F")))
-  theta.opt <- attr(HEB25Rot.spatialLP.asrts$asrts$TPPCS$asreml.obj, which = "theta.opt")
+  theta.opt <- attr(HEB25Rot.spatialLP.asrts$asrts$TPPSC2$asreml.obj, which = "theta.opt")
   testthat::expect_true(all(abs(theta.opt$NW - c(47.54956, 89.92520)) < 0.001))
   testthat::expect_true(all(abs(theta.opt$NE - c(26.55142, 67.15074)) < 0.001))
   
@@ -1932,11 +1932,11 @@ test_that("HEB25_heterovar_asreml42", {
   testthat::expect_true(all(abs(HEB25.spatialLM.ds.asrts$spatial.IC$AIC - 
                                   c(525.5954, 488.4492, 474.0911, 473.2411, 479.7447) < 1e-03)))
   testthat::expect_equal(names(HEB25.spatialLM.ds.asrts$asrts), 
-                         c("corr",  "TPNCSS", "TPPCS",  "TPP1LS"))
-  #Check TPPCS
-  summ.idh <- summary(HEB25.spatialLM.asrts$asrts$TPPCS$asreml.obj)$varcomp
+                         c("corr",  "TPNCSS", "TPPSC2",  "TPPSL1"))
+  #Check TPPSC2
+  summ.idh <- summary(HEB25.spatialLM.asrts$asrts$TPPSC2$asreml.obj)$varcomp
   summ.idh$bound[summ.idh$bound == " "] <- "P" #hack to overcome asreml returning spaces
-  summ.ds <- summary(HEB25.spatialLM.ds.asrts$asrts$TPPCS$asreml.obj)$varcomp
+  summ.ds <- summary(HEB25.spatialLM.ds.asrts$asrts$TPPSC2$asreml.obj)$varcomp
   summ.ds$bound[summ.ds$bound == " "] <- "P" #hack to overcome asreml returning spaces
   testthat::expect_equal(nrow(summ.ds), 17)
   testthat::expect_true(all((summ.ds$bound[-15] == "P")))
@@ -1966,11 +1966,11 @@ test_that("HEB25_heterovar_asreml42", {
   testthat::expect_true(all(abs(HEB25.spatialLP.ds.asrts$spatial.IC$AIC - 
                                   c(525.5954, 480.4911, 471.5088, 472.8214, 476.6324) < 0.1)))
   testthat::expect_equal(names(HEB25.spatialLP.ds.asrts$asrts), 
-                         c("corr",  "TPNCSS", "TPPCS",  "TPP1LS"))
-  #Check TPPCS
-  summ.idh <- summary(HEB25.spatialLP.asrts$asrts$TPPCS$asreml.obj)$varcomp
+                         c("corr",  "TPNCSS", "TPPSC2",  "TPPSL1"))
+  #Check TPPSC2
+  summ.idh <- summary(HEB25.spatialLP.asrts$asrts$TPPSC2$asreml.obj)$varcomp
   summ.idh$bound[summ$bound == " "] <- "P" #hack to overcome asreml returning spaces
-  summ.ds <- summary(HEB25.spatialLP.ds.asrts$asrts$TPPCS$asreml.obj)$varcomp
+  summ.ds <- summary(HEB25.spatialLP.ds.asrts$asrts$TPPSC2$asreml.obj)$varcomp
   summ.ds$bound[summ$bound == " "] <- "P" #hack to overcome asreml returning spaces
   testthat::expect_equal(rownames(summ.idh)[1:13], rownames(summ.ds)[1:13])
   testthat::expect_true(all.equal(summ.idh[-15,], summ.ds, tolerance = 1e-03, 
