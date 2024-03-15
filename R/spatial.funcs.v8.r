@@ -588,6 +588,7 @@ fitCorrMod <- function(asrtests.obj, sections = NULL,
                                  IClikelihood = IClikelihood, 
                                  which.IC = which.IC), 
                             inargs))
+
       #Check for singular (S) correlation model terms and only change model if none
       corr.asrt <- chk4SingularCorrTerms(tmp.asrt, corr.asrt,  label = lab1, 
                                          sections = sections, stub = stub, 
@@ -653,7 +654,7 @@ fitCorrMod <- function(asrtests.obj, sections = NULL,
         result <- getTestEntry(corr.asrt, label = lab)$action
         if (!(grepl("Unswapped", result)) && !(grepl("Unchanged", result)))
           last.term <- ran.term
-        
+       
         #If corb and rorder == 0, try to fit corb up to order 10
         corr.lis <- do.call(fitCorbPlus1, 
                             c(list(corr.asrt, ran.term = ran.term, rorder = rorders[2], 

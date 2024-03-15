@@ -117,6 +117,13 @@
                           IClikelihood = "none", bound.exclusions = c("F","B","S","C"), 
                           ...)
 { 
+  
+  # Get original data name.
+  orig.name <- asreml.obj$call$data                                             ## add VSNi 14/03/2024
+  
+  # Expose dataset to avoid conflicts.
+  asreml.obj$call$data <- str2lang("asreml.obj$mf")                             ## add VSNi 14/03/2024
+  
   #Check that have a valid object of class asreml
   validasr <- validAsreml(asreml.obj)  
   if (is.character(validasr))
@@ -167,13 +174,14 @@
       stop(validwald)
   } else #form wald.tab
   { 
-    # dat <- asreml.obj$call$data
-    # if (is.symbol(dat)) asreml.obj$call$data <- eval(dat)
     wald.tab <- asreml::wald.asreml(asreml.obj, denDF = denDF, trace = FALSE, ...)
     wald.tab <- chkWald(wald.tab)
   }
   
-  #Put together the asrtests.obj, with update wald tab
+  # Add original name back to asreml.obj.
+  asreml.obj$call$data <- orig.name                                             ## add VSNi 14/03/2024
+  
+  #Put together the asrtests.obj, with updated wald tab
   test <- list(asreml.obj = asreml.obj, wald.tab=wald.tab, test.summary = test.summary)
   class(test) <- "asrtests"
   test$wald.tab <- recalcWaldTab(test, ...)
@@ -182,6 +190,8 @@
   if (asr4)
     asreml::asreml.options(trace = TRUE)
   
+  
+  # Return.
   return(test)
 }
 
@@ -1666,7 +1676,7 @@ findboundary.asreml <- function(asreml.obj, asr4, asr4.2)
     fix.form <- as.formula(fix.form)
   }
   
-  nullran <- is.null(languageEl(asrtests.obj$asreml.obj$call, which = "random"))
+  nullran <- is.null(languageEl(asreml.obj$call, which = "random"))
   ran.form <-" ~ . "
   if (((is.null(dropRandom) && is.null(addRandom)) ||
        (!is.null(dropRandom) && is.null(addRandom))) && nullran)
@@ -1764,6 +1774,7 @@ findboundary.asreml <- function(asreml.obj, asr4, asr4.2)
     } else #have changes to model terms
     { 
       asreml.obj <- newfit(asreml.obj)
+      
       if (asr4)
         asreml.new.obj <- newfit.asreml(asreml.obj, 
                                         fixed. = fix.form, random. = ran.form, 
@@ -2106,15 +2117,17 @@ findboundary.asreml <- function(asreml.obj, asr4, asr4.2)
   options <- c("AIC", "BIC") #, "both")
   ic.type <- options[check.arg.values(which.IC, options)]
   
+  asreml.obj <- asrtests.obj$asreml.obj
+  
   #Check for fixed correlations in supplied asrtests.obj
-  if (!isFixedCorrelOK.asreml(asrtests.obj$asreml.obj, allow.fixedcorrelation = allow.fixedcorrelation))
+  if (!isFixedCorrelOK.asreml(asreml.obj, allow.fixedcorrelation = allow.fixedcorrelation))
   {
-    if ("formulae" %in% names(asrtests.obj$asreml.obj))
-      kresp <- asrtests.obj$asreml.obj$formulae$fixed[[2]]
+    if ("formulae" %in% names(asreml.obj))
+      kresp <- asreml.obj$formulae$fixed[[2]]
     else
     {
-      if ("fixed.formula" %in% names(asrtests.obj$asreml.obj))
-        kresp <- asrtests.obj$asreml.obj$fixed.formula[[2]]
+      if ("fixed.formula" %in% names(asreml.obj))
+        kresp <- asreml.obj$fixed.formula[[2]]
       else
         kresp <- NULL
     }
@@ -2123,7 +2136,7 @@ findboundary.asreml <- function(asreml.obj, asr4, asr4.2)
   }
   
   #Calculate the IC for the incoming fit
-  old.IC <- infoCriteria(asrtests.obj$asreml.obj, IClikelihood = ic.lik, 
+  old.IC <- infoCriteria(asreml.obj, IClikelihood = ic.lik, 
                          bound.exclusions = bound.exclusions, 
                          fixedDF = fixedDF, varDF = varDF, ...)
   old.IC <- as.vector(old.IC[c("fixedDF", "varDF", "AIC", "BIC")], mode = "numeric")
@@ -2171,19 +2184,19 @@ findboundary.asreml <- function(asreml.obj, asr4, asr4.2)
                                IClikelihood = IClikelihood, 
                                bound.exclusions = bound.exclusions,  
                                ...)
+    new.asreml.obj <- new.asrtests.obj$asreml.obj
     #Obtain IC for new model
-    new.IC <- infoCriteria(new.asrtests.obj$asreml.obj, IClikelihood = ic.lik, 
+    new.IC <- infoCriteria(new.asreml.obj, IClikelihood = ic.lik, 
                            bound.exclusions = bound.exclusions, 
                            fixedDF = fixedDF, varDF = varDF, ...)
     new.IC <- as.vector(new.IC[c("fixedDF", "varDF", "AIC", "BIC")], mode = "numeric")
     names(new.IC) <- c("DF", "denDF", "AIC", "BIC")
     
     #Extract asreml.objects
-    asreml.obj <- asrtests.obj$asreml.obj
     if (!is.null(asreml.obj$mf) && !is.null(attr(asreml.obj$mf, which = "mbf.env")))
-      attr(new.asrtests.obj$asreml.obj$mf, 
+      attr(new.asreml.obj$mf, 
            which = "mbf.env") <- attr(asreml.obj$mf, which = "mbf.env")
-    new.asreml.obj <- new.asrtests.obj$asreml.obj
+    new.asreml.obj <- new.asreml.obj
     
     change <- FALSE
     action <- getTestEntry(new.asrtests.obj, label = label)$action 
@@ -2191,13 +2204,11 @@ findboundary.asreml <- function(asreml.obj, asr4, asr4.2)
     #Check fixed correlation
     if (grepl("Unchanged - fixed correlation", action))
     {
-      #new.asrtests.obj <- asrtests.obj
       change <- FALSE
     } else
     {
       if (grepl("Unchanged", action))
       {
-        #new.asrtests.obj <- asrtests.obj
         change <- FALSE
       } else
       {

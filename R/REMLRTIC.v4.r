@@ -235,7 +235,8 @@ infoCriteria.asreml <- function(object, DF = NULL,
   if (is.character(validasr))
     stop(validasr)
   
-  call.args <- rlang::call_match(object$call, fn = asreml::asreml,  defaults = TRUE)
+  asreml.obj <- object
+  call.args <- rlang::call_match(asreml.obj$call, fn = asreml::asreml,  defaults = TRUE)
   #Check which of a Gaussian, GLM or other distribution/model
   if ("asr_gaussian" == rlang::call_name(call.args$family))
   {
@@ -250,14 +251,14 @@ infoCriteria.asreml <- function(object, DF = NULL,
     if (asr4)
     {
       if (asr4.2)
-        bound <- object$vparameters.con
+        bound <- asreml.obj$vparameters.con
       else
-        bound <- vpc.char(object)
+        bound <- vpc.char(asreml.obj)
     }
     else
     {
-      bound <- names(object$gammas.con)
-      names(bound) <- names(object$gammas)
+      bound <- names(asreml.obj$gammas.con)
+      names(bound) <- names(asreml.obj$gammas)
     }
     NBound <- NA
     if (asr4)
@@ -303,22 +304,22 @@ infoCriteria.asreml <- function(object, DF = NULL,
       if (asr4)
       {
         asreml::asreml.options(Cfixed = TRUE, gammaPar=FALSE)
-        if (is.null(object$Cfixed)) 
-          object <- asreml::update.asreml(object, maxit=1)
-        coefF <- summary(object, coef=TRUE)$coef.fixed
+        if (is.null(asreml.obj$Cfixed)) 
+          asreml.obj <- asreml::update.asreml(asreml.obj, maxit=1)
+        coefF <- summary(asreml.obj, coef=TRUE)$coef.fixed
         which.cF <- rownames(coefF)[!is.na(coefF[, "z.ratio"])]
-        #      logdetC <- log(prod(svd(as.matrix(object$Cfixed[which.cF, which.cF]))$d))
-        logdetC <- sum(log(svd(as.matrix(object$Cfixed[which.cF, which.cF]))$d))
+        #      logdetC <- log(prod(svd(as.matrix(asreml.obj$Cfixed[which.cF, which.cF]))$d))
+        logdetC <- sum(log(svd(as.matrix(asreml.obj$Cfixed[which.cF, which.cF]))$d))
       } else #asr3
       {
-        if (is.null(object$Cfixed)) 
-          object <- asreml::update.asreml(object, maxit=1, Cfixed = TRUE)
-        coefF <- summary(object, all=TRUE)$coef.fixed
+        if (is.null(asreml.obj$Cfixed)) 
+          asreml.obj <- asreml::update.asreml(asreml.obj, maxit=1, Cfixed = TRUE)
+        coefF <- summary(asreml.obj, all=TRUE)$coef.fixed
         which.cF <- !is.na(coefF[, "z ratio"])
-        #object$Cfixed is not a matrix and so this does not work 
-        #       logdetC <- log(prod(svd(as.matrix(object$Cfixed[which.cF, which.cF]))$d))
+        #asreml.obj$Cfixed is not a matrix and so this does not work 
+        #       logdetC <- log(prod(svd(as.matrix(asreml.obj$Cfixed[which.cF, which.cF]))$d))
         if (any(which.cF)) 
-          logdetC <- sum(log(svd(as.matrix(object$Cfixed[which.cF, which.cF]))$d))
+          logdetC <- sum(log(svd(as.matrix(asreml.obj$Cfixed[which.cF, which.cF]))$d))
         else #all z-ratios are NA
         {
           fixedDF <- 0
@@ -464,7 +465,11 @@ infoCriteria.asreml <- function(object, DF = NULL,
     if (any(is.na(Vinv)))
     {  
       if (!all(is.null(include.which.fixed))) #var.beta not available to compute ASSBfix
-        warning("Unable to obtain the generalized inverse of the the estimated variance matrix required to compute the fixed contribution")
+      { 
+        kresp <- as.character(asreml.obj$call$fixed)[2]
+        warning("Unable to obtain the generalized inverse of the estimated variance matrix for ", kresp, 
+                " that is required to compute the fixed contribution")
+      }
       ASSB <- NA
     } else
     {

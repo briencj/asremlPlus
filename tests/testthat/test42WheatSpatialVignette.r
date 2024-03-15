@@ -52,7 +52,7 @@ test_that("Wheat_spatial_asreml42", {
   corb.asrt <- addSpatialModelOnIC(current.asrt, spatial.model = "corr", 
                                    row.covar = "cRow", col.covar = "cColumn", 
                                    row.factor = "Row", col.factor = "Column", 
-                                   corr.funcs = c("corb", "corb"), corr.order = c(0,0),
+                                   corr.funcs = c("corb", "corb"), corr.orders = c(0,0),
                                    IClikelihood = "full")
   corb.asrt <- rmboundary(corb.asrt, IClikelihood = "full")
   inf <- infoCriteria(corb.asrt$asreml.obj, IClikelihood = "full")

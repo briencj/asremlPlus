@@ -892,7 +892,7 @@ test_that("Fixedcorrelations_asreml42", {
   testthat::expect_equal(unname(
            m5.asrt$asreml.obj$vparameters.con["Lane:Position!Lane!cor"]), "B")
   testthat::expect_true(all(abs(c(m5.asrt$test.summary$AIC[4],m5.asrt$test.summary$BIC[4]) - 
-                                  c(2355.000, 2359.271)) < 1e-03))
+                                  c(2357.000, 2365.542)) < 1e-03))
   
   m6.asrt <- testranfix(m4.asrt, term = "Lane", allow.fixedcorrelation = TRUE,
                         IClikelihood = "REML")
