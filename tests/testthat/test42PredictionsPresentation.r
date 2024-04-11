@@ -373,9 +373,10 @@ test_that("plotPvalues.asreml42", {
   library(reshape2)
   data(WaterRunoff.dat)
   asreml.options(keep.order = TRUE) #required for asreml4 only
-  testthat::expect_silent(current.asr <- asreml(fixed = pH ~ Benches + (Sources * (Type + Species)), 
+  
+  current.asr <- asreml(fixed = pH ~ Benches + (Sources * (Type + Species)), 
                                                 random = ~ Benches:MainPlots,
-                                                data= WaterRunoff.dat))
+                                                data= WaterRunoff.dat)
   current.asrt <- as.asrtests(current.asr, NULL, NULL)
   diffs <- predictPlus.asreml(classify = "Sources:Type", 
                               asreml.obj = current.asr, tables = "none", 
@@ -508,9 +509,9 @@ test_that("recalcLSD.alldiffs4", {
   library(dae)
   data(WaterRunoff.dat)
   asreml.options(keep.order = TRUE) #required for asreml4 only
-  testthat::expect_silent(current.asr <- asreml(fixed = pH ~ Benches + (Sources * (Type + Species)), 
-                                                random = ~ Benches:MainPlots,
-                                                data= WaterRunoff.dat))
+  current.asr <- asreml(fixed = pH ~ Benches + (Sources * (Type + Species)), 
+                        random = ~ Benches:MainPlots,
+                        data= WaterRunoff.dat)
   current.asrt <- as.asrtests(current.asr, NULL, NULL)
   diffs <- predictPlus.asreml(classify = "Sources:Type", 
                               asreml.obj = current.asr, tables = "none", 

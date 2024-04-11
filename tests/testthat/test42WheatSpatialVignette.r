@@ -48,7 +48,7 @@ test_that("Wheat_spatial_asreml42", {
                                   label = "Try dropping withinColPairs", IClikelihood = "full")
   print(current.asrt)
 
-  #Try corb - worst fit
+  #Try corb - worst fit - this is crashing R
   corb.asrt <- addSpatialModelOnIC(current.asrt, spatial.model = "corr", 
                                    row.covar = "cRow", col.covar = "cColumn", 
                                    row.factor = "Row", col.factor = "Column", 

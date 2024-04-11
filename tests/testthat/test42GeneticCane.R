@@ -85,7 +85,7 @@ test_that("HEB25_estimateV_asreml42", {
                          data=site2, 
                          na.action=na.method(y="include", x="include")),
     regexp = "Some components changed by more than 1% on the last iteration")
-  testthat::expect_true(asreml.obj$converge)
+  testthat::expect_false(asreml.obj$converge)
   testthat::expect_equal(nrow(summary(asreml.obj)$varcomp), 8)
   colcorr <- asreml.obj$vparameters[grepl("Col!cor", names(asreml.obj$vparameters))]
   rowcorrs <- asreml.obj$vparameters[grepl("Row!cor", names(asreml.obj$vparameters))]

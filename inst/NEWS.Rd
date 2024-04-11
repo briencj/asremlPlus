@@ -1,5 +1,9 @@
 \name{news}
 \title{News for Package asremlPlus}
+\section{asremlPlus Version 4.4.32 (2024-04-11}{
+  \itemize{
+  \item Update for CRAN submission.
+}}
 \section{asremlPlus Version 4.4.31 (2024-03-15}{
   \itemize{
   \item Revise warning message in R2adj.asreml for when generalized inverse fails.
