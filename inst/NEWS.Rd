@@ -1,5 +1,9 @@
 \name{news}
 \title{News for Package asremlPlus}
+\section{asremlPlus Version 4.4.33 (2024-06-10}{
+  \itemize{
+  \item Fix bug in checking loaded versions that occurs with R 4.4.0.
+}}
 \section{asremlPlus Version 4.4.32 (2024-04-11}{
   \itemize{
   \item Update for CRAN submission.

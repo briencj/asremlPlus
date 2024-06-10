@@ -133,12 +133,13 @@ isFixedCorrelOK.asreml <- function(asreml.obj, allow.fixedcorrelation = TRUE, ..
   return(vers)
 }
 
-#Checks whether the loaded version is greater than version
-"isASReml4_2Loaded" <- function(version = 4.2, notloaded.fault = FALSE)
+#Checks whether the loaded version is greater than or equal "4.2" 
+# - version is ignored, but is retained because it is throughout the calling code
+"isASReml4_2Loaded" <- function(version = "4.2", notloaded.fault = FALSE)
 {
   vers <- getASRemlVersionLoaded(nchar = 3, notloaded.fault = notloaded.fault)
   if (!is.null(vers)) 
-    vers <- as.numeric_version(vers) >= 4.2
+    vers <- as.numeric_version(vers) >= "4.2"
   return(vers)
 }
 
