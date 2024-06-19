@@ -1341,7 +1341,7 @@ test_that("sort.alldiffsWater4", {
                                    "lower.Confidence.limit", "est.status")))
   diffs.fit <- linTransform(diffs.full, classify = "Sources:Type:Species",
                             linear.transformation = ~ Sources:Type, 
-                            error.intervals="half", 
+                            error.intervals="half", avsed.tolerance = NA, 
                             LSDtype="factor", LSDby="Type", 
                             tables = "none")
   testthat::expect_true(setequal(names(diffs.fit$predictions), 
@@ -1353,7 +1353,7 @@ test_that("sort.alldiffsWater4", {
   testthat::expect_true(attr(diffs.fit, which = "LSDby") == "Type")
   testthat::expect_true(all(c("LSDtype", "LSDby", "LSDvalues") %in% names(attributes(diffs.fit$predictions))))
   testthat::expect_true(all(abs(attr(diffs.fit$predictions, which = "LSDvalues") - 
-                                  c(0.1771545, 0.2175130, 0.2643927, 0.3783488)) < 1e-05))
+                                  c(0.1771034, 0.2174418, 0.2643927, 0.3783488)) < 1e-05))
   diffs.fit <- subset(diffs.fit, rmClassifyVars = "Type")
   testthat::expect_true(setequal(names(diffs.fit$predictions), 
                                  c("Sources", "Species", "predicted.value", 
@@ -1824,7 +1824,82 @@ test_that("linear.transform_Oats_asreml42", {
   testthat::expect_true(abs(diffs.mod$predictions$standard.error[1] - 
                               preds$std.error[1]) > 0.01)
 })
+
+
+cat("#### Test for linear.transformation on dat699 with asreml42\n")
+test_that("linear.transform_dat699_asreml42", {
+  skip_if_not_installed("asreml")
+  skip_on_cran()
+  library(asreml)
+  library(asremlPlus)
+  library(dae)
   
+  #This example requires the EGLS approach so that the test for the one-degree-of-freedom AMF effect 
+  #and the estimates of the effect are consistent
+  data(dat699)
+  
+  # Fit model
+  asr <- asreml(fixed = Soil_Carbon ~ Block + Soil * AMF,
+                residual = ~ idh(Soil):AMF:Block, 
+                data = dat, maxiter=50)
+  
+  # Load into asrtests object and print variance summary and wald.tab
+  asrt <- as.asrtests(asr, label = "Heterogeneous Soil variances")
+  print(asrt)
+  
+  # Get predictions
+  diffs <- predictPlus(asreml.obj = asr, classify = "Soil:AMF", 
+                       Vmatrix = TRUE, 
+                       error.intervals = "halfLeast", avsed.tolerance = NA, 
+                       wald.tab = asrt$wald.tab, tables = "none")
+  testthat::expect_false(isCompoundSymmetric(diffs$vcov))
+  
+  # Get predictions under the additive model using a model formula
+  diffs.gls <- linTransform(diffs, linear.transformation = ~ Soil + AMF,
+                            error.intervals = "halfLeast", avsed.tolerance = NA, 
+                            wald.tab = asrt$wald.tab, tables = "none")
+  t.gls <- diffs.gls$differences/diffs.gls$sed
+  t.AMF <- t.gls[1,2]
+  df <- asrt$wald.tab$denDF[4:5]
+  pvals<- c(asrt$wald.tab[rownames(asrt$wald.tab)=="AMF", ]$Pr, 
+            pt(t.AMF, df[1],lower.tail = FALSE)*2, 
+            diffs.gls$p.differences[1,2], pt(t.AMF, df[2],lower.tail = FALSE)*2)
+  names(pvals) <- c("Wald", "t_14.9", "gls", "t_20.7")
+  #p-value for AMF-vs+ computed for diffs.gls$differences and diffs.gls$sed match Wald p when the t-value with the AMF denDF are used
+  testthat::expect_true(abs(pvals["Wald"] - pvals["t_14.9"]) < 1e-05)
+  # diffs.gls$p.differences differs from Wald p because it used the interaction denDF
+  testthat::expect_true(abs(pvals["gls"] - pvals["t_20.7"]) < 1e-05)
+  #Check the AMF effect is the same for all Soils
+  testthat::expect_true(all(abs(c(diffs.gls$differences[1,2], diffs.gls$differences[3,4], 
+                                  diffs.gls$differences[5,6]) - 0.01488561) < 1e-05))
+  
+  # Get predictions under the additive model using a matrix
+  V <- diffs$vcov
+  W <- mat.ginv(V)
+  X.all <- model.matrix(~Soil + AMF-1, data = diffs$predictions)
+  Q.gls <-  X.all %*% mat.ginv(t(X.all) %*% W %*% X.all) %*% (t(X.all) %*% W)
+  
+  diffs.gls <- predictPlus(asreml.obj = asr, classify = "Soil:AMF", 
+                           linear.transformation = Q.gls, 
+                           error.intervals = "none", Vmatrix = TRUE,
+                           wald.tab = asrt$wald.tab, tables = "none")
+  t.gls <- diffs.gls$differences/diffs.gls$sed
+  t.AMF <- t.gls[1,2]
+  df <- asrt$wald.tab$denDF[4:5]
+  #'## Show that diffs.gls p is not the same as the Wald p is because the interaction df are used, not the AMF df
+  pvals<- c(asrt$wald.tab[rownames(asrt$wald.tab)=="AMF", ]$Pr, 
+            pt(t.AMF, df[1],lower.tail = FALSE)*2, 
+            diffs.gls$p.differences[1,2], pt(t.AMF, df[2],lower.tail = FALSE)*2)
+  names(pvals) <- c("Wald", "t_14.9", "gls", "t_20.7")
+  # p-value for AMF-vs+ computed for diffs.gls$differences and diffs.gls$sed match Wald p when the t-value with the AMF denDF are used
+  testthat::expect_true(abs(pvals["Wald"] - pvals["t_14.9"]) < 1e-05)
+  # diffs.gls$p.differences differs from Wald p because it used the interaction denDF
+  testthat::expect_true(abs(pvals["gls"] - pvals["t_20.7"]) < 1e-05)
+  #Check the AMF effect is the same for all Soils
+  testthat::expect_true(all(abs(c(diffs.gls$differences[1,2], diffs.gls$differences[3,4], 
+                                  diffs.gls$differences[5,6]) - 0.01488561) < 1e-05))
+})
+
 cat("#### Test for linear.transformation on WaterRunoff with asreml42\n")
 test_that("linear.transform_WaterRunoff_asreml42", {
   skip_if_not_installed("asreml")
@@ -1853,7 +1928,7 @@ test_that("linear.transform_WaterRunoff_asreml42", {
                          diffs.sub$predictions$predicted.value[7] - 
                            diffs.sub$predictions$predicted.value[12])
   
-  #Form contrast matrix for all sources
+  #Form contrast matrix for the contrasts of Species 1:5 with Species 6 for all sources
   L <- kronecker(diag(1, nrow = 4), 
                  cbind(diag(1, nrow = 5), matrix(rep(-1, 5), ncol = 1)))
   L <- mat.dirsum(list(L, 
@@ -1862,10 +1937,18 @@ test_that("linear.transform_WaterRunoff_asreml42", {
                                        matrix(rep(-1, 7), ncol = 1)))))
   #Will get NaNs because differences between every 6th contrast are zero 
   #because the predictions are additive - has been fixed in 4.3-24
-  testthat::expect_silent(diffs.L <- linTransform(diffs.sub, 
+  testthat::expect_silent(diffs.L.EGLS <- linTransform(diffs.sub, 
                                                    classify = "Sources:Species",
                                                    linear.transformation = L,
                                                    tables = "none"))
+
+  testthat::expect_silent(diffs.L <- linTransform(diffs.sub, 
+                                                  classify = "Sources:Species",
+                                                  linear.transformation = L, 
+                                                  EGLS.linTransform = FALSE,
+                                                  tables = "none"))
+  testthat::expect_false(isCompoundSymmetric(diffs.sub$vcov))
+  
   #check for zero seds and their removal
   ksed <- diffs.L$sed
   ksed <- na.omit(ksed[upper.tri(ksed)])
@@ -1897,7 +1980,7 @@ test_that("linear.transform_WaterRunoff_asreml42", {
                           classify = "Sources:Species",
                           linear.transformation = L,
                           tables = "predictions")
-  testthat::expect_true(abs(diffs.L$predictions$predicted.value[1] + 0.0406963) < 1e-04)
+  testthat::expect_true(abs(diffs.L$predictions$predicted.value[1] + 0.04270763) < 1e-04)
   testthat::expect_true(diffs.L$predictions$Combination[1] == "S. iqscjbogxah")
   
   #Test a single contrast
@@ -1930,7 +2013,7 @@ test_that("linear.transform_WaterRunoff_asreml42", {
   testthat::expect_true(!any(is.na(pred.add$pvals$predicted.value)))
   #Compare projected and fitted additive predictions
   testthat::expect_true(abs(diffs.sub$predictions$predicted.value[1] - 
-                              pred.add$pvals$predicted.value[1]) > 0.01)
+                              pred.add$pvals$predicted.value[1]) < 1e-04)
   
   #Test backtransforms
   data(cart.dat)

@@ -281,7 +281,7 @@ test_that("linTransform_lme4", {
                             classify = "Sources:Species",
                             linear.transformation = L,
                             tables = "predictions")
-    testthat::expect_true(abs(diffs.L$predictions$predicted.value[1] + 0.04097328) < 1e-04)
+    testthat::expect_true(abs(diffs.L$predictions$predicted.value[1] + 0.04313837) < 1e-04)
     testthat::expect_true(diffs.L$predictions$Combination[1] == "S. iqscjbogxah")
   }
 })

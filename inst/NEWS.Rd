@@ -1,5 +1,15 @@
 \name{news}
 \title{News for Package asremlPlus}
+\section{asremlPlus Version 4.4.35 (2024-06-19}{
+  \itemize{
+  \item Fix faulty links in manual. 
+}}
+\section{asremlPlus Version 4.4.34 (2024-06-19}{
+  \itemize{
+  \item Add \code{EGLS.linTransform} to linTranform.alldiffs, predictPlus.asreml, predictPresent.asreml and pairdiffsTransform.alldiffs.
+  \item Add S3 method function isCompoundSymmetric.matrix.
+  \item Modify print.alldiffs so that the diagonal elements of pairwise differences, sed and p-values are printed as blank spaces. 
+}}
 \section{asremlPlus Version 4.4.33 (2024-06-10}{
   \itemize{
   \item Fix bug in checking loaded versions that occurs with R 4.4.0.

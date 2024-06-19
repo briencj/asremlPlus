@@ -83,9 +83,9 @@
  \item{colours}{A vector of of colours to be passed to the \code{ggplot} function 
                 \code{scale\_colour\_gradientn}.}
  \item{ggplotFuncs}{A \code{\link{list}}, each element of which contains the 
-                results of evaluating a \code{\link{ggplot}} function. 
+                results of evaluating a \code{ggplot2} function. 
                 It is created by calling the \code{\link{list}} function with 
-                a \code{\link{ggplot}} function call for each element. 
+                a \code{ggplot2} function call for each element. 
                 It is passed to \code{ggplot} via \code{\link{plotPvalues.data.frame}} 
                 to be applied in creating the \code{ggplot} object.}
  \item{printPlot}{A \code{\link{logical}} indicating whether or not the a plot is to be printed. This would 

@@ -42,8 +42,8 @@
 }
 \usage{
 \method{linTransform}{alldiffs}(alldiffs.obj, classify = NULL, term = NULL, 
-             linear.transformation = NULL, Vmatrix = FALSE, 
-             error.intervals = "Confidence", 
+             linear.transformation = NULL, EGLS.linTransform = TRUE, 
+             Vmatrix = FALSE, error.intervals = "Confidence", 
              avsed.tolerance = 0.25, accuracy.threshold = NA, 
              LSDtype = "overall", LSDsupplied = NULL, 
              LSDby = NULL, LSDstatistic = "mean", 
@@ -96,6 +96,16 @@
                In either case, as well as the values of the linear combinations, 
                their standard errors, pairwise differences and associated statistics 
                are returned.}
+ \item{EGLS.linTransform}{A \code{\link{logical}} indicating whether or not the 
+              \code{linear.transformation} of the predictions stored in an 
+              \code{\link{alldiffs.object}} by fitting a submodel supplied in a 
+              \code{\link{formula}} is to take into account the variance of the 
+              predictions using a Estimated Generalized Least Squares (EGLS) approach. 
+              This is likely to be appropriate when the variance matrix of the predictions 
+              is not compound symmetric i.e. when not all the variances are equal or not 
+              all the covariances are equal. If the variance matrix is compund symmetric, 
+              then the setting of \code{EGLS.linTransform} will not affect the transformed 
+              predictions.} 
 \item{Vmatrix}{A \code{\link{logical}} indicating whether the variance matrix of the 
              \code{predictions} will be stored as a component of the \code{\link{alldiffs.object}} 
              that is returned. If \code{linear.transformation} is set, it will 
@@ -284,12 +294,21 @@
              The last matrix is used to compute the variance of pairwise 
              differences between the transformed values. 
 
-             The \code{\link{matrix}} \eqn{\mathbf{L}}{L} is directly specified by setting 
-             \code{linear.transformation} to it. If \code{linear.transformation} is a 
-             \code{\link{formula}} then \eqn{\mathbf{L}}{L} is formed as the sum of the 
-             orthogonal projection matrices obtained using \code{pstructure.formula} 
-             from the package \code{dae}; \code{grandMean} is set to \code{TRUE} and 
-             \code{orthogonalize} to \code{"eigenmethods"}.
+             If \code{linear.transformation} is a \code{\link{matrix}}, \eqn{\mathbf{M}}{M} say, then the 
+             linear-transformation \code{\link{matrix}}, \eqn{\mathbf{L}}{L}, is just the supplied 
+             \code{\link{matrix}} \eqn{\mathbf{M}}{M}. 
+             
+             If \code{linear.transformation} is a \code{\link{formula}} and \code{EGLS.linTransform} 
+             is \code{TRUE}, then a matrix \eqn{\mathbf{M}}{M} is obtained that is the design matrix 
+             for all of the terms in the \code{\link{formula}}. Using \eqn{\mathbf{M}}{M}, the 
+             linear-transformation \code{\link{matrix}}, \eqn{\mathbf{L}}{L}, is formed as 
+             \eqn{\mathbf{M} (\mathbf{M}^\top \widehat{\mathbf{V}}^- \mathbf{M})^- (\mathbf{M}^\top \widehat{\mathbf{V}}^-)}{M [t(M) V^-  M]^- t(M) V^-}.
+
+             On the other hand, for \code{linear.transformation} a \code{\link{formula}} 
+             and \code{EGLS.linTransform} set to \code{FALSE}, \eqn{\mathbf{L}}{L} is 
+             formed as the sum of the orthogonal projection matrices obtained using 
+             \code{pstructure.formula} from the package \code{dae}; \code{grandMean} 
+             is set to \code{TRUE} and \code{orthogonalize} to \code{"eigenmethods"}.
 }
 \author{Chris Brien}
 \seealso{\code{\link{linTransform}}, \code{\link{predictPlus.asreml}}, \code{\link{as.alldiffs}}, 

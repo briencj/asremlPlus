@@ -64,7 +64,8 @@
 }
 \usage{
 \method{predictPlus}{asreml}(asreml.obj, classify, term = NULL, 
-            inestimable.rm = TRUE, linear.transformation = NULL, 
+            inestimable.rm = TRUE, 
+            linear.transformation = NULL, EGLS.linTransform = TRUE, 
             error.intervals = "Confidence", alpha = 0.05, 
             wald.tab = NULL, dDF.na = "residual",  dDF.values = NULL, 
             pairwise = TRUE, Vmatrix = FALSE, 
@@ -126,6 +127,16 @@
                In either case, as well as the values of the linear combinations, 
                their standard errors, pairwise differences and associated statistics 
                are returned.}
+ \item{EGLS.linTransform}{A \code{\link{logical}} indicating whether or not the 
+              \code{linear.transformation} of the predictions stored in an 
+              \code{\link{alldiffs.object}} by fitting a submodel supplied in a 
+              \code{\link{formula}} is to take into account the variance of the 
+              predictions using a Estimated Generalized Least Squares (EGLS) approach. 
+              This is likely to be appropriate when the variance matrix of the predictions 
+              is not compound symmetric i.e. when not all the variances are equal or not 
+              all the covariances are equal. If the variance matrix is compund symmetric, 
+              then the setting of \code{EGLS.linTransform} will not affect the transformed 
+              predictions.} 
  \item{error.intervals}{A \code{\link{character}} string indicating the type of error interval, if any, 
              to calculate in order to indicate uncertainty in the results. 
              Possible values are \code{"none"}, \code{"StandardError"}, \code{"Confidence"} 

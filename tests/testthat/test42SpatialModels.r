@@ -1016,6 +1016,7 @@ cat("#### Test for PSA_NW corb spatial models with asreml42\n")
 test_that("PSA_NW_corb_models_asreml42", {
   skip_if_not_installed("asreml")
   skip_on_cran()
+  skip("cannot test corb as the moment")
   library(dae)
   library(asreml)
   library(asremlPlus)

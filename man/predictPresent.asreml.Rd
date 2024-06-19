@@ -26,7 +26,7 @@
 }
 \usage{
 \method{predictPresent}{asreml}(asreml.obj, terms, inestimable.rm = TRUE, 
-               linear.transformation = NULL, 
+               linear.transformation = NULL, EGLS.linTransform, 
                error.intervals = "Confidence", alpha = 0.05, 
                wald.tab = NULL, dDF.na = "residual", dDF.values = NULL, 
                pairwise = TRUE, Vmatrix = FALSE, 
@@ -80,6 +80,16 @@
                In either case, as well as the values of the linear combinations, 
                their standard errors, pairwise differences and associated statistics 
                are returned in the \code{\link{alldiffs.object}}.}
+ \item{EGLS.linTransform}{A \code{\link{logical}} indicating whether or not the 
+              \code{linear.transformation} of the predictions stored in an 
+              \code{\link{alldiffs.object}} by fitting a submodel supplied in a 
+              \code{\link{formula}} is to take into account the variance of the 
+              predictions using a Estimated Generalized Least Squares (EGLS) approach. 
+              This is likely to be appropriate when the variance matrix of the predictions 
+              is not compound symmetric i.e. when not all the variances are equal or not 
+              all the covariances are equal. If the variance matrix is compund symmetric, 
+              then the setting of \code{EGLS.linTransform} will not affect the transformed 
+              predictions.} 
  \item{error.intervals}{A \code{character} string indicating the type of error interval, if any, 
              to calculate in order to indicate uncertainty in the results. 
              Possible values are \code{"none"}, \code{"StandardError"}, \code{"Confidence"} 
@@ -383,9 +393,9 @@
 \item{trace}{If TRUE then partial iteration details are displayed when ASReml-R 
               functions are invoked; if FALSE then no output is displayed.}
 \item{ggplotFuncs}{A \code{\link{list}}, each element of which contains the 
-                results of evaluating a \code{\link{ggplot}} function. 
+                results of evaluating a \code{ggplot2} function. 
                 It is created by calling the \code{\link{list}} function with 
-                a \code{\link{ggplot}} function call for each element. 
+                a \code{ggplot2} function call for each element. 
                 It is passed to \code{\link{plotPredictions.data.frame}}.}
 \item{\dots}{further arguments passed to \code{predict.asreml} via 
             \code{\link{predictPlus.asreml}} and to \code{ggplot} 

@@ -3464,7 +3464,8 @@ findboundary.asreml <- function(asreml.obj, asr4, asr4.2)
 }
 
 "predictPlus.asreml" <- function(asreml.obj, classify, term = NULL, 
-                                 inestimable.rm = TRUE, linear.transformation = NULL, 
+                                 inestimable.rm = TRUE, 
+                                 linear.transformation = NULL, EGLS.linTransform = TRUE, 
                                  error.intervals = "Confidence", alpha = 0.05, 
                                  wald.tab = NULL, dDF.na = "residual",  dDF.values = NULL, 
                                  pairwise = TRUE, Vmatrix = FALSE, 
@@ -3766,6 +3767,7 @@ findboundary.asreml <- function(asreml.obj, asr4, asr4.2)
     #Linear transformation required - send transform info to addBacktransforms.alldiffs
     diffs <- linTransform.alldiffs(alldiffs.obj = diffs, classify = classify,  term = term, 
                                    linear.transformation = linear.transformation, 
+                                   EGLS.linTransform = EGLS.linTransform, 
                                    Vmatrix = Vmatrix, 
                                    error.intervals = error.intervals, 
                                    avsed.tolerance = avsed.tolerance, 
@@ -3807,7 +3809,7 @@ findboundary.asreml <- function(asreml.obj, asr4, asr4.2)
   #Get ... argument so can check for linear.transformation argument
   tempcall <- list(...)
   if ("linear.transformation" %in% names(tempcall))
-    warning("linear.transformation is not an argument to plotPredictions - perhaps use linTransform")
+    warning("linear.transformation is not an argument to plotPredictions - perhaps use linTransform.alldiffs")
   
   #Change asreml4 names to asreml3 names
   data <- as.predictions.frame(data, classify = classify, se = "std.error", est.status = "status")
@@ -4291,8 +4293,8 @@ findboundary.asreml <- function(asreml.obj, asr4, asr4.2)
   invisible(pred.plot)
 }
 
-"predictPresent.asreml" <- function(asreml.obj, terms, 
-                                    inestimable.rm = TRUE, linear.transformation = NULL, 
+"predictPresent.asreml" <- function(asreml.obj, terms, inestimable.rm = TRUE, 
+                                    linear.transformation = NULL, EGLS.linTransform = TRUE, 
                                     error.intervals = "Confidence", alpha = 0.05, 
                                     wald.tab = NULL, dDF.na = "residual", dDF.values = NULL, 
                                     pairwise = TRUE, Vmatrix = FALSE,
@@ -4405,6 +4407,7 @@ findboundary.asreml <- function(asreml.obj, asr4, asr4.2)
       diffs <- predictPlus.asreml(asreml.obj = asreml.obj, 
                                   classify = classify.term, term = term, 
                                   linear.transformation = linear.transformation, 
+                                  EGLS.linTransform = EGLS.linTransform, 
                                   titles = titles, 
                                   x.num = x.num, x.fac = x.fac,  
                                   x.pred.values = x.pred.values, 
@@ -4437,6 +4440,7 @@ findboundary.asreml <- function(asreml.obj, asr4, asr4.2)
       diffs <- predictPlus.asreml(asreml.obj = asreml.obj, 
                                   classify = classify.term, 
                                   linear.transformation = linear.transformation, 
+                                  EGLS.linTransform = EGLS.linTransform, 
                                   titles = titles,   
                                   x.num = x.num, x.fac = x.fac,  
                                   x.plot.values = x.plot.values, 

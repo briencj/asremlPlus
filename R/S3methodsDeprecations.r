@@ -55,6 +55,8 @@ plotPvalues <- function(object, ...) UseMethod("plotPvalues")
 plotVariofaces <- function(data, ...) UseMethod("plotVariofaces")
 plotPredictions <- function(data, ...) UseMethod("plotPredictions")
 
+isCompoundSymmetric <- function(object, ...) UseMethod("isCompoundSymmetric")
+
 #Deprecations
 
 addrm.terms.asreml <- function(...)

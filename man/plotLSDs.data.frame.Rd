@@ -37,16 +37,16 @@
  \item{colours}{A vector of colours to be passed to the \code{ggplot} function 
                 \code{scale\_colour\_gradientn}.}
  \item{ggplotFuncs}{A \code{\link{list}}, each element of which contains the 
-                results of evaluating a \code{\link{ggplot}} function. 
+                results of evaluating a \code{ggplot2} function. 
                 It is created by calling the \code{\link{list}} function with 
-                a \code{\link{ggplot}} function call for each element. 
+                a \code{ggplot2} function call for each element. 
                 These functions are applied in creating the \code{ggplot} object.}
  \item{printPlot}{A \code{logical} indicating whether or not the a plot is to be printed. This would 
                 be used when just the returned \code{ggplot} object is required.}
  \item{\dots}{Provision for passing arguments to functions called internally - 
             not used at present.}
  }
-\value{An object of class "\link{ggplot}", which can be plotted using \code{print} or otherwise manipulated.}
+\value{An object of class "\code{ggplot}", which can be plotted using \code{print} or otherwise manipulated.}
 \author{Chris Brien}
 \seealso{\code{\link{plotLSDs.alldiffs}}, \code{\link{plotLSDerrors.alldiffs}}, \code{\link{plotLSDerrors.data.frame}}, \cr
           \code{\link{exploreLSDs}}, \code{ggplot}}

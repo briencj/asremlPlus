@@ -38,6 +38,21 @@ assign("all.specials",  all.specs, envir=.asremlPlusEnv)
 #Function to allow testing for NULL when objects of length > 1 are possible
 is.allnull <- function(x) all(is.null(x))
 
+#Function to test for compound symmetry in a matrix
+isCompoundSymmetric.matrix <- function(object, tol = 100 * .Machine$double.eps, ...)
+{
+  cs <- FALSE
+  if (isSymmetric(object))
+  { 
+    d <- diag(object)
+    offd <- object[upper.tri(object)]
+    cs <- all(abs(d[-1] - d[1]) < 1e-08) && all(abs(offd[-1] - offd[1]) < 1e-08)
+  }
+  return(cs)
+}
+
+
+
 #Test for a large change in at least one variance parameter
 largeVparChange <- function(asreml.obj, threshold = 0.75)
 {

@@ -112,13 +112,13 @@
  \item{printPlot}{A \code{logical} indicating whether or not the a plot is to be printed. This would 
                 be used when just the returned \code{ggplot} object is required.}
  \item{ggplotFuncs}{A \code{\link{list}}, each element of which contains the 
-                results of evaluating a \code{\link{ggplot}} function. 
+                results of evaluating a \code{ggplot2} function. 
                 It is created by calling the \code{\link{list}} function with 
-                a \code{\link{ggplot}} function call for each element.
+                a \code{ggplot2} function call for each element.
                 These functions are applied in creating the \code{ggplot} object for plotting.}
  \item{\dots}{further arguments passed to \code{ggplot}.}
 }
-\value{An object of class "\link{ggplot}", which can be plotted using \code{print} or otherwise manipulated.}
+\value{An object of class \code{ggplot}, which can be plotted using \code{print} or otherwise manipulated.}
 
 \author{Chris Brien}
 \seealso{\code{\link{allDifferences.data.frame}}, \code{\link{predictPresent.asreml}}, 

@@ -658,17 +658,18 @@ setOldClass("alldiffs")
   if ("all" %in% opt || "differences" %in% opt)
   { 
     cat("\n\nAll pairwise differences between predicted values \n\n")
-    print(x$differences, digits=4)
+    print(x$differences, digits=4, na.print = "")
   }
   if ("all" %in% opt || "p.differences" %in% opt)
   { 
     cat("\n\np values for all pairwise differences between predicted values \n\n")
-    print(formatC(x$p.differences, digits=3, format="f"), quote=FALSE)
+#    print(formatC(x$p.differences, digits=3, format="f"), quote=FALSE)
+    print(round(x$p.differences, digits = 3), na.print = "")
   }
   if ("all" %in% opt || "sed" %in% opt)
   { 
     cat("\n\nStandard errors of differences between predicted values \n\n")
-    print(zapsmall(x$sed, 4))
+    print(zapsmall(x$sed, 4), na.print = "")
   }
   if (("all" %in% opt & !is.null(x$backtransforms)) || "backtransforms" %in% opt)
   { 
@@ -2655,8 +2656,8 @@ makeSED <- function(alldiffs.obj)
 
 #calls allDiferences.data.frame, but cannot use ... to pass arguments to allDifferences
 "linTransform.alldiffs" <- function(alldiffs.obj, classify = NULL, term = NULL, 
-                                    linear.transformation = NULL, Vmatrix = FALSE, 
-                                    error.intervals = "Confidence", 
+                                    linear.transformation = NULL, EGLS.linTransform = TRUE, 
+                                    Vmatrix = FALSE, error.intervals = "Confidence", 
                                     avsed.tolerance = 0.25, accuracy.threshold = NA, 
                                     LSDtype = "overall", LSDsupplied = NULL, 
                                     LSDby = NULL, LSDstatistic = "mean", 
@@ -2702,8 +2703,9 @@ makeSED <- function(alldiffs.obj)
     int.options <- c("none", "Confidence", "StandardError", "halfLeastSignificant")
     int.opt <- int.options[check.arg.values(error.intervals, int.options)]
     #Check have vcov
-    if (int.opt != "none" && is.null(alldiffs.obj$vcov))
+    if ((int.opt != "none" || EGLS.linTransform) && is.null(alldiffs.obj$vcov))
       stop("Need to have stored the variance matrix of the predictions in alldiffs.obj")
+    V <- alldiffs.obj$vcov
     
     #Get table option and  check if must form pairwise differences
     tab.options <- c("none", "predictions", "vcov", "backtransforms", 
@@ -2777,17 +2779,7 @@ makeSED <- function(alldiffs.obj)
       if (!is.null(lintrans.fac) && !all(LSDby %in% lintrans.fac))
         warning("Some factors in the LSDby are not in the linear.transformation submodel")
       
-      #Form projector on predictions for submodel
-      suppressWarnings(Q <- dae::pstructure(linear.transformation, grandMean = TRUE, 
-                                            orthogonalize = "eigen", 
-                                            data = alldiffs.obj$predictions)$Q)
-      Q.submod <- Q[[1]]
-      if (length(Q) > 1)
-        for (k in 2:length(Q))
-          Q.submod <- Q.submod + Q[[k]]
-      Q.submod <- dae::projector(Q.submod)
-      
-      #Check classify variables
+      #Check classify variables & produce full.mod formula
       vars <- fac.getinTerm(classify, rmfunction = TRUE)
       if (!all(vars %in% colnam))
         stop("Not all of the variables in the classify are in the predictions component of the alldiffs object\n")
@@ -2817,20 +2809,45 @@ makeSED <- function(alldiffs.obj)
         full.mod <- paste(unlist(covs), collapse = " + ")
       }
       full.mod <- as.formula(paste0("~ ", full.mod))
-
-      #Check that submodel is a subspace of the classify space
-      Q <- dae::pstructure(full.mod, grandMean = TRUE, data = tmp)$Q
-      Q.class <- Q[[1]]
-      if (length(Q) > 1)
-        for (k in 2:length(Q))
-          Q.class <- Q.class + Q[[k]]
-      Q.class <- dae::projector(Q.class)
-
-      if (any(abs(Q.submod %*% Q.class - Q.submod) > 1e-08))
-        stop("Model space for ", linear.transformation, ", with ", degfree(Q.submod), 
-             " DF, is not a subspace of the space for the classify ", classify, 
-             ", with ", degfree(Q.class), " DF.")
       
+      #Form projector on predictions for submodel
+      if (EGLS.linTransform) #Do EGLS submodel transformation
+      {
+        #'## Use EGLS with variance matrix set to the variance matrix of the predictions
+        W <- mat.ginv(V)
+        X.all <- model.matrix(linear.transformation, data = alldiffs.obj$predictions)
+        Q.submod <-  X.all %*% mat.ginv(t(X.all) %*% W %*% X.all) %*% (t(X.all) %*% W)
+
+        #Check that submodel is a subspace of the classify space
+        X.all <- model.matrix(full.mod, data = tmp)
+        Q.class <-  X.all %*% mat.ginv(t(X.all) %*% W %*% X.all) %*% (t(X.all) %*% W)
+        if (any(abs(Q.submod %*% Q.class - Q.submod) > 1e-08))
+          stop("Model space for ", linear.transformation, 
+               " is not a subspace of the space for the classify ", classify)
+      } else #do OLS submodel transformation
+      {        
+        suppressWarnings(Q <- dae::pstructure(linear.transformation, grandMean = TRUE, 
+                                              orthogonalize = "eigen", 
+                                              data = alldiffs.obj$predictions)$Q)
+        Q.submod <- Q[[1]]
+        if (length(Q) > 1)
+          for (k in 2:length(Q))
+            Q.submod <- Q.submod + Q[[k]]
+        Q.submod <- dae::projector(Q.submod)
+        
+        #Check that submodel is a subspace of the classify space
+        Q <- dae::pstructure(full.mod, grandMean = TRUE, data = tmp)$Q
+        Q.class <- Q[[1]]
+        if (length(Q) > 1)
+          for (k in 2:length(Q))
+            Q.class <- Q.class + Q[[k]]
+        Q.class <- dae::projector(Q.class)
+        if (any(abs(Q.submod %*% Q.class - Q.submod) > 1e-08))
+          stop("Model space for ", linear.transformation, ", with ", degfree(Q.submod), 
+               " DF, is not a subspace of the space for the classify ", classify, 
+               ", with ", degfree(Q.class), " DF.")
+      }
+
       #Form predictions projected onto submodel
       lintrans <- alldiffs.obj$predictions
       lintrans$predicted.value <- as.vector(Q.submod %*% lintrans$predicted.value)
@@ -2839,9 +2856,10 @@ makeSED <- function(alldiffs.obj)
         lintrans$predicted.value[zeroes] <- 0
       
       # Calculate standard errors and the variance matrix for differences between predictions
-      if (!is.null(alldiffs.obj$vcov))
+      if (!is.null(V)) #Strictly redundant because issue an error above if is NULL
       {
-        lintrans.vcov <- Q.submod %*% alldiffs.obj$vcov %*% Q.submod
+#        lintrans.vcov <- Q.submod %*% V %*% Q.submod
+        lintrans.vcov <- Q.submod %*% V %*% t(Q.submod)
         lintrans.vcov <- setToZero(lintrans.vcov, zero.tolerance = zero.tolerance)
         lintrans$standard.error <- as.vector(sqrt(diag(lintrans.vcov)))
         n <- nrow(lintrans.vcov)
@@ -2881,7 +2899,7 @@ makeSED <- function(alldiffs.obj)
                               pairwise = pairwise, 
                               inestimable.rm = inestimable.rm, 
                               alpha = alpha)
-    } else  #Form estimated linear combinations from predictions using a matrix
+    } else  #Form estimated linear combinations from predictions using a matrix with a contrast per row
     {
       #check that the number of predictions conform
       if ((ncol(linear.transformation) != nrow(alldiffs.obj$predictions)))
@@ -2893,17 +2911,24 @@ makeSED <- function(alldiffs.obj)
         lintrans <- data.frame(X = 1:nrow(linear.transformation))
       names(lintrans) <- "Combination"
       lintrans$Combination <- factor(lintrans$Combination, levels = lintrans$Combination)
-      lintrans$predicted.value <- as.vector(linear.transformation %*% 
-                                              alldiffs.obj$predictions$predicted.value)
+      L.contr <- linear.transformation
+      
+      #If EGLS.linTransform then take into account the variance matrix of the predictions
+      # if (EGLS.linTransform)
+      # { 
+      #   W <- mat.ginv(V)
+      #   L.contr <- mat.ginv(L.contr %*% W %*% t(L.contr)) %*% (L.contr %*% W)
+      # }
+      lintrans$predicted.value <- as.vector(L.contr %*% alldiffs.obj$predictions$predicted.value)
       lintrans$predicted.value <- setToZero(lintrans$predicted.value, 
                                             zero.tolerance = zero.tolerance)
       lintrans$est.status <- "Estimable"
       lintrans$est.status[is.na(lintrans$predicted.value)] <- "Aliased"
       
       # Calculate standard errors and the variance matrix for differences between predictions
-      if (!is.null(alldiffs.obj$vcov))
+      if (!is.null(V)) #Strictly redundant because issue an error above if is NULL
       {
-        lintrans.vcov <- linear.transformation %*% alldiffs.obj$vcov %*% t(linear.transformation)
+        lintrans.vcov <- L.contr %*% V %*% t(L.contr)
         lintrans.vcov <- setToZero(lintrans.vcov, zero.tolerance = zero.tolerance)
         lintrans$standard.error <- as.vector(sqrt(diag(lintrans.vcov)))
         n <- nrow(lintrans.vcov)
@@ -2920,8 +2945,11 @@ makeSED <- function(alldiffs.obj)
       #Form alldiffs object for linear transformation
       if (!Vmatrix)
         lintrans.vcov <- NULL
-      preds.attr$heading <- c(paste("The original predictions, obtained as described below, have",
-                                    "\nbeen linearly transformed.", sep = ""),
+      preds.attr$heading <- c(paste0("The original predictions, obtained as described below, have",
+                                    "\nbeen linearly transformed.", 
+                                    ifelse(EGLS.linTransform, 
+                                           paste0("\nFGLS using the estimated variance matrix",
+                                                  "\nof the predictions was employed."),"")),
                               preds.attr$heading)
       attr(lintrans, which = "heading") <- preds.attr$heading
       class(lintrans) <- preds.attr$class

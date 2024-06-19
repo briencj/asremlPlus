@@ -47,11 +47,11 @@
                       \code{. ~}.  WHen required, two options are available for orthogonalizing: 
                       \code{hybrid} and \code{eigenmethods}. The \code{hybrid} option is the most 
                       general and uses the relationships between the projection operators for the 
-                      terms in the \code{formula} to decide which \code{\link{projector}}s to 
+                      terms in the \code{formula} to decide which \code{projector}s to 
                       subtract and which to orthogonalize using eigenmethods. The \code{eigenmethods} 
-                      option recursively orthogonalizes the \code{\link{projector}}s 
-                      using an eigenanalysis of each \code{\link{projector}} 
-                      with previously orthogonalized \code{\link{projector}}s. 
+                      option recursively orthogonalizes the \code{projector}s 
+                      using an eigenanalysis of each \code{projector} 
+                      with previously orthogonalized \code{projector}s. 
                       See the documentation for \code{porthogonalize.list} from the R package 
                       \code{dae} for more information.}
  \item{include.which.random}{A \code{\link{formula}} specifying the random terms whose joint 

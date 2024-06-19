@@ -60,6 +60,8 @@ export(addBacktransforms,
        is.alldiffs,
        is.asrtests,
        is.predictions.frame,
+       isCompoundSymmetric, 
+       isCompoundSymmetric.matrix,
        iterate,
        iterate.asrtests,
        linTransform, 
@@ -206,6 +208,7 @@ S3method(getTestPvalue, asrtests)
 S3method(infoCriteria, asreml) 
 S3method(infoCriteria, list) 
 S3method(isFixedCorrelOK, asreml) 
+S3method(isCompoundSymmetric, matrix)
 S3method(iterate, asrtests) 
 S3method(linTransform, alldiffs)
 S3method(makeTPPSplineMats, data.frame)
