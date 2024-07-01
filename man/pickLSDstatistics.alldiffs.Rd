@@ -46,12 +46,20 @@
 \item{digits}{A \code{\link{numeric}} specifying the number of significant digits to retain in rounding 
             the LSDs before determining the distinct rounded LSDs.}
 \item{false.pos.wt}{When it is not \code{NULL}, it should be a \code{\link{numeric}} that specifies the 
-            weight (e.g. 3) to apply to the number of false positives in calculating the weighted sums of  
-            the numbers of false positives and negatives in using different LSD statistics to compare 
-            pairs of predictions. The \code{LSDstatistic} that is chosen for making comparisons will be 
-            the one that minimizes the weighted sum. If it is \code{NULL}, the \code{LSDstatistic} 
-            will chosen as the one that minimizes the number of false negatives from amongst those that 
-            minimize the number of false positives.}
+            weight (e.g. 3 so that a false positive is considered to be equivalent to three false negatives) 
+            to apply to the number of false positives in calculating the weighted sums of the numbers of 
+            false positives and negatives to use in comparing different LSD statistics, one being the weight 
+            for the number false negatives. The \code{LSDstatistic} that is chosen for making comparisons 
+            will be the one that minimizes the weighted sum, has the smallest number of false positives and, 
+            amongst these, has the smallest LSD value. If it is \code{NULL}, the \code{LSDstatistic} that 
+            will be chosen is the one that minimizes the number of false negatives from amongst those that 
+            minimize the number of false positives. 
+
+            If, amongst the LSD statistices, the least number of  false negatives that occurs is \emph{m}, 
+            then for a particular statistic with \emph{p} the number of false positives, \emph{n} the number 
+            of false negatives and \emph{w} the value of \code{false.pos.wt},  that statistic will be a 
+            candidate LSD value if \eqn{(w p) + n < m}{(w p) + n < m} and i.e. 
+            if \eqn{p < (m - n) / w}{p < (m - n) / w}.}
 \item{retain.zeroLSDs}{A \code{\link{logical}} indicating whether to retain or omit LSDs that are zero when 
              calculating the summaries of LSDs.}
 \item{zero.tolerance}{A \code{\link{numeric}} specifying the value such that if an LSD is less than it, the LSD will be 

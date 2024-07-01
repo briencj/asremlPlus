@@ -1623,8 +1623,8 @@ pickLSDstatistics.alldiffs <- function(alldiffs.obj,
                        zero.tolerance = zero.tolerance, 
                        ...)
   lsd.errors <- c(lsd.errors["false.pos"], lsd.errors["false.neg"])
-  lsd.errors$false.pos <- lsd.errors$false.pos[,-1]
-  lsd.errors$false.neg <- lsd.errors$false.neg[,-1]
+  lsd.errors$false.pos <- lsd.errors$false.pos[,-1] #remove c
+  lsd.errors$false.neg <- lsd.errors$false.neg[,-1] #remove c
   nfalserows <- nrow(lsd.errors$false.neg) 
   lsdstats <- sapply(1:nfalserows,
                     function(krow, lsd)
@@ -1643,7 +1643,10 @@ pickLSDstatistics.alldiffs <- function(alldiffs.obj,
                         } else # get the LSD with the min weight sum of false.pos and false.neg
                         {
                           false.no <- lsd$false.pos[krow, ] * false.pos.wt + lsd$false.neg[krow, ]
-                          klsd <- names(false.no)[min(which(false.no == min(false.no)))]
+                          klsd <- names(false.no)[which(false.no == min(false.no))]
+                          if (length(klsd) > 1) #if several, select one with min false negatives
+                            klsd <- klsd[min(which(lsd$false.pos[krow, klsd]  == 
+                                                     min(lsd$false.pos[krow, klsd])))]
                         }
                       }
                       klsd <- gsub("quant", "q", klsd)

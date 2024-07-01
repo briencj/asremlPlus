@@ -1080,6 +1080,13 @@ test_that("exploreLSDWater4", {
   testthat::expect_true(all(abs(LSDstat$statistics[1,] - 
                                   c(3, 0.1982634,0.2175164, 0.246396, 
                                     0.2708314,0.2945287, 0.300556,0.3041724,0.3065833)) < 1e-05))
+  
+  ## Test pickLSDstatistics with false.pos.wt
+  LSDst <- pickLSDstatistics(TS.diffs, LSDtype = "factor.combinations", LSDby = "Sources")
+  testthat::expect_true(all(LSDst == c("min","median","mean","q75","q75","mean")))
+  LSDstw1 <- pickLSDstatistics(TS.diffs, LSDtype = "factor.combinations", LSDby = "Sources", 
+                               false.pos.wt = 1)
+  testthat::expect_true(all(LSDstw1 == c("min","median","mean","q75","q75","mean")))
 
   #Test multiple LSDstatistics
   TS.diffs.var <- recalcLSD(TS.diffs, LSDtype = "factor.combinations", LSDby = "Sources", 

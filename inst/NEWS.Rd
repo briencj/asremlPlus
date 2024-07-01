@@ -1,5 +1,9 @@
 \name{news}
 \title{News for Package asremlPlus}
+\section{asremlPlus Version 4.4.36 (2024-07-01}{
+  \itemize{
+  \item Make sure that, when \code{false.pos.wt} is used with pickLSDstatistics and there are several values with the same weighted sum, LSDstatisics with less false positives are favoured. 
+}}
 \section{asremlPlus Version 4.4.35 (2024-06-19}{
   \itemize{
   \item Fix faulty links in manual. 
