@@ -309,7 +309,10 @@ infoCriteria.asreml <- function(object, DF = NULL,
         coefF <- summary(asreml.obj, coef=TRUE)$coef.fixed
         which.cF <- rownames(coefF)[!is.na(coefF[, "z.ratio"])]
         #      logdetC <- log(prod(svd(as.matrix(asreml.obj$Cfixed[which.cF, which.cF]))$d))
-        logdetC <- sum(log(svd(as.matrix(asreml.obj$Cfixed[which.cF, which.cF]))$d))
+        if (length(asreml.obj$Cfixed) ==  1)
+          logdetC <- log(asreml.obj$Cfixed)
+        else
+          logdetC <- sum(log(svd(as.matrix(asreml.obj$Cfixed[which.cF, which.cF]))$d))
       } else #asr3
       {
         if (is.null(asreml.obj$Cfixed)) 

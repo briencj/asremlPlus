@@ -906,19 +906,18 @@ test_that("Wheat76_corr_models_asreml42", {
   
   # Try corb(Row):corb(Colum) with corr.orders 0 - Column fits order 2
   # There is currently a problem in asreml 4.2 that results in the following model fit to crash R
-  # Reinstate this example when the bug is fixed
-  # current.asrt <- addSpatialModel(init.asrt, spatial.model = "corr", 
-  #                                 row.covar = "cRow", col.covar = "cColumn",
-  #                                 row.factor = "Row", col.factor = "Column",
-  #                                 corr.funcs = c("corb", "corb"), corr.orders = c(0,0))
-  # info <- infoCriteria(current.asrt$asreml.obj, IClikelihood = "full")
-  # testthat::expect_equal(info$varDF, 6)
-  # testthat::expect_lt(abs(info$AIC - 1668.77), 0.10)
-  # vpars <- c("P","P","P","U","U","U","F")
-  # names(vpars) <- c("Row", "Column", "Row:Column", "Row:Column!Row!cor1", 
-  #                   "Row:Column!Column!cor1", "Row:Column!Column!cor2", "units!R")
-  # testthat::expect_equal(vpars, current.asrt$asreml.obj$vparameters.con)
-  # testthat::expect_equal(nrow(current.asrt$test.summary), 8)
+  current.asrt <- addSpatialModel(init.asrt, spatial.model = "corr",
+                                  row.covar = "cRow", col.covar = "cColumn",
+                                  row.factor = "Row", col.factor = "Column",
+                                  corr.funcs = c("corb", "corb"), corr.orders = c(0,0))
+  info <- infoCriteria(current.asrt$asreml.obj, IClikelihood = "full")
+  testthat::expect_equal(info$varDF, 6)
+  testthat::expect_lt(abs(info$AIC - 1668.77), 0.10)
+  vpars <- c("P","P","P","U","U","U","F")
+  names(vpars) <- c("Row", "Column", "Row:Column", "Row:Column!Row!cor1",
+                    "Row:Column!Column!cor1", "Row:Column!Column!cor2", "units!R")
+  testthat::expect_equal(vpars, current.asrt$asreml.obj$vparameters.con)
+  testthat::expect_equal(nrow(current.asrt$test.summary), 8)
   
   # Try Row:ar1(Column) model
   current.asrt <- addSpatialModel(init.asrt, spatial.model = "corr", 

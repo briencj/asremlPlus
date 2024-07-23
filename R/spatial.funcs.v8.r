@@ -412,6 +412,11 @@ fitCorrMod <- function(asrtests.obj, sections = NULL,
     stop(paste("Fitting spatial models using correlation/variance models", 
                "has not been implemented for asreml version less than 4.0"))
   
+  #Save ai.sing setting so can make sure that it is resored on exit (reset in corb at moment)
+  ksing <-   get("asr_options", envir = getFromNamespace(".asremlEnv", "asreml"))$ai.sing
+  # print(ksing)
+  
+  
   bounds.excl <- c("B", "S")
   all.bounds.excl <- c(bounds.excl, "F")
   
@@ -500,9 +505,9 @@ fitCorrMod <- function(asrtests.obj, sections = NULL,
   for (i in 1:nsect)
   {
     if (chooseOnIC)
-      fitfunc <- "changeModelOnIC"
-    else
-      fitfunc <- "changeTerms"
+    { fitfunc <- "changeModelOnIC"
+    } else 
+    {  fitfunc <- "changeTerms"}
     
     spat.var <- paste0(facs, collapse = ":")
     if (nsect > 1)
@@ -516,6 +521,9 @@ fitCorrMod <- function(asrtests.obj, sections = NULL,
     #### For corb, add random variance with fixed Residual
     if (any(grepl("corb", corr.funcs)))
     {  
+      #Do not allow singularities with corb functions because crashes R
+      asreml::asreml.options(ai.sing = FALSE)
+      
       lab0 <- paste("Add random", spat.var, "and fix residual")
       if (nsect > 1)
         lab0 <- paste0(lab0, " for ", sections, " ",stub)
@@ -526,8 +534,8 @@ fitCorrMod <- function(asrtests.obj, sections = NULL,
                                   asr4.2 = asr4.2)
       #Check that residual does not have heterogeneous terms unrelated to sections 
       if (is.null(vpc.corr$res)) #implies multiple residual terms, none involving sections
-        nuggsOK <- FALSE
-      else
+      {  nuggsOK <- FALSE
+      } else
       {
         #Try fixing either the  single residual variance term or that for the current section 
         old.inargs <- inargs
@@ -547,17 +555,17 @@ fitCorrMod <- function(asrtests.obj, sections = NULL,
         lasttest <- tail(corr.asrt$test.summary, 1)
         if (grepl("and fix residual", lasttest$terms) && 
             !(grepl("Unswapped", lasttest$action) || grepl("Unchanged", lasttest$action)))
-          startFixRes <- TRUE
-        else
-          inargs <- old.inargs
+        {  startFixRes <- TRUE
+        } else
+        {  inargs <- old.inargs}
       }
     }
 
     corr.term <- FALSE
     #Check have a corr func
     if (any(rfuncs[1] == id.funcs))
-      result1 <- "Unswapped"
-    else
+    { result1 <- "Unswapped"
+    } else
     { 
       #Check if residual terms for each section
       vres <- getSectionVpars(corr.asrt$asreml.obj, sections, stub, 
@@ -573,10 +581,16 @@ fitCorrMod <- function(asrtests.obj, sections = NULL,
         ran.term1 <- paste0("at(", sections, ", '",stub, "'):", ran.term1)
         lab1 <- paste0(lab1, " for ", sections, " ",stub)
       }
-      if (spat.var %in% names(corr.asrt$asreml.obj$vparameters))
-        drop.spatvar <- spat.var
-      else
-        drop.spatvar <- NULL
+      #Determine if spat.var is a fitted random term
+      vpc.ran <- getSectionVpars(corr.asrt$asreml.obj, 
+                                 sections = sections, stub = stub, 
+                                 corr.facs = facs, 
+                                 asr4.2 = asr4.2)$ran
+      spat.term <- findterm(spat.var, names(vpc.ran)) #allows for changed order
+      if (length(spat.term) == 1) #have got a single spat.term
+      { drop.spatvar <- names(spat.term)
+      } else
+      {  drop.spatvar <- NULL}
       tmp.asrt <- do.call(fitfunc, 
                           c(list(corr.asrt, label = lab1, 
                                  addRandom = ran.term1, dropRandom = drop.spatvar, 
@@ -673,10 +687,16 @@ fitCorrMod <- function(asrtests.obj, sections = NULL,
         ran.term <- paste0(facs[1], ":", rterms[2])
         if (nsect > 1)
           ran.term <- paste0("at(", sections, ", '",stub, "'):", ran.term)
-        if (spat.var %in% names(corr.asrt$asreml.obj$vparameters))
-          drop.spatvar <- spat.var
-        else
-          drop.spatvar <- NULL
+        #Determine if spat.var is a fitted random term
+        vpc.ran <- getSectionVpars(corr.asrt$asreml.obj, 
+                                   sections = sections, stub = stub, 
+                                   corr.facs = facs, 
+                                   asr4.2 = asr4.2)$ran
+        spat.term <- findterm(spat.var, names(vpc.ran)) #allows for changed order
+        if (length(spat.term) == 1) #have got a single spat.term
+        {   drop.spatvar <- names(spat.term)
+        } else
+        {  drop.spatvar <- NULL}
 
         tmp.asrt <- do.call(fitfunc, 
                             c(list(corr.asrt, label = lab, 
@@ -734,8 +754,8 @@ fitCorrMod <- function(asrtests.obj, sections = NULL,
                                        dropRandom = last.term,
                                        addRandom = ran.term1, label = lab1, 
                                        maxit = maxit, 
-                                       allow.unconverged = allow.unconverged, 
-                                       allow.fixedcorrelation = allow.fixedcorrelation,
+                                       allow.unconverged = FALSE, 
+                                       allow.fixedcorrelation = FALSE,
                                        checkboundaryonly = FALSE, 
                                        update = update, 
                                        IClikelihood = IClikelihood, 
@@ -778,16 +798,22 @@ fitCorrMod <- function(asrtests.obj, sections = NULL,
           ran.term2 <- paste0("at(", sections, ", '",stub, "'):", ran.term2)
           lab2 <- paste0(lab2, " for ", sections, " ",stub)
         }
-        if (spat.var %in% names(corr.asrt$asreml.obj$vparameters))
-          drop.spatvar <- spat.var
+        #Determine if spat.var is a fitted random term
+        vpc.ran <- getSectionVpars(corr.asrt$asreml.obj, 
+                                   sections = sections, stub = stub, 
+                                   corr.facs = facs, 
+                                   asr4.2 = asr4.2)$ran
+        spat.term <- findterm(spat.var, names(vpc.ran)) #allows for changed order
+        if (length(spat.term) == 1) #have got a single spat.term
+          drop.spatvar <- names(spat.term)
         else
           drop.spatvar <- NULL
         tmp.asrt <- do.call(fitfunc, 
                             c(list(corr.asrt, label = lab2,
                                    addRandom = ran.term2, dropRandom = drop.spatvar, 
                                    maxit = maxit, 
-                                   allow.unconverged = allow.unconverged, 
-                                   allow.fixedcorrelation = allow.fixedcorrelation,
+                                   allow.unconverged = FALSE, 
+                                   allow.fixedcorrelation = FALSE,
                                    checkboundaryonly = TRUE, 
                                    update = update, 
                                    IClikelihood = IClikelihood, 
@@ -863,47 +889,69 @@ fitCorrMod <- function(asrtests.obj, sections = NULL,
       if (nuggsOK && length(vpc.corr$res) && (startFixRes || vpc.corr$res !=  "F"))
       {
         #Try fixing either the  single residual variance term or that for the current section 
-        tmp.asrt <- do.call(chgResTermBound, 
-                            c(list(corr.asrt, sections = sections, stub = stub, 
-                                   asr4 = asr4, asr4.2 = asr4.2, 
-                                   fitfunc = fitfunc, vpc.res = vpc.corr$res, 
-                                   maxit = maxit, 
-                                   allow.unconverged = allow.unconverged, 
-                                   allow.fixedcorrelation = allow.fixedcorrelation,
-                                   checkboundaryonly = TRUE, 
-                                   update = update, 
-                                   IClikelihood = IClikelihood, 
-                                   which.IC = which.IC), 
-                              inargs))
-        lasttest <- tail(tmp.asrt$test.summary, 1)
-        if (grepl("nugget", lasttest$terms) && 
-            (grepl("Unswapped", lasttest$action) || grepl("Unchanged", lasttest$action)))
-          corr.asrt <- tmp.asrt #Change so have test.summary entry
-        else
+        # tmp.asrt <- do.call(chgResTermBound, 
+        #                     c(list(corr.asrt, sections = sections, stub = stub, 
+        #                            asr4 = asr4, asr4.2 = asr4.2, 
+        #                            fitfunc = fitfunc, 
+        #                            corr.facs = facs, vpc.res = vpc.corr$res, 
+        #                            maxit = maxit, 
+        #                            allow.unconverged = allow.unconverged, 
+        #                            allow.fixedcorrelation = allow.fixedcorrelation,
+        #                            checkboundaryonly = TRUE, 
+        #                            update = update, 
+        #                            IClikelihood = IClikelihood, 
+        #                            which.IC = which.IC), 
+        #                       inargs))
+        #The use of tryCatch is necessary because ai.sing is failing with corb - remove if bug fixed
+        err <- simpleError("Singularities in the Average Information matrix")
+        tmp.asrt <- tryCatchLog(
+          do.call(chgResTermBound, 
+                  c(list(corr.asrt, sections = sections, stub = stub, 
+                         asr4 = asr4, asr4.2 = asr4.2, 
+                         fitfunc = fitfunc, 
+                         corr.facs = facs, vpc.res = vpc.corr$res, 
+                         maxit = maxit, 
+                         allow.unconverged = allow.unconverged, 
+                         allow.fixedcorrelation = allow.fixedcorrelation,
+                         checkboundaryonly = TRUE, 
+                         update = update, 
+                         IClikelihood = IClikelihood, 
+                         which.IC = which.IC), 
+                    inargs)),
+          error = function(e) {print("Failed attempting to fit a nugget variance; continue analysis without it"); NULL}, 
+          include.full.call.stack = FALSE, include.compact.call.stack = FALSE)
+        if (is.asrtests(tmp.asrt))
         { 
-          new.vpc.corr <- getSectionVpars(tmp.asrt$asreml.obj, 
-                                          sections = sections, stub = stub, 
-                                          corr.facs = facs, 
-                                          asr4.2 = asr4.2)
-          bound.res <- ifelse(startFixRes, "P", "F")
-          #Change residual to fixed if either 
-          #     (i) all random correlation model terms are unbound 
-          #   or (ii) none have changed
-          n.new <- length(new.vpc.corr$ran)
-          n.old <- length(vpc.corr$ran)
-          if (new.vpc.corr$res == bound.res && 
-              (n.new > 0 && (!any(new.vpc.corr$ran %in% bounds.excl) || 
-                             (n.new == n.old && all(new.vpc.corr$ran == vpc.corr$ran)))))
-            corr.asrt <- tmp.asrt
+          lasttest <- tail(tmp.asrt$test.summary, 1)
+          if (grepl("nugget", lasttest$terms) && 
+              (grepl("Unswapped", lasttest$action) || grepl("Unchanged", lasttest$action)))
+            corr.asrt <- tmp.asrt #Change so have test.summary entry
           else
           { 
-            test.summary <- tmp.asrt$test.summary
-            test.summary$action[nrow(test.summary)] <- "Unchanged residual"
-            corr.asrt$test.summary <- test.summary
+            new.vpc.corr <- getSectionVpars(tmp.asrt$asreml.obj, 
+                                            sections = sections, stub = stub, 
+                                            corr.facs = facs, 
+                                            asr4.2 = asr4.2)
+            bound.res <- ifelse(startFixRes, "P", "F")
+            #Change residual to fixed if either 
+            #     (i) all random correlation model terms are unbound 
+            #   or (ii) none have changed
+            n.new <- length(new.vpc.corr$ran)
+            n.old <- length(vpc.corr$ran)
+            if (new.vpc.corr$res == bound.res && 
+                (n.new > 0 && (!any(new.vpc.corr$ran %in% bounds.excl) || 
+                               (n.new == n.old && all(new.vpc.corr$ran == vpc.corr$ran)))))
+              corr.asrt <- tmp.asrt
+            else
+            { 
+              test.summary <- tmp.asrt$test.summary
+              test.summary$action[nrow(test.summary)] <- "Unchanged residual"
+              corr.asrt$test.summary <- test.summary
+            }
           }
+          if (largeVparChange(corr.asrt$asreml.obj, 0.75))
+            corr.asrt <- iterate(corr.asrt)
         }
-        if (largeVparChange(corr.asrt$asreml.obj, 0.75))
-          corr.asrt <- iterate(corr.asrt)
       }
     } #end of nugget variance test
 
@@ -1037,7 +1085,7 @@ fitCorrMod <- function(asrtests.obj, sections = NULL,
                                       c(list(corr.asrt, sections = sections, stub = stub, 
                                              asr4 = asr4, asr4.2 = asr4.2, 
                                              fitfunc = "changeTerms", 
-                                             vpc.res = vpc.corr$res, 
+                                             corr.facs = facs, vpc.res = vpc.corr$res, 
                                              maxit = maxit, 
                                              allow.unconverged = allow.unconverged, 
                                              allow.fixedcorrelation = TRUE,
@@ -1165,6 +1213,9 @@ fitCorrMod <- function(asrtests.obj, sections = NULL,
     } #end checking bounds
   } #end of sections loop
   
+  #Ensure setting of ai.sing is reinstated to the value on entry (for corb)
+  asreml::asreml.options(ai.sing = ksing)
+
   return(corr.asrt)
 }
 
@@ -1904,7 +1955,7 @@ fitTPSModSect <- function(tspl.asrt, data, mat, ksect, sect.fac,
       } else
         tspl.asrt <- tmp.asrt #model remained unchanged
       
-      #Reinstate prior setting of ai.sing
+      #Ensure setting of ai.sing is reinstated to the value on entry
       # asreml::asreml.options(ai.sing = ksing)
     }
   }

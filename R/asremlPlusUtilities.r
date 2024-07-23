@@ -100,6 +100,19 @@ isFixedCorrelOK.asreml <- function(asreml.obj, allow.fixedcorrelation = TRUE, ..
   return(correlOK)
 }
 
+#Function to get singular variance parameters, if present, in an asreml.obj
+getSingular.asreml <- function(asreml.obj, bounds.sing = c("S", "?"))
+{
+  asr4.2 <- isASReml4_2Loaded(4.2, notloaded.fault = FALSE)
+  vpc <- getVpars(asreml.obj, asr4.2)$vpc
+  if (any(vpc %in% bounds.sing))
+    sing.terms <- names(vpc)[vpc %in% bounds.sing]
+  else
+    sing.terms <- NULL
+  
+  return(sing.terms)
+}
+
 #Get the loaded version of asreml
 "getASRemlVersionLoaded" <- function(nchar = NULL, notloaded.fault = FALSE)
 {

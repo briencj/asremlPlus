@@ -1,5 +1,10 @@
 \name{news}
 \title{News for Package asremlPlus}
+\section{asremlPlus Version 4.4.37 (2024-07-23}{
+  \itemize{
+  \item Modify the fitting of corb correlation  models in addSpatialModel.asrtests, addSpatialModelOnIC.asrtests and chooseSpatialModelOnIC.asrtests to make it more robust.
+  \item Fix a bug in infoCriteria.asreml and infoCriteria.list that caused an \code{incorrect-dimensions} error when computing the full likelihood.
+}}
 \section{asremlPlus Version 4.4.36 (2024-07-01}{
   \itemize{
   \item Make sure that, when \code{false.pos.wt} is used with pickLSDstatistics and there are several values with the same weighted sum, LSDstatisics with less false positives are favoured. 
