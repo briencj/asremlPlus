@@ -1174,7 +1174,8 @@ test_that("PSA_NW_corb_models_asreml42", {
                                   row.covar = "cLane", col.covar = "cPosn", 
                                   row.factor = "Lane", col.factor = "Position",
                                   corr.funcs = c("corb", "corb"), corr.orders = c(1, 1), 
-                                  IClikelihood = "full")
+                                  nugget.variance = FALSE,
+                                  IClikelihood = "full", trace = TRUE)
   testthat::expect_warning(
     info <- infoCriteria(current.asrt$asreml.obj, IClikelihood = "full"),
     regexp = "The following bound terms were discounted:")
@@ -1461,8 +1462,9 @@ test_that("nonfit_spatial_models_asreml42", {
   testthat::expect_true(all(rownames(spatial.asrts$spatial.IC) == c("nonspatial", "corr", "TPNCSS", "TPPSC2")))
   #The spline models AIC are greater than the nonspatial model and so chooseModelOnIC returns the nonspatial AIC for them
   testthat::expect_true(all(abs(na.omit(spatial.asrts$spatial.IC$AIC) - 
-                                  c(892.861, 888.5976, 892.861, 892.861)) < 0.10))
+                                  c(892.861, 887.718, 892.861, 892.861)) < 0.10))
   testthat::expect_equal(spatial.asrts$best.spatial.mod, "corr")
+  testthat::expect_true(all(spatial.asrts$asrts$corr$asreml.obj$vparameters.con == c("P","U","F")))
   
   #Check that calculated spatial.IC is the same as those for models fitted using addSpatialModel
   spatialEach.asrts <- list()
@@ -1483,7 +1485,7 @@ test_that("nonfit_spatial_models_asreml42", {
   infoEach <- do.call(rbind, 
                       lapply(spatialEach.asrts, 
                              function(asrt) infoCriteria(asrt$asreml.obj, , IClikelihood = "full")))
-  testthat::expect_true(all(abs(infoEach$AIC - c(888.5976,897.4360,899.2390,895.8357)) < 0.001))
+  testthat::expect_true(all(abs(infoEach$AIC - c(887.718,897.4360,899.2390,895.8357)) < 0.001))
   #The spline models AIC are greater than the nonspatial model and so chooseModelOnIC returns the nonspatial AIC for them
   testthat::expect_false(all(abs(infoEach$AIC[1:3] - spatial.asrts$spatial.IC$AIC[2:4]) < 0.001))
   #testthat::expect_true(all.equal(spatial.asrts$spatial.IC[2:4,], infoEach[-4,-3], tolerance = 1e-01))

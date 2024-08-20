@@ -30,7 +30,8 @@
                 row.covar = "cRow", col.covar = "cCol", 
                 row.factor = "Row", col.factor = "Col", 
                 corr.funcs = c("ar1", "ar1"), corr.orders = c(0, 0), 
-                row.corrFitfirst = TRUE, allow.corrsJointFit = TRUE, 
+                row.corrFitfirst = TRUE, 
+                allow.corrsJointFit = TRUE, nugget.variance = TRUE, 
                 dropFixed = NULL, dropRandom = NULL, 
                 nsegs = NULL, nestorder = c(1,1), 
                 degree = c(3,3), difforder = c(2,2), 
@@ -39,7 +40,7 @@
                 which.rotacriterion = "AIC", nrotacores = 1, 
                 asreml.option = "grp", tpps4mbf.obj = NULL, 
                 allow.unconverged = FALSE, allow.fixedcorrelation = FALSE,
-                checkboundaryonly = FALSE, update = FALSE, 
+                checkboundaryonly = FALSE, update = FALSE, trace = FALSE, 
                 maxit = 30, IClikelihood = "full", which.IC = "AIC", ...)
 }
 \arguments{
@@ -123,6 +124,9 @@
                of the grid when separate fits have failed to fit any correlation 
                functions. This argument is available for when a joint fit 
                hangs the system.}
+ \item{nugget.variance}{A \code{\link{logical}} which, if \code{TRUE}, will result in 
+               an attempt to fit a nugget or unit-specific variance. Otherwise, 
+               a nugget or unit-specific variance will not be fitted.}
  \item{dropFixed}{A single \code{character} string or a \code{character} vector of strings 
                with an element for each level of \code{sections} in the same order as the 
                \code{sections} levels. Each string, which if it is not \code{NA} and after 
@@ -285,6 +289,7 @@
               variance parameter values as starting values when fitting the new model, 
               the only modifications being (i) to add the terms for the spatial models 
               and (ii) those specified via \code{\dots}.}
+ \item{trace}{If \code{TRUE} then the stages in fitting a correlation model are displayed.}
  \item{maxit}{A \code{\link{numeric}} specifying the maximum number of iterations that 
               \code{asreml} should perform in fitting a model.}
  \item{IClikelihood}{A \code{character} that controls both the occurrence and the type 

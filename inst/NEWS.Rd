@@ -1,5 +1,14 @@
 \name{news}
 \title{News for Package asremlPlus}
+\section{asremlPlus Version 4.4.38 (2024-08-19}{
+  \itemize{
+  \item Add check that spatial variance is not bound whilst the nugget variance is positive when fitting correlation models in addSpatialModel.asrtests, addSpatialModelOnIC.asrtests and chooseSpatialModelOnIC.asrtests. If it is, fix the nugget variance, 
+  \item Add the argument \code{nugget.variance} to addSpatialModel.asrtests, addSpatialModelOnIC.asrtests and chooseSpatialModelOnIC.asrtests to control the fitting  of a nuggetvariance when fitting correlation models.
+  \item Add \code{trace} argument addSpatialModel.asrtests, addSpatialModelOnIC.asrtests and chooseSpatialModelOnIC.asrtests, primarily for tracking the fitting of correlation models.
+  \item Add traps for errors resulting from singular information matrices when fitting correlation models in addSpatialModel.asrtests, addSpatialModelOnIC.asrtests and chooseSpatialModelOnIC.asrtests.
+  \item Fix bug in addSpatialModel.asrtests, addSpatialModelOnIC.asrtests and chooseSpatialModelOnIC.asrtests when fitting metric correlation functions.
+  \item Fix bug in newfit.asreml that occurred when change to random model results in no random terms.
+}}
 \section{asremlPlus Version 4.4.37 (2024-07-23}{
   \itemize{
   \item Modify the fitting of corb correlation  models in addSpatialModel.asrtests, addSpatialModelOnIC.asrtests and chooseSpatialModelOnIC.asrtests to make it more robust.

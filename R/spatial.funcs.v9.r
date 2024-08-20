@@ -5,7 +5,8 @@ addSpatialModel.asrtests <- function(asrtests.obj, spatial.model = "TPPS",
                                      row.covar = "cRow", col.covar = "cCol", 
                                      row.factor = "Row", col.factor = "Col", 
                                      corr.funcs = c("ar1", "ar1"), corr.orders = c(0, 0), 
-                                     row.corrFitfirst = TRUE, allow.corrsJointFit = TRUE, 
+                                     row.corrFitfirst = TRUE, 
+                                     allow.corrsJointFit = TRUE, nugget.variance = TRUE, 
                                      dropFixed = NULL, dropRandom = NULL, 
                                      nsegs = NULL, nestorder = c(1, 1), 
                                      degree = c(3,3), difforder = c(2,2), 
@@ -61,6 +62,7 @@ addSpatialModel.asrtests <- function(asrtests.obj, spatial.model = "TPPS",
                                corr.funcs = corr.funcs, corr.orders = corr.orders, 
                                row.corrFitfirst = row.corrFitfirst, 
                                allow.corrsJointFit = allow.corrsJointFit, 
+                               nugget.variance = nugget.variance, 
                                allow.unconverged = allow.unconverged, 
                                allow.fixedcorrelation = allow.fixedcorrelation,
                                checkboundaryonly = checkboundaryonly, 
@@ -107,7 +109,8 @@ addSpatialModelOnIC.asrtests <- function(asrtests.obj, spatial.model = "TPPS",
                                          row.covar = "cRow", col.covar = "cCol", 
                                          row.factor = "Row", col.factor = "Col", 
                                          corr.funcs = c("ar1", "ar1"), corr.orders = c(0, 0), 
-                                         row.corrFitfirst = TRUE, allow.corrsJointFit = TRUE, 
+                                         row.corrFitfirst = TRUE, 
+                                         allow.corrsJointFit = TRUE, nugget.variance = TRUE, 
                                          dropFixed = NULL, dropRandom = NULL, 
                                          nsegs = NULL, nestorder = c(1, 1), 
                                          degree = c(3,3), difforder = c(2,2), 
@@ -167,6 +170,7 @@ addSpatialModelOnIC.asrtests <- function(asrtests.obj, spatial.model = "TPPS",
                                corr.funcs = corr.funcs, corr.orders = corr.orders, 
                                row.corrFitfirst = row.corrFitfirst, 
                                allow.corrsJointFit = allow.corrsJointFit, 
+                               nugget.variance = nugget.variance, 
                                allow.unconverged = allow.unconverged, 
                                allow.fixedcorrelation = allow.fixedcorrelation,
                                checkboundaryonly = checkboundaryonly, 
@@ -224,7 +228,8 @@ chooseSpatialModelOnIC.asrtests <- function(asrtests.obj, trySpatial = "all",
                                             row.covar = "cRow", col.covar = "cCol", 
                                             row.factor = "Row", col.factor = "Col", 
                                             corr.funcs = c("ar1", "ar1"), corr.orders = c(0, 0), 
-                                            row.corrFitfirst = TRUE, allow.corrsJointFit = TRUE, 
+                                            row.corrFitfirst = TRUE, 
+                                            allow.corrsJointFit = TRUE, nugget.variance = TRUE, 
                                             dropFixed = NULL, dropRandom = NULL, 
                                             nsegs = NULL, nestorder = c(1, 1), 
                                             usRandLinCoeffs = TRUE, 
@@ -299,6 +304,7 @@ chooseSpatialModelOnIC.asrtests <- function(asrtests.obj, trySpatial = "all",
                                             corr.funcs = corr.funcs, corr.orders = corr.orders, 
                                             row.corrFitfirst = row.corrFitfirst, 
                                             allow.corrsJointFit = allow.corrsJointFit, 
+                                            nugget.variance = nugget.variance, 
                                             allow.unconverged = allow.unconverged, 
                                             allow.fixedcorrelation = allow.fixedcorrelation,
                                             checkboundaryonly = checkboundaryonly, 
@@ -397,7 +403,8 @@ fitCorrMod <- function(asrtests.obj, sections = NULL,
                        row.covar = "cRow", col.covar = "cCol", 
                        row.factor = "Row", col.factor = "Col", 
                        corr.funcs = c("ar1", "ar1"), corr.orders = c(0, 0), 
-                       row.corrFitfirst = TRUE, allow.corrsJointFit = TRUE, 
+                       row.corrFitfirst = TRUE, 
+                       allow.corrsJointFit = TRUE, nugget.variance = TRUE,
                        allow.unconverged = TRUE, allow.fixedcorrelation = TRUE,
                        checkboundaryonly = FALSE, update = TRUE, trace = FALSE,
                        chooseOnIC = TRUE, 
@@ -414,8 +421,7 @@ fitCorrMod <- function(asrtests.obj, sections = NULL,
   
   #Save ai.sing setting so can make sure that it is resored on exit (reset in corb at moment)
   ksing <-   get("asr_options", envir = getFromNamespace(".asremlEnv", "asreml"))$ai.sing
-  # print(ksing)
-  
+
   
   bounds.excl <- c("B", "S")
   all.bounds.excl <- c(bounds.excl, "F")
@@ -490,6 +496,8 @@ fitCorrMod <- function(asrtests.obj, sections = NULL,
   rfuncs <- corr.funcs
   rorders <- corr.orders
   rterms <- c(row.corr, col.corr)
+  sterms <- c(ifelse(corr.funcs[1] %in% met.funcs, row.covar, row.factor),
+              ifelse(corr.funcs[2] %in% met.funcs, col.covar, col.factor))
   
   if (!row.corrFitfirst)
   {
@@ -497,10 +505,11 @@ fitCorrMod <- function(asrtests.obj, sections = NULL,
     rfuncs <- rfuncs[c(2,1)]
     rorders <- rorders[c(2,1)]
     rterms <- rterms[c(2,1)]
+    sterms <- sterms[c(2,1)]
   }
   
   #Loop over the sections
-  nuggsOK <- TRUE
+  nuggsOK <- nugget.variance
   corr.asrt <- asrtests.obj
   for (i in 1:nsect)
   {
@@ -509,7 +518,7 @@ fitCorrMod <- function(asrtests.obj, sections = NULL,
     } else 
     {  fitfunc <- "changeTerms"}
     
-    spat.var <- paste0(facs, collapse = ":")
+    spat.var <- paste0(sterms, collapse = ":")
     if (nsect > 1)
     { 
       stub <- levels(dat.in[[sections]])[i]
@@ -519,12 +528,13 @@ fitCorrMod <- function(asrtests.obj, sections = NULL,
 
     startFixRes <- FALSE
     #### For corb, add random variance with fixed Residual
-    if (any(grepl("corb", corr.funcs)))
+    if (any(grepl("corb", corr.funcs)) || !nuggsOK)
     {  
-      if (trace) cat("\n#### Try to fit nugget before fitting corb\n\n")
+      if (trace) cat("\n#### Try to fit nugget variance before fitting correlations\n\n")
 
       #Do not allow singularities with corb functions because crashes R
-      asreml::asreml.options(ai.sing = FALSE)
+      if (any(grepl("corb", corr.funcs)))
+          asreml::asreml.options(ai.sing = FALSE)
       
       lab0 <- paste("Add random", spat.var, "and fix residual")
       if (nsect > 1)
@@ -574,10 +584,19 @@ fitCorrMod <- function(asrtests.obj, sections = NULL,
             startFixRes <- TRUE
             corr.asrt <- tmp.asrt
           } else
-          {  inargs <- old.inargs}
+          {  
+            if (lasttest$action == "Changed random" && 
+                (vpc.corr$ran[spat.var] %in% bounds.excl))
+            test.summary <- addtoTestSummary(corr.asrt$test.summary, terms = lab0, 
+                                             DF = NA, denDF = NA, p = NA, 
+                                             AIC = NA, BIC = NA, 
+                                             action = "Unchanged - bound")
+            corr.asrt$test.summary <- test.summary
+            inargs <- old.inargs
+          }
         } else
         {  
-          test.summary <- addtoTestSummary(corr.asrt$test.summary, terms = lab, 
+          test.summary <- addtoTestSummary(corr.asrt$test.summary, terms = lab0, 
                                            DF = NA, denDF = NA, p = NA, 
                                            AIC = NA, BIC = NA, 
                                            action = "Unchanged - Singular")
@@ -585,7 +604,7 @@ fitCorrMod <- function(asrtests.obj, sections = NULL,
           inargs <- old.inargs
         }
       }
-    }
+    } #End fix nugget section 
 
     #Start fitting the first correlation
     corr.term <- FALSE
@@ -594,10 +613,12 @@ fitCorrMod <- function(asrtests.obj, sections = NULL,
     { result1 <- "Unswapped"
     } else
     { 
+      vpc <- getSectionVpars(corr.asrt$asreml.obj, 
+                             sections = sections, stub = stub, 
+                             corr.facs = facs, 
+                             asr4.2 = asr4.2)
       #Check if residual terms for each section
-      vres <- getSectionVpars(corr.asrt$asreml.obj, sections, stub, 
-                              corr.facs = facs, asr4.2 = asr4.2)$res
-      if (!length(vres))
+      if (!length(vpc$res))
         warning("Could not find a residual term for ", sections, " ", stub)
 
       #### Try first correl in current section
@@ -610,10 +631,7 @@ fitCorrMod <- function(asrtests.obj, sections = NULL,
         lab1 <- paste0(lab1, " for ", sections, " ",stub)
       }
       #Determine if spat.var is a fitted random term
-      vpc.ran <- getSectionVpars(corr.asrt$asreml.obj, 
-                                 sections = sections, stub = stub, 
-                                 corr.facs = facs, 
-                                 asr4.2 = asr4.2)$ran
+      vpc.ran <-vpc$ran
       spat.term <- findterm(spat.var, names(vpc.ran)) #allows for changed order
       if (length(spat.term) == 1 && spat.term != 0) #have got a single spat.term
       { drop.spatvar <- names(spat.term)
@@ -666,8 +684,6 @@ fitCorrMod <- function(asrtests.obj, sections = NULL,
       }
     } #End of first correlation section
     
-    print(corr.asrt)
-    print(result1)
     #### Try 2nd correl in current section
     if (!any(rfuncs[2] == id.funcs))
     {  
@@ -681,12 +697,10 @@ fitCorrMod <- function(asrtests.obj, sections = NULL,
         corr.term <- TRUE
         last.term <- ran.term1
         
-        print(last.term)
         #Check for ran.term1 in random formula, and if absent, check for different order
         last.term <- chk4TermInFormula(corr.asrt$asreml.obj$call$random, term = last.term, 
                                        asreml.obj = corr.asrt$asreml.obj)
         ran.term <- paste0(rterms[1], ":", rterms[2])
-        print(ran.term)
         if (nsect > 1)
           ran.term <- paste0("at(", sections, ", '",stub, "'):", ran.term)
         
@@ -866,8 +880,6 @@ fitCorrMod <- function(asrtests.obj, sections = NULL,
         }
       }
       
-      print(corr.asrt)
-      
       #### If no  correlation fitted and both rows and cols have corr funcs, try fitting them together
       if (!corr.term && (!any(rfuncs %in% id.funcs)) && allow.corrsJointFit)
       {
@@ -961,7 +973,8 @@ fitCorrMod <- function(asrtests.obj, sections = NULL,
     # - only if the residual model is a variance model related to sections
     # - chooseOnIC is TRUE 
     # - if chooseOnIC and startFixRes are FALSE, then starting model has nugget variance
-    # - if chooseOnIC is FALSE and startFixRes is TRUE, then need to try P for Residual bound
+    # - if chooseOnIC is FALSE and startFixRes is TRUE, then need to try 
+    # -    P for Residual bound provided nuggsOK is TRUE
     if ((chooseOnIC || (!chooseOnIC && startFixRes)) && corr.term && nuggsOK)
     {
       if (trace) cat("\n#### Testing nugget variance\n\n")
@@ -1027,7 +1040,9 @@ fitCorrMod <- function(asrtests.obj, sections = NULL,
         if (largeVparChange(corr.asrt$asreml.obj, 0.75))
           corr.asrt <- iterate(corr.asrt)
       }
-    }
+    } #end of nugget variance test
+
+    
     #Check that the spatial variance is not bound and the Residual is P 
     if (corr.term && nuggsOK && is.null(sections))
     {
@@ -1060,10 +1075,7 @@ fitCorrMod <- function(asrtests.obj, sections = NULL,
         }
       }
     }
-    #end of nugget variance test
 
-    print(corr.asrt)
-    
     #### Having made all model changes with checkboundaryonly = TRUE, 
     #### update for checkboundaryonly set to FALSE
     if (!checkboundaryonly)
@@ -1924,7 +1936,6 @@ fitTPSModSect <- function(tspl.asrt, data, mat, ksect, sect.fac,
     
     #Do not allow singularities in this section of the code
     # ksing <-   get("asr_options", envir = getFromNamespace(".asremlEnv", "asreml"))$ai.sing
-    # print(ksing)
     # asreml::asreml.options(ai.sing = FALSE)
     
     if (!is.null(sections))

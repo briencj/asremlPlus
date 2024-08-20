@@ -48,11 +48,12 @@ test_that("Wheat_spatial_asreml42", {
                                   label = "Try dropping withinColPairs", IClikelihood = "full")
   print(current.asrt)
 
-  #Try corb - worst fit - this is crashing R
+  #Try corb - worst fit - had to set nugget.variance and allow.corrsJointFit
   corb.asrt <- addSpatialModelOnIC(current.asrt, spatial.model = "corr", 
                                    row.covar = "cRow", col.covar = "cColumn", 
                                    row.factor = "Row", col.factor = "Column", 
                                    corr.funcs = c("corb", "corb"), corr.orders = c(0,0),
+                                   nugget.variance = FALSE, allow.corrsJointFit = FALSE, 
                                    IClikelihood = "full")
   corb.asrt <- rmboundary(corb.asrt, IClikelihood = "full")
   inf <- infoCriteria(corb.asrt$asreml.obj, IClikelihood = "full")

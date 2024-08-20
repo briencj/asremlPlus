@@ -21,349 +21,6 @@
 }
 
 
-"validAsreml" <- function(object)
-{
-  asr4 <- isASRemlVersionLoaded(4, notloaded.fault = TRUE)
-  asr4.2 <- isASReml4_2Loaded(4.2, notloaded.fault = TRUE)
-  isasr <- TRUE 
-  #Check class
-  if (!inherits(object, "asreml") || is.null(object))
-  {
-    isasr[1] <- FALSE 
-    isasr <- c(isasr, "\n ",deparse(substitute(object))," is not of class 'asreml'")
-  }
-  #Check have corresponding asreml version
-  if (asr4)
-  {
-    if (!("vparameters" %in% names(object)))
-    { 
-      isasr[1] <- FALSE 
-      isasr <- c(isasr, 
-                 paste0("\n ",deparse(substitute(object)), 
-                        " is not an asreml object compatible ASReml-R version 4; ",
-                        "\nuse convASRemlobjVersion.asreml to create a compatible asreml object"))
-    } else
-      if (asr4.2 && ("errtxt" %in% names(object)))
-      {
-        isasr[1] <- FALSE 
-        isasr <- c(isasr, 
-                   paste0("\n ",deparse(substitute(object)), 
-                          " is not an asreml object compatible with ASReml-R version 4.2; ",
-                          "\nuse convASRemlobjVersion.asreml to create a compatible asreml object"))
-      }
-  } else #not asr4
-    if ("vparameters" %in% names(object))
-    {
-      isasr[1] <- FALSE 
-      isasr <- c(isasr, 
-                 paste0("\n ",deparse(substitute(object)), " is not compatible with ",
-                        "ASReml-R ",packageVersion("asreml"), ", the currently loaded version; ",
-                        "\nuse convASRemlobjVersion.asreml to create a compatible asreml object"))
-    }
-  if (length(isasr) > 1)
-    isasr[1] <- "Error(s) in validAsreml(object) : "
-  return(isasr)
-}
-
-"convAsremlobj.asreml" <- function(asreml.obj, ...)
-{
-  y <- runif(10); x <- runif(10); a <- asreml::asreml(y~x)
-  call <- asreml.obj$call
-  call[[1]] <- a$call[[1]]  
-  asreml.obj <- eval(call)
-  validAsreml(asreml.obj)
-  return(asreml.obj)
-}
-
-"validWaldTab" <- function(object)
-{
-  asr4 <- isASRemlVersionLoaded(4, notloaded.fault = FALSE)
-  iswald <- TRUE 
-  if (!is.null(object) && (!is.data.frame(object) || all(ncol(object) != c(4,6))))
-  {
-    iswald[1] <- FALSE
-    iswald <- c(iswald, 
-                "wald.tab should be a 4- or 6-column data.frame -- perhaps extract Wald component from list")
-  }
-  if (length(iswald) > 1)
-    iswald[1] <- "Error(s) in validWaldTab(object) : "
-  return(iswald)
-}
-
-"validTestSummary" <- function(object)
-{
-  asr4 <- isASRemlVersionLoaded(4, notloaded.fault = FALSE)
-  isTSumm <- TRUE 
-  if (!is.null(object) && (!is.data.frame(object) || all(ncol(object) != c(3,5,7))))
-  {
-    isTSumm[1] <- FALSE
-    isTSumm <- c(isTSumm, 
-                 "test.summary should be a 3-, 5- or 7-column data.frame")
-  }
-  which.names <- names(object) %in% c("terms","DF","denDF","p", "AIC", "BIC","action")
-  if(!all(which.names))
-  {
-    isTSumm <- c(isTSumm, 
-                 paste0("test.summary contains the illegal column(s) ", 
-                        paste(names(object)[!which.names], collapse = ",")))
-  }
-  if (length(isTSumm) > 1)
-    isTSumm[1] <- "Error(s) in validWaldTab(object) : "
-  return(isTSumm)
-}
-
-"as.asrtests" <- function(asreml.obj, wald.tab = NULL, test.summary = NULL, 
-                          denDF = "numeric", label = NULL, 
-                          IClikelihood = "none", bound.exclusions = c("F","B","S","C"), 
-                          ...)
-{ 
-  
-  # Get original data name.
-  orig.name <- asreml.obj$call$data                                             ## add VSNi 14/03/2024
-  
-  # Expose dataset to avoid conflicts.
-  asreml.obj$call$data <- str2lang("asreml.obj$mf")                             ## add VSNi 14/03/2024
-  
-  #Check that have a valid object of class asreml
-  validasr <- validAsreml(asreml.obj)  
-  if (is.character(validasr))
-    stop(validasr)
-  
-  asr4 <- isASRemlVersionLoaded(4, notloaded.fault = TRUE)
-  if (asr4)
-    asreml::asreml.options(trace = FALSE)
-  
-  #Check IClikelihood options
-  options <- c("none", "REML", "full")
-  ic.lik <- options[check.arg.values(IClikelihood, options)]
-  ic.NA <- data.frame(fixedDF = NA, varDF = NA, AIC = NA, BIC = NA)
-  
-  #Process test.summary and label arguments
-  if (is.null(test.summary))
-    test.summary <- makeTestSummary(which.cols = c("terms","DF","denDF",
-                                                   "p","AIC","BIC","action"))
-  else
-  {
-    validtests <- validTestSummary(test.summary)
-    if (is.character(validtests))
-      stop(validtests)
-  }
-  if (!is.null(label))
-  {
-    if (ic.lik != "none")
-      ic <- infoCriteria(asreml.obj, IClikelihood = ic.lik, 
-                         bound.exclusions = bound.exclusions)
-    else
-    {
-      ic <- ic.NA
-      ic$varDF <- infoCriteria(asreml.obj, IClikelihood = "REML", 
-                               bound.exclusions = bound.exclusions)$varDF
-    }
-    test.summary <- addtoTestSummary(test.summary, terms = label, 
-                                     DF=ic$fixedDF, denDF = ic$varDF, p = NA, 
-                                     AIC = ic$AIC, BIC = ic$BIC, 
-                                     action = "Starting model")
-  }
-  
-  #Deal with wald.tab
-  if (!is.null(wald.tab))
-  {  
-    #Check that have a valid wald.tab object
-    validwald <- validWaldTab(wald.tab)  
-    if (is.character(validwald))
-      stop(validwald)
-  } else #form wald.tab
-  { 
-    wald.tab <- asreml::wald.asreml(asreml.obj, denDF = denDF, trace = FALSE, ...)
-    wald.tab <- chkWald(wald.tab)
-  }
-  
-  # Add original name back to asreml.obj.
-  asreml.obj$call$data <- orig.name                                             ## add VSNi 14/03/2024
-  
-  #Put together the asrtests.obj, with updated wald tab
-  test <- list(asreml.obj = asreml.obj, wald.tab=wald.tab, test.summary = test.summary)
-  class(test) <- "asrtests"
-  test$wald.tab <- recalcWaldTab(test, ...)
-  
-  #Reset trace to default
-  if (asr4)
-    asreml::asreml.options(trace = TRUE)
-  
-  
-  # Return.
-  return(test)
-}
-
-"is.asrtests" <- function(object)
-{
-  inherits(object, "asrtests")
-}
-
-"validAsrtests" <- function(object)
-{
-  asr4 <- isASRemlVersionLoaded(4, notloaded.fault = TRUE)
-  isasrtests <- TRUE 
-  
-  #Check that have a valid object of class asrtests
-  if (is.null(object) || !is.asrtests(object))
-  {
-    if (asr4)
-      msg <- paste0("\n  In analysing ",object$asreml.obj$formulae$fixed[[2]],
-                    ", must supply an object of class asrtests", sep = "")
-    else
-      msg <- paste0("\n  In analysing ",object$asreml.obj$fixed.formula[[2]],
-                    ", must supply an object of class asrtests", sep = "")
-    isasrtests[1] <- FALSE
-    isasrtests <- c(isasrtests, msg)
-  }    
-  
-  #Check have appropriate components
-  if (!all(c("asreml.obj", "wald.tab", "test.summary") %in% names(object)))
-  {
-    isasrtests[1] <- FALSE
-    isasrtests <- c(isasrtests, 
-                    paste("\n ", deparse(substitute(object)), 
-                          "is not a list with named components",
-                          "asreml.obj, wald.tab and test.summary"))
-  }    
-  if (length(isasrtests) > 1)
-    isasrtests[1] <- "Error in validAsrtests : "
-  return(isasrtests)
-}
-
-setOldClass("asrtests")
-
-"print.test.summary" <- function(x,  which.print = c("title", "table"), 
-                                 omit.columns = NULL, ...)
-{
-  options <- c("title", "table", "all")
-  opt <- options[unlist(lapply(which.print, check.arg.values, options=options))]
-  
-  #make change to control printing
-  class(x) <- c("test.summary", "data.frame")
-  x$p <- round(x$p, digits=4)
-  
-  #remove unwanted columns
-  if (!is.null(omit.columns))
-  {
-    which.cols <- names(x)
-    which.cols <- which.cols[!(which.cols %in% omit.columns)]
-    x <- x[which.cols]
-  }
-  
-  if (any(c("title", "all") %in% opt))
-  {
-    cat("\n\n####  Sequence of model investigations \n\n")
-    if (any(c("AIC", "BIC") %in% names(x)))
-      cat("(If a row has NA for p but not denDF, DF and denDF relate to fixed and variance parameter numbers)\n\n")
-  }
-  
-  print.data.frame(x, ...)
-  invisible()
-}
-
-"print.wald.tab" <- function(x, which.wald = c("title", "heading", "table"), 
-                             colourise = FALSE, ...)
-{
-  asr4 <- isASRemlVersionLoaded(4, notloaded.fault = FALSE)
-  
-  options <- c("title", "heading", "table", "all")
-  opt <- options[unlist(lapply(which.wald, check.arg.values, options=options))]
-  
-  #make change to control printing
-  class(x) <- c("wald", "data.frame")
-  x$Pr <- round(x$Pr, digits=4)
-  
-  if (any(c("title", "all") %in% opt))
-    cat("\n\n####  Pseudo-anova table for fixed terms \n\n")
-  if  (!any(c("table", "all") %in% opt)) #no table to be printed
-  {
-    if ("heading" %in% opt)
-    {
-      hd <- attr(x, which = "heading")
-      for (i in 1:length(hd))
-        cat(hd[i],"\n")
-    }
-  }
-  else #print table, possibly with heading
-  {
-    if (any(c("heading", "all") %in% opt) && !is.null(asr4) && asr4)
-    {
-      if (asr4)
-      {
-        asr.col <- asreml::asreml.options()$colourise
-        if (length(asr.col) == 0)
-        {
-          if (colourise) 
-            asreml::asreml.options(colourise = colourise)
-        } else 
-          if (xor(colourise,asr.col))
-            asreml::asreml.options(colourise = colourise)
-        print(x, ...)
-        asreml::asreml.options(colourise = asr.col)
-      } else
-        print(x, ...)
-    } else
-    {
-      if (any(c("heading", "all") %in% opt))
-      {
-        hd <- attr(x, which = "heading")
-        for (i in 1:length(hd))
-          cat(hd[i],"\n")
-      } else
-      {
-        cat("\n")      
-      }
-      print.data.frame(x, ...)
-    }
-  }
-  
-  invisible()
-}
-
-"print.asrtests" <- function(x, which = "key", colourise = FALSE, ...)
-{ 
-  asr4 <- isASRemlVersionLoaded(4, notloaded.fault = TRUE)
-  
-  #Check that have a valid object of class asrtests
-  validasrt <- validAsrtests(x)  
-  if (is.character(validasrt))
-    stop(validasrt)
-  
-  options <- c("asremlsummary", "vparametersummary", "pseudoanova", "wald.tab", 
-               "testsummary", "key", "all")
-  opt <- options[unlist(lapply(which, check.arg.values, options=options))]
-  if (all(c("key", "all") %in% opt))
-    stop("Can only specify one of key and all for which argument")
-  if ("wald.tab" %in% opt)
-  {
-    opt[match("wald.tab", opt)] <- "pseudoanova"
-    opt <- unique(opt)
-  }
-  
-  #print summary of asreml.obj
-  if (any(c("asremlsummary", "all") %in% opt))
-    print(summary(x$asreml.obj), ...)
-  
-  #print vparameter summary of asreml.obj
-  if (any(c("vparametersummary", "key") %in% opt))
-  {
-    cat("\n\n####  Summary of the fitted variance parameters\n\n")
-    print(summary(x$asreml.obj)$varcomp, ...)
-  }
-  
-  #print wald.tab
-  if (any(c("pseudoanova", "key", "all") %in% opt))
-    print.wald.tab(x$wald.tab, colourise = colourise, ...)
-  
-  #print test.summary
-  if (any(c("testsummary", "key", "all") %in% opt))
-    print.test.summary(x$test.summary, which.print = "all", ...)
-  
-  invisible()
-}
-
 "recalcWaldTab.asrtests" <- function(asrtests.obj, recalc.wald = FALSE, 
                                      denDF="numeric", dDF.na = "none", 
                                      dDF.values = NULL, trace = FALSE, ...)
@@ -1032,14 +689,20 @@ atLevelsMatch <- function(new, old, call, single.new.term = FALSE, always.levels
     if (is.null(random.))
       languageEl(call, which = "random") <- NULL
     else
+    { 
       languageEl(call, which = "random") <- 
         { 
           if (!is.null(languageEl(call, which = "random"))) 
+          { 
             my.update.formula(as.formula(languageEl(call, which = "random")), 
                               random., call = call, keep.order = keep.order)
+          }
           else 
             random.
         }
+      if (call$random == formula(~1))
+        call$random <- NULL
+    }
   }
   if (!missing(sparse.)) 
     languageEl(call, which = "sparse") <- 
@@ -1130,7 +793,7 @@ atLevelsMatch <- function(new, old, call, single.new.term = FALSE, always.levels
       gamma.table <- gamma.table[!grepl("<NotEstimated>", gamma.table$Component),]
       rownames(gamma.table) <- NULL
       gammas <- gamma.table$Component
-    }
+    } 
     else
     {
       gamma.table <- gamma.start$gammas.table
@@ -1211,8 +874,14 @@ atLevelsMatch <- function(new, old, call, single.new.term = FALSE, always.levels
   #Evaluate the call
   if (asr4 & keep.order)
     asreml::asreml.options(keep.order = TRUE)
-  asreml.new.obj <- eval(call, sys.parent())
+  class(asreml.obj) <- c("asreml", "list") #needed for within to work
+  asreml.new.obj <- tryCatchLog(
+    eval(call, sys.parent()),
+    error = function(e) {print("Analysis continued"); NULL}, 
+    include.full.call.stack = FALSE, include.compact.call.stack = FALSE,
+    finally = within(asreml.obj, converge <- FALSE))
   asreml.new.obj$call <- call
+  class(asreml.obj) <- "asreml" #return to single class
   
   #Check if updating and all Residual variance parameters are either F, B or S, 
   # and not equal to 1 (as in spatial models with no nugget variance)
@@ -1257,7 +926,10 @@ atLevelsMatch <- function(new, old, call, single.new.term = FALSE, always.levels
         languageEl(call, which = "R.param") <- NULL
       if (!is.null(languageEl(call, which = "G.param")))
         languageEl(call, which = "G.param") <- NULL
-      new.asreml.obj <- eval(call, sys.parent())
+      new.asreml.obj <- tryCatchLog(
+        eval(call, sys.parent()),
+        error = function(e) {print("Analysis continued"); NULL}, 
+        include.full.call.stack = FALSE, include.compact.call.stack = FALSE)
       new.asreml.obj$call <- call
       new.boundinfo <-  findboundary.asreml(new.asreml.obj, asr4 = asr4, asr4.2 = asr4.2)
       new.allvcomp <- new.boundinfo$allvcomp
@@ -1275,7 +947,10 @@ atLevelsMatch <- function(new, old, call, single.new.term = FALSE, always.levels
   if (!asreml.new.obj$converge || largeVparChange(asreml.new.obj, threshold = 0.75))
   { 
     call <- asreml.new.obj$call
-    asreml.new.obj <- eval(call, sys.parent())
+    asreml.new.obj <- tryCatchLog(
+      eval(call, sys.parent()),
+      error = function(e) {print("Analysis continued"); NULL}, 
+      include.full.call.stack = FALSE, include.compact.call.stack = FALSE)
   }
   #    asreml.new.obj <- asreml::update.asreml(asreml.new.obj)
   
@@ -1653,7 +1328,7 @@ findboundary.asreml <- function(asreml.obj, asr4, asr4.2)
     warning(paste("The estimated value of one or more correlations in the supplied asreml fit for", kresp,
                   "is bound or fixed and allow.fixedcorrelation is FALSE"))
   all.terms <- c(dropFixed, addFixed, dropRandom, addRandom, newResidual,set.terms)
-  if (all(is.null(all.terms)))
+  if (is.allnull(all.terms))
     stop("In analysing ", kresp, ", must supply terms to be removed/added")
   if (any(substr(trimws(all.terms), 1, 1) == "~"))
     stop("In analysing ", kresp, ", a leading tilde (~) has been included")
@@ -1782,6 +1457,7 @@ findboundary.asreml <- function(asreml.obj, asr4, asr4.2)
                                         trace = trace, update = update, 
                                         allow.unconverged = TRUE, 
                                         allow.fixedcorrelation = TRUE, 
+                                        checkboundaryonly = checkboundaryonly,
                                         set.terms = set.terms, 
                                         ignore.suffices = ignore.suffices, 
                                         bounds = bounds, 
