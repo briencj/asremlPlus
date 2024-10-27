@@ -1,13 +1,14 @@
 # asremlPlus
 
+ ⁠<!-- badges: start -->⁠ 
 [![Project Status: Active:  The project has reached a stable, usable state and is being actively developed.](http://www.repostatus.org/badges/latest/active.svg)](http://www.repostatus.org/#active)
 [![minimal R version](https://img.shields.io/badge/R%3E%3D-2.10.0-6666ff.svg)](https://cran.r-project.org/)
 [![CRAN_Status_Badge](http://www.r-pkg.org/badges/version/asremlPlus)](https://cran.r-project.org/package=asremlPlus)
-[![packageversion](https://img.shields.io/badge/Package%20version-4.4.38-orange.svg?style=flat-square)](/commits/master)
-[![Last-changedate](https://img.shields.io/badge/last%20change-2024--08--20-yellowgreen.svg)](/commits/master)
+[![packageversion](https://img.shields.io/badge/Package%20version-4.4.39-orange.svg?style=flat-square)](/commits/master)
+[![Last-changedate](https://img.shields.io/badge/last%20change-2024--10--27-yellowgreen.svg)](/commits/master)
 [![Licence](https://img.shields.io/github/license/mashape/apistatus.svg)](http://choosealicense.com/licenses/mit/)
 [![Downloads](https://cranlogs.r-pkg.org/badges/last-week/asremlPlus)](commits/master)
-
+<!-- badges: end -->
 
 `asremlPlus` is an R package that augments the use of `ASReml-R` in fitting mixed models and packages generally in exploring prediction differences. This version is compatible with both `ASReml-R` versions 3 and 4.1, but not 4.0.
 
