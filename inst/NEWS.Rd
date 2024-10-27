@@ -1,8 +1,16 @@
 \name{news}
 \title{News for Package asremlPlus}
+\section{asremlPlus Version 4.4.39 (2024-10-26}{
+  \itemize{
+  \item Fixed a bug in pickLSDstatistic that occurs when there is only one prediction for a level of a \code{factor.combination} specified using the argument \code{LSDby}.
+  \item Fix a bug that meant that the settings of the arguments \code{allow.unconverged}, \code{allow.fixedcorrelation} and \code{update} for addSpatialModel.asrtests, addSpatialModelOnIC.asrtests and chooseSpatialModelOnIC.asrtests were not being passed on to functions that they called. Set the defaults for the arguments \code{allow.unconverged}, \code{allow.fixedcorrelation} and \code{update} to \code{TRUE} for addSpatialModel.asrtests, addSpatialModelOnIC.asrtests and chooseSpatialModelOnIC.asrtests to match the defaults that had in practice been the settings of these arguments for the functions that fit the spatial models. 
+  \item Fix bug in fitting correlations models in addSpatialModel.asrtests, addSpatialModelOnIC.asrtests and chooseSpatialModelOnIC.asrtests where correlations on both grid dimensions become bound.
+  \item Add code to remove a correlation function from a term when one of more of its correlation parameters are bound and the argument \code{allow.fixedcorrelation} is \code{FALSE} in fitting the function using addSpatialModel.asrtests, addSpatialModelOnIC.asrtests and chooseSpatialModelOnIC.asrtests.
+  \item Add checks and fixes for ill-fitting correlations models in addSpatialModel.asrtests, addSpatialModelOnIC.asrtests and chooseSpatialModelOnIC.asrtests, such as for when (i) bound residual term after fitting a correlation term, (ii) all random and residual terms in one dimesion are bound, and (iii) some correlations on both grid dimensions become bound.
+}}
 \section{asremlPlus Version 4.4.38 (2024-08-19}{
   \itemize{
-  \item Add check that spatial variance is not bound whilst the nugget variance is positive when fitting correlation models in addSpatialModel.asrtests, addSpatialModelOnIC.asrtests and chooseSpatialModelOnIC.asrtests. If it is, fix the nugget variance, 
+  \item Add check that spatial variance is not bound whilst the nugget variance is positive when fitting correlation models in addSpatialModel.asrtests, addSpatialModelOnIC.asrtests and chooseSpatialModelOnIC.asrtests. If it is, fix the nugget variance. 
   \item Add the argument \code{nugget.variance} to addSpatialModel.asrtests, addSpatialModelOnIC.asrtests and chooseSpatialModelOnIC.asrtests to control the fitting  of a nuggetvariance when fitting correlation models.
   \item Add \code{trace} argument addSpatialModel.asrtests, addSpatialModelOnIC.asrtests and chooseSpatialModelOnIC.asrtests, primarily for tracking the fitting of correlation models.
   \item Add traps for errors resulting from singular information matrices when fitting correlation models in addSpatialModel.asrtests, addSpatialModelOnIC.asrtests and chooseSpatialModelOnIC.asrtests.

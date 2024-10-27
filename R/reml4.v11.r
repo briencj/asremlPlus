@@ -1037,7 +1037,7 @@ findboundary.asreml <- function(asreml.obj, asr4, asr4.2)
                              component = asreml.obj$vparameters, 
                              stringsAsFactors = FALSE)
     }
-    bound.terms <- allvcomp$bound == "B" | allvcomp$bound == "S"
+    bound.terms <- allvcomp$bound %in% c("B", "S") 
     #                 | bound == "F"
     #bound.terms[grep("?", bound, fixed=TRUE)] <- TRUE
   } else
@@ -1056,7 +1056,7 @@ findboundary.asreml <- function(asreml.obj, asr4, asr4.2)
                                   IClikelihood = "none", trace = FALSE, update = TRUE, 
                                   set.terms = NULL, ignore.suffices = TRUE, 
                                   bounds = "P", initial.values = NA, ...)
-  #Removes any boundary or singular terms from the fit stored in asreml.obj, 
+  #Removes any boundary (B) or singular (S) terms from the fit stored in asreml.obj, 
   #one by one from largest to smallest
   #For a list of bounds codes see setvarianceterms.call
 { 
@@ -1092,8 +1092,10 @@ findboundary.asreml <- function(asreml.obj, asr4, asr4.2)
   reml <- asreml.obj$loglik
   test.summary <- asrtests.obj$test.summary
   wald.tab <- asrtests.obj$wald.tab
-  no.unremoveable <- 0
-  #Loop  until have removed all removable boundary terms
+  
+  #Look for bound terms in random
+  num.unremoveable <- 0
+  #Loop  until have removed all removable boundary terms in random
   repeat
   { 
     #Find boundary terms
@@ -1117,31 +1119,33 @@ findboundary.asreml <- function(asreml.obj, asr4, asr4.2)
                                 old = as.formula(languageEl(call, which = "random")), 
                                 call = call, single.new.term = TRUE)
       ranterms <- getTerms.formula(call$random)
-      ranforms <- lapply(ranterms, function(term) ran <- as.formula(paste("~", 
-                                                                          paste0(term, collapse = " + "))))
+      ranforms <- lapply(ranterms, 
+                         function(term) 
+                           ran <- as.formula(paste("~", 
+                                                   paste0(term, collapse = " + "))))
 
       #Are there any nonremovable terms? i.e. not an R term or not a recognizable G term
       if (!any(sapply(ranforms, 
-                      function(rform, termform) setequal(fac.getinTerm(getTerms.formula(rform), asr4.2 = asr4.2),
-                                                         fac.getinTerm(gsub('\\\"', "'", as.character(termform)[2]), 
-                                                                       asr4.2 = asr4.2)),
-#                      fac.getinTerm(getTerms.formula(termform), asr4.2 = asr4.2)),
-                       termform = termform)))
+                      function(rform, termform) 
+                        setequal(fac.getinTerm(getTerms.formula(rform), asr4.2 = asr4.2),
+                                 fac.getinTerm(gsub('\\\"', "'", as.character(termform)[2]), 
+                                               asr4.2 = asr4.2)),
+                      termform = termform)))
       { 
         vcomp <- vcomp[-k, ]
         k <- k - 1
         nbound <- nbound - 1
         #Store any unremoveable terms
-        if (no.unremoveable == 0)
+        if (num.unremoveable == 0)
         { 
           terms.unremoveable <- term
-          no.unremoveable <- no.unremoveable + 1
+          num.unremoveable <- num.unremoveable + 1
         } else
         { 
           if (!(term %in% terms.unremoveable))
           { 
             terms.unremoveable <- c(terms.unremoveable, term)
-            no.unremoveable <- no.unremoveable + 1
+            num.unremoveable <- num.unremoveable + 1
           }
         }
       }
@@ -1232,7 +1236,7 @@ findboundary.asreml <- function(asreml.obj, asr4, asr4.2)
                                 initial.values = initial.values, ...)
   }
   #Output warning if there are unremovable bound terms
-  if (no.unremoveable > 0)
+  if (num.unremoveable > 0)
   {
     warning("\nIn analysing ", kresp,
             ", cannot remove the following boundary/singular term(s): ", 

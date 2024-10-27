@@ -44,10 +44,8 @@
                        rotateX = FALSE, ngridangles = NULL, 
                        which.rotacriterion = "AIC", nrotacores = 1, 
                        asreml.option = "grp", tpps4mbf.obj = NULL, 
-                       allow.unconverged = FALSE, 
-                       allow.fixedcorrelation = FALSE,
-                       checkboundaryonly = FALSE, update = FALSE, 
-                       trace = FALSE, 
+                       allow.unconverged = TRUE, allow.fixedcorrelation = TRUE,
+                       checkboundaryonly = FALSE, update = TRUE, trace = FALSE, 
                        maxit = 30, IClikelihood = "full", which.IC = "AIC", 
                        return.asrts = "best", ...)}
 \arguments{

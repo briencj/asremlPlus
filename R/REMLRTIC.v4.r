@@ -574,10 +574,12 @@ infoCriteria.asreml <- function(object, DF = NULL,
         incl.ranterms <- convTerms2Vparnames(incl.ranterms)
         #This removes terms that are not in ranterms and results in terms named as in ranterms
         incl.ranterms <- lapply(incl.ranterms, findterm, termlist = ranterms)
-        incl.ranterms <- sapply(incl.ranterms, function(term, ranterms) ranterms[term], ranterms = ranterms)
-        if (!all(is.null(incl.ranterms)))
+        incl.ranterms <- sapply(incl.ranterms, function(term, ranterms) ranterms[term], 
+                                ranterms = ranterms)
+        if (!is.allnull(incl.ranterms))
           if (any(is.na(match(incl.ranterms, ranterms))))
-            warning(paste("The following terms are not amongst the variance parameters and will be ignored: ", 
+            warning(paste("The following terms are not amongst the variance parameters ",
+                          "and will be ignored: ", 
                           paste(incl.ranterms[is.na(match(incl.ranterms, ranterms))], 
                                 collapse = ", "), sep = ""))
         

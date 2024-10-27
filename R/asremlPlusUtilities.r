@@ -1,21 +1,40 @@
-.asremlPlusEnv <- new.env()
 #Set up allowed specials
-corr.specs <- c("id","ar1", "ar2", "ar3", "sar","sar2",
-                "ma1", "ma2", "arma", "cor", "corb", "corg",
-                "exp", "gau", "lvr", "iexp", "igau", "ieuc", 
-                "sph", "circ", "aexp", "agau")
-var.specs <- c("diag", "us", "ante", "chol", "sfa", 
+id.funcs <- c("", "id", "idv", "idh")
+tseries.funcs <- c("ar1", "ar2", "ar3", "sar","sar2",
+                   "ma1", "ma2", "arma", "cor", "corb", "corg")
+tseries.funcs <- c(tseries.funcs, 
+                   sapply(tseries.funcs, function(f) paste0(f, c("v","h"))))
+met.funcs <- c("exp", "gau", "lvr")
+met.funcs <- c(met.funcs, sapply(met.funcs, function(f) paste0(f, c("v","h"))))
+unimpl.funcs <- c("iexp", "igau", "ieuc", "sph", "cir", "aexp", "agau", "mtrn")
+unimpl.funcs <- c(unimpl.funcs, sapply(unimpl.funcs, function(f) paste0(f, c("v","h"))))
+var.funcs <- c("diag", "us", "ante", "chol", "sfa", 
                "fa", "facv", "rr", "vm", "dsum")
-mod.specs <- c("and","at", "C", "con", "dev", "gpf", "grp", 
+mod.funcs <- c("and","at", "C", "con", "dev", "gpf", "grp", 
                "leg", "lin", "ma", "mbf", "pol", "pow", 
                "sbs", "spl", "uni")
-all.specs <- c(corr.specs, paste0(corr.specs,"v"), 
-                  paste0(corr.specs,"h"), var.specs,
-                  mod.specs)
-assign("corr.specials",  corr.specs, envir=.asremlPlusEnv)
-assign("var.specials",  var.specs, envir=.asremlPlusEnv)
-assign("mod.specials",  mod.specs, envir=.asremlPlusEnv)
-assign("all.specials",  all.specs, envir=.asremlPlusEnv)
+gen.funcs <- "str"
+
+all.funcs <- c(id.funcs, tseries.funcs, met.funcs, unimpl.funcs, 
+               var.funcs, mod.funcs, gen.funcs)
+#Set up .asremlPlusEnv
+.asremlPlusEnv <- new.env()
+assign("id.specials",  id.funcs, envir=.asremlPlusEnv)
+assign("tseries.specials",  tseries.funcs, envir=.asremlPlusEnv)
+assign("met.specials",  met.funcs, envir=.asremlPlusEnv)
+assign("unimpl.specials",  unimpl.funcs, envir=.asremlPlusEnv)
+assign("corr.specials",  c(tseries.funcs,met.funcs,unimpl.funcs), 
+       envir=.asremlPlusEnv)
+assign("var.specials",  var.funcs, envir=.asremlPlusEnv)
+assign("mod.specials",  mod.funcs, envir=.asremlPlusEnv)
+assign("all.specials",  all.funcs, envir=.asremlPlusEnv)
+
+#A function to access the special lists in .asremlPlusEnv
+get.specials <- function(which.specials)
+{ 
+  specs <- get(which.specials, envir = getFromNamespace(".asremlPlusEnv", "asremlPlus"))
+  return(specs)
+}
 
 "check.arg.values" <- function(arg.val, options)
   #Function to check that arg.val is one of the allowed values
@@ -77,7 +96,7 @@ isFixedCorrelOK.asreml <- function(asreml.obj, allow.fixedcorrelation = TRUE, ..
     if (asr4.2)
     {
       corrs <- names(asreml.obj$vparameters.type)[asreml.obj$vparameters.type 
-                                                  %in% c("R", "P")]
+                                                  %in% c("R", "P", "C")]
       if (length(corrs) > 0) #have a correlation
       {
         corrs <- asreml.obj$vparameters.con[names(asreml.obj$vparameters.con) 
@@ -86,7 +105,7 @@ isFixedCorrelOK.asreml <- function(asreml.obj, allow.fixedcorrelation = TRUE, ..
     }else #not 4.2
     {
       corrs <- names(vpt.char(asreml.obj))[vpt.char(asreml.obj) 
-                                           %in% c("R", "P")]
+                                           %in% c("R", "P", "C")]
       if (length(corrs) > 0) #have a correlation
       {
         corrs <- vpc.char(asreml.obj)[names(vpc.char(asreml.obj)) 
@@ -381,8 +400,8 @@ checkNamesInData <- function(Names, data)
 "rmTermDescription" <- function(term)
 { 
   #Remove description, if there is one, from term in an asreml termlist
-  if (length(grep("!", term, fixed=TRUE))!=0) 
-    term <- (strsplit(term, "!", fixed=TRUE) )[[1]][1]
+  if (length(grep("\\!", term))!=0) 
+    term <- (strsplit(term, "\\!") )[[1]][1]
   return(term)
 }
 
@@ -399,6 +418,8 @@ checkNamesInData <- function(Names, data)
 }
 
 #So far, this function only needs to deal with str terms
+#
+# terms is a character contains terms from a model formula (using say getTerms.formula)
 "convTerms2Vparnames" <- function(terms)
 {
   
@@ -421,6 +442,27 @@ checkNamesInData <- function(Names, data)
   }
   
   return(terms)
+}
+
+#Function to convert a term, usually from a formula, to the factor/variables that would 
+#  be in a variance parameter name. It splits the term and, except for at, removes the functions.
+#  
+#term is a text
+convTerm2VparFacs <- function(term, asreml.obj = NULL, asr4.2 = FALSE)
+{
+  comps.term <- fac.getinTerm(term, asreml.obj = asreml.obj, asr4.2 = asr4.2)
+  facs.term <- sapply(comps.term, function(kcomp)
+  {
+    term <- convTerms2Vparnames(term) #Needed for str component
+    if (!any(sapply(c("at", "fa", "rr"), 
+                    function(func, kcomp) grepl(paste0("^", func, "\\("), kcomp), 
+                    kcomp = kcomp)))
+      kcomp <- fac.getinTerm(kcomp, asreml.obj = asreml.obj, 
+                             rmfunction = TRUE, asr4.2 = asr4.2)
+    if (asr4.2) kcomp <- gsub('\\\"', "'", kcomp)
+    return(kcomp)
+  })
+  return(facs.term)
 }
 
 "termsplit" <- function(term)
@@ -496,7 +538,10 @@ checkNamesInData <- function(Names, data)
 }
 
 "fac.getinTerm" <- function(term, asreml.obj = NULL, rmfunction=FALSE, asr4.2 = FALSE)
-  #function to return the set of factors/variables in a term separated by ':"
+#function to return the set of factors/variables in a term stored in a character and 
+#  separated by ':"
+#
+# asreml.obj only needed as an environment in which to evaluate the factors/vars in the term
 { 
   if (length(term) != 1)
     stop("Multiple terms supplied where only one allowed")
@@ -532,7 +577,7 @@ chk4TermInFormula <- function(form, term, asreml.obj)
   #It strips off stuff to the right of an !, provided it is not to the right of  
   #a term starting with R!
 { 
-  if(substr(term, 1, 2) != "R!")  term <- rmTermDescription(term)
+  if(substr(term, 1, 2) != "R!")  term <- rmTermDescription(term) #doesn't occur from 4.2
   vars <- fac.getinTerm(term)
   return(vars)
 }
@@ -544,14 +589,14 @@ chk4TermInFormula <- function(form, term, asreml.obj)
   return(term)
 }
 
+#A function to separate the name of a function and the argument to the function
 "separateFunction" <- function(var)
-  #A function to separate the name of a function and the argument to the function
 { 
-  #Remove description, if there is one, from term in an asreml termlist
-  if (length(grep("(", var, fixed=TRUE))!=0) 
+  #Check for a function detecting if there is a "(" preceded by a letter or a number
+  if (stringr::str_detect(var, "(?<=[:alnum:])\\(")) 
   { 
-    var <- (strsplit(var, "(", fixed=TRUE) )[[1]]
-    var[2] <- (strsplit(var[2], ")", fixed=TRUE) )[[1]][1]
+    var <- (stringr::str_split_1(var, "\\("))
+    var[2] <- (stringr::str_split_1(var[2], "\\)") )[1]
   }
   return(var)
 }
@@ -595,7 +640,7 @@ getVpars <- function(asreml.obj, asr4.2)
 { 
   sys.funcs <- c("lin","pol","spl","dev")
   #Does it have a function
-  if (length(grep("(", var, fixed=TRUE))!=0)
+  if (stringr::str_detect(var, "(?<=[:alnum:])\\("))
   { 
     var.comp <- separateFunction(var)
     k <- match(var.comp[1], sys.funcs, nomatch = 0)
