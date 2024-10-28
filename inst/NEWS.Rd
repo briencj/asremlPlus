@@ -1,5 +1,9 @@
 \name{news}
 \title{News for Package asremlPlus}
+\section{asremlPlus Version 4.4.40 (2024-10-27}{
+  \itemize{
+  \item Fix minor issue with building for CRAN.
+}}
 \section{asremlPlus Version 4.4.39 (2024-10-26}{
   \itemize{
   \item Fixed a bug in pickLSDstatistic that occurs when there is only one prediction for a level of a \code{factor.combination} specified using the argument \code{LSDby}.

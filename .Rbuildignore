@@ -3,6 +3,7 @@
 ^.tests$
 ^.archive$
 ^.bugs$
+^.github$
 ^.vignettes$
 ^CRANlogs$
 ^README.*$
