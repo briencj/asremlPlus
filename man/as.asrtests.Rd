@@ -64,7 +64,7 @@ as.asrtests(asreml.obj, wald.tab = NULL, test.summary = NULL,
  \item{\dots}{further arguments passed to \code{wald.asreml} and
             \code{\link{recalcWaldTab}}.}
 }
-\value{An object of S3-class \code{asrtests}.}
+\value{An object of S3-class \code{asrtests} that also inherits S3-class \code{list}.}
 
 \references{Kenward, M. G., & Roger, J. H. (1997). Small sample inference for fixed effects from restricted maximum likelihood. 
             \emph{Biometrics}, \bold{53}, 983-997.}

@@ -77,7 +77,7 @@ test_that("HEB25_estimateV_asreml42", {
     testthat::expect_true(all.equal(R.calc, V))
   }
 
-  ### This had a bug, but seems to be working - it is now converging - now it is not
+  ### This had a bug, but seems to be working - it is now converging
   testthat::expect_warning(
     asreml.obj <- asreml(tch ~ Control/Check, 
                          random = ~ Col + Row + New,
@@ -85,7 +85,7 @@ test_that("HEB25_estimateV_asreml42", {
                          data=site2, 
                          na.action=na.method(y="include", x="include")),
     regexp = "Some components changed by more than 1% on the last iteration")
-  testthat::expect_false(asreml.obj$converge)
+  testthat::expect_true(asreml.obj$converge)
   testthat::expect_equal(nrow(summary(asreml.obj)$varcomp), 8)
   colcorr <- asreml.obj$vparameters[grepl("Col!cor", names(asreml.obj$vparameters))]
   rowcorrs <- asreml.obj$vparameters[grepl("Row!cor", names(asreml.obj$vparameters))]
@@ -96,10 +96,11 @@ test_that("HEB25_estimateV_asreml42", {
   ### Random model with New + cor - test G estimated using estimateV
   for (func in names(models))
   {
-    ranform <- as.formula(paste("~ New + ar1(Col):", func, "(Row)", sep = ""))
+    site2 <- site2 #needed to make site2 local to the for loop
+    ranform <- as.formula(paste0("~ New + ar1(Col):", func, "(Row)"))
     asreml.obj <- asreml(tch ~ Control/Check, 
                          random = ranform, 
-                         data=site2, maxit = 30,
+                         data=tmp, maxit = 30,
                          na.action=na.method(y="include", x="include"))
     colcorr <- asreml.obj$vparameters[grepl("Col!cor", names(asreml.obj$vparameters))]
     

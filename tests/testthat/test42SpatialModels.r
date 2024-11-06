@@ -965,7 +965,7 @@ test_that("Wheat76_corr_models_asreml42", {
                       lapply(spatial.asrts, 
                              function(asrt) infoCriteria(asrt$asreml.obj, IClikelihood = "full")))
   
-  testthat::expect_true(all.equal(infoEach$AIC, c(1714.861, 1653.114), tolerance = 1e-05))
+  testthat::expect_true(all.equal(infoEach$AIC, c(1696.200, 1653.114), tolerance = 1e-05))
 
   #Check trap for all id 
   testthat::expect_error(
@@ -995,8 +995,8 @@ test_that("Wheat76_corr_models_asreml42", {
                                       row.factor = "Row", col.factor = "Column",
                                       corr.funcs = c("ar1", "id"))
   info <- infoCriteria(current.asrt$asreml.obj, IClikelihood = "full")
-  testthat::expect_equal(info$varDF, 5)
-  testthat::expect_lt(abs(info$AIC - 1709.001), 0.10)
+  testthat::expect_equal(info$varDF, 4)
+  testthat::expect_lt(abs(info$AIC - 1706.768), 0.10)
   testthat::expect_equal(names(current.asrt$asreml.obj$vparameters), 
                          c("Row", "Column", "Column:Row", "Column:Row!Row!cor", "units!R"))
   
@@ -1784,7 +1784,7 @@ test_that("HEB25_heterovar_asreml42", {
                            allow.fixedcorrelation = FALSE, 
                            asreml.option = "grp", return.asrts = "all")
   testthat::expect_true(all(abs(HEB25.spatialLM.asrts$spatial.IC$AIC - 
-                                  c(525.5955, 493.2440, 470.8116, 473.2412, 479.7448) < 1e-03)))
+                                  c(525.5955, 489.5259, 470.8116, 473.2412, 479.7448) < 1e-03)))
   testthat::expect_equal(names(HEB25.spatialLM.asrts$asrts), 
                          c("corr",  "TPNCSS", "TPPSC2",  "TPPSL1"))
   summ <- summary(HEB25.spatialLM.asrts$asrts$TPPSC2$asreml.obj)$varcomp
@@ -1975,7 +1975,7 @@ test_that("HEB25_heterovar_asreml42", {
                            allow.fixedcorrelation = FALSE,
                            asreml.option = "grp", return.asrts = "all")
   testthat::expect_true(all(abs(HEB25.spatialLP.ds.asrts$spatial.IC$AIC - 
-                                  c(525.5954, 480.4911, 471.5088, 472.8214, 476.6324) < 0.1)))
+                                  c(525.5954, 507.0952, 471.5088, 472.8214, 476.6324) < 0.1)))
   testthat::expect_equal(names(HEB25.spatialLP.ds.asrts$asrts), 
                          c("corr",  "TPNCSS", "TPPSC2",  "TPPSL1"))
   #Check TPPSC2

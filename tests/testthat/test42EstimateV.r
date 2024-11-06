@@ -440,10 +440,10 @@ test_that("corr_random_barley_asreml42", {
 
   #Test of estimate V
   G <- estimateV(asreml.obj, which.matrix = "G")
-  G.g <- asreml.obj$vparameters[1]*kronecker(mat.ar1(asreml.obj$vparameters[2], 34), 
-                                             mat.ar1(asreml.obj$vparameters[3], 16))
+  G.g <- asreml.obj$vparameters[1]*kronecker(mat.ar1(asreml.obj$vparameters[2], 16), 
+                                             mat.ar1(asreml.obj$vparameters[3], 34))
   Z <- as.matrix(asreml.obj$design[,276:length(colnames(asreml.obj$design))])
   V.g <- asreml.obj$sigma2 *(Z %*% G.g %*% t(Z))
-  testthat::expect_true(all.equal(V.g, G))
+  testthat::expect_true(all.equal(V.g, G, check.attributes = FALSE))
 })
 

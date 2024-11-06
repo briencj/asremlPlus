@@ -17,17 +17,17 @@ test_that("predict_Intercept_asreml42", {
   current.asrt <- as.asrtests(m1.asr)
   
   #Test for Intercept predict
-  Int.pred <- predict(m1.asr, classify="(Intercept)")$pvals
+  Int.pred <- predict(m1.asr, classify="Intercept")$pvals
   testthat::expect_equal(nrow(Int.pred), 1)
   testthat::expect_true(abs( Int.pred$predicted.value - 103.9722) < 1e-04)
-  Int.diffs <- predictPlus(m1.asr, classify="(Intercept)")
+  Int.diffs <- predictPlus(m1.asr, classify="Intercept")
   testthat::expect_equal(length(Int.diffs),7)
   testthat::expect_equal(nrow(Int.diffs$predictions), 1)
   testthat::expect_true(abs( Int.diffs$predictions$predicted.value - 103.9722) < 1e-04)
   
   xtitl <- "Overall mean"
   names(xtitl) <- "Intercept"
-  testthat::expect_silent(plotPredictions(classify="(Intercept)", y = "predicted.value", 
+  testthat::expect_silent(plotPredictions(classify="Intercept", y = "predicted.value", 
                   data = Int.diffs$predictions, 
                   y.title = "Yield", titles = xtitl,
                   error.intervals = "Conf"))

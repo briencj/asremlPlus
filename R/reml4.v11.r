@@ -9,14 +9,21 @@
   return(p[k])
 }
 
-"getTestEntry.asrtests" <- function(asrtests.obj, label, ...)
+"getTestEntry.asrtests" <- function(asrtests.obj, label, error.absent = TRUE, ...)
 {
   k <- tail(which(as.character(asrtests.obj$test.summary$terms)==label),1)
   #k <- tail(findterm(label, as.character(asrtests.obj$test.summary$terms)),1)
   if (length(k) == 0 || k == 0)
-    stop(label, " not found in test.summary of supplied asrtests.obj")
-  entry <- asrtests.obj$test.summary[k,]
-  class(entry) <- "data.frame"
+  {
+    if (error.absent)
+      stop(label, " not found in test.summary of supplied asrtests.obj")
+    else 
+      entry <- NULL
+  } else
+  { 
+    entry <- asrtests.obj$test.summary[k,]
+    class(entry) <- "data.frame"
+  }
   return(entry)
 }
 
@@ -651,8 +658,8 @@ atLevelsMatch <- function(new, old, call, single.new.term = FALSE, always.levels
       kresp <- asreml.obj$formulae$fixed[[2]]
     else
       kresp <- asreml.obj$fixed.formula[[2]]
-    warning(paste("The estimated value of one or more correlations in the supplied asreml fit for", kresp,
-                  "is bound or fixed and allow.fixedcorrelation is FALSE"))
+    warning(paste("The estimated value of one or more correlations in the supplied asreml fit for", 
+                  kresp, "is bound or fixed and allow.fixedcorrelation is FALSE"))
   }
   
   if (is.null(call <- asreml.obj$call) && 
@@ -674,6 +681,10 @@ atLevelsMatch <- function(new, old, call, single.new.term = FALSE, always.levels
     if (!is.null(languageEl(call, which = "rcov")))
       languageEl(call, which = "rcov") <- eval(languageEl(call, which = "rcov"))
   }
+  
+  #Make sure that call has current value of update
+  languageEl(call, which = "update") <- update
+  
   
   #Now update formulae
   if (!missing(fixed.)) 
@@ -1328,8 +1339,10 @@ findboundary.asreml <- function(asreml.obj, asr4, asr4.2)
   else
     kresp <- asrtests.obj$asreml.obj$fixed.formula[[2]]
   #Check for fixed correlations in supplied asrtests.obj
-  if (!isFixedCorrelOK.asreml(asrtests.obj$asreml.obj, allow.fixedcorrelation = allow.fixedcorrelation))
-    warning(paste("The estimated value of one or more correlations in the supplied asreml fit for", kresp,
+  if (!isFixedCorrelOK.asreml(asrtests.obj$asreml.obj, 
+                              allow.fixedcorrelation = allow.fixedcorrelation))
+    warning(paste("The estimated value of one or more correlations in the supplied asreml fit for", 
+                  kresp,
                   "is bound or fixed and allow.fixedcorrelation is FALSE"))
   all.terms <- c(dropFixed, addFixed, dropRandom, addRandom, newResidual,set.terms)
   if (is.allnull(all.terms))

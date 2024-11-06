@@ -1,5 +1,13 @@
 \name{news}
 \title{News for Package asremlPlus}
+\section{asremlPlus Version 4.4.41 (2024-11-06}{
+  \itemize{
+  \item Tweak the fitting of correlation models when using for addSpatialModel.asrtests, addSpatialModelOnIC.asrtests and chooseSpatialModelOnIC.asrtests and there are bound variance parameters.
+  \item Add the response name to the titles of the objects printed using print.asrtests and print.test.summary.
+  \item Add \code{absent.error} argument to function getTestEntry.asrtests to control whether an error occurs if the absence of \code{label} in the \code{test.summary} results in an error.
+  \item Add class \code{list} to \code{asrtests} objects. This means that the function within will now work with \code{asrtests} objects.
+  \item Revise the Ladybird vignettes to include the exploration of various choices of LSD values.
+}}
 \section{asremlPlus Version 4.4.40 (2024-10-27}{
   \itemize{
   \item Fix minor issue with building for CRAN.

@@ -1,3 +1,5 @@
+#### The functions in this file are documented utility functions for manipulating asremlPlus objects  
+
 "as.asrtests" <- function(asreml.obj, wald.tab = NULL, test.summary = NULL, 
                           denDF = "numeric", label = NULL, 
                           IClikelihood = "none", bound.exclusions = c("F","B","S","C"), 
@@ -5,10 +7,10 @@
 { 
   
   # Get original data name.
-  orig.name <- asreml.obj$call$data                                             ## add VSNi 14/03/2024
+  orig.name <- asreml.obj$call$data                                       ## add VSNi 14/03/2024
   
   # Expose dataset to avoid conflicts.
-  asreml.obj$call$data <- str2lang("asreml.obj$mf")                             ## add VSNi 14/03/2024
+  asreml.obj$call$data <- str2lang("asreml.obj$mf")                       ## add VSNi 14/03/2024
   
   #Check that have a valid object of class asreml
   validasr <- validAsreml(asreml.obj)  
@@ -65,11 +67,11 @@
   }
   
   # Add original name back to asreml.obj.
-  asreml.obj$call$data <- orig.name                                             ## add VSNi 14/03/2024
+  asreml.obj$call$data <- orig.name                                     ## add VSNi 14/03/2024
   
   #Put together the asrtests.obj, with updated wald tab
   test <- list(asreml.obj = asreml.obj, wald.tab=wald.tab, test.summary = test.summary)
-  class(test) <- "asrtests"
+  class(test) <- c("asrtests", "list")
   test$wald.tab <- recalcWaldTab(test, ...)
   
   #Reset trace to default
@@ -249,6 +251,22 @@ setOldClass("asrtests")
   return(test.summary)
 }
 
+#Function to revert to a previous model fit, transferring the test.summary to the last 
+#asrtests object, with an extra line added to the test summary using terms and the action 
+#arguments.
+#
+#Additional arguments to addtoTestSummary can be supplied to revert2previousFit using the ellipsis.
+#If asrtests.prev = NULL, then only a line is added to asrtests.last (same as directly using 
+#addtoTestSummary)
+revert2previousFit <- function(asrtests.last, asrtests.prev = NULL, terms, action, DF = NA, ...)
+{
+  test.summary <- addtoTestSummary(asrtests.last$test.summary, terms = terms, 
+                                   DF = DF, action = action)
+  if (!is.null(asrtests.prev)) asrtests.last <- asrtests.prev
+  asrtests.last$test.summary <- test.summary
+  return(asrtests.last)
+}
+
 "chkWald" <- function(wald.tab)
 {
   if (!is.null(wald.tab)) 
@@ -280,7 +298,7 @@ setOldClass("asrtests")
 }
 
 "print.test.summary" <- function(x,  which.print = c("title", "table"), 
-                                 omit.columns = NULL, ...)
+                                 omit.columns = NULL, response = NULL, ...)
 {
   options <- c("title", "table", "all")
   opt <- options[unlist(lapply(which.print, check.arg.values, options=options))]
@@ -299,7 +317,10 @@ setOldClass("asrtests")
   
   if (any(c("title", "all") %in% opt))
   {
-    cat("\n\n####  Sequence of model investigations \n\n")
+    if (is.null(response)) 
+      cat("\n\n####  Sequence of model investigations \n\n")
+    else
+      cat("\n\n####  Sequence of model investigations for", response, "\n\n")
     if (any(c("AIC", "BIC") %in% names(x)))
       cat("(If a row has NA for p but not denDF, DF and denDF relate to fixed and variance parameter numbers)\n\n")
   }
@@ -387,6 +408,8 @@ setOldClass("asrtests")
     opt <- unique(opt)
   }
   
+  kresp <- x$asreml.obj$formulae$fixed[[2]]
+  
   #print summary of asreml.obj
   if (any(c("asremlsummary", "all") %in% opt))
     print(summary(x$asreml.obj), ...)
@@ -394,7 +417,7 @@ setOldClass("asrtests")
   #print vparameter summary of asreml.obj
   if (any(c("vparametersummary", "key") %in% opt))
   {
-    cat("\n\n####  Summary of the fitted variance parameters\n\n")
+    cat("\n\n####  Summary of the fitted variance parameters for", kresp, "\n\n")
     print(summary(x$asreml.obj)$varcomp, ...)
   }
   
@@ -404,12 +427,11 @@ setOldClass("asrtests")
   
   #print test.summary
   if (any(c("testsummary", "key", "all") %in% opt))
-    print.test.summary(x$test.summary, which.print = "all", ...)
+    print.test.summary(x$test.summary, which.print = "all", 
+                       response = kresp, ...)
   
   invisible()
 }
-
-#### The functions in this file are documented utility functions for manipulating asremlPlus objects  
 
 #This function identifies the names of the rows or columns that correspond to the effects for term.
 #The argument `use` identifies which component of an asreml.obj is to be used to obtain the effect names.

@@ -6,7 +6,7 @@
   in the supplied \code{\link{asrtests.object}} and extracts the line for it. It only matches 
   the last occurrence of \code{label}.}
 \usage{
-\method{getTestEntry}{asrtests}(asrtests.obj, label, ...)}
+\method{getTestEntry}{asrtests}(asrtests.obj, label, error.absent = TRUE, ...)}
 \arguments{
  \item{asrtests.obj}{An \code{\link{asrtests.object}} containing the components (i) \code{asreml.obj}, 
        (ii) \code{wald.tab}, and (iii) \code{test.summary}.}
@@ -17,10 +17,11 @@
               For \code{\link{changeModelOnIC.asrtests}}, the \code{label} will be the value of 
               the \code{label} argument. Other arguments will be relevant for other 
               test and change functions.}
+ \item{error.absent}{A \code{logical} indicating whether the absence of the supplied \code{label} is to result in an error. If set to \code{FALSE}, \code{NULL} is returned.}
  \item{\dots}{provision for passing arguments to functions called internally - 
             not used at present.}
 }
-\value{A one-line \code{data.frame} containing the entry.
+\value{A one-line \code{data.frame} containing the entry or, \code{error.absent} is \code{NULL},  \code{NULL}.
 }
 
 \author{Chris Brien}
