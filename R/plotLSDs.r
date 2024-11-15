@@ -138,11 +138,11 @@
 
   #Convert LSDs to a data.frame
   if (tri.opt == "upper") 
-    object[lower.tri(LSDs)] <- NA
+    object[lower.tri(LSDs)] <- NA_real_
   else 
   {
     if (tri.opt == "lower")
-      LSDs[upper.tri(LSDs)] <- NA
+      LSDs[upper.tri(LSDs)] <- NA_real_
   }
   LSD.dat <- within(reshape2::melt(LSDs), 
                     { 
@@ -436,7 +436,7 @@
         LSDresults[kcells, kcells] <- as.vector(LSDapprox[rownames(LSDapprox) == lev,1])
       }
     }
-    diag(LSDresults) <- NA
+    diag(LSDresults) <- NA_real_
     sig.approx <- abs(object$differences) >= LSDresults
   } else
   {
@@ -461,7 +461,7 @@
                         }, 
                         lims.vals = lims.vals, lims = lims, simplify = FALSE)
     sig.approx <- do.call(rbind, sig.approx)
-    diag(sig.approx) <- NA
+    diag(sig.approx) <- NA_real_
     rownames(sig.approx) <- colnames(sig.approx) <- rownames(object$p.differences)
     LSDresults <- sig.approx
   }
@@ -476,11 +476,11 @@
   
   #Convert LSDresults to a data.frame
   if (tri.opt == "upper") 
-    object[lower.tri(LSDresults)] <- NA
+    object[lower.tri(LSDresults)] <- NA_real_
   else 
   {
     if (tri.opt == "lower")
-      LSDresults[upper.tri(LSDresults)] <- NA
+      LSDresults[upper.tri(LSDresults)] <- NA_real_
   }
   LSDres.dat <- within(reshape2::melt(LSDresults), 
                        { 

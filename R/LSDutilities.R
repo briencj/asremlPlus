@@ -157,7 +157,7 @@ checkLSD <- function(alldiffs.obj)
   if (!"assignedLSD" %in% names(alldiffs.obj$LSD))
   { 
     alldiffs.obj$LSD$assignedLSD <- alldiffs.obj$LSD$meanLSD
-    alldiffs.obj$LSD$accuracyLSD <- NA
+    alldiffs.obj$LSD$accuracyLSD <- NA_real_
   }
   return(alldiffs.obj)
 }
@@ -204,7 +204,7 @@ rm.nazero <- function(ksed, kdif = NULL, retain.zeroLSDs = FALSE, zero.tolerance
 {
   #Determine the accuracy of the assigned LSD 
   if (is.na(assignedLSD) || all(is.na(ksed)))
-    accuracyLSD <- NA
+    accuracyLSD <- NA_real_
   else
   {
     if (LSDaccuracy == "maxAbsDeviation")
@@ -250,10 +250,10 @@ falseSignif <- function(ksed, kdif, assignedLSD, t.value)
                       minLSD = t.value * min(ksed),
                       meanLSD = t.value * sqrt(mean(ksed*ksed)),
                       maxLSD = t.value * max(ksed),
-                      assignedLSD = NA,
-                      accuracyLSD = NA,
-                      falsePos = NA,
-                      falseNeg = NA)
+                      assignedLSD = NA_real_,
+                      accuracyLSD = NA_real_,
+                      falsePos = NA_real_,
+                      falseNeg = NA_real_)
   #Set assigned LSD for use with halfLSIs
   if (LSDstatistic == "median")
     stats$assignedLSD <- t.value * median(ksed)
@@ -314,7 +314,7 @@ sliceLSDs <- function(alldiffs.obj, by, t.value, LSDstatistic = "mean", LSDaccur
     t.value = qt(1-alpha/2, denom.df)
     sed <- alldiffs.obj$sed
     dif <- alldiffs.obj$differences
-    diag(dif) <- NA
+    diag(dif) <- NA_real_
     
     #Get the LSDs
     fac.comb <- fac.LSDcombs.alldiffs(alldiffs.obj, by)
@@ -336,12 +336,12 @@ sliceLSDs <- function(alldiffs.obj, by, t.value, LSDstatistic = "mean", LSDaccur
                        if (which.stats == "all")
                        {
                          stats <- c(0, rep(t.value * sqrt(2) * 
-                                          alldiffs.obj$predictions$standard.error[krows], times = 4), NA, NA, NA)
+                                          alldiffs.obj$predictions$standard.error[krows], times = 4), NA_real_, NA_real_, NA_real_)
                          names(stats) <- c("c", "minLSD", "meanLSD", "maxLSD", "assignedLSD", "accuracyLSD", 
                                            "false.pos", "false.neg")
                        } else
                          if (which.stats == "evalLSD")
-                           stats <- NA
+                           stats <- NA_real_
                          else
                            stop("Unknown which.stats option in SliceLSDs")
                      } else  #have several predictions
@@ -420,7 +420,7 @@ sliceAccs <- function(alldiffs.obj, by, LSDstatistic = "mean", LSDaccuracy = "ma
                     {
                       warning(paste("LSD calculated for a single prediction",
                                     "- applies to two independent predictions with the same standard error"))
-                      acc <- NA
+                      acc <- NA_real_
                       names(acc) <- lev
                     } else
                     {
@@ -568,7 +568,7 @@ sliceAll <- function(alldiffs.obj, by, t.value, LSDaccuracy = "maxAbsDeviation",
                                      times = length(LSDstat.labs)))
                         names(stats) <- c("c", LSDstat.labs)
                         stats <- as.data.frame(as.list(stats))
-                        acc <- c(0, rep(NA, times = length(LSDstat.labs)))
+                        acc <- c(0, rep(NA_real_, times = length(LSDstat.labs)))
                         names(acc) <- c("c", LSDstat.labs)
                         acc <- as.data.frame(as.list(acc))
                         fneg <- fpos <- acc

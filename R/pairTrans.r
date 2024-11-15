@@ -8,7 +8,7 @@ FiellerRatioCI <- function(a, b, V, t)
   LCL <- (1/(1-g))*(theta- g*V[1,2]/V[2,2] - t/b * se)
   UCL <- (1/(1-g))*(theta- g*V[1,2]/V[2,2] + t/b * se)
   if (!is.na(UCL) & !is.na(LCL) & UCL < LCL) {
-    UCL <- NA; LCL <- NA
+    UCL <- NA_real_; LCL <- NA_real_
   }
   return(list(pred.ratio=theta, upper.Confidence.limit = UCL, lower.Confidence.limit = LCL))
 }
@@ -152,7 +152,7 @@ ratioTransform.alldiffs <- function(alldiffs.obj, ratio.factor,
         ratioCIs <- do.call(rbind, lapply(tmp, function(preds, num.lev, denom.lev, V, t)
         {
           indx.vals <- (lapply(preds[indx], function(x) as.character(x)[1])) #current levels of indx factors
-          ratio.pair <- c(indx.vals, rep(NA,3))
+          ratio.pair <- c(indx.vals, rep(NA_real_,3))
           names(ratio.pair) <- c(indx, "pred.ratio", "upper.Confidence.limit", "lower.Confidence.limit")
           if (all(c(num.lev, denom.lev) %in% preds[[ratio.factor]]))
           {
@@ -169,7 +169,7 @@ ratioTransform.alldiffs <- function(alldiffs.obj, ratio.factor,
         
         rownames(ratioCIs) <- NULL
         names(ratioCIs)[match("pred.ratio", names(ratioCIs))] <- "predicted.value"
-        ratioCIs$standard.error <- NA
+        ratioCIs$standard.error <- NA_real_
         ratioCIs$est.status <- "Estimable"
         ratio.names <- names(ratioCIs)
         n <- match("standard.error", ratio.names)

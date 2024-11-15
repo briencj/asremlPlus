@@ -130,11 +130,11 @@
   classify <- attr(object, which = "classify")
   #Get differences and convert to a data.frame
   if (tri.opt == "upper") 
-    object$p.differences[lower.tri(object$p.differences)] <- NA
+    object$p.differences[lower.tri(object$p.differences)] <- NA_real_
   else 
   {
     if (tri.opt == "lower")
-      object$p.differences[upper.tri(object$p.differences)] <- NA
+      object$p.differences[upper.tri(object$p.differences)] <- NA_real_
   }
   p <- object$p.differences
   p <- within(reshape2::melt(p), 

@@ -271,9 +271,9 @@ setOldClass("predictions.frame")
     if (npred != nrow(backtransforms))
       stop("Backtransforms do not contain the same number of rows as the predictions")
   }
-  #ensure diag of sed is NA
+  #ensure diag of sed is NA_real_
   if (!is.null(sed))
-    diag(sed) <- NA
+    diag(sed) <- NA_real_
 
   p <- list(predictions = predictions, vcov = vcov, 
             differences = differences, p.differences = p.differences, sed = sed, 
@@ -515,7 +515,7 @@ checkClassifyVars.predictions.frame <- function(predictions, classify.names)
                                       "as the predictions"))
     }
   }
-  #ensure diag of sed is NA
+  #ensure diag of sed is NA_real_
   if (!is.null(object$sed))
     if (!all(is.na(diag(object$sed))))
     {
@@ -1865,8 +1865,8 @@ redoErrorIntervals.alldiffs <- function(alldiffs.obj, error.intervals = "Confide
                                                {
                                                  if (alldiffs.obj$LSD$assignedLSD < zero.tolerance)
                                                  {
-                                                   lower.halfLeastSignificant.limit <- NA
-                                                   upper.halfLeastSignificant.limit <- NA
+                                                   lower.halfLeastSignificant.limit <- NA_real_
+                                                   upper.halfLeastSignificant.limit <- NA_real_
                                                  } else
                                                  {
                                                    lower.halfLeastSignificant.limit <-
@@ -1928,8 +1928,8 @@ redoErrorIntervals.alldiffs <- function(alldiffs.obj, error.intervals = "Confide
                                   preds[["predicted.value"]] + 0.5 * preds$assignedLSD
                                 if (any(preds$assignedLSD < zero.tolerance))
                                 {
-                                  lower.halfLeastSignificant.limit[preds$assignedLSD < zero.tolerance] <- NA
-                                  upper.halfLeastSignificant.limit[preds$assignedLSD < zero.tolerance] <- NA
+                                  lower.halfLeastSignificant.limit[preds$assignedLSD < zero.tolerance] <- NA_real_
+                                  upper.halfLeastSignificant.limit[preds$assignedLSD < zero.tolerance] <- NA_real_
                                 } 
                               })
               if (!is.na(accuracy.threshold))
@@ -2166,7 +2166,7 @@ makeSED <- function(alldiffs.obj)
     { 
       if (inestimable.rm)
         alldiffs.obj$sed <- alldiffs.obj$sed[which.estim, which.estim]
-      diag(alldiffs.obj$sed) <- NA
+      diag(alldiffs.obj$sed) <- NA_real_
     }     
     #Reset the other components to NULL
     alldiffs.obj <- makeAlldiffs(predictions = alldiffs.obj$predictions, 
@@ -2545,7 +2545,7 @@ makeSED <- function(alldiffs.obj)
           warning("The column transformed value inserted by asreml is not the same as the column ",
                   "backtransformed prediction obtained using the inverse transform.function")
           ks <- match("standard.error", names(backtransforms))
-          backtransforms[[ks]] <- NA
+          backtransforms[[ks]] <- NA_real_
         } else #have duplicate columns and approx.se
         {
           #remove columns from predictions and back transforms
@@ -2568,7 +2568,7 @@ makeSED <- function(alldiffs.obj)
           if (!is.null(approx.se))
             backtransforms$standard.error <- approx.se
           else
-            backtransforms$standard.error <- NA
+            backtransforms$standard.error <- NA_real_
         }
       }
     } else
@@ -2578,7 +2578,7 @@ makeSED <- function(alldiffs.obj)
         if (transform.power != 1)
         {
           ks <- match("standard.error", names(backtransforms))
-          backtransforms[[ks]] <- NA
+          backtransforms[[ks]] <- NA_real_
         }
         if (scale != 1)
         {
@@ -2878,7 +2878,7 @@ makeSED <- function(alldiffs.obj)
         lintrans.sed <- sqrt(lintrans.sed)  
       } else
       {
-        lintrans$standard.error <- NA
+        lintrans$standard.error <- NA_real_
         lintrans.sed <- NULL  
       }
       
@@ -2946,7 +2946,7 @@ makeSED <- function(alldiffs.obj)
         lintrans.sed <- sqrt(lintrans.sed)  
       } else
       {
-        lintrans$standard.error <- NA
+        lintrans$standard.error <- NA_real_
         lintrans.sed <- NULL  
       }
       

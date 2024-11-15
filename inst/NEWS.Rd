@@ -1,5 +1,9 @@
 \name{news}
 \title{News for Package asremlPlus}
+\section{asremlPlus Version 4.4.42 (2024-11-15}{
+  \itemize{
+  \item Make sure that numerics in the components of an alldiffs objects are set to \code{NA_real_} when they are missing.
+}}
 \section{asremlPlus Version 4.4.41 (2024-11-06}{
   \itemize{
   \item Tweak the fitting of correlation models when using for addSpatialModel.asrtests, addSpatialModelOnIC.asrtests and chooseSpatialModelOnIC.asrtests and there are bound variance parameters.

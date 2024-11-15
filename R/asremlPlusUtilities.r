@@ -808,7 +808,7 @@ vpt.char <- function (object)
     }
     attr(geninv.x, which = "rank") <- rank.x
   } else
-    geninv.x <- NA
+    geninv.x <- NA_real_
   geninv.x
 }
 
