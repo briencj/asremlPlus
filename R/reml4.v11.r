@@ -1,19 +1,45 @@
 
+"findEntry.asrtests" <- function(asrtests.obj, label, ...)
+{
+  tests <- asrtests.obj$test.summary
+  #Assume if label has spaces then cannot be just a term that is factors separated by colons. 
+  #Thus labels that are a combination of text and terms or terms with spaces (e.g. str and 
+  #  at) must match the label exactly. 
+  #  - the problem is to identify terms and separate them from ordinary text when there are 
+  #    spaces in label.
+  if (grepl(" ", label)) 
+    k <- tail(which(as.character(tests$terms)==label),1)
+  else #no spaces in label
+  {  
+    k <- 0
+    nospace.terms <- !grepl(" ",as.character(asrtests.obj$test.summary$terms))
+    if (any(nospace.terms))
+    {  
+      tests <- tests[nospace.terms,]
+      #findterm allows for differences in factor order between label and tests$terms
+      k <- tail(findterm(label, as.character(tests$terms)),1) 
+    }
+  }
+  if (length(k) == 0 || k == 0)
+    entry <- NULL
+  else
+    entry <- tests[k,]
+  return(entry)
+}
+
 "getTestPvalue.asrtests" <- function(asrtests.obj, label, ...)
 {
-  #  k <- tail(which(as.character(asrtests.obj$test.summary$terms)==label),1)
-  k <- tail(findterm(label, as.character(asrtests.obj$test.summary$terms)),1)
-  if (length(k) == 0 || k == 0)
-    stop(label, " not found in test.summary of supplied asrtests.obj")
-  p <- asrtests.obj$test.summary$p
-  return(p[k])
+  entry <- findEntry.asrtests(asrtests.obj, label, ...)
+  if (is.allnull(entry))
+      stop(label, " not found in test.summary of supplied asrtests.obj")
+  p <- entry$p
+  return(p)
 }
 
 "getTestEntry.asrtests" <- function(asrtests.obj, label, error.absent = TRUE, ...)
 {
-  k <- tail(which(as.character(asrtests.obj$test.summary$terms)==label),1)
-  #k <- tail(findterm(label, as.character(asrtests.obj$test.summary$terms)),1)
-  if (length(k) == 0 || k == 0)
+  entry <- findEntry.asrtests(asrtests.obj, label, ...)
+  if (is.allnull(entry))
   {
     if (error.absent)
       stop(label, " not found in test.summary of supplied asrtests.obj")
@@ -21,12 +47,10 @@
       entry <- NULL
   } else
   { 
-    entry <- asrtests.obj$test.summary[k,]
     class(entry) <- "data.frame"
   }
   return(entry)
 }
-
 
 "recalcWaldTab.asrtests" <- function(asrtests.obj, recalc.wald = FALSE, 
                                      denDF="numeric", dDF.na = "none", 

@@ -496,7 +496,7 @@ convTerm2VparFacs <- function(term, asreml.obj = NULL, asr4.2 = FALSE)
   { 
     if (rmDescription)
     { 
-      #Remove description if not an ASR3 residual
+      #Remove  description if not an ASR3 residual
       if (substr(term, 1, 2) != "R!")  term <- rmTermDescription(term)
       k <- which(sapply(termlist, 
                         FUN=function(kterm, term)
@@ -510,8 +510,7 @@ convTerm2VparFacs <- function(term, asreml.obj = NULL, asr4.2 = FALSE)
                             haveterm <- term == kterm
                         }, 
                         term=term))
-    }
-    else
+    } else
     { 
       #ASR4 Residual term - allow for description after !R - not sure if this occurs
       #Perhaps !R is indicative of a residual variance

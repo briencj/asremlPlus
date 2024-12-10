@@ -1,5 +1,9 @@
 \name{news}
 \title{News for Package asremlPlus}
+\section{asremlPlus Version 4.4.43 (2024-12-10}{
+  \itemize{
+  \item Fix bug in getTestPvalue.asrtests that occurred when the terms in a \code{test.summary}   include text.
+}}
 \section{asremlPlus Version 4.4.42 (2024-11-15}{
   \itemize{
   \item Make sure that numerics in the components of an alldiffs objects are set to \code{NA_real_} when they are missing.
@@ -8,7 +12,7 @@
   \itemize{
   \item Tweak the fitting of correlation models when using for addSpatialModel.asrtests, addSpatialModelOnIC.asrtests and chooseSpatialModelOnIC.asrtests and there are bound variance parameters.
   \item Add the response name to the titles of the objects printed using print.asrtests and print.test.summary.
-  \item Add \code{absent.error} argument to function getTestEntry.asrtests to control whether an error occurs if the absence of \code{label} in the \code{test.summary} results in an error.
+  \item Add \code{absent.error} argument to function getTestEntry.asrtests to control whether an error occurs if \code{label} is absent from the \code{test.summary} terms component.
   \item Add class \code{list} to \code{asrtests} objects. This means that the function within will now work with \code{asrtests} objects.
   \item Revise the Ladybird vignettes to include the exploration of various choices of LSD values.
 }}
