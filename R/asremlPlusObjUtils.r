@@ -77,8 +77,7 @@
   #Reset trace to default
   if (asr4)
     asreml::asreml.options(trace = TRUE)
-  
-  
+
   # Return.
   return(test)
 }

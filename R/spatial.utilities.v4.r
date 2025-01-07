@@ -83,22 +83,30 @@ checkSections4RanResTerms <- function(asrtests.obj, sections = NULL, asr4)
   invisible()
 }
 
-#Function to identify residual and random correlation model terms (i.e. variance & correlations) 
+#Function to identify residual and random correlation model terms (i.e. variances & correlations) 
 #   that are currently fitted
 #Returns NULL if the residual model cannot accommodate nugget variances
-# when there are multiple residual terms, but none include sections
+# because there are multiple residual terms, but none include sections
 getSectionVpars <- function(asreml.obj, sections, stub, sterm.facs, which = c("res", "ran"), 
                             asr4.2)
 {
-  vpar <- getVpars(asreml.obj, asr4.2 = asr4.2)
-  vpc <- vpar$vpc
-  vpt <- vpar$vpt
+  # vpar <- getVpars(asreml.obj, asr4.2 = asr4.2)
+  # vpc <- vpar$vpc
+  # vpt <- vpar$vpt
+  # 
+  # #Separate ran and res terms
+  # vpc.res <- vpc[grepl("!R", names(vpc))] #no sections or dsum used
+  # vpc.ran <- vpc[setdiff(names(vpc), names(vpc.res))]
   
-  #Get the residual term
+  vpc <- getResidRandomTerms(asreml.obj, asr4.2 = asr4.2)
+  vpc.res <- vpc$res
+  vpc.ran <- vpc$ran
+  vpt <- getVpars(asreml.obj, asr4.2 = asr4.2)$vpt
+  
+  #Get the residual terms associated with sections
   if ("res" %in% which)
   {
     #Get residual variance term using vpc and vpt
-    vpc.res <- vpc[grepl("!R$", names(vpc))] #no sections or dsum used
     if (!is.null(sections) && any(grepl(paste0("!", sections), names(vpc))))
       vpc.res <- c(vpc.res, vpc[grepl(paste0("!", sections), names(vpc))]) #idh used
     vpt.res <- vpt[names(vpc.res)]
@@ -145,10 +153,11 @@ getSectionVpars <- function(asreml.obj, sections, stub, sterm.facs, which = c("r
             vpc.res <- NULL
           }
         }
-      }
+        if (is.allnull(vpc.res) | length(vpc.res) == 0)
+          warning("Could not find a residual term for ", sections, " ", stub)
+      } else
+        vpc.res <- NULL   
     }
-    if (length(vpc.res) != 1)
-      warning("Could not find a residual term for ", sections, " ", stub)
     
   } else #res not required
     vpc.res <- NULL
@@ -156,7 +165,6 @@ getSectionVpars <- function(asreml.obj, sections, stub, sterm.facs, which = c("r
   #Get the random spatial terms (if sections, from all sections)
   if ("ran" %in%  which)
   { 
-    vpc.ran <- vpc[!grepl("!R$", names(vpc))]
     if (!is.null(sections) && any(grepl(paste0("!", sections), names(vpc))))
       vpc.ran <- vpc.ran[!grepl(paste0("!", sections), names(vpc.ran))] #idh used
     
@@ -271,7 +279,7 @@ chgResTermBound <- function(corr.asrt, sections, stub, asr4, asr4.2,
   # other.args <- inargs[setdiff(names(inargs), fitfunc.args)]
   
   #If already fixed, the try P
-  if (vpc.res == "F")
+  if (length(vpc.res) == 1 &&vpc.res == "F")
   {  bound <- "P"; initial.values = 0.1}
   else 
   {  bound <- "F"; initial.values = 1}
@@ -701,7 +709,7 @@ chk4SingularSpatTerms <- function(asrtests.obj, corr.asrt, label,
       corr.asrt$test.summary <- rbind(corr.asrt$test.summary, entry) 
     } else #no Singular correlation terms
       corr.asrt <- asrtests.obj
-    if (length(vpc.corr$res) > 0 && (vpc.corr$res %in% c("B",sing.excl)))
+    if (length(vpc.corr$res) > 0 && any(vpc.corr$res %in% c("B",sing.excl)))
     {  
       corr.asrt <- chgResTermBound(corr.asrt, sections = sections, stub = stub, 
                                    asr4 = asr4, asr4.2 = asr4.2, 

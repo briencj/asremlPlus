@@ -450,7 +450,7 @@ test_that("at_multilevel_asreml42", {
   
   asreml.options(step.size = 0.0001)
   
-  #Single term in at expresion with the level and drop.fix.ns = TRUE -- works
+  #Single term in at expression with the level and drop.fix.ns = TRUE -- works
   t.asrt <- testranfix(current.asrt, 
                        term = "at(expt, 'mtnue10'):vrow", 
                        drop.fix.ns = TRUE,
@@ -538,6 +538,12 @@ test_that("at_testswapran_asreml42", {
                              positive.zero = TRUE)
   testthat::expect_equal(current.asrt$test.summary$action[2], "Dropped")
   testthat::expect_true(all(table(summary(current.asrt$asreml.obj)$varcomp$bound) ==  c(2,45,1)))
+  setvpars <- current.asrt$asreml.obj$call$setvparameters
+  testthat::expect_equal(nrow(setvpars), 1)
+  testthat::expect_equal(ncol(setvpars), 4)
+  testthat::expect_equal(setvpars$set.terms, "Block:Cart:DAP!DAP_17")
+  testthat::expect_equal(setvpars$bounds, "F")
+  testthat::expect_true(abs(setvpars$initial.values - 1e-04) < 1e-04)
   
   #'### Test for different curvatures in splines
   current.asrt <- testswapran(current.asrt, oldterms = "at(Treatments):spl(xDAP, k = 10)",
@@ -554,6 +560,36 @@ test_that("at_testswapran_asreml42", {
   names(vpar.vals) <- names(current.asrt$asreml.obj$vparameters[1:8])
   testthat::expect_true(all.equal(current.asrt$asreml.obj$vparameters[1:8], 
                                   vpar.vals, tolerance = 1e-02))
+  
+  #'## Fit correlation model as random
+  current.asr <- do.call(asreml, 
+                         args=list(fixed = Area ~ Block + Treatments + Treatments:xDAP,
+                                   random = ~ Block:Cart + at(Treatments):spl(xDAP, k = 10) + 
+                                     Treatments:DAP + 
+                                     Block:Cart:spl(xDAP) + Block:Cart:xDAP + 
+                                     idv(Block):Cart:ar1h(DAP),
+                                   residual = ~ Block:Cart:DAP,
+                                   keep.order=TRUE, data = longit.dat, maxit=100))
+  summary(current.asr)$varcomp 
+  current.asr <- fixBoundResidualVariances(current.asr)
+  testthat::expect_true(all(table(summary(current.asr)$varcomp$bound) ==  c(9,40,1)))
+  
+  #'## Load starting model into an asrtests object
+  current.asrt <- as.asrtests(current.asr, NULL, NULL, label = "Selected variance model")
+  testthat::expect_false(current.asrt$asreml.obj$converge)
+  setvpars <- current.asrt$asreml.obj$call$setvparameters
+  testthat::expect_equal(nrow(setvpars), 9)
+  testthat::expect_equal(ncol(setvpars), 4)
+  testthat::expect_equal(sum(grepl("Block:Cart:DAP!DAP", setvpars$set.terms)), 9)
+  testthat::expect_true(all(setvpars$bounds == "F"))
+  testthat::expect_true(all(abs(setvpars$initial.values - 1e-04) < 1e-04))
+  
+  #'### Test for Treatments:DAP deviations terms
+  current.asrt <- testranfix(current.asrt, term = "Treatments:DAP",
+                             positive.zero = TRUE)
+  testthat::expect_equal(current.asrt$test.summary$action[2], "Retained")
+  testthat::expect_true(all(table(summary(current.asrt$asreml.obj)$varcomp$bound) ==  c(9,40,1)))
+  
 })
 
 
@@ -716,11 +752,9 @@ test_that("changeModelOnIC_wheat94_asreml42", {
   testthat::expect_equal(current.asrt$test.summary$denDF, 8)
   testthat::expect_equal(nrow(summary(current.asrt$asreml.obj)$varcomp), 9) #includes bound Block
   
-  
   current.asrt <- changeModelOnIC(current.asrt, dropRandom = "Block",
+                                  label = "Drop Block", 
                                   IClikelihood = "full", checkboundaryonly = TRUE, which.IC="AIC")
-  
-  
   current.asrt <- rmboundary(current.asrt)
   testthat::expect_equal(nrow(summary(current.asrt$asreml.obj)$varcomp), 
                          current.asrt$test.summary$denDF[1])
@@ -774,13 +808,46 @@ test_that("changeModelOnIC_wheat94_asreml42", {
   testthat::expect_equal(current.asrt$test.summary$action[current.asrt$test.summary$terms == 
                                                             "Drop spl(Col)"], "Swapped")
 
-  #Drop random units term - DF because when units dropped, cor become U, not F
   current.asrt <- changeModelOnIC(current.asrt, dropRandom = "units", 
                                   label = "Drop units", 
                                   which.IC = "BIC", IClikelihood = "REML")
-  testthat::expect_equal(current.asrt$test.summary$denDF[5], 0)
+  testthat::expect_equal(current.asrt$test.summary$denDF[5], -1)
   testthat::expect_equal(current.asrt$test.summary$action[current.asrt$test.summary$terms == 
                                                             "Drop units"], "Unswapped")
+  
+  #Repeat, but with allow.fixedcorrelation = FALSE
+  #Use REML likelihood and BIC
+  current.asrt <- as.asrtests(fm.max, NULL, label = "Maximal model", 
+                              IClikelihood = "REML")
+  current.asrt <- iterate(current.asrt)
+  current.asrt <- rmboundary(current.asrt)
+  testthat::expect_equal(nrow(current.asrt$test.summary), 2)
+  
+  #Drop random Row and Col terms
+  current.asrt <- changeModelOnIC(current.asrt, dropRandom = "Row + Col", 
+                                  label = "Drop Row + Col", allow.fixedcorrelation = FALSE,
+                                  which.IC = "BIC", IClikelihood = "REML")
+  testthat::expect_equal(current.asrt$test.summary$denDF[3], -2)
+  testthat::expect_equal(current.asrt$test.summary$action[current.asrt$test.summary$terms == 
+                                                            "Drop Row + Col"], "Swapped")
+  testthat::expect_true((abs(current.asrt$test.summary$BIC[3]) - 8.598262) < 1e-02)
+  
+  #Drop random spl(Col) term
+  current.asrt <- changeModelOnIC(current.asrt, dropRandom = "spl(Col)", 
+                                  label = "Drop spl(Col)", allow.fixedcorrelation = FALSE,
+                                  which.IC = "BIC", IClikelihood = "REML")
+  testthat::expect_true(current.asrt$test.summary$denDF[4] == 0)
+  testthat::expect_equal(current.asrt$test.summary$action[current.asrt$test.summary$terms == 
+                                                            "Drop spl(Col)"], "Unchanged - fixed correlation")
+  
+  #Drop random units term - DF because when units dropped, cor changes from F to U
+  current.asrt <- changeModelOnIC(current.asrt, dropRandom = "units", 
+                                  label = "Drop units", allow.fixedcorrelation = FALSE,
+                                  which.IC = "BIC", IClikelihood = "REML")
+  testthat::expect_equal(current.asrt$test.summary$denDF[5], -1)
+  testthat::expect_equal(current.asrt$test.summary$action[current.asrt$test.summary$terms == 
+                                                            "Drop units"], "Unswapped")
+  
   
   mod <- printFormulae(current.asrt$asreml.obj)
   testthat::expect_equal(length(mod), 3)
@@ -811,7 +878,7 @@ test_that("changeModelOnIC_Example_asreml42", {
   testthat::expect_true(current.asrt$asreml.obj$converge)
   testthat::expect_true(current.asrt$test.summary$action[1] == "Starting model")
   testthat::expect_equal(current.asrt$test.summary$DF[1], 31)
-  testthat::expect_equal(current.asrt$test.summary$denDF[1], 4)
+  testthat::expect_equal(current.asrt$test.summary$denDF[1], 5)
   testthat::expect_equal(nrow(summary(current.asrt$asreml.obj)$varcomp), 6)
   
   # Drop both Row and Column
@@ -820,7 +887,7 @@ test_that("changeModelOnIC_Example_asreml42", {
                                   checkboundaryonly = TRUE,
                                   which.IC = "AIC", IClikelihood = "full")
   testthat::expect_true(current.asrt$asreml.obj$converge)
-  testthat::expect_equal(current.asrt$test.summary$denDF[2], 0)
+  testthat::expect_equal(current.asrt$test.summary$denDF[2], -1)
   
   # Replace residual with model without Row autocorrelation (loses units also)
   current.asrt <- changeModelOnIC(current.asrt, 
@@ -857,19 +924,21 @@ test_that("Fixedcorrelations_asreml42", {
   m.asrt <- rmboundary(m.asrt)
   testthat::expect_true(m.asrt$asreml.obj$converge)
   
-  m1.asrt <- changeModelOnIC(m.asrt, addRandom = "units", label = "units", allow.fixedcorrelation = FALSE,
+  m1.asrt <- changeModelOnIC(m.asrt, addRandom = "units", label = "units", 
+                             allow.fixedcorrelation = FALSE,
                                IClikelihood = "full")
   tests<- m1.asrt$test.summary
   testthat::expect_equal(m1.asrt$test.summary$action[2], "Unchanged - fixed correlation")
   testthat::expect_true(is.null(getFormulae(m1.asrt$asreml.obj)$random))
   
-  m2.asrt <- changeModelOnIC(m.asrt, addRandom = "units", label = "units", allow.fixedcorrelation = TRUE,
+  m2.asrt <- changeModelOnIC(m.asrt, addRandom = "units", label = "units", 
+                             allow.fixedcorrelation = TRUE,
                              IClikelihood = "full")
-  testthat::expect_equal(m2.asrt$test.summary$action[2], "Unswapped")
-  testthat::expect_false(grepl("units", as.character(getFormulae(m2.asrt$asreml.obj)$random)[2]))
+  testthat::expect_equal(m2.asrt$test.summary$action[2], "Swapped")
+  testthat::expect_true(grepl("units", as.character(getFormulae(m2.asrt$asreml.obj)$random)[2]))
   summary(m2.asrt$asreml.obj)$varcomp
-  testthat::expect_equal(unname(
-         m2.asrt$asreml.obj$vparameters.con["Lane:Position!Lane!cor"]), "U")
+  testthat::expect_true(unname(
+         m2.asrt$asreml.obj$vparameters.con["Lane:Position!Lane!cor"]) %in% c("B", "F"))
   
   m3.asrt <- changeTerms(m.asrt, addRandom = "units", label = "Add units", allow.fixedcorrelation = FALSE)
   testthat::expect_equal(m3.asrt$test.summary$action[2], "Unchanged - fixed correlation")
@@ -882,17 +951,17 @@ test_that("Fixedcorrelations_asreml42", {
   m4.asrt <- testranfix(m4.asrt, term = "units", positive.zero = TRUE, allow.fixedcorrelation = TRUE)
   testthat::expect_equal(m4.asrt$test.summary$action[3], "Retained")
   testthat::expect_true(grepl("units", as.character(getFormulae(m4.asrt$asreml.obj)$random)[2]))
-  testthat::expect_equal(unname(
-          m4.asrt$asreml.obj$vparameters.con["Lane:Position!Lane!cor"]), "B")
+  testthat::expect_true(unname(
+          m4.asrt$asreml.obj$vparameters.con["Lane:Position!Lane!cor"]) %in% c("B", "F"))
 
   m5.asrt <- testranfix(m4.asrt, term = "units", positive.zero = TRUE, allow.fixedcorrelation = TRUE,
                         IClikelihood = "REML")
   testthat::expect_equal(m5.asrt$test.summary$action[4], "Retained")
   testthat::expect_true(grepl("units", as.character(getFormulae(m5.asrt$asreml.obj)$random)[2]))
-  testthat::expect_equal(unname(
-           m5.asrt$asreml.obj$vparameters.con["Lane:Position!Lane!cor"]), "B")
+  testthat::expect_true(unname(
+           m5.asrt$asreml.obj$vparameters.con["Lane:Position!Lane!cor"]) %in% c("B", "F"))
   testthat::expect_true(all(abs(c(m5.asrt$test.summary$AIC[4],m5.asrt$test.summary$BIC[4]) - 
-                                  c(2355.000, 2359.271)) < 1e-03))
+                                  c(2352.823, 2361.365)) < 1e-03))
   
   m6.asrt <- testranfix(m4.asrt, term = "Lane", allow.fixedcorrelation = TRUE,
                         IClikelihood = "REML")
@@ -966,8 +1035,7 @@ test_that("Fixedcorrelations_asreml42", {
   
   testthat::expect_warning(
     m1.asrt <- changeModelOnIC(m.asrt, dropRandom = "units", allow.fixedcorrelation = FALSE),
-    regexp = paste("The estimated value of one or more correlations in the supplied asreml fit",
-                   "for PSA.27 is bound or fixed and allow.fixedcorrelation is FALSE"))
+    regexp = paste("The estimated value of one or more correlations in the supplied asreml fit for PSA.27 is fixed and allow.fixedcorrelation is FALSE"))
   testthat::expect_warning(
     m2.asrt <- testresidual(m.asrt, terms = "ar1(Lane):ar1(Position)", allow.fixedcorrelation = FALSE),
     regexp = paste("The estimated value of one or more correlations in the supplied asreml fit",
@@ -979,13 +1047,13 @@ test_that("Fixedcorrelations_asreml42", {
   testthat::expect_warning(
     m2.asr <- newfit(m.asr, random. = ~ . - units, allow.fixedcorrelation = FALSE),
     regexp = paste("The estimated value of one or more correlations in the supplied asreml fit",
-                   "for PSA.27 is bound or fixed and allow.fixedcorrelation is FALSE"))
+                   "for PSA.27 is bound, singular or fixed and allow.fixedcorrelation is FALSE"))
   testthat::expect_false(any("units" == rownames(attr(m2.asr$formulae$random, which = "factors"))))
   
   testthat::expect_warning(
     m2.asr <- newfit(m.asr, random. = ~ . - units, allow.fixedcorrelation = FALSE),
     regexp = paste("The estimated value of one or more correlations in the supplied asreml fit",
-                   "for PSA.27 is bound or fixed and allow.fixedcorrelation is FALSE"))
+                   "for PSA.27 is bound, singular or fixed and allow.fixedcorrelation is FALSE"))
   testthat::expect_false(any("units" == rownames(attr(m2.asr$formulae$random, which = "factors"))))
 
   #Test repararmSigDevn
@@ -1007,7 +1075,7 @@ test_that("Fixedcorrelations_asreml42", {
   m1.asrt <- iterate(m1.asrt)
   testthat::expect_equal(m1.asrt$test.summary$action[2], "Changed fixed, random")
   testthat::expect_true(unname(
-            m1.asrt$asreml.obj$vparameters.con["Lane:Position!Lane!cor"]) %in% c("F", "B"))
+            m1.asrt$asreml.obj$vparameters.con["Lane:Position!Lane!cor"]) %in% c("B", "F"))
   
   m2.asrt <- reparamSigDevn(m.asrt, terms = "Position", trend.num = "xPosn", devn.fac = "Position", 
                             allow.fixedcorrelation = FALSE, update = FALSE)

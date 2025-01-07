@@ -65,7 +65,7 @@ REMLRT.asreml <- function(h0.asreml.obj, h1.asreml.obj,
                           positive.zero = FALSE, bound.test.parameters = "none", 
                           DF = NULL, bound.exclusions = c("F","B","S","C"), ...)
 {
-  #asreml codes (vparameters.con code):
+  #asreml codes (vparameters.con code) from ASReml4-SA User Guide Functional Sec. 16.4:
   # (1) P - positive definite
   # (2) ? - liable to change from P to B    
   # (3) U - unbounded
@@ -283,7 +283,7 @@ infoCriteria.asreml <- function(object, DF = NULL,
     NBound <- sum(Bound)
     Bound <- names(bound)[Bound]
     #Calculate the varDF
-    if (is.null(DF) & is.null(varDF))
+    if (is.null(DF) && is.null(varDF))
     {
       varDF <- length(bound)
       varDF <- varDF - NBound

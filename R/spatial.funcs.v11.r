@@ -523,7 +523,7 @@ fitCorrMod <- function(asrtests.obj, sections = NULL,
 
     startFixRes <- FALSE
     #### For corb, add random variance with fixed Residual
-    if (any(grepl("corb", corr.funcs)) || !nuggsOK)
+    if (any(grepl("corb", corr.funcs)) && nuggsOK)
     {  
       if (trace) 
       {cat("\n#### Try to fit nugget variance before fitting correlations\n\n"); print(corr.asrt)}
@@ -1235,7 +1235,23 @@ fitCorrMod <- function(asrtests.obj, sections = NULL,
       } # End one of spatial and Residual variance is bound
       if (largeVparChange(corr.asrt$asreml.obj, 0.75))
         corr.asrt <- iterate(corr.asrt)
-    } #End bound spatial variance and Residual P
+    } else
+    {
+      if (!corr.term && nuggsOK) #nuggsOK protects against hetero residuals unrelated to sections
+      {
+        vpc.corr <- getSectionVpars(corr.asrt$asreml.obj, 
+                                    sections = sections, stub = stub, 
+                                    sterm.facs = sterms, 
+                                    asr4.2 = asr4.2)
+        spat.term <- names(findterm(spat.var, names(vpc.corr$ran),  #allows for changed order
+                                    rmDescription = FALSE))
+        #If spatial variance without correlations, then revert to init.asrt
+        if (length(spat.term) > 0)
+          corr.asrt <- revert2previousFit(corr.asrt, init.asrt, 
+                                          terms = "Bound (nugget) residual", 
+                                          action = "Revert to initial fit")
+      }
+    }#End bound spatial variance and Residual P
 
     #### Having made all model changes with checkboundaryonly = TRUE, 
     #### update for checkboundaryonly set to FALSE
@@ -1876,7 +1892,9 @@ fitTPSModSect <- function(tspl.asrt, data, mat, ksect, sect.fac,
   } else #grp
   {    
     grp <- mat$grp
-    
+    #Following needed to ensure that group information is present in the asreml.obj
+    tspl.asrt$asreml.obj <-  newfit(tspl.asrt$asreml.obj, group = grp)
+
     ran.ch <- paste(paste0(sect.fac,  
                            c(paste0("grp(TP.C.",1:difforder[1],"_frow)"), 
                              paste0("grp(TP.R.",1:difforder[2],"_fcol)"), 
@@ -1915,17 +1933,19 @@ fitTPSModSect <- function(tspl.asrt, data, mat, ksect, sect.fac,
                                rotateX = rotateX, theta = theta.opt, 
                                asreml.opt = "grp")[[ksect]]
       grp <- mat$grp
+      #Following needed to ensure that group information is present in the asreml.obj
+      tspl.asrt$asreml.obj <-  newfit(tspl.asrt$asreml.obj, group = grp)
       if (chooseOnIC)
       { 
         tspl.asrt <- updateOnIC.asrtests(tspl.asrt, data = mat$data.plus, 
-                                         grp = grp, maxit = maxit, 
+                                         group = grp, maxit = maxit, 
                                          label = labrot, IClikelihood = IClikelihood, 
                                          which.IC = which.IC)
         if (grepl("Unswapped", getTestEntry(tspl.asrt, label = labrot)$action))
           theta <- c(0,0)
       } else
         tspl.asrt <- update.asrtests(tspl.asrt, data = mat$data.plus, 
-                                     grp = grp, maxit = maxit, 
+                                     group = grp, maxit = maxit, 
                                      label = labrot, IClikelihood = IClikelihood)
     }
   }
@@ -2172,8 +2192,10 @@ fitTPPSMod <- function(asrtests.obj, sections = NULL,
   #Update the asreml.obj for the new data.frame
   asreml.obj  <- asrtests.obj$asreml.obj
   asreml.obj <- newfit(asreml.obj, data = dat)
-  tspl.asrt <- as.asrtests(asreml.obj = asreml.obj, NULL, NULL, 
-                           IClikelihood = "full", label = "Change to new data.frame with TPS bits")
+  tspl.asrt <- as.asrtests(asreml.obj = asreml.obj, NULL, 
+                           test.summary = asrtests.obj$test.summary, 
+                           IClikelihood = "full", 
+                           label = "Change to new data.frame with TPS bits")
 
   #Prepare for model fitting
   nsect <- calc.nsect(dat.in, sections)

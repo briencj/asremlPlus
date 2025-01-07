@@ -1,5 +1,11 @@
 \name{news}
 \title{News for Package asremlPlus}
+\section{asremlPlus Version 4.4.44 (2025-01-07}{
+  \itemize{
+  \item Fix minor bugs in fitting spatial correlation models using addSpatialModel.asrtests, addSpatialModelOnIC.asrtests and chooseSpatialModelOnIC.asrtests.
+  \item Fix a bug in rmboundary.asrtests that caused an error when there was a bound component in a \code{dsum} term. 
+  \item Modified newfit.asreml and setvariances.call to ensure that terms whose bounds and/or initial values have been previously set using setvariances.call continue to have these values set in subsequent model fits, provided they remain in the fitted model. This will be promulgated to the model modification and selection functions, for example changeModelOnIC.asrtests, testranfix.asrtests and changeTerms.asrtests, because they call newfit.asreml to change the fitted model.  
+}}
 \section{asremlPlus Version 4.4.43 (2024-12-10}{
   \itemize{
   \item Fix bug in getTestPvalue.asrtests that occurred when the terms in a \code{test.summary}   include text.

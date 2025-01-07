@@ -314,7 +314,7 @@ addtoChooseSummary <- function(choose.summary, term, DF = NA, denDF = NA, p = NA
                                        set.terms = NULL, ignore.suffices = TRUE, 
                                        bounds = "P", initial.values = NA, 
                                        which.IC = "AIC", IClikelihood = "REML", 
-                                       fixedDF = NULL, varDF = NULL, #material.diff = NA, 
+                                       fixedDF = NULL, varDF = NULL, 
                                        bound.exclusions = c("F","B","S","C"),  
                                        ...)
   #Uses information criteria to select the best model after comparing that fitted in the asrtests.obj 

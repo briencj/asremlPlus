@@ -420,6 +420,8 @@ getRotationThetas <- function(init.asrt, data, mat, sections,
     } else #grp
     {    
       grp <- mat[[ksect]]$grp
+      #Following needed to ensure that group information is present in the asreml.obj
+      init.asrt$asreml.obj <-  newfit(init.asrt$asreml.obj, group = grp)
       
       ran.rot.ch <- paste(paste0(sect.fac,  
                                  c(paste0("grp(TP.C.",1:difforder[1],"_frow)"), 

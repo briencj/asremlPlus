@@ -12,7 +12,20 @@
              These names generally include descriptive suffices. To match an 
              element of \code{terms} that includes such a suffix, set 
              \code{ignore.suffices} to \code{FALSE} so that a literal match 
-             between the element and the assigned names is sought.}
+             between the element and the assigned names is sought.
+
+             Note that the \code{terms}, \code{bounds} and \code{initial.values} 
+             are stored on entry in a \code{\link{data.frame}}, named \code{setvparameters}, 
+             as a component in  \code{call} that is itself a component of the \code{asreml.obj} 
+             that is returned. The \code{\link{data.frame}} \code{setvparameters} contains all of 
+             the values of \code{terms}, \code{ignore.suffices}, \code{bounds} 
+             and \code{initial.values} that have been set in this and previous calls to 
+             \code{setvarianceterms.call} and other model modification and selection functions in 
+             \code{asremlPlus}, for example changeModelOnIC.asrtests, 
+             testranfix.asrtests and changeTerms.asrtests. It is used in subsequent calls to 
+             model modification and selection functions to ensure that the bounds and initial 
+             values that have been set are retained in new model fits.
+}
 \usage{
 \method{setvarianceterms}{call}(call, terms, ignore.suffices = TRUE, 
                  bounds = "P", initial.values = NA, ...)}
@@ -39,10 +52,10 @@
                     applied to the \code{asreml}-assigned suffices for all the terms 
                     in \code{terms}.}
  \item{bounds}{A \code{\link{character}} vector specifying the bounds to be applied 
-                    to the terms specified in \code{set.terms}. This vector 
-                    must be of length one or the same length as \code{set.terms}. 
+                    to the terms specified in \code{terms}. This vector 
+                    must be of length one or the same length as \code{terms}. 
                     If it is of length one then the same constraint is 
-                    applied to all the terms in \code{set.terms}. 
+                    applied to all the terms in \code{terms}. 
                     If any of the bounds are equal to NA then they are 
                     left unchanged for those terms.
 
@@ -61,10 +74,11 @@
                     applied to all the terms in \code{terms}. 
                     If any of the initial.values are equal to NA then they are 
                     left unchanged for those terms.}
- \item{\dots}{additional arguments to be added to the call, or arguments in 
-            the call with changed values.}
+ \item{\dots}{additional arguments to be added to the asreml call, or arguments in 
+            the asreml call with changed values.}
 }
-\value{An \code{asreml} object.}
+\value{An \code{asreml} object, with the updated \code{setvparameters} \code{\link{data.frame}}, 
+       stored in the \code{call} component of the \code{asreml} object.}
 
 
 \references{Butler, D. G., Cullis, B. R., Gilmour, A. R., Gogel, B. J. and 

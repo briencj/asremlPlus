@@ -85,7 +85,7 @@ largeVparChange <- function(asreml.obj, threshold = 0.75)
   return(largeChg)
 }
 
-#Check for fixed correlations
+#Check for fixed (F), bound (B) or singular (S) correlations
 isFixedCorrelOK.asreml <- function(asreml.obj, allow.fixedcorrelation = TRUE, ...)  
 {
   asr4.2 <- isASReml4_2Loaded(4.2, notloaded.fault = TRUE)
@@ -101,6 +101,8 @@ isFixedCorrelOK.asreml <- function(asreml.obj, allow.fixedcorrelation = TRUE, ..
       {
         corrs <- asreml.obj$vparameters.con[names(asreml.obj$vparameters.con) 
                                             %in% corrs]
+        if (any(corrs %in% c("F","B", "S")))
+          correlOK <- FALSE
       } 
     }else #not 4.2
     {
@@ -110,10 +112,10 @@ isFixedCorrelOK.asreml <- function(asreml.obj, allow.fixedcorrelation = TRUE, ..
       {
         corrs <- vpc.char(asreml.obj)[names(vpc.char(asreml.obj)) 
                                       %in% corrs]
+        if (any(corrs %in% c("F", "B", "S")))
+          correlOK <- FALSE
       }
     }
-    if (any(corrs %in% c("F", "B", "S")))
-      correlOK <- FALSE
   }
   
   return(correlOK)
@@ -631,6 +633,69 @@ getVpars <- function(asreml.obj, asr4.2)
   return(list(vpc = vpc, vpt = vpt))
 }
 
+#Function to just get variance terms and to separate the random and residual variances.
+#
+#The random terms are obtained from the attributes of the coefficients$random component 
+#  of the asreml object.
+getResidRandomTerms <- function(asreml.obj, which = c("res", "ran"), asr4.2)
+{
+  vpar <- getVpars(asreml.obj, asr4.2 = asr4.2)
+  vpc <- vpar$vpc
+  which.resvar <- min(which(grepl("!R$", names(vpc))), na.rm = TRUE)
+  vpc.res <- vpc[(which.resvar:length(vpc))]
+  vpc.ran <- vpc[setdiff(names(vpc), names(vpc.res))]
+  if (!("res" %in% which)) vpc.res <- NULL
+  if (!("ran" %in%  which)) vpc.ran <- NULL
+  
+  return(list(ran = vpc.ran, res = vpc.res))
+}
+
+#Function to get terms whose bound is not the default bound but, according to the 
+#  ASReml-S documentation, is one of the bounds that would have been deliberately set. 
+getTermsDeliberateBound <- function(asreml.obj, update, asr4, asr4.2)
+{
+  #Check of any variance parameters whose bounds are missing and assign the default 
+  #  bound for the variance parameter type
+  default.bound        <- c("P", "P", "U", "U", "P", "U")
+  names(default.bound) <- c("V", "G", "R", "C", "P", "L")
+  vpar <- getVpars(asreml.obj, asr4.2)
+  if (any(vpar$vpc == ""))
+  { 
+    miss.bound <- names(vpar$vpc[vpar$vpc == " "])
+    vpar$vpc[miss.bound] <- default.bound[vpar$vpt[miss.bound]]
+  }
+  
+  #Set up a df with variance parameter info and find those that do not have the default bound
+  non.default <- data.frame(set.terms = names(vpar$vpc),
+                            initial.values = asreml.obj$vparameters,
+                            bounds = vpar$vpc,
+                            type = vpar$vpt)
+  rownames(non.default) <- NULL
+  #Hack to exclude correlations fixed at 0.98 because I conjecture that these are system set, 
+  #  despite the documentation
+  sysfix.correl <- vpar$vpt == "R" & vpar$vpc == "F" &  
+    (abs(asreml.obj$vparameters - 0.98) < 0.005)
+  #identify parameters whose non-default bound is not F
+  unfixed <- (vpar$vpt %in% c("V", "G") & vpar$vpc == "U") | 
+    (vpar$vpt %in% c("R", "C") & vpar$vpc == "P")
+  non.def <- (vpar$vpc %in% c("F", "C") & !sysfix.correl) | unfixed
+  
+  if (any(non.def))
+  { 
+    if (!update && any(unfixed))
+    {
+      vpc <- vpar$vpc[unfixed]
+      vpt <- vpar$vpt[unfixed]
+      non.default$initial.values[unfixed] <- NA
+    }
+    non.default <- non.default[non.def,]
+    non.default$ignore.suffices <- FALSE
+  } else
+    non.default<- NULL
+  
+  return(non.default)
+}
+
 "getVarCode" <- function(var, asreml.obj)
   #A function that returns a code for a variable
   # 0 for an integer or numeric with no sys function
@@ -707,16 +772,18 @@ getVpars <- function(asreml.obj, asr4.2)
 guzpfx <- function (i) 
 {
   con <- c(" ", "P", "?", "U", "F", "C", "S", "B")
-  pc <- apply(matrix((i + 1), ncol = 1), 1, function(x) {
-    if (is.na(x)) 
-      return(3)
-    y <- max(x, 1)
-    if (y > 8 && y%%10 == 2) 
-      y <- 3
-    if (y > 8) 
-      y <- 8
-    y
-  })
+  pc <- apply(matrix((i + 1), ncol = 1), 1, 
+              function(x) 
+              {
+                if (is.na(x)) 
+                  return(3)
+                y <- max(x, 1)
+                if (y > 8 && y%%10 == 2) 
+                  y <- 3
+                if (y > 8) 
+                  y <- 8
+                y
+              })
   con[pc]
 }
 

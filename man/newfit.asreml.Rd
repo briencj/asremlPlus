@@ -20,7 +20,21 @@
              to values as specified for \code{set.terms}. The \code{\dots} 
              argument can be used to pass \code{G.param} and/or 
              \code{R.param}, provided \code{update} is \code{FALSE} and 
-             \code{set.terms} is \code{NULL}.}
+             \code{set.terms} is \code{NULL}. 
+
+             Irrespective of whether \code{set.terms} is \code{NULL}, 
+             variance parameter names, bounds and initial.values stored in 
+             the \code{setvparameters} \code{\link{data.frame}} located in the 
+             \code{call} component of the \code{asreml.obj} are added to any 
+             \code{set.terms} supplied in the current call. except for those 
+             in \code{setvparameters} that are specified in the 
+             \code{set.terms} argument. In the process of fitting the model, 
+             the \code{setvparameters} \code{\link{data.frame}} stored in the 
+             supplied \code{asreml.obj} is updated to include the prior and 
+             current \code{set.terms}. Then, just before exiting 
+             \code{newfit.asreml}, a search for changes in the \code{bound}s 
+             of the stored terms is made. If any have changed, an attempt is 
+             made to force the values back to their values on entry.}
 \usage{
 \method{newfit}{asreml}(asreml.obj, fixed., random., sparse., 
        residual., rcov., update = TRUE, trace = FALSE, 

@@ -48,17 +48,17 @@ test_that("Wheat_spatial_asreml42", {
                                   label = "Try dropping withinColPairs", IClikelihood = "full")
   print(current.asrt)
 
-  #Try corb - worst fit - had to set nugget.variance and allow.corrsJointFit
+  #Try corb - worst fit - had to set nugget.variance and allow.corrsJointFit, but not fitting now
   corb.asrt <- addSpatialModelOnIC(current.asrt, spatial.model = "corr", 
                                    row.covar = "cRow", col.covar = "cColumn", 
                                    row.factor = "Row", col.factor = "Column", 
                                    corr.funcs = c("corb", "corb"), corr.orders = c(0,0),
-                                   nugget.variance = FALSE, allow.corrsJointFit = FALSE, 
+                                   nugget.variance = TRUE, allow.corrsJointFit = TRUE, 
                                    IClikelihood = "full")
   corb.asrt <- rmboundary(corb.asrt, IClikelihood = "full")
   inf <- infoCriteria(corb.asrt$asreml.obj, IClikelihood = "full")
-  testthat::expect_equal(inf$varDF, 6)
-  testthat::expect_true(abs(inf$AIC - 1666.351) < 0.1)
+  testthat::expect_equal(inf$varDF, 3)
+  testthat::expect_true(abs(inf$AIC - 1718.609) < 0.1)
   
   #Fit autocorrelation model
   spatialEach.asrts <- list()

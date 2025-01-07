@@ -295,8 +295,10 @@ makeVpar.table.asreml <- function(asreml.obj, terms = NULL,
       initial.values <- rep(initial.values, nt)
     if (length(initial.values) != nt)
       stop("initial.values specification is not consistent with terms")
-    if (any(!(bounds %in% c("B", "F", "P", "C", "U"))))
-      stop("bounds contains at least one code that is not used by asreml")
+    if (!is.allnull(bounds) && any(!(bounds %in% c("B", "F", "P", "C", "U", "?"))))
+      stop("the bound(s) ", 
+           paste0(bounds[!(bounds %in% c("B", "F", "P", "C", "U", "?"))], collapse = ", "), 
+           " is/are not used by asreml")
     
     #Change settings for terms  
     k <- unlist(lapply(1:nt, 
@@ -327,6 +329,21 @@ makeVpar.table.asreml <- function(asreml.obj, terms = NULL,
   return(vpars.table)
 }
 
+#Function that finds set.terms in a lsit of terms
+# - allows for different factor/variable order
+findsetterms <- function(setvparameters, termlist)
+{
+  sterms <- mapply(function(term, ignore.suffices, termlist) 
+  {
+    findterm(term, termlist, rmDescription = ignore.suffices)
+  }, 
+  term = setvparameters$set.terms, 
+  ignore.suffices = setvparameters$ignore.suffices, 
+  MoreArgs = list(termlist = termlist), SIMPLIFY = FALSE)
+  sterms <- unlist(lapply(sterms, function(x) names(x)))
+  return(sterms)
+}
+
 "setvarianceterms.call" <- function(call, terms, ignore.suffices = TRUE, bounds = "P", 
                                     initial.values = NA, ...)
   # call is an unevaluated call to asreml (can create using the call function)
@@ -349,13 +366,29 @@ makeVpar.table.asreml <- function(asreml.obj, terms = NULL,
   #Deal with deprecated constraints parameter
   tempcall <- list(...)
   if (length(tempcall)) 
+  { 
     if ("constraints" %in% names(tempcall))
       stop("constraints has been deprecated in setvarianceterms.call - use bounds")
-  
+    for (z in names(tempcall))
+      languageEl(call, which = z) <- tempcall[[z]]
+  }
+
   asr4 <- isASRemlVersionLoaded(4, notloaded.fault = TRUE)
+  asr4.2 <- isASReml4_2Loaded(4.2, notloaded.fault = TRUE)
   if (!inherits(call, "call"))
     stop("Need to supply an argument of class call")
   
+  #Check for setvparameters in call
+  if (is.null(call$setvparameters))
+    setvparameters <- NULL
+  else
+    setvparameters <- call$setvparameters
+
+  #Identify any variance parameters whose bounds have been deliberately changed
+  # asreml.obj <- eval(call, sys.parent())
+  # delib.bound <- getTermsDeliberateBound (asreml.obj, update = TRUE,
+  #                                         asr4 = asr4, asr4.2 = asr4.2)
+
   #test for compatibility of arguments
   nt <- length(terms)
   if (length(ignore.suffices) == 1 & nt != 1)
@@ -370,13 +403,16 @@ makeVpar.table.asreml <- function(asreml.obj, terms = NULL,
     initial.values <- rep(initial.values, nt)
   if (length(initial.values) != nt)
     stop("initial.values specification is not consistent with terms")
-  if (any(!(bounds %in% c("B", "F", "P", "C", "U"))))
-    stop("bounds contains at least one code that is not used by asreml")
+  if (!is.allnull(bounds) && any(!(bounds %in% c("B", "F", "P", "C", "U", "?"))))
+    stop("the bound(s) ", 
+         paste0(bounds[!(bounds %in% c("B", "F", "P", "C", "U", "?"))], collapse = ", "), 
+         " is/are not used by asreml")
   
-  #add start.values to call and apply bounds to the gammas specified by terms
+  #add start.values to call so can get vparamaeters in the current call
   start.call <- call
   languageEl(start.call, which = "start.values") <- TRUE
   gamma.start <- eval(start.call, sys.parent())
+  #Get the gammas in the current model
   if (asr4)
   {
     gamma.table <- gamma.start$vparameters.table
@@ -387,45 +423,102 @@ makeVpar.table.asreml <- function(asreml.obj, terms = NULL,
     gamma.table <- gamma.start$gammas.table
     gammas <- gamma.table$Gamma
   }
-  k <- unlist(lapply(1:nt, 
-                     FUN=function(i, terms, termslist, ignore.suffices=TRUE)
-                     { 
-                       k <- which(termslist == terms[i])
-                       return(k)
-                     }, 
-                     terms=terms,
-                     termslist=gammas, 
-                     ignore.suffices=ignore.suffices))
-  if (any(length(k)==0))
-    stop(paste("Could not find", paste(terms[k==0], collapse=", ")))
-  else
-  { 
-    if (!all(is.na(bounds)))
-    { 
-      kk <- k[!is.na(bounds)]
-      gamma.table$Constraint[kk] <- bounds[!is.na(bounds)]
+  #Check if setvparameters terms are still in fitted vparameters - if not, remove them 
+  if (!is.allnull(setvparameters) && !is.allnull(findsetterms(setvparameters, gammas)))
+   {
+    setvpars.terms <- findsetterms(setvparameters, gammas) #get setvpar.terms in gammas
+    if (length(setvpars.terms) > 0)
+    {
+      #Reduce setvparameters to set.terms not in terms and make set.terms equal to those found
+      setvparameters <- setvparameters[setvparameters$set.terms %in% names(setvpars.terms),]
+      setvparameters$set.terms <- setvpars.terms
     }
-    if (!all(is.na(initial.values)))
-    { 
-      kk <- k[!is.na(initial.values)]
-      gamma.table$Value[kk] <- initial.values[!is.na(initial.values)]
-    }
+    else
+      setvparameters <- NULL
   }
-  #rerun with the unconstrained parameters, adding parameters in ...
-  languageEl(call, which = "G.param") <- gamma.table
-  languageEl(call, which = "R.param") <- gamma.table
 
+  # Add the setvparameters terms not in terms to terms
+  if (!is.null(setvparameters))
+  {
+    if (!is.null(terms))
+    {
+      setvpars.terms <- setvparameters$set.terms
+      setvpars.terms <- setdiff(setvpars.terms, terms) #get setvpar.terms not in terms
+      if (length(setvpars.terms) > 0)
+      { 
+        #Reduce setvparameters to set.terms not in terms
+        setvparameters <- setvparameters[setvparameters$set.terms %in% setvpars.terms,]
+        setvparameters <- rbind(setvparameters, 
+                                data.frame(set.terms = terms,
+                                           ignore.suffices = ignore.suffices,
+                                           bounds = bounds,
+                                           initial.values = initial.values))
+      }
+    }
+    terms <- setvparameters$set.terms
+    ignore.suffices <- setvparameters$ignore.suffices
+    initial.values <- setvparameters$initial.values
+    bounds <- setvparameters$bounds
+  }
+  nt <- length(terms)
+    
+  #Apply bounds to the gammas specified by set.terms
+  call <- setGRparam.call(call = call, set.terms = terms, 
+                          ignore.suffices = ignore.suffices, bounds = bounds, 
+                          initial.values = initial.values, 
+                          asr4 = asr4, asr4.2 = asr4.2)
+  #Set vparameters in the call
+  call[["setvparameters"]] <- data.frame(set.terms = terms, 
+                                         ignore.suffices = ignore.suffices, 
+                                         bounds = bounds, 
+                                         initial.values = initial.values)
+  
   #deal with args coming via ...
-  tempcall <- list(...)
   if (length(tempcall)) 
   { 
     for (z in names(tempcall))
       languageEl(call, which = z) <- tempcall[[z]]
   }
+  
   #Evaluate the call
   new.reml <- eval(call, sys.parent())
+  new.reml$call$setvparameters <- data.frame(set.terms = terms, 
+                                             ignore.suffices = ignore.suffices, 
+                                             bounds = bounds, 
+                                             initial.values = initial.values)
   if (!new.reml$converge || largeVparChange(new.reml))
     new.reml <- newfit(new.reml)
+  
+   #Check that setvpars bounds have stuck- if not, warn that they have not stuck
+  if (!is.null(setvparameters))
+  {
+    vpars <- getVpars(new.reml, asr4.2)
+    #Find the location of setvparameters$set.terms in vpars$vpc
+    ndb <- nrow(setvparameters)
+    k <- unlist(lapply(1:ndb, 
+                       FUN=function(i, set.terms, termslist, ignore.suffices=TRUE)
+                       { 
+                         k <- findterm(set.terms[i], termslist, 
+                                       rmDescription=ignore.suffices[i])
+                         return(k)
+                       }, 
+                       set.terms=setvparameters$set.terms,
+                       termslist=names(vpars$vpc), 
+                       ignore.suffices=setvparameters$ignore.suffices))
+    if (any(k==0))
+    { 
+      warning(paste("Could not find", paste(setvparameters$set.terms[k==0], collapse=", ")))
+      setvparameters <- setvparameters[k != 0, ]
+      k <- k[k != 0]
+    }
+    bounds <- vpars$vpc[k]
+    
+    #If bounds have changed from setvparameters$bounds, then output a warning
+    if (any(bounds != setvparameters$bounds))
+      warning("The bounds have changed for the following terms: ", 
+              paste0(bounds[bounds != setvparameters$bounds], collapse = ", "))
+  }
+  
   invisible(new.reml)
 }
 
@@ -639,6 +732,62 @@ atLevelsMatch <- function(new, old, call, single.new.term = FALSE, always.levels
   return(out)
 }
 
+setGRparam.call <- function(call, set.terms = NULL, ignore.suffices = TRUE, 
+                            bounds = "P", initial.values = NA, asr4, asr4.2)
+{
+  nt <- length(set.terms)
+  #add start.values to call and unconstrain the gammas specified by set.terms
+  start.call <- call
+  languageEl(start.call, which = "start.values") <- TRUE
+  gamma.start <- eval(start.call, sys.parent())
+  #get the vparameters in the current call
+  if (asr4)
+  {
+    gamma.table <- gamma.start$vparameters.table
+    gamma.table <- gamma.table[!grepl("<NotEstimated>", gamma.table$Component),]
+    rownames(gamma.table) <- NULL
+    gammas <- gamma.table$Component
+  } else
+  {
+    gamma.table <- gamma.start$gammas.table
+    gammas <- gamma.table$Gamma
+  }
+  #Check that there are no set.terms absent from the current fit
+  k <- unlist(lapply(1:nt, 
+                     FUN=function(i, set.terms, termslist, ignore.suffices=TRUE)
+                     { 
+                       k <- findterm(set.terms[i], termslist, 
+                                     rmDescription=ignore.suffices[i])
+                       return(k)
+                     }, 
+                     set.terms=set.terms,
+                     termslist=gammas, 
+                     ignore.suffices=ignore.suffices))
+  if (any(k==0))
+  { 
+    warning(paste("Could not find", paste(set.terms[k==0], collapse=", ")))
+    bounds <- bounds[k != 0]
+    initial.values <- initial.values[k != 0]
+    k <- k[k != 0]
+  }
+  #Apply bounds to set.terms
+  if (!all(is.na(bounds)))
+  { 
+    kk <- k[!is.na(bounds)]
+    gamma.table$Constraint[kk] <- bounds[!is.na(bounds)]
+  }
+  if (!all(is.na(initial.values)))
+  { 
+    kk <- k[!is.na(initial.values)]
+    gamma.table$Value[kk] <- initial.values[!is.na(initial.values)]
+  }
+  #modify call to set variance parameters
+  languageEl(call, which = "G.param") <- gamma.table
+  languageEl(call, which = "R.param") <- gamma.table
+  
+  return(call)
+}
+
 "newfit.asreml" <- function(asreml.obj, fixed., random., sparse., 
                             residual., rcov., update = TRUE, trace = FALSE, 
                             allow.unconverged = TRUE, allow.fixedcorrelation = TRUE,
@@ -683,8 +832,18 @@ atLevelsMatch <- function(new, old, call, single.new.term = FALSE, always.levels
     else
       kresp <- asreml.obj$fixed.formula[[2]]
     warning(paste("The estimated value of one or more correlations in the supplied asreml fit for", 
-                  kresp, "is bound or fixed and allow.fixedcorrelation is FALSE"))
+                  kresp, "is bound, singular or fixed and allow.fixedcorrelation is FALSE"))
   }
+  
+  #Check for setvparameters in call
+  if (is.null(asreml.obj$call$setvparameters))
+    setvparameters <- NULL
+  else
+    setvparameters <- asreml.obj$call$setvparameters
+  
+  #Identify any variance parameters whose bounds have been deliberatley changed
+  # delib.bound <- getTermsDeliberateBound(asreml.obj, update = update,
+  #                                        asr4 = asr4, asr4.2 = asr4.2)
   
   if (is.null(call <- asreml.obj$call) && 
       is.null(call <- attr(asreml.obj, "call"))) 
@@ -783,7 +942,7 @@ atLevelsMatch <- function(new, old, call, single.new.term = FALSE, always.levels
     }
   }
   
-  if (is.null(set.terms))
+  if (is.null(set.terms) && is.null(setvparameters))
   { 
     if (update)
     {
@@ -803,70 +962,90 @@ atLevelsMatch <- function(new, old, call, single.new.term = FALSE, always.levels
   } else
   { 
     #set variance terms
-    #test for compatibility of arguments
-    nt <- length(set.terms)
-    if (length(ignore.suffices) == 1 & nt != 1)
-      ignore.suffices <- rep(ignore.suffices, nt)
-    if (length(ignore.suffices) != nt)
-      stop("ignore.suffices specification is not consistent with set.terms")
-    if (length(bounds) == 1 & nt != 1)
-      bounds <- rep(bounds, nt)
-    if (length(bounds) != nt)
-      stop("bounds specification is not consistent with set.terms")
-    if (length(initial.values) == 1 & nt != 1)
-      initial.values <- rep(initial.values, nt)
-    if (length(initial.values) != nt)
-      stop("initial.values specification is not consistent with set.terms")
+    if (!is.null(set.terms))
+    { 
+      #test for compatibility of arguments
+      nt <- length(set.terms)
+      if (length(ignore.suffices) == 1 & nt != 1)
+        ignore.suffices <- rep(ignore.suffices, nt)
+      if (length(ignore.suffices) != nt)
+        stop("ignore.suffices specification is not consistent with set.terms")
+      if (length(bounds) == 1 & nt != 1)
+        bounds <- rep(bounds, nt)
+      if (length(bounds) != nt)
+        stop("bounds specification is not consistent with set.terms")
+      if (length(initial.values) == 1 & nt != 1)
+        initial.values <- rep(initial.values, nt)
+      if (length(initial.values) != nt)
+        stop("initial.values specification is not consistent with set.terms")
+    }
     
-    #add start.values to call and unconstrain the gammas specified by set.terms
+    #add start.values to call so can get vparamaeters in the current call
     start.call <- call
     languageEl(start.call, which = "start.values") <- TRUE
     gamma.start <- eval(start.call, sys.parent())
     if (asr4)
     {
       gamma.table <- gamma.start$vparameters.table
-      gamma.table <- gamma.table[!grepl("<NotEstimated>", gamma.table$Component),]
-      rownames(gamma.table) <- NULL
       gammas <- gamma.table$Component
-    } 
+    }
     else
     {
       gamma.table <- gamma.start$gammas.table
       gammas <- gamma.table$Gamma
     }
-    k <- unlist(lapply(1:nt, 
-                       FUN=function(i, set.terms, termslist, ignore.suffices=TRUE)
-                       { 
-                         k <- findterm(set.terms[i], termslist, 
-                                       rmDescription=ignore.suffices[i])
-                         return(k)
-                       }, 
-                       set.terms=set.terms,
-                       termslist=gammas, 
-                       ignore.suffices=ignore.suffices))
-    if (any(k==0))
-    { 
-      warning(paste("Could not find", paste(set.terms[k==0], collapse=", ")))
-      bounds <- bounds[k != 0]
-      initial.values <- initial.values[k != 0]
-      k <- k[k != 0]
+    
+    #Check if setvparameters terms are still in fitted vparameters - if not, remove them 
+    if (!is.allnull(setvparameters) && !is.allnull(findsetterms(setvparameters, gammas)))
+    {
+      setvpars.terms <- findsetterms(setvparameters, gammas) #get setvpar.terms in gammas
+      if (length(setvpars.terms) > 0)
+      {
+        #Reduce setvparameters to set.terms not in terms and make set.terms equal to those found
+        setvparameters <- setvparameters[setvparameters$set.terms %in% names(setvpars.terms),]
+        setvparameters$set.terms <- setvpars.terms
+      }
+      else
+        setvparameters <- NULL
     }
-    if (!all(is.na(bounds)))
-    { 
-      kk <- k[!is.na(bounds)]
-      gamma.table$Constraint[kk] <- bounds[!is.na(bounds)]
+    
+    # Add the setvparameters terms not in set.terms to set.terms
+    if (!is.null(setvparameters))
+    {
+      if (!is.null(set.terms))
+      {
+        setvpars.terms <- setvparameters$set.terms
+        setvpars.terms <- setdiff(setvpars.terms, terms) #get setvpar.terms not in terms
+        if (length(setdiff(setvpars.terms, terms)) > 0)
+        { 
+          #Reduce setvparameters to set.terms not in terms
+          setvparameters <- setvparameters[setvparameters$set.terms %in% setvpars.terms,]
+          setvparameters <- rbind(setvparameters, 
+                                  data.frame(set.terms = set.terms,
+                                             ignore.suffices = ignore.suffices,
+                                             bounds = bounds,
+                                             initial.values = initial.values))
+        }
+      }
+      set.terms <- setvparameters$set.terms
+      ignore.suffices <- setvparameters$ignore.suffices
+      initial.values <- setvparameters$initial.values
+      bounds <- setvparameters$bounds
     }
-    if (!all(is.na(initial.values)))
-    { 
-      kk <- k[!is.na(initial.values)]
-      gamma.table$Value[kk] <- initial.values[!is.na(initial.values)]
-    }
-    #modify call to set variance parameters
-    languageEl(call, which = "G.param") <- gamma.table
-    languageEl(call, which = "R.param") <- gamma.table
+    nt <- length(set.terms)
+    
+    #Apply bounds to the gammas specified by set.terms
+    call <- setGRparam.call(call = call, set.terms = set.terms, 
+                            ignore.suffices = ignore.suffices, bounds = bounds, 
+                            initial.values = initial.values, 
+                            asr4 = asr4, asr4.2 = asr4.2)
+    #Set vparameters in the call
+    call[["setvparameters"]] <- data.frame(set.terms = set.terms, 
+                                           ignore.suffices = ignore.suffices, 
+                                           bounds = bounds, 
+                                           initial.values = initial.values)
   }
-  
-  
+
   #deal with args coming via ...
   tempcall <- list(...)
   if (length(tempcall)) 
@@ -923,7 +1102,7 @@ atLevelsMatch <- function(new, old, call, single.new.term = FALSE, always.levels
   if (update)
   {
     Ranterms <- names(asreml.new.obj$vparameters)
-    Resterms <- grepl("\\!R", names(asreml.new.obj$vparameters))
+    Resterms <- grepl("\\!R$", names(asreml.new.obj$vparameters))
     Resterms <- Ranterms[Resterms]
     Ranterms <- setdiff(Ranterms, Resterms)
     
@@ -1005,8 +1184,53 @@ atLevelsMatch <- function(new, old, call, single.new.term = FALSE, always.levels
     #Check for fixed correlation
     if (!isFixedCorrelOK.asreml(asreml.new.obj, allow.fixedcorrelation = allow.fixedcorrelation))
     {
-      warning("At least one correlation's estimated value is bound or fixed")
+      warning("At least one correlation's estimated value is bound, singular or fixed")
       asreml.new.obj <- asreml.obj
+    }
+  }
+  
+  #Check that setvpars bounds have stuck- if not, try to reset
+  if (!is.null(setvparameters))
+  {
+    vpars <- getVpars(asreml.new.obj, asr4.2)
+    #Find the location of setvparameters$set.terms in vpars$vpc 
+    ndb <- nrow(setvparameters)
+    k <- unlist(lapply(1:ndb, 
+                       FUN=function(i, set.terms, termslist, ignore.suffices=TRUE)
+                       { 
+                         k <- findterm(set.terms[i], termslist, 
+                                       rmDescription=ignore.suffices[i])
+                         return(k)
+                       }, 
+                       set.terms=setvparameters$set.terms,
+                       termslist=names(vpars$vpc), 
+                       ignore.suffices=setvparameters$ignore.suffices))
+    if (any(k==0))
+    { 
+      warning(paste("Could not find", paste(setvparameters$set.terms[k==0], collapse=", ")))
+      setvparameters <- setvparameters[k != 0, ]
+      k <- k[k != 0]
+    }
+    if (length(k) > 0)
+      bounds <- vpars$vpc[k]
+    else 
+      bounds <- NULL
+    
+    #If bounds have changed from setvparameters$bounds, then try to reset to setvparameters$bounds
+    if (!is.allnull(bounds) && any(bounds != setvparameters$bounds))
+    {
+      setvparameters$set.terms <- names(bounds)
+      call <- asreml.new.obj$call
+      #add start.values to call and unconstrain the gammas specified by set.terms
+      call <- setGRparam.call(call = call, set.terms = setvparameters$set.terms, 
+                              ignore.suffices = setvparameters$ignore.suffices, 
+                              bounds = setvparameters$bounds, 
+                              initial.values = setvparameters$initial.values, 
+                              asr4 = asr4, asr4.2 = asr4.2)
+      asreml.new.obj <- tryCatchLog(
+        eval(call, sys.parent()),
+        error = function(e) {print("Analysis continued"); NULL}, 
+        include.full.call.stack = FALSE, include.compact.call.stack = FALSE)
     }
   }
   
@@ -1059,6 +1283,7 @@ atLevelsMatch <- function(new, old, call, single.new.term = FALSE, always.levels
 
 findboundary.asreml <- function(asreml.obj, asr4, asr4.2)
 {
+  rancomps <- getResidRandomTerms(asreml.obj, which = "ran", asr4.2 = asr4.2)$ran
   if (asr4)
   {
     if (asr4.2)
@@ -1072,6 +1297,8 @@ findboundary.asreml <- function(asreml.obj, asr4, asr4.2)
                              component = asreml.obj$vparameters, 
                              stringsAsFactors = FALSE)
     }
+    #Reduce to random terms only
+    allvcomp <- allvcomp[rownames(allvcomp) %in% names(rancomps),]
     bound.terms <- allvcomp$bound %in% c("B", "S") 
     #                 | bound == "F"
     #bound.terms[grep("?", bound, fixed=TRUE)] <- TRUE
@@ -1080,11 +1307,13 @@ findboundary.asreml <- function(asreml.obj, asr4, asr4.2)
     allvcomp <- data.frame(bound = names(asreml.obj$gammas.con), 
                            component = asreml.obj$gammas,
                            stringsAsFactors = FALSE)
+    allvcomp <- allvcomp[rownames(allvcomp) %in% names(rancomps),]
     bound.terms <- allvcomp$bound == "Boundary" | allvcomp$bound == "Singular"
     #                 | bound == "Fixed"
     #bound.terms[grep("?", bound, fixed=TRUE)] <- TRUE
   }
- return(list(allvcomp = allvcomp, bound.terms = bound.terms)) 
+  
+  return(list(allvcomp = allvcomp, bound.terms = bound.terms)) 
 }
 
 "rmboundary.asrtests" <- function(asrtests.obj, checkboundaryonly = FALSE, 
@@ -1093,7 +1322,7 @@ findboundary.asreml <- function(asreml.obj, asr4, asr4.2)
                                   bounds = "P", initial.values = NA, ...)
   #Removes any boundary (B) or singular (S) terms from the fit stored in asreml.obj, 
   #one by one from largest to smallest
-  #For a list of bounds codes see setvarianceterms.call
+  #For a list of bounds codes see setvarianceterms.call (or ASREML entry in Ecco)
 { 
   
   #Deal with deprecated constraints parameter
@@ -1367,7 +1596,7 @@ findboundary.asreml <- function(asreml.obj, asr4, asr4.2)
                               allow.fixedcorrelation = allow.fixedcorrelation))
     warning(paste("The estimated value of one or more correlations in the supplied asreml fit for", 
                   kresp,
-                  "is bound or fixed and allow.fixedcorrelation is FALSE"))
+                  "is bound, singular or fixed and allow.fixedcorrelation is FALSE"))
   all.terms <- c(dropFixed, addFixed, dropRandom, addRandom, newResidual,set.terms)
   if (is.allnull(all.terms))
     stop("In analysing ", kresp, ", must supply terms to be removed/added")
@@ -1521,7 +1750,8 @@ findboundary.asreml <- function(asreml.obj, asr4, asr4.2)
     if (asreml.new.obj$converge || allow.unconverged)
     {
       #Check fixed correlation
-      if (!isFixedCorrelOK.asreml(asreml.new.obj, allow.fixedcorrelation = allow.fixedcorrelation))
+      if (!isFixedCorrelOK.asreml(asreml.new.obj, 
+                                  allow.fixedcorrelation = allow.fixedcorrelation))
       {
         action <- "Unchanged - fixed correlation"
         if (ic.lik != "none")
@@ -1646,7 +1876,7 @@ findboundary.asreml <- function(asreml.obj, asr4, asr4.2)
                               allow.unconverged = TRUE, allow.fixedcorrelation = TRUE, 
                               checkboundaryonly = FALSE, 
                               trace = FALSE, update = TRUE, denDF = "numeric", 
-                              bounds = "P", initial.values = NA, 
+                              #bounds = "P", initial.values = NA, 
                               bound.exclusions = c("F","B","S","C"),  
                               IClikelihood = "none", 
                               ...)
