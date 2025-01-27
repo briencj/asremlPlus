@@ -1330,6 +1330,84 @@ test_that("PSA_NW_corb_models_asreml42", {
 
 })  
 
+cat("#### Test for PSA_NW with fixed correlations with asreml42\n")
+test_that("PSA_NW_fixed_corr_asreml42", {
+  skip_if_not_installed("asreml")
+  skip_on_cran()
+  library(dae)
+  library(asreml)
+  library(asremlPlus)
+  
+  data("PSA.NW.dat")
+  #####Split Smarthouse into N & S
+  tmp.dat <- within(PSA.NW.dat, 
+                    {
+                      Half <- fac.recast(Lane, newlevels = rep(1:2, each = 12))
+                      HLane <- fac.recast(Lane, newlevels = rep(1:12, times = 2))
+                    })
+  
+  asreml::asreml.options(extra = 5, ai.sing = TRUE, fail = "soft")
+  
+  #### Fit separate model to two Halves of the Smarthouse  
+  #Fit initial model - Lane and Position fixed and separate dsum terms
+  current.asr <- do.call(asreml, 
+                         list(PSA.14 ~ at(Half, 1):Lane + at(Half, 2):Lane + 
+                                at(Half, 1):Position + at(Half, 2):Position, 
+                              residual = ~ dsum(~ Lane:Position | Half, levels = 1) + 
+                                dsum(~ Lane:Position | Half, levels = 2), 
+                              data=tmp.dat, maxit = 50))
+  info <- infoCriteria(current.asr, IClikelihood = "full")
+  testthat::expect_equal(info$varDF, 2)
+  testthat::expect_lt(abs(info$AIC - 785.3443), 0.10)
+  
+  #Create an asrtests object, removing boundary terms
+  init.asrt <- as.asrtests(current.asr, NULL, NULL, IClikelihood = "full", 
+                           label = "Start with no spatial modelling")
+  init.asrt <- rmboundary(init.asrt)
+  
+  #Fit an ar1 model for a single dsum term
+  current.asrt <- addSpatialModel(init.asrt, spatial.model = "corr", 
+                                  sections = "Half",
+                                  row.covar = "cLane", col.covar = "cPosn", 
+                                  row.factor = "Lane", col.factor = "Position",
+                                  corr.funcs = c("ar1", "ar1"), 
+                                  IClikelihood = "full")
+  testthat::expect_warning(
+    info <- infoCriteria(current.asrt$asreml.obj, IClikelihood = "full"),
+    regexp = "The following bound terms were discounted:")
+  testthat::expect_equal(info$varDF, 7)
+  testthat::expect_lt(abs(info$AIC - 790.7611 ), 0.10)
+  vpars <- c("P","U","U","P","U","U","P","F")
+  names(vpars) <- c("at(Half, '1'):Lane:Position",
+                    "at(Half, '1'):Lane:Position!Lane!cor", 
+                    "at(Half, '1'):Lane:Position!Position!cor", 
+                    "at(Half, '2'):Lane:Position", 
+                    "at(Half, '2'):Lane:Position!Lane!cor", 
+                    "at(Half, '2'):Lane:Position!Position!cor", 
+                    "Half_1!R", "Half_2!R")
+  testthat::expect_equal(current.asrt$asreml.obj$vparameters.con, vpars)
+  
+  #Fit autocorrelation in residual with dsum
+  current.asr <- do.call(asreml, 
+                         list(PSA.14 ~ at(Half, 1):Lane + at(Half, 2):Lane + 
+                                at(Half, 1):Position + at(Half, 2):Position, 
+                              residual = ~ dsum(~ Lane:Position | Half, levels = 1) + 
+                                dsum(~ ar1(Lane):ar1(Position) | Half, levels = 2), 
+                              data=tmp.dat, maxit = 50))
+  current.asrt <- as.asrtests(current.asr, NULL, NULL, IClikelihood = "full",
+                              label = "Start with ar1 in the residual")
+  print(current.asrt)
+  
+  current.asr <- do.call(asreml, 
+                         list(PSA.14 ~ at(Half, 1):Lane + at(Half, 2):Lane + 
+                                at(Half, 1):Position + at(Half, 2):Position, 
+                              residual = ~ dsum(~ ar1(Lane):ar1(Position) | Half), 
+                              data=tmp.dat, maxit = 50))
+  current.asrt <- as.asrtests(current.asr, NULL, NULL, IClikelihood = "full",
+                              label = "Start with ar1 in the residual")
+  print(current.asrt)
+})
+
 cat("#### Test for spatial models with asreml42\n")
 test_that("spatial_models_barley_asreml42", {
   skip_if_not_installed("asreml")
@@ -1559,7 +1637,7 @@ test_that("chickpea_spatial_mod_asreml42", {
   info <- infoCriteria(list(split = init.asrt$asreml.obj, TPPS = TPPSRot.Main.grp.asrt$asreml.obj), 
                        IClikelihood = "full")
   testthat::expect_true(all(info$varDF == c(5,9)))
-  testthat::expect_true(all(abs(info$AIC - c(4263.948, 3983.742)) < 0.10))
+  testthat::expect_true(all(abs(info$AIC - c(4263.948, 4000.055)) < 0.10))
   theta.opt <- attr(TPPSRot.Main.grp.asrt$asreml.obj, which = "theta.opt")
   testthat::expect_true(all(theta.opt$SW == c(60,90)))
   testthat::expect_true(all(theta.opt$SE == c(30,30)))

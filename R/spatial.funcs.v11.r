@@ -2105,6 +2105,26 @@ fitTPSModSect <- function(tspl.asrt, data, mat, ksect, sect.fac,
       # asreml::asreml.options(ai.sing = ksing)
     }
   }
+  
+  #Check for singular fixed P-spline terms and, if any, remove
+  
+  asreml.obj <- tspl.asrt$asreml.obj
+  coefF <- summary(asreml.obj, coef=TRUE)$coef.fixed
+  which.cF <- rownames(coefF)[is.na(coefF[, "z.ratio"])]
+  if (any(grepl("TP.CR.", which.cF)))
+  {
+    which.cF <- which.cF[grepl("TP.CR.", which.cF)]
+    asreml.obj <- newfit(asreml.obj, 
+                         fixed. = as.formula(paste("~ . - ", 
+                                                   paste(which.cF, collapse = " - "))))
+    tspl.asrt$asreml.obj <- asreml.obj
+    test.summary <- addtoTestSummary(tspl.asrt$test.summary, terms = "Aliased fixed spline term(s)", 
+                                     DF = NA, denDF = NA, p = NA, 
+                                     AIC = NA, BIC = NA, 
+                                     action = "Dropped")
+    tspl.asrt$test.summary <- test.summary
+  }
+  
   tspl.asrt <- rmboundary(tspl.asrt, checkboundaryonly = checkboundaryonly, 
                           update = update, IClikelihood = IClikelihood)
   attr(tspl.asrt$asreml.obj, which = "theta.opt") <- theta.opt

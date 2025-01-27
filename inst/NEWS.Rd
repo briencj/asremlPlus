@@ -1,5 +1,9 @@
 \name{news}
 \title{News for Package asremlPlus}
+\section{asremlPlus Version 4.4.45 (2025-01-27}{
+  \itemize{
+  \item Add code to addSpatialModel.asrtests, addSpatialModelOnIC.asrtests and chooseSpatialModelOnIC.asrtests that removes singular P-spline terms (TP.CR.x) from the model.
+}}
 \section{asremlPlus Version 4.4.44 (2025-01-07}{
   \itemize{
   \item Fix minor bugs in fitting spatial correlation models using addSpatialModel.asrtests, addSpatialModelOnIC.asrtests and chooseSpatialModelOnIC.asrtests.
