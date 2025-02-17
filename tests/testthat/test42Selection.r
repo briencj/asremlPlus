@@ -587,9 +587,10 @@ test_that("at_testswapran_asreml42", {
   #'### Test for Treatments:DAP deviations terms
   current.asrt <- testranfix(current.asrt, term = "Treatments:DAP",
                              positive.zero = TRUE)
-  testthat::expect_equal(current.asrt$test.summary$action[2], "Retained")
-  testthat::expect_true(all(table(summary(current.asrt$asreml.obj)$varcomp$bound) ==  c(9,40,1)))
-  
+  # testthat::expect_equal(current.asrt$test.summary$action[2], "Retained")
+  # testthat::expect_true(all(table(summary(current.asrt$asreml.obj)$varcomp$bound) ==  c(9,40,1)))
+  testthat::expect_equal(current.asrt$test.summary$action[2], "Dropped")
+  testthat::expect_true(all(table(summary(current.asrt$asreml.obj)$varcomp$bound) ==  c(1,9,37,1,1)))  
 })
 
 

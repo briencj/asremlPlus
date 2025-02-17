@@ -701,7 +701,7 @@ chk4SingularSpatTerms <- function(asrtests.obj, corr.asrt, label,
     vpt.ran <- vpt.corr[names(vpc.corr$ran)]
     vpt.r <- vpt.ran[vpt.ran %in% c("R", "P", "C")]
     vpc.r <- vpc.corr$ran[names(vpt.r)]
-    #Are there singular r terms
+    #Are there singular correlaton terms
     if (length(vpc.r) > 0 && any(unlist(vpc.r) %in% sing.excl))
     {
       entry <- getTestEntry(asrtests.obj, label = label)
@@ -727,6 +727,117 @@ chk4SingularSpatTerms <- function(asrtests.obj, corr.asrt, label,
   return(corr.asrt)
 }
 
+#A function to test for bound spatial variance or bound residual variance
+chk4SingularSpatResVarTerms <- function(corr.asrt, init.asrt, 
+                                        corr.term, spat.var, nuggsOK, 
+                                        sections, stub, sterms, 
+                                        allow.unconverged, 
+                                        sing.excl, bounds.excl, all.bounds.excl, 
+                                        trace, asr4.2)
+{
+  #Check that the spatial variance is not bound and the Residual is P 
+  if (corr.term && nuggsOK) #nuggsOK protects against hetero residuals unrelated to sections
+    #&& is.null(sections))
+  {
+    if (trace) 
+    {cat("\n#### Checking bounds of spatial variance and Residual\n\n"); print(corr.asrt)}
+    vpc.corr <- getSectionVpars(corr.asrt$asreml.obj, 
+                                sections = sections, stub = stub, 
+                                sterm.facs = sterms, 
+                                asr4.2 = asr4.2)
+    spat.term <- names(findterm(spat.var, names(vpc.corr$ran),  #allows for changed order
+                                rmDescription = FALSE))
+    
+    #If spatial variance is P and Residual is S and, then try to set spatial variance to F
+    if (length(spat.term) > 0 && 
+        vpc.corr$ran[spat.term]  == "P" && vpc.corr$res %in% bounds.excl)
+    {
+      asr <- corr.asrt$asreml.obj
+      asr <- setvarianceterms(asr$call, terms = c(spat.term, names(vpc.corr$res)), 
+                              bound = c("F","P"), initial.values = c(1, 0.001), 
+                              ignore.suffices = FALSE, update = FALSE)
+      vpc.corr <- getSectionVpars(asreml.obj = asr, 
+                                  sections = sections, stub = stub, 
+                                  sterm.facs = sterms, 
+                                  asr4.2 = asr4.2)
+      #If not one of spat. var. and residual equal to P and the other to F or both equal to P, 
+      #then need to revert to a non-spatial model.
+      vpc.vars <- c(vpc.corr$ran[spat.term], vpc.corr$res)
+      if ((!all(vpc.vars == "P") && !(("P" %in% vpc.vars) && ("F" %in% vpc.vars))) || 
+          (!allow.unconverged && !asr$converge))
+      {
+        corr.asrt <- revert2previousFit(corr.asrt, init.asrt, 
+                                        terms = "Singular variance", 
+                                        action = "Drop correlations")
+      } else #make asr the current fit
+      {
+        corr.asrt <- within(corr.asrt,
+                            { 
+                              asreml.obj  <- asr 
+                              test.summary = addtoTestSummary(test.summary,
+                                                              terms = paste("Force fixed", spat.var), 
+                                                              action = "Swapped")
+                            })
+      }
+    } else
+    {
+      #If spatial variance is bound, #and Residual is P, 
+      #try to make the spatial variance F and the Residual P
+      if (vpc.corr$ran[spat.term] %in% bounds.excl) # && vpc.corr$res == "P")
+      {
+        asr <- corr.asrt$asreml.obj
+        asr <- setvarianceterms(asr$call, terms = c(spat.term, names(vpc.corr$res)), 
+                                bound = c("F","P"), initial.values = c(1, 0.001), 
+                                ignore.suffices = FALSE, update = FALSE)
+        vpc.corr <- getSectionVpars(asreml.obj = asr, 
+                                    sections = sections, stub = stub, 
+                                    sterm.facs = sterms, 
+                                    asr4.2 = asr4.2)
+        #Is the spatial variance not bound and the Residual is either F or P
+        if (!(vpc.corr$ran[spat.term] %in% bounds.excl) && vpc.corr$res %in% c("F","P") || 
+            (!allow.unconverged && !asr$converge))
+        { 
+          corr.asrt <- within(corr.asrt,
+                              { 
+                                asreml.obj  <- asr 
+                                test.summary = addtoTestSummary(test.summary,
+                                                                terms = "Fix terms", 
+                                                                action = "Swapped")
+                              })
+        } else #spatial variance is bound and/or the Residual is not F or P
+        {
+          if (any(c(vpc.corr$ran[spat.term], vpc.corr$res) %in% sing.excl) || 
+              all(c(vpc.corr$ran[spat.term], vpc.corr$res) %in% all.bounds.excl))
+          { 
+            corr.asrt <- revert2previousFit(corr.asrt, init.asrt, 
+                                            terms = "Singular variance", 
+                                            action = "Drop correlations")
+          }
+        } 
+      }
+    } # End one of spatial and Residual variance is bound
+    if (largeVparChange(corr.asrt$asreml.obj, 0.75))
+      corr.asrt <- iterate(corr.asrt)
+  } else
+  {
+    if (!corr.term && nuggsOK) #nuggsOK protects against hetero residuals unrelated to sections
+    {
+      vpc.corr <- getSectionVpars(corr.asrt$asreml.obj, 
+                                  sections = sections, stub = stub, 
+                                  sterm.facs = sterms, 
+                                  asr4.2 = asr4.2)
+      spat.term <- names(findterm(spat.var, names(vpc.corr$ran),  #allows for changed order
+                                  rmDescription = FALSE))
+      #If spatial variance without correlations, then revert to init.asrt
+      if (length(spat.term) > 0)
+        corr.asrt <- revert2previousFit(corr.asrt, init.asrt, 
+                                        terms = "Bound (nugget) residual", 
+                                        action = "Revert to initial fit")
+    }
+  }#End bound spatial variance and Residual P
+  return(corr.asrt)
+}
+
 #A function that checks whether all spatial vpars for a correlation model for a section 
 #  are in all.bounds.excl. If they are, this is considered irretrievable and the 
 #  initial model is retained.
@@ -737,7 +848,7 @@ allBoundSectionVpars <- function(asrtests.last, asrtests.prev,
 {
   #If all correlation model terms are bound, reinstate initial model
   vpars <- unlist(getSectionVpars(asrtests.last$asreml.obj, sections = sections, stub = stub, 
-                                  sterm.facs = sterm.facs, asr4.2 = asr4.2))
+                                  sterm.facs = sterm.facs, which = "ran", asr4.2 = asr4.2))
   if (all(vpars %in% all.bounds.excl))
     asrtests.last <- revert2previousFit(asrtests.last, asrtests.prev, terms = lab,
                                     action = action)
@@ -780,14 +891,14 @@ allBoundSectionVpars <- function(asrtests.last, asrtests.prev,
       {     
         if (stringr::str_count(ran.term, "corb") != 1)
           stop("There is not just one corb in ", ran.term, " and dimension is 0")
-        lab <- gsub(as.character(b-1), as.character(b), lab)
-        ran.term <- gsub(as.character(b-1), as.character(b), ran.term)
+        ran.term <- gsub(paste0("b *= *",b-1), paste0("b = ",b), ran.term)
+        lab <- gsub(paste0("b *= *",b-1), paste0("b = ",b), last.lab)
       } else
       { 
         #change rand parts for the current dimension
         old.ran.part <- ran.parts[dimension]
-        ran.parts[dimension] <-  gsub(as.character(b-1), as.character(b), 
-                                      ran.parts[dimension])
+        ran.parts[dimension] <- gsub(paste0("b *= *",b-1), paste0("b = ",b),  
+                                     ran.parts[dimension])
         ran.term <- stringr::str_c(ran.parts, collapse = ":")
         lab <- gsub(old.ran.part, ran.parts[dimension], last.lab, fixed = TRUE)
       }

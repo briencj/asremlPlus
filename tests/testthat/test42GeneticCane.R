@@ -66,12 +66,14 @@ test_that("HEB25_estimateV_asreml42", {
     if (func %in% c("exp", "gau"))
     { 
       rowcorrs <- asreml.obj$vparameters[grepl("Row!pow", names(asreml.obj$vparameters))]
-      R.calc <- asreml.obj$sigma2 * kronecker(mat.ar1(colcorr, 10), models[[func]](rowcorrs, c(1:24)))
+      R.calc <- asreml.obj$sigma2 * kronecker(mat.ar1(colcorr, 10), 
+                                              models[[func]](rowcorrs, c(1:24)))
     }
     else
     { 
       rowcorrs <- asreml.obj$vparameters[grepl("Row!cor", names(asreml.obj$vparameters))]
-      R.calc <- asreml.obj$sigma2 * kronecker(mat.ar1(colcorr, 10), models[[func]](rowcorrs, 24))
+      R.calc <- asreml.obj$sigma2 * kronecker(mat.ar1(colcorr, 10), 
+                                              models[[func]](rowcorrs, 24))
     }
     V <- estimateV(asreml.obj, which.matrix = "R")
     testthat::expect_true(all.equal(R.calc, V))
@@ -107,11 +109,13 @@ test_that("HEB25_estimateV_asreml42", {
     if (func %in% c("exp", "gau"))
     { 
       rowcorrs <- asreml.obj$vparameters[grepl("Row!pow", names(asreml.obj$vparameters))]
-      G.calc <- asreml.obj$vparameters["Col:Row"] * kronecker(mat.ar1(colcorr, 10), models[[func]](rowcorrs, c(1:24)))
+      G.calc <- asreml.obj$vparameters["Col:Row"] * kronecker(mat.ar1(colcorr, 10),
+                                                              models[[func]](rowcorrs, c(1:24)))
     } else
     { 
       rowcorrs <- asreml.obj$vparameters[grepl("Row!cor", names(asreml.obj$vparameters))]
-      G.calc <- asreml.obj$vparameters["Col:Row"] * kronecker(mat.ar1(colcorr, 10), models[[func]](rowcorrs, 24))
+      G.calc <- asreml.obj$vparameters["Col:Row"] * kronecker(mat.ar1(colcorr, 10), 
+                                                              models[[func]](rowcorrs, 24))
     }
     Z.new <- as.matrix(asreml.obj$design[,grepl("New", colnames(asreml.obj$design))])
     D <- diag(sqrt(asreml.obj$vparameters["New"]), nrow = 240, ncol = 240)

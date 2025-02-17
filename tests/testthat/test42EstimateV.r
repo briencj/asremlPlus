@@ -328,15 +328,15 @@ test_that("Orange_estimateV_str_asreml42", {
                        data = orange, maxit=20)   
   (vpar <- asreml.obj$vparameters)
   g <- diag(1, nrow = 3)
-  g[1,2] <- g[2,1] <- vpar[1]
-  g[1,3] <- g[3,1] <- vpar[2]
-  g[2,2] <- g[2,3] <- vpar[3]
+  g[1,2] <- g[2,1] <- vpar[2]
+  g[1,3] <- g[3,1] <- vpar[3]
+  g[3,2] <- g[2,3] <- vpar[4]
+  g <- vpar[1]*g
   G.g <- kronecker(matrix(g, nrow = 3), mat.I(5))
   Z <- as.matrix(asreml.obj$design[,3:17] )
   V.g <- asreml.obj$sigma2 *(Z %*% G.g %*% t(Z))
   G <- estimateV(asreml.obj, which.matrix = "G", bound.exclusions = NULL)
-  #mulltiply G by 10 because G.param has the initial value 0.1 stored instead of 1, the correlations being bound
-  testthat::expect_true(all.equal(G*10, V.g, tol = 1e-03))
+  testthat::expect_true(all.equal(G, V.g, tol = 1e-03))
   
   ##Correlated slope and intercept - cor
   asreml.obj <- asreml(circ ~ x,
@@ -350,55 +350,55 @@ test_that("Orange_estimateV_str_asreml42", {
   V.g <- asreml.obj$sigma2 *(Z %*% G.g %*% t(Z))
   G <- estimateV(asreml.obj, which.matrix = "G", bound.exclusions = NULL)
   #mulltiply G by 10 because G.param has the initial value 0.1 stored instead of 1, the correlations being bound
-  testthat::expect_true(all.equal(G*10,V.g, tol = 1e-03)) 
+  testthat::expect_true(all.equal(G,V.g, tol = 1e-03)) 
   
   ##Correlated slope and intercept - ar1
   asreml.obj <- asreml(circ ~ x,
                        random = ~ str( ~Tree/(x + x2), ~ar1(3):id(5)),
                        data = orange, maxit=20)   
   (vpar <- asreml.obj$vparameters)
-  g <- mat.ar1(vpar[1], 3)
-  G.g <- kronecker(matrix(g, nrow = 3), mat.I(5))
+  g <- mat.ar1(vpar[2], 3)
+  G.g <-vpar[1] * kronecker(matrix(g, nrow = 3), mat.I(5))
   Z <- as.matrix(asreml.obj$design[,3:17] )
   V.g <- asreml.obj$sigma2 *(Z %*% G.g %*% t(Z))
   G <- estimateV(asreml.obj, which.matrix = "G", bound.exclusions = NULL)
-  testthat::expect_true(all.equal(G*10, V.g, tol = 1e-03))
+  testthat::expect_true(all.equal(G, V.g, tol = 1e-03))
   
   ##Correlated slope and intercept - ar2
   asreml.obj <- asreml(circ ~ x,
                        random = ~ str( ~Tree/(x + x2), ~ar2(3):id(5)),
                        data = orange, maxit=20)   
   (vpar <- asreml.obj$vparameters)
-  g <- mat.ar2(vpar[1:2], 3)
-  G.g <- kronecker(matrix(g, nrow = 3), mat.I(5))
+  g <- mat.ar2(vpar[2:3], 3)
+  G.g <- vpar[1] * kronecker(matrix(g, nrow = 3), mat.I(5))
   Z <- as.matrix(asreml.obj$design[,3:17] )
   V.g <- asreml.obj$sigma2 *(Z %*% G.g %*% t(Z))
   G <- estimateV(asreml.obj, which.matrix = "G", bound.exclusions = NULL)
-  testthat::expect_true(all.equal(G*10, V.g, tol = 1e-03))
+  testthat::expect_true(all.equal(G, V.g, tol = 1e-03))
   
   ##Correlated slope and intercept - ma1
   asreml.obj <- asreml(circ ~ x,
                        random = ~ str( ~Tree/(x + x2), ~ma1(3):id(5)),
                        data = orange, maxit=20)   
   (vpar <- asreml.obj$vparameters)
-  g <- mat.ma1(vpar[1], 3)
-  G.g <- kronecker(matrix(g, nrow = 3), mat.I(5))
+  g <- mat.ma1(vpar[2], 3)
+  G.g <- vpar[1] * kronecker(matrix(g, nrow = 3), mat.I(5))
   Z <- as.matrix(asreml.obj$design[,3:17] )
   V.g <- asreml.obj$sigma2 *(Z %*% G.g %*% t(Z))
   G <- estimateV(asreml.obj, which.matrix = "G", bound.exclusions = NULL)
-  testthat::expect_true(all.equal(G*10, V.g, tol = 1e-03))
+  testthat::expect_true(all.equal(G, V.g, tol = 1e-03))
   
   ##Correlated slope and intercept - sar
   asreml.obj <- asreml(circ ~ x,
                        random = ~ str( ~Tree/(x + x2), ~sar(3):id(5)),
                        data = orange, maxit=20)   
   (vpar <- asreml.obj$vparameters)
-  g <- mat.sar(vpar[1], 3)
-  G.g <- kronecker(matrix(g, nrow = 3), mat.I(5))
+  g <- mat.sar(vpar[2], 3)
+  G.g <- vpar[1] * kronecker(matrix(g, nrow = 3), mat.I(5))
   Z <- as.matrix(asreml.obj$design[,3:17] )
   V.g <- asreml.obj$sigma2 *(Z %*% G.g %*% t(Z))
   G <- estimateV(asreml.obj, which.matrix = "G", bound.exclusions = NULL)
-  testthat::expect_true(all.equal(G*10, V.g, tol = 1e-03))
+  testthat::expect_true(all.equal(G, V.g, tol = 1e-03))
   
 })
 

@@ -57,8 +57,8 @@ test_that("Wheat_spatial_asreml42", {
                                    IClikelihood = "full")
   corb.asrt <- rmboundary(corb.asrt, IClikelihood = "full")
   inf <- infoCriteria(corb.asrt$asreml.obj, IClikelihood = "full")
-  testthat::expect_equal(inf$varDF, 3)
-  testthat::expect_true(abs(inf$AIC - 1718.609) < 0.1)
+  testthat::expect_equal(inf$varDF, 6)
+  testthat::expect_true(abs(inf$AIC - 1666.329) < 0.1)
   
   #Fit autocorrelation model
   spatialEach.asrts <- list()

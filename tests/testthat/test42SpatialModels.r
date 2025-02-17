@@ -600,8 +600,8 @@ test_that("Wheat_spatial_models_asreml42", {
                                       difforder = c(1,1), degree = c(1,1),
                                       asreml.option = "mbf", IClikelihood = "full")
   info <- infoCriteria(current.asrt$asreml.obj, IClikelihood = "full")
-  testthat::expect_equal(info$varDF, 4)
-  testthat::expect_lt(abs(info$AIC - 1653.11 ), 0.10)
+  testthat::expect_equal(info$varDF, 3)
+  testthat::expect_lt(abs(info$AIC - 1720.891), 0.10)
   
   
   #Return all of the models
@@ -754,7 +754,7 @@ test_that("Wheat_spatial_models_asreml42", {
   testthat::expect_true(all(rownames(spatial.asrts$spatial.IC) == 
                               c("nonspatial", "corr", "TPNCSS", "TPPSC2", "TPPSL1")))
   testthat::expect_true(all(abs(spatial.asrts$spatial.IC$AIC - 
-                                  c(1690.964, 1656.538, 1639.792, 1643.467, 1653.114)) < 0.10))
+                                  c(1690.964, 1653.978, 1639.792, 1643.467, 1653.114)) < 0.10))
   
   #Check that calculated spatial.IC is the same as those for models fitted using addSpatialModel
   spatialEach.asrts <- list()
@@ -905,20 +905,20 @@ test_that("Wheat76_corr_models_asreml42", {
   init.asrt <- rmboundary(init.asrt)
   
   # Try corb(Row):corb(Colum) with corr.orders 0 - Column fits order 2
-  # There is currently a problem in asreml 4.2 that results in the following model fit to crash R
-  # current.asrt <- addSpatialModel(init.asrt, spatial.model = "corr",
-  #                                 row.covar = "cRow", col.covar = "cColumn",
-  #                                 row.factor = "Row", col.factor = "Column",
-  #                                 corr.funcs = c("corb", "corb"), corr.orders = c(0,0),
-  #                                 allow.unconverged = FALSE)
-  # info <- infoCriteria(current.asrt$asreml.obj, IClikelihood = "full")
-  # testthat::expect_equal(info$varDF, 6)
-  # testthat::expect_lt(abs(info$AIC - 1668.77), 0.10)
-  # vpars <- c("P","P","P","U","U","U","F")
-  # names(vpars) <- c("Row", "Column", "Row:Column", "Row:Column!Row!cor1",
-  #                   "Row:Column!Column!cor1", "Row:Column!Column!cor2", "units!R")
-  # testthat::expect_equal(vpars, current.asrt$asreml.obj$vparameters.con)
-  # testthat::expect_equal(nrow(current.asrt$test.summary), 8)
+  # This was crashing R, but seems to be fixed in asreml 4.2.0.370
+  current.asrt <- addSpatialModel(init.asrt, spatial.model = "corr",
+                                  row.covar = "cRow", col.covar = "cColumn",
+                                  row.factor = "Row", col.factor = "Column",
+                                  corr.funcs = c("corb", "corb"), corr.orders = c(0,0),
+                                  allow.unconverged = FALSE)
+  info <- infoCriteria(current.asrt$asreml.obj, IClikelihood = "full")
+  testthat::expect_equal(info$varDF, 6)
+  testthat::expect_lt(abs(info$AIC - 1668.77), 0.10)
+  vpars <- c("P","P","P","U","U","U","F")
+  names(vpars) <- c("Row", "Column", "Row:Column", "Row:Column!Row!cor1",
+                    "Row:Column!Column!cor1", "Row:Column!Column!cor2", "units!R")
+  testthat::expect_equal(vpars, current.asrt$asreml.obj$vparameters.con)
+  testthat::expect_equal(nrow(current.asrt$test.summary), 8)
   
   # Try Row:ar1(Column) model
   current.asrt <- addSpatialModel(init.asrt, spatial.model = "corr", 
@@ -945,10 +945,11 @@ test_that("Wheat76_corr_models_asreml42", {
                                   corr.funcs = c("exp", "ar1"))
   info <- infoCriteria(current.asrt$asreml.obj, IClikelihood = "full")
   testthat::expect_equal(info$varDF, 5)
-  testthat::expect_lt(abs(info$AIC - 974727.8), 0.10) #this value is weird
+  testthat::expect_lt(abs(info$AIC - 1714.379), 0.10) #this value is weird
   testthat::expect_equal(names(current.asrt$asreml.obj$vparameters), 
-                         c("Row", "Column", "cRow:Column", "cRow:Column!cRow!pow", 
-                           "cRow:Column!Column!cor", "units!R"))
+                         c("Row", "Column", "Column:cRow", "Column:cRow!cRow!pow", 
+                           #"cRow:Column!Column!cor", 
+                           "units!R"))
   
   #Compare lvr and TPPSL1 models
   spatial.asrts <- list()
@@ -1017,7 +1018,7 @@ cat("#### Test for PSA_NW corb spatial models with asreml42\n")
 test_that("PSA_NW_corb_models_asreml42", {
   skip_if_not_installed("asreml")
   skip_on_cran()
-  skip("cannot test corb as the moment")
+#  skip("cannot test corb as the moment")
   library(dae)
   library(asreml)
   library(asremlPlus)
@@ -1176,7 +1177,7 @@ test_that("PSA_NW_corb_models_asreml42", {
                                   row.covar = "cLane", col.covar = "cPosn", 
                                   row.factor = "Lane", col.factor = "Position",
                                   corr.funcs = c("corb", "corb"), corr.orders = c(1, 1), 
-                                  nugget.variance = FALSE,
+                                  nugget.variance = TRUE,
                                   IClikelihood = "full", trace = TRUE)
   testthat::expect_warning(
     info <- infoCriteria(current.asrt$asreml.obj, IClikelihood = "full"),
@@ -1184,10 +1185,12 @@ test_that("PSA_NW_corb_models_asreml42", {
   testthat::expect_equal(info$varDF, 4)
   testthat::expect_lt(abs(info$AIC - 785.6476), 0.10)
   vpars <- c("P","U","U","P","F","F")
+  vpars <- c("P","U","U","F","P")
   names(vpars) <- c("at(Half, '1'):Lane:Position",
                     "at(Half, '1'):Lane:Position!Lane!cor1", 
                     "at(Half, '1'):Lane:Position!Position!cor1", 
-                    "at(Half, '2'):Lane:Position", "Half_1!R", "Half_2!R")
+                    #"at(Half, '2'):Lane:Position", 
+                    "Half_1!R", "Half_2!R")
   testthat::expect_equal(current.asrt$asreml.obj$vparameters.con, vpars)
   
   #Fit an ar1 model for a single dsum term
@@ -1239,11 +1242,12 @@ test_that("PSA_NW_corb_models_asreml42", {
     regexp = "The following bound terms were discounted:")
   testthat::expect_equal(info$varDF, 4)
   testthat::expect_lt(abs(info$AIC - 785.6476), 0.10)
-  vpars <- c("P","U","U","P","F","F")
+  vpars <- c("P","U","U","F","P")
   names(vpars) <- c("at(Half, '1'):Lane:Position",
                     "at(Half, '1'):Lane:Position!Lane!cor1", 
                     "at(Half, '1'):Lane:Position!Position!cor1", 
-                    "at(Half, '2'):Lane:Position", "Half_1!R", "Half_2!R")
+                    #"at(Half, '2'):Lane:Position", 
+                    "Half_1!R", "Half_2!R")
   testthat::expect_equal(current.asrt$asreml.obj$vparameters.con, vpars)
   
   #Fit up to a 10-band corb model to each Half using a single dsum term
@@ -1254,22 +1258,22 @@ test_that("PSA_NW_corb_models_asreml42", {
                                   corr.funcs = c("corb", "corb"), corr.orders = c(0, 0), 
                                   IClikelihood = "full")
   info <- infoCriteria(current.asrt$asreml.obj, IClikelihood = "full")
-  testthat::expect_equal(info$varDF, 4)
-  testthat::expect_lt(abs(info$AIC - 785.6476), 0.10)
+  testthat::expect_equal(info$varDF, 5)
+  testthat::expect_lt(abs(info$AIC - 782.1836), 0.10)
   testthat::expect_equal(current.asrt$test.summary$terms, 
-                         c("Start with no spatial modelling", 
-                           "Add random at(Half, '1'):Lane:Position and fix residual for Half 1", 
-                           "Try corb(Lane, b = 1) for Half 1", 
-                           "Try corb(Lane, b = 2) for Half 2", 
+                         c("Start with no spatial modelling",                            
+                           "Add random Lane:Position and fix residual for Half 1",      
+                           "Try corb(Lane, b = 1) for Half 1",  
+                           "Try corb(Lane, b = 2) for Half 1", 
                            "Try corb(Position, b = 1) for Half 1", 
                            "Try corb(Position, b = 2) for Half 1", 
+                           "Try corb(Position, b = 3) for Half 1", 
                            "Force positive nugget with Half_1!R", 
-                           "Add random at(Half, '2'):Lane:Position and fix residual for Half 2",
+                           "Add random Lane:Position and fix residual for Half 2", 
                            "Try corb(Lane, b = 1) for Half 2", 
                            "Try corb(Position, b = 1) for Half 2", 
                            "Try corb(Lane, b = 1) and corb(Position, b = 1) for Half 2"))
-  
-  
+
   #Fit an ar1 model for a single dsum term
   current.asrt <- addSpatialModel(init.asrt, spatial.model = "corr", 
                                   sections = "Half",
@@ -1319,15 +1323,14 @@ test_that("PSA_NW_corb_models_asreml42", {
     regexp = "The following bound terms were discounted:")
   testthat::expect_equal(info$varDF, 4)
   testthat::expect_lt(abs(info$AIC - 785.6476), 0.10)
-  vpars <- c("P","U","U","P","F","F","F")
+  vpars <- c("P","U","U","F","F","P")
   names(vpars) <- c("at(Half, '1'):Lane:Position",
                     "at(Half, '1'):Lane:Position!Lane!cor1", 
                     "at(Half, '1'):Lane:Position!Position!cor1", 
-                    "at(Half, '2'):Lane:Position", 
+                    #"at(Half, '2'):Lane:Position", 
                     "Half:HLane:Position!R", "Half:HLane:Position!Half_1", 
                     "Half:HLane:Position!Half_2")
-  testthat::expect_equal(current.asrt$asreml.obj$vparameters.con, vpars)
-
+  testthat::expect_equal(current.asrt$asreml.obj$vparameters.con[1:6], vpars)
 })  
 
 cat("#### Test for PSA_NW with fixed correlations with asreml42\n")
@@ -1542,7 +1545,7 @@ test_that("nonfit_spatial_models_asreml42", {
   testthat::expect_true(all(abs(na.omit(spatial.asrts$spatial.IC$AIC) - 
                                   c(892.861, 887.718, 892.861, 892.861)) < 0.10))
   testthat::expect_equal(spatial.asrts$best.spatial.mod, "corr")
-  testthat::expect_true(all(spatial.asrts$asrts$corr$asreml.obj$vparameters.con == c("P","U","F")))
+  testthat::expect_true(all(spatial.asrts$asrts$corr$asreml.obj$vparameters.con == c("F","U","P")))
   
   #Check that calculated spatial.IC is the same as those for models fitted using addSpatialModel
   spatialEach.asrts <- list()

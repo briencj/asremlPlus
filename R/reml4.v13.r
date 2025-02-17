@@ -1010,15 +1010,15 @@ setGRparam.call <- function(call, set.terms = NULL, ignore.suffices = TRUE,
     }
     
     # Add the setvparameters terms not in set.terms to set.terms
-    if (!is.null(setvparameters))
+    if (!is.allnull(setvparameters))
     {
-      if (!is.null(set.terms))
+      if (!is.allnull(set.terms))
       {
         setvpars.terms <- setvparameters$set.terms
-        setvpars.terms <- setdiff(setvpars.terms, terms) #get setvpar.terms not in terms
-        if (length(setdiff(setvpars.terms, terms)) > 0)
+        setvpars.terms <- setdiff(setvpars.terms, set.terms) #get setvpar.terms not in set.terms
+        if (length(setvpars.terms) > 0)
         { 
-          #Reduce setvparameters to set.terms not in terms
+          #Reduce setvparameters to the terms not in set.terms
           setvparameters <- setvparameters[setvparameters$set.terms %in% setvpars.terms,]
           setvparameters <- rbind(setvparameters, 
                                   data.frame(set.terms = set.terms,

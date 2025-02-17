@@ -254,8 +254,7 @@ infoCriteria.asreml <- function(object, DF = NULL,
         bound <- asreml.obj$vparameters.con
       else
         bound <- vpc.char(asreml.obj)
-    }
-    else
+    } else
     {
       bound <- names(asreml.obj$gammas.con)
       names(bound) <- names(asreml.obj$gammas)
@@ -272,8 +271,7 @@ infoCriteria.asreml <- function(object, DF = NULL,
       if (!(length(bound.exclusions) > 0) & !all(bound.exclusions %in% c("F","B","S","C")))
       {
         stop("At least one bound.type is not one of those allowed with ASReml-R version 3")
-      }
-      else
+      } else
       {
         bound.exclusions3 <- c("Fixed","Boundary","Singular","Constrained")
         bound.exclusions3 <- bound.exclusions3[bound.exclusions %in% c("F","B","S","C")]
@@ -310,8 +308,10 @@ infoCriteria.asreml <- function(object, DF = NULL,
         which.cF <- rownames(coefF)[!is.na(coefF[, "z.ratio"])]
         #      logdetC <- log(prod(svd(as.matrix(asreml.obj$Cfixed[which.cF, which.cF]))$d))
         if (length(asreml.obj$Cfixed) ==  1)
+        { 
           logdetC <- log(asreml.obj$Cfixed)
-        else
+          if (inherits(logdetC, what = "dspMatrix")) logdetC <- logdetC[1,1]
+        } else
           logdetC <- sum(log(svd(as.matrix(asreml.obj$Cfixed[which.cF, which.cF]))$d))
       } else #asr3
       {

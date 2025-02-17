@@ -1,5 +1,13 @@
 \name{news}
 \title{News for Package asremlPlus}
+\section{asremlPlus Version 4.4.46 (2025-02-16}{
+  \itemize{
+  \item Fix bug in newfit.asreml that arises when checking that terms supplied via its \code{set.terms} argument have been previously fitted. This bug affected all of the model modification and selection functions, for example changeModelOnIC.asrtests, testranfix.asrtests and changeTerms.asrtests, because they call newfit.asreml to change the fitted model.
+  \item Fix bug in using addSpatialModel.asrtests, addSpatialModelOnIC.asrtests and chooseSpatialModelOnIC.asrtests to fit models involving \code{corb}.
+  \item Further tweaking of fitting spatial correlation models using addSpatialModel.asrtests, addSpatialModelOnIC.asrtests and chooseSpatialModelOnIC.asrtests to deal with problems with estimating spatial and Residual variances.
+  \item Fix bug in inforCriteria resulting from a change in asreml 4.2.0.362 in the way \code{Cfixed} is stored in the \code{asreml.object}.
+}}
+
 \section{asremlPlus Version 4.4.45 (2025-01-27}{
   \itemize{
   \item Add code to addSpatialModel.asrtests, addSpatialModelOnIC.asrtests and chooseSpatialModelOnIC.asrtests that removes singular P-spline terms (TP.CR.x) from the model.
