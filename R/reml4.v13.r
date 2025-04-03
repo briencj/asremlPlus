@@ -435,8 +435,9 @@ findsetterms <- function(setvparameters, termlist)
     }
     else
       setvparameters <- NULL
-  }
-
+  } else
+    setvparameters <- NULL
+  
   # Add the setvparameters terms not in terms to terms
   if (!is.null(setvparameters))
   {
@@ -868,6 +869,15 @@ setGRparam.call <- function(call, set.terms = NULL, ignore.suffices = TRUE,
   #Make sure that call has current value of update
   languageEl(call, which = "update") <- update
   
+  #If data argument in call to newfit.asreml, use it to replace data in call
+  if (length(tempcall)) 
+    if ("data" %in% names(tempcall))
+    { 
+      dat <- tempcall$data
+      if (is.symbol(data))
+        dat <- eval(data)
+      call$data <- dat
+    }
   
   #Now update formulae
   if (!missing(fixed.)) 
@@ -1007,7 +1017,8 @@ setGRparam.call <- function(call, set.terms = NULL, ignore.suffices = TRUE,
       }
       else
         setvparameters <- NULL
-    }
+    } else
+      setvparameters <- NULL
     
     # Add the setvparameters terms not in set.terms to set.terms
     if (!is.allnull(setvparameters))
@@ -1032,18 +1043,21 @@ setGRparam.call <- function(call, set.terms = NULL, ignore.suffices = TRUE,
       initial.values <- setvparameters$initial.values
       bounds <- setvparameters$bounds
     }
-    nt <- length(set.terms)
     
-    #Apply bounds to the gammas specified by set.terms
-    call <- setGRparam.call(call = call, set.terms = set.terms, 
-                            ignore.suffices = ignore.suffices, bounds = bounds, 
-                            initial.values = initial.values, 
-                            asr4 = asr4, asr4.2 = asr4.2)
-    #Set vparameters in the call
-    call[["setvparameters"]] <- data.frame(set.terms = set.terms, 
-                                           ignore.suffices = ignore.suffices, 
-                                           bounds = bounds, 
-                                           initial.values = initial.values)
+    nt <- length(set.terms)
+    if (nt > 0)
+    {   
+      #Apply bounds to the gammas specified by set.terms
+      call <- setGRparam.call(call = call, set.terms = set.terms, 
+                              ignore.suffices = ignore.suffices, bounds = bounds, 
+                              initial.values = initial.values, 
+                              asr4 = asr4, asr4.2 = asr4.2)
+      #Set vparameters in the call
+      call[["setvparameters"]] <- data.frame(set.terms = set.terms, 
+                                             ignore.suffices = ignore.suffices, 
+                                             bounds = bounds, 
+                                             initial.values = initial.values)
+    }
   }
 
   #deal with args coming via ...

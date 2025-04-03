@@ -307,7 +307,8 @@ addtoChooseSummary <- function(choose.summary, term, DF = NA, denDF = NA, p = NA
 "changeModelOnIC.asrtests" <- function(asrtests.obj, 
                                        dropFixed = NULL, addFixed = NULL, 
                                        dropRandom = NULL,  addRandom = NULL, 
-                                       newResidual = NULL, label = "Changed terms", 
+                                       newResidual = NULL, 
+                                       allow.absentDropTerms = FALSE, label = "Changed terms", 
                                        allow.unconverged = TRUE, allow.fixedcorrelation = TRUE,
                                        checkboundaryonly = FALSE, 
                                        trace = FALSE, update = TRUE, denDF = "numeric", 
@@ -352,9 +353,10 @@ addtoChooseSummary <- function(choose.summary, term, DF = NA, denDF = NA, p = NA
   names(old.IC) <- c("DF", "denDF", "AIC", "BIC")
   nlines.test <- nrow(asrtests.obj$test.summary)
   
-  #Check that terms to drop are present - otherwise do not change the model
+  #Check that terms to drop are present - otherwise do not change the model, unless 
+  #     allow.absentDropTermsis TRUE
   absent <- FALSE
-  if (!is.null(dropFixed) || !is.null(dropRandom))
+  if (!allow.absentDropTerms&& (!is.null(dropFixed) || !is.null(dropRandom)))
   {
     if (!is.null(dropFixed))
     {

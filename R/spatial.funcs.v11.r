@@ -1379,6 +1379,7 @@ fitTPNCSSMod <- function(asrtests.obj, sections = NULL,
                                    dropRandom = drop.ran[i], 
                                    addRandom = paste(sect.fac, spl.terms, 
                                                      collapse = " + "), 
+                                   allow.absentDropTerms = TRUE, 
                                    label = lab, 
                                    allow.unconverged = allow.unconverged, 
                                    allow.fixedcorrelation = allow.fixedcorrelation,
@@ -1719,9 +1720,15 @@ fitTPSModSect <- function(tspl.asrt, data, mat, ksect, sect.fac,
     fix.ch <- NULL
 
   if (chooseOnIC)
+  { 
     fitfunc <- changeModelOnIC
+    allow.absentDropTerms <- TRUE
+  }
   else
+  { 
     fitfunc <- changeTerms
+    allow.absentDropTerms <- NULL
+  }
   
   init.asrt <- tspl.asrt
   theta.opt <- theta
@@ -1772,6 +1779,7 @@ fitTPSModSect <- function(tspl.asrt, data, mat, ksect, sect.fac,
                                        dropFixed = drop.fix, 
                                        addRandom = ran.ch,
                                        dropRandom = drop.ran, 
+                                       allow.absentDropTerms = allow.absentDropTerms, 
                                        mbf = mbf.lis,
                                        label = labunrot,
                                        allow.unconverged = allow.unconverged, 
@@ -1844,6 +1852,7 @@ fitTPSModSect <- function(tspl.asrt, data, mat, ksect, sect.fac,
                                        dropFixed = drop.fix, 
                                        addRandom = ran.ch,
                                        dropRandom = drop.ran, 
+                                       allow.absentDropTerms = allow.absentDropTerms, 
                                        group = grp,
                                        label = labunrot, 
                                        allow.unconverged = allow.unconverged, 

@@ -1,32 +1,38 @@
 \name{news}
 \title{News for Package asremlPlus}
-\section{asremlPlus Version 4.4.46 (2025-02-16}{
+\section{asremlPlus Version 4.4.47 (2025-04-03)}{
+  \itemize{
+  \item Fix bug in newfit.asreml and setvariances.call that resulted in terms that had been set to F (fixed) using one of these functions and all set terms had been removed in a change to the model.
+  \item Rectify the incorporation of a \code{data.frame} supplied via the \code{asreml} argument \code{data} in a call to newfit.asreml resulting from fitting a new model with a revised \code{data.frame}.
+  \item Add argument \code{allow.AbsentDropTerms} to the function changeModelOnIC to allow the possibility of changing the model even when some fixed and/or random terms that are to be dropped are not in the model.
+  \item Set argument \code{allow.AbsentDropTerms} from the function changeModelOnIC to \code{TRUE} in fitting \code{TPNCSS} and \code{TPPS} models using addSpatialModelOnIC.asrtests and chooseSpatialModelOnIC.asrtests. The fitting of these models was being incorrectly abandoned when any terms specified using the arguments \code{dropFixed} and \code{dropRandom} were not present in the supplied fitted model.
+}}
+\section{asremlPlus Version 4.4.46 (2025-02-16)}{
   \itemize{
   \item Fix bug in newfit.asreml that arises when checking that terms supplied via its \code{set.terms} argument have been previously fitted. This bug affected all of the model modification and selection functions, for example changeModelOnIC.asrtests, testranfix.asrtests and changeTerms.asrtests, because they call newfit.asreml to change the fitted model.
   \item Fix bug in using addSpatialModel.asrtests, addSpatialModelOnIC.asrtests and chooseSpatialModelOnIC.asrtests to fit models involving \code{corb}.
   \item Further tweaking of fitting spatial correlation models using addSpatialModel.asrtests, addSpatialModelOnIC.asrtests and chooseSpatialModelOnIC.asrtests to deal with problems with estimating spatial and Residual variances.
   \item Fix bug in inforCriteria resulting from a change in asreml 4.2.0.362 in the way \code{Cfixed} is stored in the \code{asreml.object}.
 }}
-
-\section{asremlPlus Version 4.4.45 (2025-01-27}{
+\section{asremlPlus Version 4.4.45 (2025-01-27)}{
   \itemize{
   \item Add code to addSpatialModel.asrtests, addSpatialModelOnIC.asrtests and chooseSpatialModelOnIC.asrtests that removes singular P-spline terms (TP.CR.x) from the model.
 }}
-\section{asremlPlus Version 4.4.44 (2025-01-07}{
+\section{asremlPlus Version 4.4.44 (2025-01-07)}{
   \itemize{
   \item Fix minor bugs in fitting spatial correlation models using addSpatialModel.asrtests, addSpatialModelOnIC.asrtests and chooseSpatialModelOnIC.asrtests.
   \item Fix a bug in rmboundary.asrtests that caused an error when there was a bound component in a \code{dsum} term. 
   \item Modified newfit.asreml and setvariances.call to ensure that terms whose bounds and/or initial values have been previously set using setvariances.call continue to have these values set in subsequent model fits, provided they remain in the fitted model. This will be promulgated to the model modification and selection functions, for example changeModelOnIC.asrtests, testranfix.asrtests and changeTerms.asrtests, because they call newfit.asreml to change the fitted model.  
 }}
-\section{asremlPlus Version 4.4.43 (2024-12-10}{
+\section{asremlPlus Version 4.4.43 (2024-12-10)}{
   \itemize{
   \item Fix bug in getTestPvalue.asrtests that occurred when the terms in a \code{test.summary}   include text.
 }}
-\section{asremlPlus Version 4.4.42 (2024-11-15}{
+\section{asremlPlus Version 4.4.42 (2024-11-15)}{
   \itemize{
   \item Make sure that numerics in the components of an alldiffs objects are set to \code{NA_real_} when they are missing.
 }}
-\section{asremlPlus Version 4.4.41 (2024-11-06}{
+\section{asremlPlus Version 4.4.41 (2024-11-06)}{
   \itemize{
   \item Tweak the fitting of correlation models when using for addSpatialModel.asrtests, addSpatialModelOnIC.asrtests and chooseSpatialModelOnIC.asrtests and there are bound variance parameters.
   \item Add the response name to the titles of the objects printed using print.asrtests and print.test.summary.
@@ -34,11 +40,11 @@
   \item Add class \code{list} to \code{asrtests} objects. This means that the function within will now work with \code{asrtests} objects.
   \item Revise the Ladybird vignettes to include the exploration of various choices of LSD values.
 }}
-\section{asremlPlus Version 4.4.40 (2024-10-27}{
+\section{asremlPlus Version 4.4.40 (2024-10-27)}{
   \itemize{
   \item Fix minor issue with building for CRAN.
 }}
-\section{asremlPlus Version 4.4.39 (2024-10-26}{
+\section{asremlPlus Version 4.4.39 (2024-10-26)}{
   \itemize{
   \item Fixed a bug in pickLSDstatistic that occurs when there is only one prediction for a level of a \code{factor.combination} specified using the argument \code{LSDby}.
   \item Fix a bug that meant that the settings of the arguments \code{allow.unconverged}, \code{allow.fixedcorrelation} and \code{update} for addSpatialModel.asrtests, addSpatialModelOnIC.asrtests and chooseSpatialModelOnIC.asrtests were not being passed on to functions that they called. Set the defaults for the arguments \code{allow.unconverged}, \code{allow.fixedcorrelation} and \code{update} to \code{TRUE} for addSpatialModel.asrtests, addSpatialModelOnIC.asrtests and chooseSpatialModelOnIC.asrtests to match the defaults that had in practice been the settings of these arguments for the functions that fit the spatial models. 
@@ -46,7 +52,7 @@
   \item Add code to remove a correlation function from a term when one of more of its correlation parameters are bound and the argument \code{allow.fixedcorrelation} is \code{FALSE} in fitting the function using addSpatialModel.asrtests, addSpatialModelOnIC.asrtests and chooseSpatialModelOnIC.asrtests.
   \item Add checks and fixes for ill-fitting correlations models in addSpatialModel.asrtests, addSpatialModelOnIC.asrtests and chooseSpatialModelOnIC.asrtests, such as for when (i) bound residual term after fitting a correlation term, (ii) all random and residual terms in one dimesion are bound, and (iii) some correlations on both grid dimensions become bound.
 }}
-\section{asremlPlus Version 4.4.38 (2024-08-19}{
+\section{asremlPlus Version 4.4.38 (2024-08-19)}{
   \itemize{
   \item Add check that spatial variance is not bound whilst the nugget variance is positive when fitting correlation models in addSpatialModel.asrtests, addSpatialModelOnIC.asrtests and chooseSpatialModelOnIC.asrtests. If it is, fix the nugget variance. 
   \item Add the argument \code{nugget.variance} to addSpatialModel.asrtests, addSpatialModelOnIC.asrtests and chooseSpatialModelOnIC.asrtests to control the fitting  of a nuggetvariance when fitting correlation models.
@@ -55,61 +61,61 @@
   \item Fix bug in addSpatialModel.asrtests, addSpatialModelOnIC.asrtests and chooseSpatialModelOnIC.asrtests when fitting metric correlation functions.
   \item Fix bug in newfit.asreml that occurred when change to random model results in no random terms.
 }}
-\section{asremlPlus Version 4.4.37 (2024-07-23}{
+\section{asremlPlus Version 4.4.37 (2024-07-23)}{
   \itemize{
   \item Modify the fitting of corb correlation  models in addSpatialModel.asrtests, addSpatialModelOnIC.asrtests and chooseSpatialModelOnIC.asrtests to make it more robust.
   \item Fix a bug in infoCriteria.asreml and infoCriteria.list that caused an \code{incorrect-dimensions} error when computing the full likelihood.
 }}
-\section{asremlPlus Version 4.4.36 (2024-07-01}{
+\section{asremlPlus Version 4.4.36 (2024-07-01)}{
   \itemize{
   \item Make sure that, when \code{false.pos.wt} is used with pickLSDstatistics and there are several values with the same weighted sum, LSDstatisics with less false positives are favoured. 
 }}
-\section{asremlPlus Version 4.4.35 (2024-06-19}{
+\section{asremlPlus Version 4.4.35 (2024-06-19)}{
   \itemize{
   \item Fix faulty links in manual. 
 }}
-\section{asremlPlus Version 4.4.34 (2024-06-19}{
+\section{asremlPlus Version 4.4.34 (2024-06-19)}{
   \itemize{
   \item Add \code{EGLS.linTransform} to linTranform.alldiffs, predictPlus.asreml, predictPresent.asreml and pairdiffsTransform.alldiffs.
   \item Add S3 method function isCompoundSymmetric.matrix.
   \item Modify print.alldiffs so that the diagonal elements of pairwise differences, sed and p-values are printed as blank spaces. 
 }}
-\section{asremlPlus Version 4.4.33 (2024-06-10}{
+\section{asremlPlus Version 4.4.33 (2024-06-10)}{
   \itemize{
   \item Fix bug in checking loaded versions that occurs with R 4.4.0.
 }}
-\section{asremlPlus Version 4.4.32 (2024-04-11}{
+\section{asremlPlus Version 4.4.32 (2024-04-11)}{
   \itemize{
   \item Update for CRAN submission.
 }}
-\section{asremlPlus Version 4.4.31 (2024-03-15}{
+\section{asremlPlus Version 4.4.31 (2024-03-15)}{
   \itemize{
   \item Revise warning message in R2adj.asreml for when generalized inverse fails.
   \item Add fix for bug in as.asrtests that caused a C stack overflow error when trying to update the \code{wald.tab} component of an \code{asrtests.obj}.
 }}
-\section{asremlPlus Version 4.4.30 (2024-03-03}{
+\section{asremlPlus Version 4.4.30 (2024-03-03)}{
   \itemize{
   \item For chooseSpatialModelOnIC.asrtests, change the abbreviations for the two P-spline models from \code{TPPCS} and \code{TPP1LS} to \code{TPPSC2} and \code{TPPSL1}. If the call to chooseSpatialModelOnIC.asrtests includes the former  abbreviations, they will be converted to the new abbreviatons and all output will be labelled with the new abbreviations.
   \item Revise the deocumentation of the P-spline details for addSpatialModel.asrtests, addSpatialModelOnIC.asrtests or chooseSpatialModelOnIC.asrtests.
 }}
-\section{asremlPlus Version 4.4.29 (2024-02-26}{
+\section{asremlPlus Version 4.4.29 (2024-02-26)}{
   \itemize{
   \item For R2adj.asreml, correct the check that terms to be included in the random model for calculating \code{R2.adj} are in the fitted model so that a warning is no longer issued when a term for inclusion differs from a fitted term only in the order of the factors/variables comprising the terms.  
   \item Trap errors issued by \code{svd} function from base \code{R} in computing generalized inverses for R2adj.asreml. Instead, issue a warning and return \code{NA}. 
 }}
-\section{asremlPlus Version 4.4.28 (2024-02-13}{
+\section{asremlPlus Version 4.4.28 (2024-02-13)}{
   \itemize{
   \item Fix a bug in estimateV that meant that terms involving the asreml \code{at} function on other than the first variable in the term caused an error. 
   \item Instead of producing an error when the number of columns in the design matrix does not equal the number of coefficients for the term, now add columns of zeros for missing design-matrix columns. An error may still occur when this does not work.
   \item Add checks in estimateV.asreml and R2adj.asreml for when the design matrix for a term is not available. Rather than issue an error, \code{NA} is returned and an attribute \code{missing.termmatrix} added that contains a list of the problematic terms. Also added an error to variofaces.asreml and bootREMLRT for when this problem occurs.
   \item Extend the the \code{include.which.fixed} and \code{include.which.random} arguments of R2adj.asreml to process correctly formulae to update the existing fixed and random formula  using a formula that includes the '.' and terms, typically a list of bracketed terms preceded by a '-' so that terms are removed from a formula.
 }}
-\section{asremlPlus Version 4.4.27 (2024-02-05}{
+\section{asremlPlus Version 4.4.27 (2024-02-05)}{
   \itemize{
   \item Spell check the manual. 
   \item Revise the detection of variance parameters involving \code{sections} in addSpatialModel.asrtests, addSpatialModelOnIC.asrtests and chooseSpatialModelOnIC.asrtests.
 }}
-\section{asremlPlus Version 4.4.26 (2024-02-01}{
+\section{asremlPlus Version 4.4.26 (2024-02-01)}{
   \itemize{
   \item Implement bespoke strategy for fitting \code{corb} correlation models that first fits a random units length term and constrains the residual variance to one. Then, the corb models are fitted and, when \code{corr.orders} is set to 0, up to 10 correlation bands are fitted depending on whether additonal bands improve an information criterion. 
   \item Fix a bug in estimateV when a \code{corb} function is involved in a variance term and asreml version 4.2 is being used.
@@ -117,7 +123,7 @@
   \item Fixed bugs in passing the arguments for setvarianceterms.call via \ldots from addSpatialModel.asrtests, addSpatialModelOnIC.asrtests and chooseSpatialModelOnIC.asrtests to changeTerms and changeModelOnIC.asrtests.
   \item Minor revisions to documentation for R2adj.asreml.
 }}
-\section{asremlPlus Version 4.4.25 (2024-01-15}{
+\section{asremlPlus Version 4.4.25 (2024-01-15)}{
   \itemize{
   \item Add an error for a \code{NULL} \code{vcov} component in the \code{alldiffs.obj} supplied to the ratioTransform.alldiffs function.
   \item Add \code{printPlot} argument to plotPredictions.data.frame and change the function to return the plot.
@@ -126,12 +132,12 @@
   \item Update the vignettes.
   \item Add link to GitHub issues page for BugReports in DESCRIPTION file.
 }}
-\section{asremlPlus Version 4.4.24 (2023-12-20}{
+\section{asremlPlus Version 4.4.24 (2023-12-20)}{
   \itemize{
   \item Fix a bug in plotLSDerrors so that the correct errors are now plotted.
   \item Add argument \code{false.pos.wt} to pickLSDstatistics.alldiffs, which when it is not \code{NULL} results in mininzing the weighted sum of the false.pos and false.neg comparisons of pairwise differences.
 }}
-\section{asremlPlus Version 4.4.23 (2023-12-12}{
+\section{asremlPlus Version 4.4.23 (2023-12-12)}{
   \itemize{
   \item Add the use of the R optimizer \code{nloptr::bobyqa} to search for the optimal angles for the rotation of the eigenvlues of the penalty matrix when fitting cubic P-splines using addSpatialModel.asrtests, addSpatialModelOnIC.asrtests or chooseSpatialModelOnIC.asrtests. This provides an alternative to searching over a two-dimensional grid of angles.
   \item Fix a bug in the fits used in searching for optimal rotation angles by doing the search before any spatial P-spline models are fitted.
@@ -142,42 +148,42 @@
     \item The default for \code{asreml.option} has changed from \code{mbf} to \code{grp}. While \code{grp} requires more storage that \code{mbf}, it is easier to apply \code{asreml} and \code{asrtests} methods to fitted models when \code{grp} is used.  
     }
 }}
-\section{asremlPlus Version 4.4.22 (2023-11-14}{
+\section{asremlPlus Version 4.4.22 (2023-11-14)}{
   \itemize{
   \item Add the S3-method function convEffectNames2DataFrame.asreml.
 }}
-\section{asremlPlus Version 4.4.21 (2023-11-05}{
+\section{asremlPlus Version 4.4.21 (2023-11-05)}{
   \itemize{
   \item Increment version for resubmission to CRAN after fixing an S3 method declaration error.
 }}
-\section{asremlPlus Version 4.4.20 (2023-11-05}{
+\section{asremlPlus Version 4.4.20 (2023-11-05)}{
   \itemize{
   \item Revise manual pages to meet cran syntax requirements. 
   \item Add the argument \code{usRandLinCoeffs} to addSpatialModel.asrtests, addSpatialModelOnIC.asrtests or chooseSpatialModelOnIC.asrtests to control whether to attempt the fit of the unstructured variance model for the constant and linear terms in random interactions with smooth terms. Also, added code to reject the model if any of the variances or covariances are bound.
 }}
-\section{asremlPlus Version 4.4.19 (2023-10-30}{
+\section{asremlPlus Version 4.4.19 (2023-10-30)}{
   \itemize{
   \item Fix bug that prevented the fitting of unstructured variance model  between the random constant and linear parameters in the interaction of these terms with the random smooth row and random column terms in a \code{TPPCS} model.  
 }}
-\section{asremlPlus Version 4.4.18 (2023-10-29}{
+\section{asremlPlus Version 4.4.18 (2023-10-29)}{
   \itemize{
   \item For fitting in P-spline models using addSpatialModel.asrtests, addSpatialModelOnIC.asrtests or chooseSpatialModelOnIC.asrtests, change the function for fitting the covariance of the constant and the linear term from \code{us} to \code{corh} or \code{corgh}.
 }}
-\section{asremlPlus Version 4.4.17 (2023-10-26}{
+\section{asremlPlus Version 4.4.17 (2023-10-26)}{
   \itemize{
   \item Fix bug in investigating nugget variance for correlation models when there are \code{sections}.
   \item Further improve the handling of situations in which the residual variance or the spatial variance associated with a correlation term becomes singular or bound in fitting a spatial correlation model using addSpatialModel.asrtests, addSpatialModelOnIC.asrtests and chooseSpatialModelOnIC.asrtests.
   \item Add \code{allow.corrsJointFit} argument as a device for dealing with fits that hang when attempting to fit simultaneously both correlations for the two grid dimesnions. 
   \item Internal recoding.
 }}
-\section{asremlPlus Version 4.4.16 (2023-10-18}{
+\section{asremlPlus Version 4.4.16 (2023-10-18)}{
   \itemize{
   \item Added the \code{maxit} option for \code{asreml} to addSpatialModel.asrtests, addSpatialModelOnIC.asrtests and chooseSpatialModelOnIC.asrtests, setting its default to 30 for these \code{functions} to increase the chances that the models will converge.
   \item Extensively revise the code to improve the handling of situations in which the residual variance or the spatial variance associated with a correlation term becomes singular or bound in fitting a spatial correlation model using addSpatialModel.asrtests, addSpatialModelOnIC.asrtests and chooseSpatialModelOnIC.asrtests.
   \item Revise checking for nugget variance when there are sections and the residual has a separate terms for each section.
   \item Added a basic check for separate random and residual terms for sections and, if there are none, issue a warning that better fitting can result if they are included.
 }}
-\section{asremlPlus Version 4.4.15 (2023-10-02}{
+\section{asremlPlus Version 4.4.15 (2023-10-02)}{
   \itemize{
   \item Make the default number of cores (\code{ncores}) for parallel processing in bootREMLRT.asreml, simulate.asreml and variofaces.asreml.
   \item Add the function convAsremlobj.asreml that recreates an existing \code{asreml} object using the currently loaded \code{asreml} version so that the object is compatible with this version.

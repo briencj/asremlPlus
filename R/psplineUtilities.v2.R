@@ -348,7 +348,7 @@ getRotationThetas <- function(init.asrt, data, mat, sections,
       lab <- paste0("Try tensor P-splines for ", sections, " ",stub)
     }
     
-    #Determine terms specified by dropFixed and dropRandome to remove from the model?
+    #Determine terms specified by dropFixed and dropRandom to remove from the model?
     drop.fix <- dropFixed[ksect]; if (!is.null(drop.fix) && is.na(drop.fix)) drop.fix <- NULL
     drop.ran <- dropRandom[ksect]; if (!is.null(drop.ran) && is.na(drop.ran)) drop.ran <- NULL
     

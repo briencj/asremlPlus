@@ -28,7 +28,8 @@
 \method{changeModelOnIC}{asrtests}(asrtests.obj, 
                 dropFixed = NULL, addFixed = NULL, 
                 dropRandom = NULL,  addRandom = NULL, 
-                newResidual = NULL, label = "Changed terms", 
+                newResidual = NULL, 
+                allow.absentDropTerms = FALSE, label = "Changed terms", 
                 allow.unconverged = TRUE, allow.fixedcorrelation = TRUE,
                 checkboundaryonly = FALSE, 
                 trace = FALSE, update = TRUE, denDF = "numeric", 
@@ -76,6 +77,9 @@
  \item{newResidual}{A single \code{character} string in the form of a formula which, 
                after addition of \code{" ~ "}, specifies the \code{residual} 
                (or \code{rcov}) model. To remove the model, enter \code{"-(.)"}.}
+ \item{allow.absentDropTerms}{A \code{logical} indicating whether to to change the 
+               model when terms specified in \code{dropFixed} or \code{dropRandom} 
+               are not in the fitted model.}
  \item{label}{A \code{character} to use as an entry in the \code{terms} column in 
               \code{test.summary} to indicate as far as is possible the terms that are 
               being manipulated.}
