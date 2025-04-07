@@ -1,5 +1,9 @@
 \name{news}
 \title{News for Package asremlPlus}
+\section{asremlPlus Version 4.4.48 (2025-04-06)}{
+  \itemize{
+  \item Increment version number for resubmitting to CRAN.
+}}
 \section{asremlPlus Version 4.4.47 (2025-04-03)}{
   \itemize{
   \item Fix bug in newfit.asreml and setvariances.call that resulted in terms that had been set to F (fixed) using one of these functions and all set terms had been removed in a change to the model.
