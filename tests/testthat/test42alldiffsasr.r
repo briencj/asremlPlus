@@ -1067,7 +1067,7 @@ test_that("exploreLSDWater4", {
                           present = c("Sources", "Type", "Species"),
                           tables = "none")
 
-   ##Explore the LSD values for predictions obtained using asreml or lmerTest  
+  ##Explore the LSD values for predictions obtained using asreml or lmerTest  
   LSDstat <- exploreLSDs(TS.diffs, LSDtype = "factor.combinations", LSDby = "Sources")
   testthat::expect_equal(names(LSDstat), c("frequencies", "distinct.vals", "statistics", "accuracy", 
                                            "false.pos", "false.neg", "per.pred.accuracy", "LSD"))
@@ -1093,6 +1093,35 @@ test_that("exploreLSDWater4", {
                             LSDstatistic = c("q10","med","med","q75","q75", "med"))
   testthat::expect_true(all(TS.diffs.var$LSD$falsePos) == 0)
   testthat::expect_equal(sum(TS.diffs.var$LSD$falseNeg), 3)
+  
+  ## Test findLSDminerrors with overall
+  LSDall <- findLSDminerrors(TS.diffs)
+  testthat::expect_equal(rownames(LSDall), "overall")
+  testthat::expect_true(all(abs(LSDall - c(0.3238331, 1, 24, 34)) < 0.00001))
+  TS.diffs.all <- redoErrorIntervals(TS.diffs, LSDtype = "supplied", LSDsupplied = LSDall["LSD"])
+  TS.diffs.all$LSD["assignedLSD"]
+  testthat::expect_true(abs(TS.diffs.all$LSD["assignedLSD"] - 0.3238331) < 0.00001)
+  ## Test findLSDminerrors with false.pos.wt
+  LSDallwt <- findLSDminerrors(TS.diffs, false.pos.wt = 30)
+  testthat::expect_equal(rownames(LSDallwt), "overall")
+  testthat::expect_true(all(abs(LSDallwt - c(0.3870779, 0, 36, 36)) < 0.00001))
+  ## Test findLSDminerrors with LSDtype = "fact"
+  LSDmin <- findLSDminerrors(TS.diffs, LSDtype = "factor.combinations", LSDby = "Sources")
+  testthat::expect_equal(rownames(LSDmin), c("Rainwater", "Recycled water", "Tap water", 
+                                             "Rain+Basalt", "Rain+Dolomite", "Rain+Quartzite"))
+  testthat::expect_equal(LSDmin$false.criterion, c(0, 0, 1, 0, 1, 1))
+  TS.diffs.min <- redoErrorIntervals(TS.diffs, LSDtype = "supplied", LSDby = "Sources",
+                                     LSDsupplied = LSDmin["LSD"])
+  testthat::expect_true(all(abs(TS.diffs.min$LSD$assignedLSD - 
+                                  c(0.1982634, 0.2770138, 0.2680011, 0.2978220, 
+                                    0.2949564, 0.2464056)) < 0.0001))
+  #Test multiple false.pos.wt with a zero wt
+  LSDminwt <- findLSDminerrors(TS.diffs, LSDtype = "factor.combinations", LSDby = "Sources",
+                             false.pos.wt = c(5,5,0,5,1,1))
+  testthat::expect_equal(rownames(LSDminwt), c("Rainwater", "Recycled water", "Tap water", 
+                                               "Rain+Basalt", "Rain+Dolomite", "Rain+Quartzite"))
+  testthat::expect_equal(LSDminwt$false.pos, c(0, 0, 1, 0, 0, 0))
+  testthat::expect_equal(LSDminwt$false.criterion, c(0, 0, 0, 0, 1, 1))
   
   #Test false positive and negative values
   kLSD <- TS.diffs$sed[17:20,17:20]

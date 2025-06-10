@@ -918,10 +918,10 @@ facRecast.alldiffs <- function(object, factor, levels.order = NULL, newlabels = 
     stop("Only one factor at a time")
   oldlevs <- levels(object$predictions[[fac]])
   if (!is.null(levels.order))
-    if (!all(oldlevs %in% levels.order) | length(unique(levels.order)) < length(levels.order))
+    if (!all(oldlevs %in% levels.order) || length(unique(levels.order)) < length(levels.order))
       stop("The set of levels.order must be unique and contain all the levels in the factor being recast")
   if (!is.null(newlabels))
-    if (length(newlabels) != length(oldlevs) | length(unique(newlabels)) < length(newlabels))
+    if (length(newlabels) != length(oldlevs) || length(unique(newlabels)) < length(newlabels))
       stop("The newlabels must be a set of unique values equal in length to the number of levels in the factor being recast")
   
   #Prepare for recasting
@@ -964,7 +964,7 @@ facRecast.alldiffs <- function(object, factor, levels.order = NULL, newlabels = 
   #Recast the labels
   if (!is.null(newlabels))
   {
-    object$predictions[fac] <- factor(object$predictions[[fac]], labels = newlabels, ...)
+    object$predictions[fac] <- fac.recast(object$predictions[[fac]], newlabels = newlabels, ...)
     
     #revise the alldiffs component
     if (!is.null(object$backtransforms))

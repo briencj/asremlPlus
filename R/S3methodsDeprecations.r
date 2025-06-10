@@ -34,6 +34,7 @@ variofaces <- function(asreml.obj, ...) UseMethod("variofaces")
 
 addBacktransforms <- function(alldiffs.obj, ...) UseMethod("addBacktransforms")
 exploreLSDs <- function(alldiffs.obj, ...) UseMethod("exploreLSDs")
+findLSDminerrors <- function(alldiffs.obj, ...) UseMethod("findLSDminerrors")
 linTransform <- function(alldiffs.obj, ...) UseMethod("linTransform")
 pairdiffsTransform <- function(alldiffs.obj, ...) UseMethod("pairdiffsTransform")
 pickLSDstatistics <- function(alldiffs.obj, ...) UseMethod("pickLSDstatistics")

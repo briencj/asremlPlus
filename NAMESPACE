@@ -45,6 +45,8 @@ export(addBacktransforms,
        facRecode.alldiffs,
        facRename,
        facRename.alldiffs,
+       findLSDminerrors,
+       findLSDminerrors.alldiffs,
        getASRemlVersionLoaded,
        getFormulae,
        getFormulae.asreml,
@@ -153,7 +155,6 @@ export(addBacktransforms,
        testswapran,
        testswapran.asrtests,
        validAlldiffs,
-       validAsrtests,
        validPredictionsFrame,
        variofaces,
        variofaces.asreml)
@@ -203,6 +204,7 @@ S3method(facCombine, alldiffs)
 S3method(facRecast, alldiffs)
 S3method(facRecode, alldiffs)
 S3method(facRename, alldiffs)
+S3method(findLSDminerrors, alldiffs)
 S3method(getFormulae, asreml)
 S3method(getTestEntry, asrtests)
 S3method(getTestPvalue, asrtests)

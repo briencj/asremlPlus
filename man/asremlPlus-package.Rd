@@ -143,6 +143,9 @@ Note that many of the function below are S3 methods so that the suffix can be om
 \code{\link{exploreLSDs}}
        \tab Explores the computed LSD values for pairwise differences \cr
        \tab between predictions.    \cr
+\code{\link{findLSDminerrors}}
+       \tab Find LSD values that minimize the number of errors in \cr 
+       \tab pairwise comparisons of predictions.        \cr
 \code{\link{linTransform.alldiffs}} 
        \tab Calculates a linear transformation of the \cr
        \tab predictions stored in an \code{\link{alldiffs.object}}. \cr

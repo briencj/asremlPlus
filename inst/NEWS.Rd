@@ -1,5 +1,10 @@
 \name{news}
 \title{News for Package asremlPlus}
+\section{asremlPlus Version 4.4.49 (2025-06-10)}{
+  \itemize{
+  \item Add new function findLSDminerrors that uses a grid search to identify an LSD value that minimizes the number of errors over a set of pairwise comparisons.
+  \item Modify facRecast.alldiffs so that newlabels can be longer than the number of observed levels in the factor.
+}}
 \section{asremlPlus Version 4.4.48 (2025-04-06)}{
   \itemize{
   \item Increment version number for resubmitting to CRAN.

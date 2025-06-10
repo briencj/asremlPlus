@@ -25,19 +25,18 @@
 \arguments{
 \item{alldiffs.obj}{An \code{\link{alldiffs.object}}.}
 \item{LSDtype}{A \code{\link{character}} string that can be \code{overall} or \code{factor.combinations}. 
-              It determines whether the LSD values that are investigated and stored are  
-              (i) the \code{overall} minimum, quantile10, quantile25, mean, median, quantile75, quantile90, 
-              and maximum of all pairwise LSDs, or 
-              (ii) the minimum, quantile10, quantile25, mean, median, quantile75, quantile90, and maximum 
-              for the pairwise LSDs for each combination of the values of the \code{\link{factor}s} and 
+              It determines whether the LSD values that are investigated are  
+              the \code{overall} minimum, quantile10, quantile25, mean, median, quantile75, quantile90, 
+              or maximum of (i) all pairwise LSDs, or 
+              (ii) the pairwise LSDs for each combination of the values of the \code{\link{factor}s} and 
               \code{\link{numeric}s} named in \code{LSDby}, unless there is only one prediction for a 
               combination, when notional LSDs are calculated. The \code{LSDtype} specified here does not 
               have to match that used in the creating the \code{\link{alldiffs.object}}.
              
               See \code{\link{LSD.frame}} for further information on how the LSD statistics are calculated.}
-\item{LSDby}{A \code{\link{character}} (vector) of variables names, being the names of the 
+\item{LSDby}{A \code{\link{character}} (vector) of variables names, being the names of some of the  
              \code{\link{factor}s} or \code{\link{numeric}s} in the \code{classify}; for each 
-             combination of the values the of the \code{\link{factor}s} and \code{\link{numeric}s}, the 
+             combination of the values of the \code{\link{factor}s} and \code{\link{numeric}s}, the 
              LSD errors are to be computed when \code{LSDtype} is \code{factor.combinatons}. The \code{LSDby} 
              specified here does not have to match that used in the creating the 
              \code{\link{alldiffs.object}}.}
@@ -123,7 +122,8 @@ if (requireNamespace("lmerTest", quietly = TRUE) &
   validAlldiffs(TS.diffs)
 }  
 
-## Plot p-values for predictions obtained using asreml or lmerTest
+## Pick LSD statistics for calculating LSD values for pairwise comparisons of 
+##  the predictions obtained using asreml or lmerTest
 if (exists("TS.diffs"))
 {
   ##Pick the LSD values for predictions obtained using asreml or lmerTest  
