@@ -19,7 +19,7 @@
 \arguments{
  \item{x}{An \code{\link{alldiffs.object}}.}
  \item{subset}{A \code{\link{logical}} that detemines rows of the \code{predictions}  
-              component of \code{x} to be included in the subset. By default allws are 
+              component of \code{x} to be included in the subset. By default all rows are 
               included.}
  \item{rmClassifyVars}{A \code{\link{character}} that contains the names of the 
               variables in the \code{classify} attribute of \code{x} that are to be 

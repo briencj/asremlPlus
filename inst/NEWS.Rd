@@ -1,5 +1,9 @@
 \name{news}
 \title{News for Package asremlPlus}
+\section{asremlPlus Version 4.4.50 (2025-07-17)}{
+  \itemize{
+  \item Add the calculation ofa notional LSD for \code{LSDtype} is \code{overall} when the all values of the sed are zero because there is, in reality, only a single predicted value.
+}}
 \section{asremlPlus Version 4.4.49 (2025-06-10)}{
   \itemize{
   \item Add new function findLSDminerrors that uses a grid search to identify an LSD value that minimizes the number of errors over a set of pairwise comparisons.

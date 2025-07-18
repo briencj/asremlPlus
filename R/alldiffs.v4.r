@@ -1826,7 +1826,7 @@ redoErrorIntervals.alldiffs <- function(alldiffs.obj, error.intervals = "Confide
   if (int.opt != "none")
   { 
     revert <- FALSE
-    if (is.na(denom.df) && c("Confidence", "halfLeastSignificant") %in% int.opt)
+    if (is.na(denom.df) && any(c("Confidence", "halfLeastSignificant") %in% int.opt))
     {
       warning(paste("The degrees of freedom of the t-distribtion are not available in alldiffs.obj\n",
                     "- reverting to Standard Error"))
@@ -2306,6 +2306,10 @@ makeSED <- function(alldiffs.obj)
                                  zero.tolerance = zero.tolerance)
             ksed <- rm.list$ksed
             kdif <- rm.list$kdif
+            #Is there only one value for the sed and this is zero?
+            if (length(ksed) == 1 && length(kdif) == 1  && ksed == 0 && 
+                diff(range(alldiffs.obj$predictions$standard.error)) < zero.tolerance)
+              ksed <- sqrt(2) * alldiffs.obj$predictions$standard.error[1]
             LSDs<- LSDstats(ksed, kdif, t.value, LSDstatistic = LSDstat, LSDaccuracy = LSDacc)
             rownames(LSDs) <- "overall"
           } 

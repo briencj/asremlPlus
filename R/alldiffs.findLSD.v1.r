@@ -48,7 +48,7 @@ findLSDminerrors.alldiffs <- function(alldiffs.obj,
                           t.value = t.value,  alpha = alpha, 
                           retain.zeroLSDs = retain.zeroLSDs, 
                           zero.tolerance = zero.tolerance)
-  
+  print(LSD.list)
   if (length(false.pos.wt) == 1)
     false.pos.wt <- rep(false.pos.wt, length(LSD.list))
   else
@@ -62,10 +62,10 @@ findLSDminerrors.alldiffs <- function(alldiffs.obj,
   stepsize <- 1/nvalues
   optLSDs <- mapply(function(kLSDs, kpos.wt)
                     {
-                      if (trace) cat("\n\n#### New set\n")
                       #Search for optimal LSD
                       minlsd <- min(kLSDs$lsd)
                       maxlsd <- max(kLSDs$lsd)
+                      if (trace) {cat("\n\n#### New set\n"); print(c(minlsd,maxlsd))}
                       range <- maxlsd - minlsd
                       if (range > 0)
                       { 
@@ -167,6 +167,9 @@ sliceLSDmat <- function(alldiffs.obj, type, by,
                       retain.zeroLSDs = retain.zeroLSDs, 
                       zero.tolerance = zero.tolerance)
     names(rm.list) <- c("lsd", "dif")
+    if (length(rm.list$lsd) == 1 && length(rm.list$dif) == 1  && rm.list$lsd == 0 && 
+        diff(range(alldiffs.obj$predictions$standard.error)) < zero.tolerance)
+      rm.list$lsd <- t.value * sqrt(2) * alldiffs.obj$predictions$standard.error[1]
     rm.list$sig.actual <- abs(rm.list$dif) >= rm.list$lsd
     LSDs <- list(overall = rm.list)
   } else

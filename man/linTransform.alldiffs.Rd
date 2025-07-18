@@ -162,7 +162,8 @@
 \item{LSDtype}{A \code{\link{character}} string that can be \code{overall}, \code{factor.combinations}, 
               \code{per.prediction} or \code{supplied}. It determines whether the values stored in a row  
               of a \code{\link{LSD.frame}} are the values calculated 
-             (i) \code{overall} from the LSD values for all pairwise comparison2, 
+             (i) \code{overall} from the LSD values for all pairwise comparisons, unless there is only one, 
+              possibly repeated, prediction, when a notional LSD is calculated, 
              (ii) the values calculated from the pairwise LSDs for the levels of each 
              \code{factor.combination}, unless there is only one prediction for a level  of the 
              \code{factor.combination}, when a notional LSD is calculated,  

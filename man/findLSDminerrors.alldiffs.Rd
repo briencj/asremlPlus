@@ -39,7 +39,8 @@
 \item{alldiffs.obj}{An \code{\link{alldiffs.object}}.}
 \item{LSDtype}{A \code{\link{character}} string that can be \code{overall} or \code{factor.combinations}. 
               It determines whether the  minimum LSD values that are obtained are those for   
-              (i) all pairwise comparisons of the predicted values, or 
+              (i) all pairwise comparisons of the predicted values, unless there is only one, 
+              possibly repeated, prediction, when a notional LSD is calculated, or 
               (ii) for each combination of the values of the \code{\link{factor}s} and 
               \code{\link{numeric}s} named in \code{LSDby}, unless there is only one prediction for a 
               combination, when notional LSDs are calculated. The \code{LSDtype} specified here does not 
