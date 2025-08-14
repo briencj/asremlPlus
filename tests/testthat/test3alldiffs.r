@@ -786,7 +786,7 @@ test_that("linear.transform_WaterRunoff_asreml3", {
                                         wald.tab = NULL, test.summary = NULL))
     current.asrt <- rmboundary(current.asrt)
     current.asr <- current.asrt$asreml.obj
-    wald.tab <- recalcWaldTab(asrtests.obj=current.asrt, dDF.na="residual")
+    wald.tab <- recalcWaldTab(asrtests.obj=current.asrt, dDF.fault="residual")
     HEB25.diffs <- do.call("predictPlus",
                            list(asreml.obj = current.asr, 
                                 classify="Treatment.1:Genotype.ID",

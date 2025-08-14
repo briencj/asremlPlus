@@ -22,7 +22,7 @@ test_that("GLMdiffs_budworm_asreml42", {
   testthat::expect_warning(
     diffs <- predictPlus(as1, classify = "sex:ldose", levels = list(ldose = 0:5),
                          transform.function = "logit", tables = "none"),
-    regexp = "Denominator degrees of freedom obtained using dDF.na method residual")
+    regexp = "Denominator degrees of freedom obtained using dDF.fault method residual")
   testthat::expect_equal(length(diffs), 7)
   testthat::expect_true(!any(c("transformed.value", "approx.se") %in% names(diffs$predictions)))
   testthat::expect_true(abs(diffs$predictions$predicted.value[1] - -3.473155) < 1e-05)
@@ -34,7 +34,7 @@ test_that("GLMdiffs_budworm_asreml42", {
   testthat::expect_warning(
     diffs <- predictPlus(as1, classify = "sex:ldose", levels = list(ldose = 0:5),
                          tables = "none"),
-    regexp = "Denominator degrees of freedom obtained using dDF.na method residual")
+    regexp = "Denominator degrees of freedom obtained using dDF.fault method residual")
   testthat::expect_true(is.null(diffs$backtransforms))
   testthat::expect_true(all(c("transformed.value", "approx.se") %in% names(diffs$predictions)))
   testthat::expect_true(abs(diffs$predictions$predicted.value[1] - -3.473155) < 1e-05)

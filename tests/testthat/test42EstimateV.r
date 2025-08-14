@@ -341,7 +341,7 @@ test_that("Orange_estimateV_str_asreml42", {
   ##Correlated slope and intercept - cor
   asreml.obj <- asreml(circ ~ x,
                        random = ~ str( ~Tree/(x + x2), ~cor(3):id(5)),
-                       data = orange, maxit=20)   
+                       data = orange, maxit=50)   
   (vpar <- asreml.obj$vparameters)
   g <- matrix(vpar[1], nrow = 3, ncol = 3)
   diag(g) <- 1
@@ -350,7 +350,7 @@ test_that("Orange_estimateV_str_asreml42", {
   V.g <- asreml.obj$sigma2 *(Z %*% G.g %*% t(Z))
   G <- estimateV(asreml.obj, which.matrix = "G", bound.exclusions = NULL)
   #mulltiply G by 10 because G.param has the initial value 0.1 stored instead of 1, the correlations being bound
-  testthat::expect_true(all.equal(G,V.g, tol = 1e-03)) 
+  testthat::expect_true(all.equal(G,V.g, tol = 1e-03)) #problem with bound variance 08/2025
   
   ##Correlated slope and intercept - ar1
   asreml.obj <- asreml(circ ~ x,

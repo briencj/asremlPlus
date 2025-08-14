@@ -21,7 +21,7 @@ test_that("Variofaces_asreml42", {
   summary(current.asr)$varcomp
   current.asrt <- as.asrtests(current.asr, denDF = "numeric")
   current.asrt$wald.tab
-  recalcWaldTab(current.asrt, denDF="numeric", dDF.na = "maximum")
+  recalcWaldTab(current.asrt, denDF="numeric", dDF.fault = "maximum")
   testthat::expect_equal(length(current.asrt), 3)
   testthat::expect_equal(nrow(current.asrt$wald.tab), 7)
   testthat::expect_equal(nrow(current.asrt$test.summary), 0)

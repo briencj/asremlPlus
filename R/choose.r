@@ -193,7 +193,7 @@ addtoChooseSummary <- function(choose.summary, term, DF = NA, denDF = NA, p = NA
                                    checkboundaryonly = FALSE, 
                                    drop.ran.ns=TRUE, positive.zero = FALSE, 
                                    bound.test.parameters = "none", 
-                                   drop.fix.ns=FALSE, denDF = "numeric",  dDF.na = "none", 
+                                   drop.fix.ns=FALSE, denDF = "numeric",  dDF.fault = "none", 
                                    dDF.values = NULL, trace = FALSE, update = TRUE, 
                                    set.terms = NULL, ignore.suffices = TRUE, 
                                    bounds = "P", initial.values = NA, 
@@ -212,6 +212,8 @@ addtoChooseSummary <- function(choose.summary, term, DF = NA, denDF = NA, p = NA
       stop("constraints has been deprecated in chooseModel.asrtests - use bounds")
     if ("asrtests.obj" %in% names(tempcall))
       stop("asrtests.obj has been deprecated in chooseModel.asrtests - use object")
+    if ("dDF.na" %in% names(tempcall))
+      stop("The argument dDF.na has been deprecated; use dDF.fault instead.")
   }
   
   asr4 <- isASRemlVersionLoaded(4, notloaded.fault = TRUE)
@@ -261,7 +263,7 @@ addtoChooseSummary <- function(choose.summary, term, DF = NA, denDF = NA, p = NA
                                         positive.zero = positive.zero, 
                                         bound.test.parameters = bound.test.parameters, 
                                         drop.fix.ns = drop.fix.ns, 
-                                        denDF = denDF, dDF.na = dDF.na, 
+                                        denDF = denDF, dDF.fault = dDF.fault, 
                                         dDF.values = dDF.values, trace = trace, 
                                         update = update, set.terms = set.terms, 
                                         ignore.suffices = ignore.suffices, 

@@ -53,9 +53,17 @@
 }
 
 "recalcWaldTab.asrtests" <- function(asrtests.obj, recalc.wald = FALSE, 
-                                     denDF="numeric", dDF.na = "none", 
+                                     denDF="numeric", dDF.fault = "none", 
                                      dDF.values = NULL, trace = FALSE, ...)
 { 
+  tempcall <- list(...)
+  if (length(tempcall)) 
+  {
+    #Check for deprecated dDF.na argument
+    if ("dDF.na" %in% names(tempcall))
+      stop("The argument dDF.na has been deprecated; use dDF.fault instead.")
+  }
+
   #Check that have a valid object of class asrtests
   validasrt <- validAsrtests(asrtests.obj)  
   if (is.character(validasrt))
@@ -76,9 +84,9 @@
   nofixed <- dim(wald.tab)[1]
   hd <- attr(wald.tab, which = "heading")
   options <- c("none", "residual", "maximum", "supplied")
-  opt <- options[check.arg.values(dDF.na, options)]
+  opt <- options[check.arg.values(dDF.fault, options)]
   if (opt == "supplied" & is.null(dDF.values))
-    stop('Need to set dDF.values because have set dDF.na = \"supplied\"')
+    stop('Need to set dDF.values because have set dDF.fault = \"supplied\"')
   if (opt == "supplied")
     if (length(dDF.values) != nofixed)
       stop("Number of  dDF.values must be the same as the number of terms in wald.tab")
@@ -106,27 +114,27 @@
     }
     else #have denom. df
     { 
-      den.df.na <- is.na(wald.tab$denDF)
-      if (any(den.df.na)) #some denDf are NA and so need to use approximate DF
+      den.df.fault <- is.na(wald.tab$denDF) | is.infinite(wald.tab$denDF)  | wald.tab$denDF < 0.01
+      if (any(den.df.fault)) #some denDf are NA or < 0.01 and so need to use approximate DF
       { 
         if (opt == "supplied")
         { 
-          wald.tab$denDF[den.df.na] <- dDF.values[den.df.na]
-          warning("At least some supplied dDF.values used for denDF")
+          wald.tab$denDF[den.df.fault] <- dDF.values[den.df.fault]
+          warning("At least some supplied dDF.values used for denDF that are NA, Inf or < 0.01")
         }
         else
         { 
           if (opt == "maximum") 
           { 
-            if (!all(den.df.na))
+            if (!all(den.df.fault))
             { 
               den.df <- max(wald.tab$denDF[-1], na.rm=TRUE) 
-              warning("Maximum denDF used for some terms")
+              warning("Maximum denDF used for for denDF that are NA, Inf or < 0.01")
             }
             else
             { 
               den.df <- asreml.obj$nedf
-              warning("Residual df used for denDF for at least some terms")
+              warning("Residual df used for denDF for denDF that are NA, Inf or < 0.01")
             }
           }
           else
@@ -137,7 +145,7 @@
               warning("Residual df used for denDF for at least some terms")
             }
           }
-          wald.tab$denDF[den.df.na] <- den.df
+          wald.tab$denDF[den.df.fault] <- den.df
         }
       }
     }
@@ -1080,7 +1088,7 @@ setGRparam.call <- function(call, set.terms = NULL, ignore.suffices = TRUE,
         my.update.formula(as.formula(languageEl(call, which = "sparse")), 
                           sparse., call = call, keep.order = keep.order)), 
         "factors")) == 0) 
-    languageEl(call, which = "random") <- NULL
+    languageEl(call, which = "sparse") <- NULL
   if (asr4)
   {
     if (!is.null(languageEl(call, which = "residual")) && 
@@ -2229,7 +2237,7 @@ findboundary.asreml <- function(asreml.obj, asr4, asr4.2)
                                   drop.ran.ns = TRUE, positive.zero = FALSE, 
                                   bound.test.parameters = "none", 
                                   bound.exclusions = c("F","B","S","C"), REMLDF = NULL, 
-                                  drop.fix.ns = FALSE, denDF="numeric", dDF.na = "none", 
+                                  drop.fix.ns = FALSE, denDF="numeric", dDF.fault = "none", 
                                   dDF.values = NULL, IClikelihood = "none", 
                                   trace = FALSE, update = TRUE, 
                                   set.terms = NULL, ignore.suffices = TRUE, 
@@ -2335,9 +2343,9 @@ findboundary.asreml <- function(asreml.obj, asr4, asr4.2)
       wald.tab <- chkWald(wald.tab)
       termno <- findterm(term, rownames(wald.tab)) #in case order has changed
       options <- c("none", "residual", "maximum", "supplied")
-      opt <- options[check.arg.values(dDF.na, options)]
+      opt <- options[check.arg.values(dDF.fault, options)]
       if (opt == "supplied" & is.null(dDF.values))
-        stop('Need to set dDF.values because have set dDF.na = \"supplied\"')
+        stop('Need to set dDF.values because have set dDF.fault = \"supplied\"')
       #Compute p-value
       p <- wald.tab[termno, 
                     colnames(wald.tab)[grepl("Pr", colnames(wald.tab), fixed = TRUE)]]
@@ -2744,7 +2752,7 @@ findboundary.asreml <- function(asreml.obj, asr4, asr4.2)
   results <- as.asrtests(asreml.obj = asreml.obj, 
                          wald.tab = wald.tab, 
                          test.summary = test.summary,
-                         denDF = denDF, dDF.na = dDF.na, 
+                         denDF = denDF, dDF.fault = dDF.fault, 
                          dDF.values = dDF.values, trace = trace, ...)
   invisible(results)
 }
@@ -3428,7 +3436,7 @@ findboundary.asreml <- function(asreml.obj, asr4, asr4.2)
                                  inestimable.rm = TRUE, 
                                  linear.transformation = NULL, EGLS.linTransform = TRUE, 
                                  error.intervals = "Confidence", alpha = 0.05, 
-                                 wald.tab = NULL, dDF.na = "residual",  dDF.values = NULL, 
+                                 wald.tab = NULL, dDF.fault = "residual",  dDF.values = NULL, 
                                  pairwise = TRUE, Vmatrix = FALSE, 
                                  avsed.tolerance = 0.25, accuracy.threshold = NA, 
                                  LSDtype = "overall", LSDsupplied = NULL, LSDby = NULL, 
@@ -3649,12 +3657,12 @@ findboundary.asreml <- function(asreml.obj, asr4, asr4.2)
   }
   if (is.na(denom.df))
   { 
-    #Get options for dDF.na
+    #Get options for dDF.fault
     options <- c("none", "residual", "maximum", "supplied")
-    opt <- options[check.arg.values(dDF.na, options)]
+    opt <- options[check.arg.values(dDF.fault, options)]
     if (opt == "supplied" && is.null(dDF.values))
-      stop('Need to set dDF.values because have set dDF.na = \"supplied\"')
-    warn <- paste("Denominator degrees of freedom obtained using dDF.na method", opt)
+      stop('Need to set dDF.values because have set dDF.fault = \"supplied\"')
+    warn <- paste("Denominator degrees of freedom obtained using dDF.fault method", opt)
     if (is.null(wald.tab))
       warn <- paste(warn, "\n- no wald.tab supplied")
     warning(warn)
@@ -4257,7 +4265,7 @@ findboundary.asreml <- function(asreml.obj, asr4, asr4.2)
 "predictPresent.asreml" <- function(asreml.obj, terms, inestimable.rm = TRUE, 
                                     linear.transformation = NULL, EGLS.linTransform = TRUE, 
                                     error.intervals = "Confidence", alpha = 0.05, 
-                                    wald.tab = NULL, dDF.na = "residual", dDF.values = NULL, 
+                                    wald.tab = NULL, dDF.fault = "residual", dDF.values = NULL, 
                                     pairwise = TRUE, Vmatrix = FALSE,
                                     avsed.tolerance = 0.25, accuracy.threshold = NA, 
                                     LSDtype = "overall", LSDsupplied = NULL, LSDby = NULL, 
@@ -4283,12 +4291,17 @@ findboundary.asreml <- function(asreml.obj, asr4, asr4.2)
 # - with dates, they should be in the form yyyymmdd
 #Probably need to supply x.plot.values if x.fac is to be plotted
 { 
-  #Check for deprecated argument meanLSD.type and warn
   tempcall <- list(...)
   if (length(tempcall)) 
+  {
+    #Check for deprecated argument meanLSD.type and warn
     if ("meanLSD.type" %in% names(tempcall))
       stop("meanLSD.type has been deprecated - use LSDtype")
-  
+    #Check for deprecated dDF.na argument
+    if ("dDF.na" %in% names(tempcall))
+      stop("The argument dDF.na has been deprecated; use dDF.fault instead.")
+  }
+
   asr4 <- isASRemlVersionLoaded(4, notloaded.fault = TRUE)
   #Check that have a valid object of class asreml
   validasr <- validAsreml(asreml.obj)  
@@ -4391,7 +4404,7 @@ findboundary.asreml <- function(asreml.obj, asr4, asr4.2)
                                   sortNestingFactor = sortNestingFactor, 
                                   sortOrder = sortOrder, 
                                   decreasing = decreasing, 
-                                  wald.tab = wald.tab, dDF.na = dDF.na, 
+                                  wald.tab = wald.tab, dDF.fault = dDF.fault, 
                                   dDF.values = dDF.values, 
                                   alpha = alpha, trace = trace, ...)
     }
@@ -4423,7 +4436,7 @@ findboundary.asreml <- function(asreml.obj, asr4, asr4.2)
                                   sortNestingFactor = sortNestingFactor, 
                                   sortOrder = sortOrder, 
                                   decreasing = decreasing, 
-                                  wald.tab = wald.tab, dDF.na = dDF.na, 
+                                  wald.tab = wald.tab, dDF.fault = dDF.fault, 
                                   dDF.values = dDF.values, 
                                   alpha = alpha, trace = trace, ...)
     new.name <- gsub(":", ".", term)

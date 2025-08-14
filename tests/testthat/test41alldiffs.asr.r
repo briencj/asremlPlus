@@ -1968,7 +1968,7 @@ test_that("linear.transform_WaterRunoff_asreml41", {
     current.asrt <- as.asrtests(HEB25.asr)
     current.asrt <- rmboundary(current.asrt)
     current.asr <- current.asrt$asreml.obj
-    wald.tab <- recalcWaldTab(asrtests.obj=current.asrt, dDF.na="residual")
+    wald.tab <- recalcWaldTab(asrtests.obj=current.asrt, dDF.fault="residual")
     HEB25.diffs <- predictPlus(current.asr, classify="Treatment.1:Genotype.ID",
                                wald.tab = wald.tab, Vmatrix = TRUE, 
                                transform.power = 0,
@@ -2299,7 +2299,7 @@ test_that("GLMdiffs_budworm_asreml41", {
   testthat::expect_warning(
     diffs <- predictPlus(as1, classify = "sex:ldose", levels = list(ldose = 0:5), 
                          transform.function = "logit", tables = "none"),
-    regexp = "Denominator degrees of freedom obtained using dDF.na method residual")
+    regexp = "Denominator degrees of freedom obtained using dDF.fault method residual")
   testthat::expect_equal(length(diffs), 7)
   testthat::expect_true(!any(c("transformed.value", "approx.se") %in% names(diffs$predictions)))
   testthat::expect_true(abs(diffs$predictions$predicted.value[1] - -3.473155) < 1e-05)
@@ -2311,7 +2311,7 @@ test_that("GLMdiffs_budworm_asreml41", {
   testthat::expect_warning(
     diffs <- predictPlus(as1, classify = "sex:ldose", levels = list(ldose = 0:5), 
                          tables = "none"),
-    regexp = "Denominator degrees of freedom obtained using dDF.na method residual")
+    regexp = "Denominator degrees of freedom obtained using dDF.fault method residual")
   testthat::expect_true(is.null(diffs$backtransforms))
   testthat::expect_true(all(c("transformed.value", "approx.se") %in% names(diffs$predictions)))
   testthat::expect_true(abs(diffs$predictions$predicted.value[1] - -3.473155) < 1e-05)

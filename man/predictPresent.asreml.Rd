@@ -28,7 +28,7 @@
 \method{predictPresent}{asreml}(asreml.obj, terms, inestimable.rm = TRUE, 
                linear.transformation = NULL, EGLS.linTransform, 
                error.intervals = "Confidence", alpha = 0.05, 
-               wald.tab = NULL, dDF.na = "residual", dDF.values = NULL, 
+               wald.tab = NULL, dDF.fault = "residual", dDF.values = NULL, 
                pairwise = TRUE, Vmatrix = FALSE, 
                avsed.tolerance = 0.25, accuracy.threshold = NA, 
                LSDtype = "overall", LSDsupplied = NULL, LSDby = NULL, 
@@ -113,20 +113,21 @@
                calculating confidence or half-LSD \code{error.intervals} and p-values, 
                the latter to be stored in the \code{p.differences} component of the 
                \code{alldiffs.object} that is created.}
- \item{dDF.na}{The method to use to obtain approximate denominator degrees of freedom. 
-              when the numeric or algebraic methods produce an \code{NA}. Consistent with 
-              when no denDF are available, the default is \code{"residual"} and so the residual 
-              degrees of freedom from \code{asreml.obj$nedf} are used. If 
-              \code{dDF.na = "none"}, no substitute denominator degrees of freedom 
-              are employed; if \code{dDF.na = "maximum"}, the maximum of those denDF 
-              that are available, excluding that for the Intercept, is used; if all 
-              denDF are \code{NA}, \code{asreml.obj$nedf} is used. If 
-              \code{dDF.na = "supplied"}, a \code{vector} of values for the 
-              denominator degrees of freedom is to be supplied in \code{dDF.values}. 
-              Any other setting is ignored and a warning message produced. Generally, 
-              substituting these degrees of freedom is anticonservative in that it 
-              is likely that the degrees of freedom used will be too large.}
- \item{dDF.values}{A \code{vector} of values to be used when \code{dDF.na = "supplied"}. 
+ \item{dDF.fault}{A \code{\link{character}} specifying the method to use to obtain substitute 
+              denominator degrees of freedom. when the numeric or algebraic methods produce 
+              faulty values, viz. \code{NA}, \code{Inf} or less than 0.01. Consistent with 
+              when no denDF are available, the default is \code{"residual"} and so the 
+              residual degrees of freedom from \code{asreml.obj$nedf} are used. 
+              If \code{dDF.fault = "none"}, no substitute denominator degrees of freedom are 
+              employed; if \code{dDF.fault = "residual"}; if \code{dDF.fault = "maximum"}, 
+              the maximum of those denDF that are available, excluding that for the 
+              Intercept, is used; if all denDF are faulty, \code{asreml.obj$nedf} is used. 
+              If \code{dDF.fault = "supplied"}, a \code{vector} of values for the denominator 
+              degrees of freedom is to be supplied in \code{dDF.values}. Any other setting 
+              is ignored and a warning message produced. Generally, substituting these 
+              degrees of freedom is anticonservative in that it is likely that the degrees 
+              of freedom used will be too large.}
+ \item{dDF.values}{A \code{vector} of values to be used when \code{dDF.fault = "supplied"}. 
               Its values will be used when \code{denDF} in a test for a fixed effect
               is \code{NA}. This vector must be the same length as the number of 
               fixed terms, including (Intercept) whose value could be \code{NA}.}

@@ -1,8 +1,12 @@
 \name{news}
 \title{News for Package asremlPlus}
+\section{asremlPlus Version 4.4.51 (2025-08-13)}{
+  \itemize{
+  \item The argument \code{dDF.na} has been deprecated and replaced  by a new argument \code{dDF.fault} in recalcWaldTab, predictPlus, predictPresent, and testranfix. The argument \code{dDF.fault} expands the replacement of \code{denDF} in a \code{wald.tab} to include the replacement of values that that are \code{NA}, \code{Inf} or less than 0.01.
+}}
 \section{asremlPlus Version 4.4.50 (2025-07-17)}{
   \itemize{
-  \item Add the calculation ofa notional LSD for \code{LSDtype} is \code{overall} when the all values of the sed are zero because there is, in reality, only a single predicted value.
+  \item Add the calculation of a notional LSD for \code{LSDtype} is \code{overall} when the all values of the sed are zero because there is, in reality, only a single predicted value.
 }}
 \section{asremlPlus Version 4.4.49 (2025-06-10)}{
   \itemize{

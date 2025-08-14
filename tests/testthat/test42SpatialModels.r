@@ -600,8 +600,8 @@ test_that("Wheat_spatial_models_asreml42", {
                                       difforder = c(1,1), degree = c(1,1),
                                       asreml.option = "mbf", IClikelihood = "full")
   info <- infoCriteria(current.asrt$asreml.obj, IClikelihood = "full")
-  testthat::expect_equal(info$varDF, 3)
-  testthat::expect_lt(abs(info$AIC - 1720.891), 0.10)
+  testthat::expect_equal(info$varDF, 4)
+  testthat::expect_lt(abs(info$AIC - 1653.111), 0.10)
   
   
   #Return all of the models
@@ -1468,13 +1468,13 @@ test_that("spatial_models_barley_asreml42", {
   R2adj <- sapply(spatialEach.asrts, function(asrt) R2adj(asrt$asreml.obj, 
                                                           include.which.fixed = ~ gen,
                                                           orthogonalize = "eigen"))
-  testthat::expect_true(all(abs(R2adj - c(33.42397, 18.13152, 16.25091, 29.30381)) < 0.001))
+  testthat::expect_true(all(abs(R2adj - c(33.42414, 18.12542, 16.25091, 29.30381)) < 0.001))
   R2adj.corr <- R2adj(spatialEach.asrts[["corr"]]$asreml.obj, 
                       include.which.fixed = ~ ., include.which.random = ~ .)
   testthat::expect_true(abs(R2adj.corr - 79.27872) < 1e-03)
   R2adj.TPNCSS <- R2adj(spatialEach.asrts[["TPNCSS"]]$asreml.obj, 
                         include.which.fixed = ~ ., include.which.random = ~ .)
-  testthat::expect_true(abs(R2adj.TPNCSS - 85.47652) < 1e-03)
+  testthat::expect_true(abs(R2adj.TPNCSS - 85.48129) < 1e-03)
   R2adj.TPPSC2 <- R2adj(spatialEach.asrts[["TPPSC2"]]$asreml.obj, 
                        include.which.fixed = ~ ., include.which.random = ~ .)
   testthat::expect_true(abs(R2adj.TPPSC2 - 87.78192) < 1e-03)

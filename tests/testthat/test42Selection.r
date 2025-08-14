@@ -454,7 +454,7 @@ test_that("at_multilevel_asreml42", {
   t.asrt <- testranfix(current.asrt, 
                        term = "at(expt, 'mtnue10'):vrow", 
                        drop.fix.ns = TRUE,
-                       dDF.na = "residual", update = FALSE)
+                       dDF.fault = "residual", update = FALSE)
   testthat::expect_equal(nrow(t.asrt$wald.tab), 23)
   testthat::expect_false("at(expt, mtnue10):vrow" %in% rownames(t.asrt$wald.tab))
   
@@ -463,19 +463,19 @@ test_that("at_multilevel_asreml42", {
   testthat::expect_error(t.asrt <- testranfix(current.asrt, 
                                               term = "at(expt, c(1:5)):rep", 
                                               drop.fix.ns = TRUE,
-                                              dDF.na = "residual", update = FALSE))
+                                              dDF.fault = "residual", update = FALSE))
   
   #Multiple random terms in an at expression  generates an error
   testthat::expect_error(t.asrt <- testranfix(current.asrt, 
                                               term = "at(expt, c(3,5,7)):dev(vcol)", 
                                               drop.ran.ns = TRUE,
-                                              dDF.na = "residual", update = FALSE))
+                                              dDF.fault = "residual", update = FALSE))
 
   #Single random term in an at expression - thinks absent
   t.asrt <- testranfix(current.asrt, 
                        term = "at(expt, tarlee13):dev(vcol)", 
                        drop.ran.ns = TRUE,
-                       dDF.na = "residual", update = FALSE)
+                       dDF.fault = "residual", update = FALSE)
   testthat::expect_equal(t.asrt$test.summary$action[1], "Absent")
   
   #Test multiple at term with changeTerms

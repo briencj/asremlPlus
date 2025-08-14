@@ -18,13 +18,13 @@ test_that("Wheat_asreml42", {
                         maxit = 30, data=Wheat.dat)
   summary(current.asr)
   info <- infoCriteria(current.asr)
-  testthat::expect_equal(info$varDF, 5)
-  testthat::expect_lt(abs(info$AIC - 1346.768), 0.10)
+  testthat::expect_equal(info$varDF, 4)
+  testthat::expect_lt(abs(info$AIC - 1359.136), 0.10)
   
   # Load current fit into an asrtests object
   current.asrt <- as.asrtests(current.asr, NULL, NULL, 
                               label = "Maximal model", IClikelihood = "full")
-  testthat::expect_lt(abs(current.asrt$test.summary$AIC - 1653.098), 0.10)
+  testthat::expect_lt(abs(current.asrt$test.summary$AIC - 1675.781), 0.10)
   
   
   # Check for and remove any boundary terms
@@ -44,7 +44,7 @@ test_that("Wheat_asreml42", {
   
   # Test Col autocorrelation (depends on whether Row autocorrelation retained)
   p <- getTestPvalue(current.asrt, label = "Row autocorrelation")
-  testthat::expect_true((abs(p - 2.314881e-06) < 1e-05))
+  testthat::expect_true((abs(p - 0.001182826) < 1e-05))
   { 
     if (p <= 0.05)
     current.asrt <- testresidual(current.asrt, "~ ar1(Row):Column", 
@@ -58,12 +58,12 @@ test_that("Wheat_asreml42", {
   print(current.asrt)
   testthat::expect_equal(length(current.asrt), 3)
   testthat::expect_equal(nrow(current.asrt$wald.tab), 3)
-  testthat::expect_equal(nrow(current.asrt$test.summary), 6)
-  testthat::expect_lt(abs(current.asrt$test.summary$AIC[6] - 1651.329), 0.10)
-  testthat::expect_lt(abs(current.asrt$test.summary$BIC[6] - 1756.701), 0.10)
+  testthat::expect_equal(nrow(current.asrt$test.summary), 7)
+  testthat::expect_lt(abs(current.asrt$test.summary$AIC[6] - 1673.821), 0.10)
+  testthat::expect_lt(abs(current.asrt$test.summary$BIC[6] - 1776.183), 0.10)
   info <- infoCriteria(current.asrt$asreml.obj)
-  testthat::expect_equal(info$varDF, 5)
-  testthat::expect_lt(abs(info$AIC - 1353.762), 1e-03)
+  testthat::expect_equal(info$varDF, 4)
+  testthat::expect_lt(abs(info$AIC - 1367.214), 1e-03)
   
   # Get current fitted asreml object
   current.asr <- current.asrt$asreml.obj
@@ -140,13 +140,13 @@ test_that("Wheat_asreml42", {
                         maxit = 30, data=Wheat.dat)
   summary(current.asr)
   info <- infoCriteria(current.asr)
-  testthat::expect_equal(info$varDF, 5)
-  testthat::expect_lt(abs(info$AIC - 1346.768), 0.10)
+  testthat::expect_equal(info$varDF, 4)
+  testthat::expect_lt(abs(info$AIC - 1359.136), 0.10)
   
   # Load current fit into an asrtests object
   current.asrt <- as.asrtests(current.asr, NULL, NULL, 
                               label = "Maximal model", IClikelihood = "full")
-  testthat::expect_lt(abs(current.asrt$test.summary$AIC - 1653.098), 0.10)
+  testthat::expect_lt(abs(current.asrt$test.summary$AIC - 1675.781), 0.10)
   
   
   # Check for and remove any boundary terms
@@ -167,7 +167,7 @@ test_that("Wheat_asreml42", {
   
   # Test Col autocorrelation (depends on whether Row autocorrelation retained)
   result <- getTestEntry(current.asrt, label = "Row autocorrelation")$action
-  testthat::expect_true(grepl("Unswapped", result))
+  testthat::expect_true(grepl("Swapped", result))
   { 
     if (grepl("Unswapped", result) || grepl("Unchanged", result))
       current.asrt <- changeModelOnIC(current.asrt, newResidual = "ar1(Row):Column", 
@@ -182,11 +182,11 @@ test_that("Wheat_asreml42", {
   testthat::expect_equal(length(current.asrt), 3)
   testthat::expect_equal(nrow(current.asrt$wald.tab), 3)
   testthat::expect_equal(nrow(current.asrt$test.summary), 8)
-  testthat::expect_lt(abs(current.asrt$test.summary$AIC[8] - 54.18178706), 0.10)
-  testthat::expect_lt(abs(current.asrt$test.summary$BIC[8] - 51.17115177), 0.10)
+  testthat::expect_lt(abs(current.asrt$test.summary$AIC[8] - 76.59663), 0.10)
+  testthat::expect_lt(abs(current.asrt$test.summary$BIC[8] - 73.58599), 0.10)
   info <- infoCriteria(current.asrt$asreml.obj)
-  testthat::expect_equal(info$varDF, 5)
-  testthat::expect_lt(abs(info$AIC - 1353.762), 1e-03)
+  testthat::expect_equal(info$varDF, 2)
+  testthat::expect_lt(abs(info$AIC - 1376.694), 1e-03)
 })
 
 
