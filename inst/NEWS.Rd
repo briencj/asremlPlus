@@ -1,8 +1,9 @@
 \name{news}
 \title{News for Package asremlPlus}
-\section{asremlPlus Version 4.4.51 (2025-08-13)}{
+\section{asremlPlus Version 4.4.51 (2025-08-15)}{
   \itemize{
   \item The argument \code{dDF.na} has been deprecated and replaced  by a new argument \code{dDF.fault} in recalcWaldTab, predictPlus, predictPresent, and testranfix. The argument \code{dDF.fault} expands the replacement of \code{denDF} in a \code{wald.tab} to include the replacement of values that that are \code{NA}, \code{Inf} or less than 0.01.
+  \item Debugging output from findLSDminerrors.alldiffs that was always being produced will now only be produced when the argument \code{trace} is set to \code{TRUE}. 
 }}
 \section{asremlPlus Version 4.4.50 (2025-07-17)}{
   \itemize{
