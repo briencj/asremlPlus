@@ -48,7 +48,7 @@ findLSDminerrors.alldiffs <- function(alldiffs.obj,
                           t.value = t.value,  alpha = alpha, 
                           retain.zeroLSDs = retain.zeroLSDs, 
                           zero.tolerance = zero.tolerance)
-  print(LSD.list)
+  if (trace) print(LSD.list)
   if (length(false.pos.wt) == 1)
     false.pos.wt <- rep(false.pos.wt, length(LSD.list))
   else
