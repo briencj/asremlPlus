@@ -479,7 +479,7 @@ test_that("sort.alldiffs_lme4", {
     testthat::expect_equal(nrow(GAB.diffs.sort$predictions),120)
     testthat::expect_equal(ncol(GAB.diffs.sort$predictions),9)
     testthat::expect_equal(as.character(GAB.diffs.sort$predictions$Genotype[1]),"Gladius")
-    testthat::expect_equal(length(attributes(GAB.diffs.sort)),9)
+    testthat::expect_equal(length(attributes(GAB.diffs.sort)),10)
     testthat::expect_equal(length(attr(GAB.diffs.sort, which = "sortOrder")),10)
     
     
@@ -558,7 +558,7 @@ test_that("sort.alldiffsWater_lme4", {
     testthat::expect_equal(nrow(TS.diffs.sort$predictions),20)
     testthat::expect_equal(ncol(TS.diffs.sort$predictions),8)
     testthat::expect_equal(as.character(TS.diffs.sort$predictions$Sources[1]),"Recycled water")
-    testthat::expect_equal(length(attributes(TS.diffs.sort)),9)
+    testthat::expect_equal(length(attributes(TS.diffs.sort)),10)
     testthat::expect_equal(length(attr(TS.diffs.sort, which = "sortOrder")),6)
     
     #Test sort.alldiffs with supplied sortOrder

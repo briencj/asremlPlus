@@ -184,8 +184,6 @@ sliceLSDmat <- function(alldiffs.obj, type, by,
                      krows <- lev == fac.comb
                      if (length(fac.comb[krows]) == 1) #have a single prediction
                      {
-                       warning(paste("LSD calculated for a single prediction- applies to",
-                                     "two independent predictions with the same standard error"))
                        rm.list <- list (klsd = t.value * sqrt(2) * 
                                           alldiffs.obj$predictions$standard.error[krows],
                                         kdif = 0)
@@ -193,10 +191,24 @@ sliceLSDmat <- function(alldiffs.obj, type, by,
                      {
                        klsd <- getUpperTri(lsd[krows, krows])
                        kdif <- getUpperTri(dif[krows, krows])
-                       #remove NA and zero values
-                       rm.list <- rm.nazero(klsd, kdif, retain.zeroLSDs = retain.zeroLSDs, 
+                       rm.list <- rm.nazero(klsd, kdif, retain.zeroLSDs = retain.zeroLSDs,
                                             zero.tolerance = zero.tolerance)
-                       names(rm.list) <- c("lsd", "dif")
+                       
+                       #Is there only one value for the sed and this is zero?
+                       if (all(abs(klsd) < zero.tolerance) && 
+                           diff(range(alldiffs.obj$predictions$standard.error[krows])) < zero.tolerance)
+                       {
+                         # rm.list <- list (lsd = t.value * sqrt(2) * 
+                         #                    alldiffs.obj$predictions$standard.error[krows][1],
+                         #                  dif = 0)
+                         rm.list <- list (lsd = 0, dif = 0)
+                       } else
+                       {
+                         #remove NA and zero values
+                         rm.list <- rm.nazero(klsd, kdif, retain.zeroLSDs = retain.zeroLSDs,
+                                              zero.tolerance = zero.tolerance)
+                         names(rm.list) <- c("lsd", "dif")
+                       }
                      }
                      rm.list$sig.actual <- abs(rm.list$dif) >= rm.list$lsd
                      return(rm.list)

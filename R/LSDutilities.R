@@ -333,17 +333,16 @@ sliceLSDs <- function(alldiffs.obj, by, t.value, LSDstatistic = "mean", LSDaccur
                      {
                        warning(paste("LSD calculated for a single prediction",
                                      "- applies to two independent predictions with the same standard error"))
+                       stats <- c(NA_real_, NA_real_, NA_real_) 
+                       names(stats) <- c("accuracyLSD", "false.pos", "false.neg")
                        if (which.stats == "all")
-                       {
+                       { 
                          stats <- c(0, rep(t.value * sqrt(2) * 
-                                          alldiffs.obj$predictions$standard.error[krows], times = 4), NA_real_, NA_real_, NA_real_)
+                                             alldiffs.obj$predictions$standard.error[krows], times = 4), 
+                                    NA_real_, NA_real_, NA_real_)
                          names(stats) <- c("c", "minLSD", "meanLSD", "maxLSD", "assignedLSD", "accuracyLSD", 
                                            "false.pos", "false.neg")
-                       } else
-                         if (which.stats == "evalLSD")
-                           stats <- NA_real_
-                         else
-                           stop("Unknown which.stats option in SliceLSDs")
+                       }
                      } else  #have several predictions
                      {
                        ksed <- getUpperTri(sed[krows, krows])
@@ -353,29 +352,49 @@ sliceLSDs <- function(alldiffs.obj, by, t.value, LSDstatistic = "mean", LSDaccur
                                             zero.tolerance = zero.tolerance)
                        ksed <- rm.list$ksed
                        kdif <- rm.list$kdif
-                       if (which.stats == "all")
-                         stats <- LSDstats(ksed = ksed, kdif = kdif, t.value, 
-                                           LSDstatistic = LSDstatistic[lev], LSDaccuracy = LSDaccuracy)
-                       else
-                       {  
-                         if (which.stats == "evalLSD")
+                       #Is there only one value for the sed and this is zero?
+                       if (length(ksed) == 1 && length(kdif) == 1  && ksed == 0 &&
+                           diff(range(alldiffs.obj$predictions$standard.error[krows])) < zero.tolerance)
+                       {
+                         warning(paste("LSD calculated for a single prediction- applies to",
+                                       "two independent predictions with the same standard error"))
+                         stats <- c(NA_real_, NA_real_, NA_real_)
+                         names(stats) <- c("accuracyLSD", "false.pos", "false.neg") #evaluation stats
+                         if (which.stats == "all")
                          {
-                           stats <- LSDaccmeas(ksed, 
-                                               assignedLSD = 
-                                                 alldiffs.obj$LSD$assignedLSD[
-                                                   rownames(alldiffs.obj$LSD) == lev], 
-                                               t.value = t.value, LSDaccuracy = LSDaccuracy)
-                           names(stats) <- "accuracyLSD"
-                           #Calculate the number of false positives and negatives
-                           falsesig <- falseSignif(ksed = ksed, kdif = kdif, 
-                                                   assignedLSD = 
-                                                     alldiffs.obj$LSD$assignedLSD[rownames(alldiffs.obj$LSD) 
-                                                                                == lev], 
-                                                   t.value = t.value)
-                           stats <- c(stats,falsesig)
+                           # stats <- c(0, rep(t.value * sqrt(2) *
+                           #                     alldiffs.obj$predictions$standard.error[krows][1], times = 4),
+                           #            stats)
+                           stats <- c(0, rep(0, times = 4), stats)
+                           names(stats) <- c("c", "minLSD", "meanLSD", "maxLSD", "assignedLSD", "accuracyLSD",
+                                             "falsePos", "falseNeg")
                          }
+                       } else #nonzero seds
+                       {
+                         if (which.stats == "all")
+                           stats <- LSDstats(ksed = ksed, kdif = kdif, t.value, 
+                                             LSDstatistic = LSDstatistic[lev], LSDaccuracy = LSDaccuracy)
                          else
-                           stop("Unknown which.stats option in SliceLSDs")
+                         {  
+                           if (which.stats == "evalLSD") #only the evaluation statistics
+                           {
+                             stats <- LSDaccmeas(ksed, 
+                                                 assignedLSD = 
+                                                   alldiffs.obj$LSD$assignedLSD[
+                                                     rownames(alldiffs.obj$LSD) == lev], 
+                                                 t.value = t.value, LSDaccuracy = LSDaccuracy)
+                             names(stats) <- "accuracyLSD"
+                             #Calculate the number of false positives and negatives
+                             falsesig <- falseSignif(ksed = ksed, kdif = kdif, 
+                                                     assignedLSD = 
+                                                       alldiffs.obj$LSD$assignedLSD[rownames(alldiffs.obj$LSD) 
+                                                                                    == lev], 
+                                                     t.value = t.value)
+                             stats <- c(stats,falsesig)
+                           }
+                           else
+                             stop("Unknown which.stats option in SliceLSDs")
+                         }
                        }
                      }
                      return(stats)

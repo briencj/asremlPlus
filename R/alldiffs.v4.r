@@ -286,7 +286,7 @@ setOldClass("predictions.frame")
   attr(p, which = "alpha") <- alpha
   attr(p, which = "sortFactor") <- sortFactor
   attr(p, which = "sortOrder") <- sortOrder
-  class(p) <- "alldiffs"
+  class(p) <- c("alldiffs", "list")
   return(p)
 }
 
@@ -343,7 +343,7 @@ renameDiffsAttr <- function(object)
     attr(predictions, which = "meanLSD") <- NULL
   predictions <- renameAttr(predictions, 
                             change.attribs = list(meanLSD.type = "LSDtype", meanLSD = "LSDvalues"))
-  object$predictions <- predictions
+  object[["predictions"]] <- predictions
   
   if (!is.null(attr(object, which = "meanLSD")))
     attr(object, which = "meanLSD") <- NULL
@@ -352,7 +352,7 @@ renameDiffsAttr <- function(object)
     backtransforms <- object$backtransforms
     backtransforms <- renameAttr(backtransforms, 
                                  change.attribs = list(meanLSD.type = "LSDtype"))
-    object$backtransforms <- backtransforms
+    object[["backtransforms"]] <- backtransforms
   }
   return(object)
 }
@@ -2360,15 +2360,17 @@ makeSED <- function(alldiffs.obj)
                                                         alpha = alpha, which.stats = "evalLSD", 
                                                         retain.zeroLSDs = retain.zeroLSDs, 
                                                         zero.tolerance = zero.tolerance)
+              names(slLSD) <- gsub("false.pos", "falsePos", names(slLSD))
+              names(slLSD) <- gsub("false.neg", "falseNeg", names(slLSD))
               alldiffs.obj$LSD[c("accuracyLSD", "falsePos", "falseNeg")] <- 
-                slLSD[c("accuracyLSD", "false.pos", "false.neg")]
+                slLSD[c("accuracyLSD", "falsePos", "falseNeg")]
             }
           }
 
           attr(alldiffs.obj, which = "LSDtype") <- avLSD
           attr(alldiffs.obj, which = "LSDby") <- LSDby
           attr(alldiffs.obj, which = "LSDstatistic") <- LSDstat
-          attr(alldiffs.obj, which = "LSDaccuracy")
+          attr(alldiffs.obj, which = "LSDaccuracy") <- LSDacc
         } 
       } 
     }

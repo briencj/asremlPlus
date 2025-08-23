@@ -22,8 +22,8 @@
              object of this class by calculating components from statistics supplied via 
              its arguments and then using \code{\link{as.alldiffs}} to make the object.
 }
-\value{A \code{list} of class \code{alldiffs} containing the following components: 
-             \code{predictions}, \code{vcov}, \code{differences}, 
+\value{A \code{list} with classes \code{alldiffs} and \code{list} containing the following 
+             components: \code{predictions}, \code{vcov}, \code{differences}, 
              \code{p.differences}, \code{sed}, \code{LSD} and \code{backtransforms}. 
              Except for \code{predictions}, the components are optional and can be set 
              to \code{NULL}. 
