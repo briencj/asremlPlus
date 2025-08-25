@@ -1,9 +1,13 @@
 \name{news}
 \title{News for Package asremlPlus}
+\section{asremlPlus Version 4.4.53 (2025-08-25)}{
+  \itemize{
+  \item Modify printFormulae.asreml so that output will be broken into lines with print width equal to the option \code{width}.
+}}
 \section{asremlPlus Version 4.4.52 (2025-08-23)}{
   \itemize{
   \item Added the \code{class} \code{list} class to the classs of an \code{alldiffs.obj}.
-  \item Internal streamling of code that deals with cases when the sed and LSD go to zero because all comparions are between multiple instances of the same prediction.
+  \item Internal streamliningg of code that deals with cases when the sed and LSD go to zero because all comparions are between multiple instances of the same prediction.
 }}
 \section{asremlPlus Version 4.4.51 (2025-08-15)}{
   \itemize{

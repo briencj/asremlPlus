@@ -2,7 +2,7 @@
 \alias{printFormulae.asreml}
 \alias{printFormulae}
 \title{Prints the formulae from an asreml object.}
-\description{Prints the \code{\link{formula}}e nominated in the \code{which} argument from the \code{call} stored in an \code{asreml} object.}
+\description{Prints the \code{\link{formula}}e nominated in the \code{which} argument from the \code{call} stored in an \code{asreml} object. The output is broken into lines with print width equal to the option \code{width}.}
 \usage{
 \method{printFormulae}{asreml}(asreml.obj, which = c("fixed", "random", "residual"), 
               expanded = FALSE, envir = parent.frame(), ...)
