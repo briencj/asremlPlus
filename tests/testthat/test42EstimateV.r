@@ -282,7 +282,7 @@ test_that("Orange_estimateV_str_asreml42", {
   orange <- within(orange, 
                    {
                      x2 <- x^2
-                     cx <- x - mean(unique(2))
+                     cx <- as.numfac(x, center = TRUE)
                      cx2 <- cx^2
                    })
   asreml.options(design = TRUE)
@@ -339,13 +339,13 @@ test_that("Orange_estimateV_str_asreml42", {
   testthat::expect_true(all.equal(G, V.g, tol = 1e-03))
   
   ##Correlated slope and intercept - cor
-  asreml.obj <- asreml(circ ~ x,
-                       random = ~ str( ~Tree/(x + x2), ~cor(3):id(5)),
+  asreml.obj <- asreml(circ ~ cx,
+                       random = ~ str( ~Tree/(cx + cx2), ~cor(3):id(5)),
                        data = orange, maxit=50)   
   (vpar <- asreml.obj$vparameters)
-  g <- matrix(vpar[1], nrow = 3, ncol = 3)
+  g <- matrix(vpar[2], nrow = 3, ncol = 3)
   diag(g) <- 1
-  G.g <- kronecker(matrix(g, nrow = 3), mat.I(5))
+  G.g <- vpar[1] * kronecker(matrix(g, nrow = 3), mat.I(5))
   Z <- as.matrix(asreml.obj$design[,3:17] )
   V.g <- asreml.obj$sigma2 *(Z %*% G.g %*% t(Z))
   G <- estimateV(asreml.obj, which.matrix = "G", bound.exclusions = NULL)
@@ -353,8 +353,8 @@ test_that("Orange_estimateV_str_asreml42", {
   testthat::expect_true(all.equal(G,V.g, tol = 1e-03)) #problem with bound variance 08/2025
   
   ##Correlated slope and intercept - ar1
-  asreml.obj <- asreml(circ ~ x,
-                       random = ~ str( ~Tree/(x + x2), ~ar1(3):id(5)),
+  asreml.obj <- asreml(circ ~ cx,
+                       random = ~ str( ~Tree/(cx + cx2), ~ar1(3):id(5)),
                        data = orange, maxit=20)   
   (vpar <- asreml.obj$vparameters)
   g <- mat.ar1(vpar[2], 3)

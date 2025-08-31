@@ -1271,7 +1271,7 @@ fitCorrMod <- function(asrtests.obj, sections = NULL,
     if (largeVparChange(corr.asrt$asreml.obj, 0.75))
       corr.asrt <- iterate(corr.asrt)
     
-    #Final check for either singular spatial variance ot residual variance
+    #Final check for either singular spatial variance o5 residual variance
     corr.asrt <- chk4SingularSpatResVarTerms(corr.asrt, init.asrt, 
                                              corr.term = corr.term, 
                                              spat.var = spat.var, nuggsOK = nuggsOK, 
@@ -1284,6 +1284,12 @@ fitCorrMod <- function(asrtests.obj, sections = NULL,
                                              trace = trace, asr4.2 = asr4.2)
   } #end of sections loop
   
+  #Check for uncoverged analysis when allow.unconverged is FALSE
+  if (!allow.unconverged && !corr.asrt$asreml.obj$converge)
+    corr.asrt <- revert2previousFit(corr.asrt, init.asrt, 
+                                    terms = "Unconverged spatial model", 
+                                    action = "Revert to initial fit")
+    
   if (trace) {cat("\n#### Exiting corr model fitting\n\n"); print(corr.asrt)}
   
   #Ensure setting of ai.sing is reinstated to the value on entry (for corb)
@@ -1408,6 +1414,13 @@ fitTPNCSSMod <- function(asrtests.obj, sections = NULL,
   if (!checkboundaryonly)
     tspl.asrt <- rmboundary(tspl.asrt, checkboundaryonly = checkboundaryonly, 
                             update = update, IClikelihood = IClikelihood)
+  
+  #Check for uncoverged analysis when allow.unconverged is FALSE
+  if (!allow.unconverged && !tspl.asrt$asreml.obj$converge)
+    corr.asrt <- revert2previousFit(tspl.asrt, asrtests.obj, 
+                                    terms = "Unconverged spatial model", 
+                                    action = "Revert to initial fit")
+  
   return(tspl.asrt)
 }
 
@@ -2254,6 +2267,13 @@ fitTPPSMod <- function(asrtests.obj, sections = NULL,
       names(theta.opt) <- levels(dat.in[[sections]])
     attr(tspl.asrt$asreml.obj, which = "theta.opt") <- theta.opt
   }
+  
+  #Check for uncoverged analysis when allow.unconverged is FALSE
+  if (!allow.unconverged && !tspl.asrt$asreml.obj$converge)
+    corr.asrt <- revert2previousFit(tspl.asrt, asrtests.obj, 
+                                    terms = "Unconverged spatial model", 
+                                    action = "Revert to initial fit")
+  
   return(tspl.asrt)
 }
 

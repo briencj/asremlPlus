@@ -1,5 +1,9 @@
 \name{news}
 \title{News for Package asremlPlus}
+\section{asremlPlus Version 4.4.54 (2025-08-30)}{
+  \itemize{
+  \item Add catch-all checks on exit for unconverged models when \code{allow.unconverged} is \code{FALSE} to spatial-fitting functions called by addSpatialModel.asrtests, addSpatialModelOnIC.asrtests and chooseSpatialModelOnIC.asrtests.
+}}
 \section{asremlPlus Version 4.4.53 (2025-08-25)}{
   \itemize{
   \item Modify printFormulae.asreml so that output will be broken into lines with print width equal to the option \code{width}.
@@ -7,7 +11,7 @@
 \section{asremlPlus Version 4.4.52 (2025-08-23)}{
   \itemize{
   \item Added the \code{class} \code{list} class to the classs of an \code{alldiffs.obj}.
-  \item Internal streamliningg of code that deals with cases when the sed and LSD go to zero because all comparions are between multiple instances of the same prediction.
+  \item Internal streamlining of code that deals with cases when the sed and LSD go to zero because all comparions are between multiple instances of the same prediction.
 }}
 \section{asremlPlus Version 4.4.51 (2025-08-15)}{
   \itemize{

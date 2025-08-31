@@ -600,8 +600,8 @@ test_that("Wheat_spatial_models_asreml42", {
                                       difforder = c(1,1), degree = c(1,1),
                                       asreml.option = "mbf", IClikelihood = "full")
   info <- infoCriteria(current.asrt$asreml.obj, IClikelihood = "full")
-  testthat::expect_equal(info$varDF, 4)
-  testthat::expect_lt(abs(info$AIC - 1653.111), 0.10)
+  testthat::expect_equal(info$varDF, 3)
+  testthat::expect_lt(abs(info$AIC - 1720.891), 0.10)
   
   
   #Return all of the models

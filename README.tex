@@ -1,0 +1,250 @@
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+%
+\documentclass[
+]{article}
+\usepackage{amsmath,amssymb}
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math} % this also loads fontspec
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+\usepackage{lmodern}
+\ifPDFTeX\else
+  % xetex/luatex font selection
+\fi
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+\usepackage{xcolor}
+\usepackage[margin=1in]{geometry}
+\usepackage{graphicx}
+\makeatletter
+\newsavebox\pandoc@box
+\newcommand*\pandocbounded[1]{% scales image to fit in text height/width
+  \sbox\pandoc@box{#1}%
+  \Gscale@div\@tempa{\textheight}{\dimexpr\ht\pandoc@box+\dp\pandoc@box\relax}%
+  \Gscale@div\@tempb{\linewidth}{\wd\pandoc@box}%
+  \ifdim\@tempb\p@<\@tempa\p@\let\@tempa\@tempb\fi% select the smaller of both
+  \ifdim\@tempa\p@<\p@\scalebox{\@tempa}{\usebox\pandoc@box}%
+  \else\usebox{\pandoc@box}%
+  \fi%
+}
+% Set default figure placement to htbp
+\def\fps@figure{htbp}
+\makeatother
+\usepackage{svg}
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\setcounter{secnumdepth}{-\maxdimen} % remove section numbering
+\usepackage{bookmark}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\urlstyle{same}
+\hypersetup{
+  pdftitle={asremlPlus},
+  hidelinks,
+  pdfcreator={LaTeX via pandoc}}
+
+\title{asremlPlus}
+\author{}
+\date{\vspace{-2.5em}}
+
+\begin{document}
+\maketitle
+
+⁠⁠
+\href{http://www.repostatus.org/\#active}{\pandocbounded{\includesvg[keepaspectratio]{http://www.repostatus.org/badges/latest/active.svg}}}
+\href{https://cran.r-project.org/}{\pandocbounded{\includesvg[keepaspectratio]{https://img.shields.io/badge/R\%3E\%3D-3.5.0-6666ff.svg}}}
+\href{https://cran.r-project.org/package=asremlPlus}{\pandocbounded{\includegraphics[keepaspectratio]{http://www.r-pkg.org/badges/version/asremlPlus}}}
+\href{/commits/master}{\pandocbounded{\includegraphics[keepaspectratio]{https://img.shields.io/badge/Package\%20version-4.4.54-orange.svg?style=flat-square}}}
+\href{/commits/master}{\pandocbounded{\includesvg[keepaspectratio]{https://img.shields.io/badge/last\%20change-2025--08--31-yellowgreen.svg}}}
+\href{http://choosealicense.com/licenses/mit/}{\pandocbounded{\includesvg[keepaspectratio]{https://img.shields.io/github/license/mashape/apistatus.svg}}}
+\href{commits/master}{\pandocbounded{\includegraphics[keepaspectratio]{https://cranlogs.r-pkg.org/badges/last-week/asremlPlus}}}
+
+\texttt{asremlPlus} is an R package that augments the use of
+\texttt{ASReml-R} in fitting mixed models and packages generally in
+exploring prediction differences. This version is compatible with both
+\texttt{ASReml-R} versions 3 and 4.1, but not 4.0.
+
+Versions 4.x-xx of \texttt{asremlPlus} are a major revamp of the package
+and include substantial syntax changes. In particular, most functions
+are S3 methods and so the type of the object can be omitted from the
+function name when calling the function.
+
+\subsection{More information}\label{more-information}
+
+For more information install the package and run the R command
+\texttt{news(package\ =\ “asremlPlus”)} or consult the
+\href{./vignettes/asremlPlus-manual.pdf}{manual}.
+
+An overview can be obtained using \texttt{?asremlPlus}. In particular,
+an example of its use is given towards the bottom of the help
+information and this is avalable as the
+\href{./vignettes/Wheat.analysis.pdf}{Wheat.analysis vignette}. It that
+shows how to select the terms to be included in a mixed model for an
+experiment that involves spatial variation; it also illustrates
+diagnostic checking and prediction production and presentation for this
+example. A second vignette is the
+\href{./vignettes/Wheat.infoCriteria.pdf}{Wheat.infoCriteria vignette}
+that illustrates the facilities in \texttt{asremlPlus} for producing and
+using information criteria. Two further vignettes show how to use
+\texttt{asremlPlus} for exploring and presenting predictions from a
+linear mixed model analysis in the context of a three-factor factorial
+experiment on ladybirds: one vignette,
+\href{./vignettes/Ladybird.asreml.pdf}{Ladybird.asreml vignette}, uses
+\texttt{asreml} and \texttt{asremlPlus} to produce and present
+predictions; the other vignette,
+\href{./vignettes/Ladybird.asreml.pdf}{Ladybird.lm vignette}, uses
+\texttt{lm} to produce the predictions and \texttt{asremlPlus} to
+present the predictions. The vignettes can be accessed via
+\texttt{vignette(name,\ package\ =\ "asremlPlus")}, where \texttt{name}
+is one of \texttt{"Wheat.analysis"}, \texttt{"Wheat.infoCriteria"},
+\texttt{"Ladybird.asreml"} or \texttt{"Ladybird.lm"}.
+
+\subsection{Installing the package}\label{installing-the-package}
+
+\subsubsection{\texorpdfstring{From a repository using
+\texttt{drat}}{From a repository using drat}}\label{from-a-repository-using-drat}
+
+Windows binaries and source tarballs of the latest version of
+\texttt{asremlPlus} are available for installation from my
+\href{http://chris.brien.name/rpackages}{repository}. Installation
+instructions are available there.
+
+\subsubsection{Directly from GitHub}\label{directly-from-github}
+
+\texttt{asremlPlus} is an R package available on GitHub, so it can be
+installed from the RStudio console or an R command line session using
+the \texttt{devtools} command \texttt{install\_github}. First, make sure
+\texttt{devtools} is installed, which, if you do not have it, can be
+done as follows:
+
+\texttt{install.packages("devtools")}
+
+Next, install \texttt{asremlPlus} from GitHub by entering:
+
+\texttt{devtools::install\_github("briencj/asremlPlus")}.
+
+Version 2.0-12 of the package is available from CRAN so that you could
+first install it and its dependencies using:
+
+\texttt{install.packages("asremlPlus")}
+
+If you have not previously installed \texttt{asremlPlus} then you could
+first install it and its dependencies from CRAN using:
+
+\texttt{install.packages("asremlPlus")}
+
+Otherwise, you will need to install its dependencies manually:
+
+\texttt{install.packages(c("dae",\ "devtools",\ "doParallel",\ "dplyr",\ "foreach",\ "ggplot2",\ \ "nloptr",\ "parallel",\ "qqplotr",}
+\texttt{"RColorBrewer",\ "reshape2",\ "rlang",\ "sticky",\ "stringr"))}
+
+\subsection{What is does}\label{what-is-does}
+
+It assists in automating the selection of terms to include in mixed
+models when `asreml-R' is used to fit the models. A history of the
+fitting of a sequence of models is kept in a data frame. Procedures are
+available for choosing models that conform to the hierarchy or
+marginality principle and for fitting and choosing between
+two-dimensional spatial models using correlation, natural cubic
+smoothing spline and P-spline models. Having obtained predictions from a
+linear mixed model using your favourite model fitting functions, it can
+also be used to compute linear functions and contrasts of predictions,
+to investigate prediction differences and to plot predictions. As a
+general rule, functions that are methods for \texttt{asreml} and
+\texttt{asrtests} objects require \texttt{asreml-R}; on the other hand,
+functions that are methods for \texttt{alldiffs} and \texttt{data.frame}
+objects do not require \texttt{asreml-R}.
+
+The use of the package is exemplified in four vignettes:
+\href{./vignettes/Wheat.analysis.pdf}{Wheat.analysis vignette},
+\href{./vignettes/Wheat.infoCriteria.pdf}{Wheat.infoCriteria vignette},
+\href{./vignettes/Ladybird.asreml.pdf}{Ladybird asreml vignette} and
+\href{./vignettes/Ladybird.asreml.pdf}{Ladybird lm vignette}. They can
+be accessed via \texttt{vignette(name,\ package\ =\ "asremlPlus")},
+where \texttt{name} is one of \texttt{"Wheat.analysis"},
+\texttt{"Wheat.infoCriteria"}, \texttt{"Ladybird.asreml"} or
+\texttt{"Ladybird.lm"}.
+
+The content falls into the following natural groupings:
+
+\begin{enumerate}
+\def\labelenumi{(\roman{enumi})}
+\item
+  Data,
+\item
+  Model modification functions,
+\item
+  Model selection and description functions,
+\item
+  Model diagnostics and simulation functions,
+\item
+  Prediction production and presentation functions,
+\item
+  Response transformation functions,
+\item
+  Object manipulation functions, and
+\item
+  Miscellaneous functions.
+\end{enumerate}
+
+For a list of the functions for each group, see the help for
+\texttt{asremlPlus-package} or the entry in the manual for
+\texttt{asremlPlus-package}.
+
+\subsection{What it needs}\label{what-it-needs}
+
+To use those functon in \texttt{asremlPlus} that are methods for
+\texttt{asreml} or \texttt{asrtests} objects, you must have a licensed
+version of the package \texttt{asreml}. It provides a computationally
+efficient algorithm for fitting mixed models using Residual Maximum
+Likelihood. A license can be purchased from `VSNi'
+\url{http://www.vsni.co.uk/} as \texttt{asreml-R}, who will supply a zip
+file for local installation/updating.
+
+It also imports \href{https://CRAN.R-project.org/package=dae}{dae},
+\href{https://CRAN.R-project.org/package=devtools}{devtools},
+\href{https://CRAN.R-project.org/package=doParallel}{doParallel},
+\href{https://CRAN.R-project.org/package=dplyr}{dplyr},
+\href{https://CRAN.R-project.org/package=foreach}{foreach},
+\href{https://CRAN.R-project.org/package=ggplot2}{ggplot2}, `graphics',
+\texttt{grDevices}, \texttt{methods},
+\href{https://CRAN.R-project.org/package=nloptr}{nloptr},
+\href{https://CRAN.R-project.org/package=parallel}{parallel},
+\href{https://CRAN.R-project.org/package=qqplotr}{qqplotr},
+\href{https://CRAN.R-project.org/package=RColorBrewer}{RColorBrewer},
+\href{https://CRAN.R-project.org/package=reshape}{reshape2},
+\href{https://CRAN.R-project.org/package=rlang}{rlang}, \texttt{stats},
+\href{https://CRAN.R-project.org/package=sticky}{sticky},
+\href{https://CRAN.R-project.org/package=stringr}{stringr},
+\texttt{utils}.
+
+\subsection{License}\label{license}
+
+The \texttt{asremlPlus} package is distributed under the
+\href{https://opensource.org/licenses/MIT}{MIT licence} -- for details
+see
+\href{https://github.com/briencj/asremlPlus/blob/master/LICENSE.md}{LICENSE.md}.
+
+\end{document}
