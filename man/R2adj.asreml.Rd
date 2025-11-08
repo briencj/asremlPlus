@@ -83,7 +83,7 @@
         \code{missing.termmatrix} is not \code{NULL} or a generalized inverse could 
         not be computed for the variance matrix estimate.}
 
- \details{The method used to compute the adjusted R2 under a linear mixes model (LMM) is that 
+ \details{The method used to compute the adjusted R2 under a linear mixed model (LMM) is that 
           described by Piepho (2023). Here, the method has been extended to allow computation  
           of the adjusted R2 for a subset of the fixed terms. A set of orthogonalized 
           projectors for all of the fixed terms in the model (a set of 

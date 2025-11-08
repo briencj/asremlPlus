@@ -471,8 +471,8 @@ test_that("sort.alldiffs4", {
                                           y.title = attr(diffs, 
                                                          which = "response.title")))
   
-  #Test sort in plotPredictions
-  testthat::expect_silent(plotPredictions(data = diffs$predictions, 
+  #Test sort in plotPredictions - not an argument so warns
+  testthat::expect_warning(plotPredictions(data = diffs$predictions, 
                                           classify = "Genotype:A:B", 
                                           y = "predicted.value", 
                                           error.intervals = "StandardError",  
@@ -520,8 +520,7 @@ test_that("sort.alldiffs4", {
                                           y = "predicted.value", 
                                           error.intervals = "StandardError",  
                                           y.title = attr(diffs, 
-                                                         which = "response.title"),
-                                          sortFactor = "Genotype"))
+                                                         which = "response.title")))
 })
 
 cat("#### Test for LSD with sort.alldiffs on Smarthouse with asreml42\n")

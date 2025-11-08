@@ -31,12 +31,13 @@ test_that("sort.alldiffs42", {
   testthat::expect_equal(length(attributes(diffs)),11)
   testthat::expect_true(is.null(attr(diffs, which = "sortOrder")))
   
-  testthat::expect_silent(plotPredictions(data = diffs$predictions, 
+  testthat::expect_warning(plotPredictions(data = diffs$predictions, 
                                           classify = "Genotype:A:B", 
                                           y = "predicted.value", 
                                           error.intervals = "StandardError",  
                                           y.title = attr(diffs, 
-                                                         which = "response.title")))
+                                                         which = "response.title"),
+                                          sortFactor = "Genotype"))
   
   #Test sort in plotPredictions
   testthat::expect_silent(plotPredictions(data = diffs$predictions, 
@@ -44,8 +45,7 @@ test_that("sort.alldiffs42", {
                                           y = "predicted.value", 
                                           error.intervals = "StandardError",  
                                           y.title = attr(diffs, 
-                                                         which = "response.title"),
-                                          sortFactor = "Genotype"))
+                                                         which = "response.title")))
   
   #Test sort.alldiffs and save order for use with other response variables
   diffs.sort <- sort(diffs, sortFactor = "Genotype")
@@ -87,8 +87,7 @@ test_that("sort.alldiffs42", {
                                           y = "predicted.value", 
                                           error.intervals = "StandardError",  
                                           y.title = attr(diffs, 
-                                                         which = "response.title"),
-                                          sortFactor = "Genotype"))
+                                                         which = "response.title")))
 })
 
 

@@ -1,5 +1,9 @@
 \name{news}
 \title{News for Package asremlPlus}
+\section{asremlPlus Version 4.4.55 (2025-11-08)}{
+  \itemize{
+  \item Fix bug in the function estimateV that arises from reordering of term names in \code{G.param} by \code{ASReml-R}.
+}}
 \section{asremlPlus Version 4.4.54 (2025-08-30)}{
   \itemize{
   \item Add catch-all checks on exit for unconverged models when \code{allow.unconverged} is \code{FALSE} to spatial-fitting functions called by addSpatialModel.asrtests, addSpatialModelOnIC.asrtests and chooseSpatialModelOnIC.asrtests.

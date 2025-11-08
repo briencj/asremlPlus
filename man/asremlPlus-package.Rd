@@ -17,7 +17,7 @@
 \section{Index}{
 Note that many of the function below are S3 methods so that the suffix can be omitted. Of course, whether or not the suffix is omitted, the object supplied to the first argument must be of the class specified by the suffix.  For example \code{\link{getFormulae.asreml}} is a \code{\link{getFormulae}} method for an \code{asreml.object} and so  \code{.asreml} can be omitted and the object supplied to the first argument must be of class \code{asreml}.
 \tabular{ll}{
-(i) Data \cr\cr
+(i) Data \tab\cr\tab\cr
 
 \code{\link{Oats.dat}} 
       \tab  Data for an experiment to investigate nitrogen response of \cr
@@ -28,8 +28,8 @@ Note that many of the function below are S3 methods so that the suffix can be om
 \code{\link{WaterRunoff.dat}}
       \tab Data for an experiment to investigate the quality of \cr
       \tab water runoff over time\cr
-\cr
-(ii) Model modification \cr\cr
+\tab\cr
+(ii) Model modification \tab\cr\tab\cr
 
 \code{\link{addSpatialModel.asrtests}}
       \tab Adds, to a supplied model, a spatial model that accounts for \cr
@@ -62,8 +62,8 @@ Note that many of the function below are S3 methods so that the suffix can be om
        \tab Allows the setting of bounds and initial values \cr
        \tab for terms in the 'random' and 'residual' arguments of an \cr
        \tab 'asreml' call. \cr
-\cr
-(iii) Model selection and description \cr\cr
+\tab\cr
+(iii) Model selection and description \tab\cr\tab\cr
 
 \code{\link{addto.test.summary}}
        \tab Adds a row to a \code{test.summary} \code{data.frame}. \cr
@@ -113,8 +113,8 @@ Note that many of the function below are S3 methods so that the suffix can be om
        \tab between the current random model and one in which oldterms \cr
        \tab are dropped and newterms are added. The result is recorded \cr
        \tab in an \code{\link{asrtests.object}}.\cr
-\cr
-(iv) Model diagnostics and simulation\cr\cr
+\tab\cr
+(iv) Model diagnostics and simulation\tab\cr\tab\cr
 
 \code{\link{plotVariofaces}}
        \tab Plots empirical variogram faces, including envelopes, \cr
@@ -129,8 +129,8 @@ Note that many of the function below are S3 methods so that the suffix can be om
 \code{\link{simulate.asreml}}
        \tab Produce sets of simulated data from a multivariate normal \cr
        \tab distribution and save quantities related to the simulated data. \cr
-\cr
-(v) Prediction production and presentation \cr\cr
+\tab\cr
+(v) Prediction production and presentation \tab\cr\tab\cr
 
 \code{\link{addBacktransforms.alldiffs}}
        \tab Adds or recalculates the backtransforms component of an \cr 
@@ -208,8 +208,8 @@ Note that many of the function below are S3 methods so that the suffix can be om
 \code{\link{sort.predictions.frame}}
        \tab Sorts a \code{\link{predictions.frame}} according to the \cr
        \tab predicted values. associated with a factor.\cr
-
-(vi) Response transformation \cr\cr
+\tab\cr
+(vi) Response transformation \tab\cr\tab\cr
 
 \code{\link{angular}}
        \tab Applies the angular transformation to proportions. \cr
@@ -220,8 +220,8 @@ Note that many of the function below are S3 methods so that the suffix can be om
        \tab Performs a combination of a linear and a power \cr
        \tab transformation on a variable. The transformed \cr
        \tab variable is stored in the 'data.frame data'. \cr
-\cr
-(vii) Object manipulation \cr\cr
+\tab\cr
+(vii) Object manipulation \tab\cr\tab\cr
 
 \code{\link{as.alldiffs}}
       \tab Forms an \code{\link{alldiffs.object}} from the supplied \cr
@@ -300,8 +300,8 @@ Note that many of the function below are S3 methods so that the suffix can be om
        \tab Checks that an object is a valid \code{\link{asrtests.object}}. \cr
 \code{\link{validPredictionsFrame}}
        \tab Checks that an object is a valid \code{\link{predictions.frame}}. \cr
-\cr
-(viii) Miscellaneous \cr\cr
+\tab\cr
+(viii) Miscellaneous \tab\cr\tab\cr
 
 \code{\link{getASRemlVersionLoaded}}
        \tab Finds the version of asreml that is loaded and \cr

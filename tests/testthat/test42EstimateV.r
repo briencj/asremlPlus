@@ -16,6 +16,7 @@ test_that("chickpea_estimateV_asreml42", {
                        residual = ~ idv(Smarthouse):ar1(Lane):ar1(Position), 
                        data = chkpeadat, maxit = 13)
 
+  
   #'## estimate with fixed spline - no G terms in V matrix
   Vnospl <- estimateV(asreml.obj, fixed.spline.terms = "Smarthouse:spl(vLanes)")
   
@@ -131,6 +132,31 @@ test_that("chickpea_estimateV_asreml42", {
   Gdsum <- estimateV(asreml.obj, which.matrix = "G")
   Rdsum <- estimateV(asreml.obj, which.matrix = "R")
   testthat::expect_false(any(abs(Gdsum + Rdsum - V) > 1e-08))
+
+  #Spatial correlation in random model and nuggets in residual model 
+  asreml.obj <- asreml(fixed = Biomass.plant ~ Lines * TRT + Smarthouse/(vLanes + vPos), 
+                       random = ~ 
+                         at(Smarthouse, 'SW'):spl(vLanes) + at(Smarthouse, 'SE'):spl(vLanes) +
+                         at(Smarthouse, 'SW'):ar1(Lane):ar1(Position) + 
+                         at(Smarthouse, 'SE'):ar1(Lane):ar1(Position), 
+                       residual =  ~ dsum(~ units | Smarthouse, levels = list(c('SW'))) +
+                         dsum(~ units | Smarthouse, levels = list(c('SE'))), 
+                       data = chkpeadat, maxit = 30)
+  
+  #'## estimate with fixed spline - no G terms in V matrix
+  Vnospl <- estimateV(asreml.obj, 
+                      fixed.spline.terms = c("at(Smarthouse, 'SW'):spl(vLanes)",  
+                                             "at(Smarthouse, 'SE'):spl(vLanes)"))
+  
+  # Form variance matrix based on estimated variance parameters
+  V <- mat.dirsum(list(asreml.obj$vparameters[3] * 
+                         kronecker(mat.ar1(asreml.obj$vparameters[4], length(levels(chkpeadat$Lane))),
+                                   mat.ar1(asreml.obj$vparameters[5], length(levels(chkpeadat$Position)))),
+                       asreml.obj$vparameters[6] * 
+                         kronecker(mat.ar1(asreml.obj$vparameters[7], length(levels(chkpeadat$Lane))),
+                                   mat.ar1(asreml.obj$vparameters[8], length(levels(chkpeadat$Position))))))
+  V <- diag(rep(asreml.obj$vparameters[9:10], each = 528),1056) %*% V
+  testthat::expect_true(any(abs(Vnospl - V) > 1e-08))
 })
 
 

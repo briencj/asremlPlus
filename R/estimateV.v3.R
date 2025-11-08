@@ -417,16 +417,27 @@
 checkSpecial <- function(var, term, G.param, specials, residual = FALSE)
 {
   kspecial <- G.param[[term]][[var]]$model
+  # if (kspecial == "idv" & grepl("dev\\(",var))
+  #   kspecial <- "dev"
   if (kspecial == "diag")
     kspecial <- "idh"
   if (kspecial == "dev" | kspecial == "grp")
-    kspecial <- "idv"
+#  if (kspecial == "grp")
+      kspecial <- "idv"
   nfinal <- nchar(kspecial)
   final <- substr(kspecial, start = nfinal, stop = nfinal)
-  if ((final == "v" | final == "h") & kspecial != "sph" & kspecial != "dev")
-    cortype <- substr(kspecial, start = 1, stop = nfinal-1)
-  else
-    cortype <- kspecial
+  # if (final == "v" & kspecial == "dev")
+  # { 
+  #   final <- " "
+  #   cortype <- kspecial
+  # }
+  # else
+  # {  
+    if ((final == "v" | final == "h") & kspecial != "sph" & kspecial != "dev")
+      cortype <- substr(kspecial, start = 1, stop = nfinal-1)
+    else
+      cortype <- kspecial
+  # }
   if (!(cortype %in% specials))
   {
     formula = "random"
@@ -440,6 +451,13 @@ checkSpecial <- function(var, term, G.param, specials, residual = FALSE)
    return(list(cortype = cortype, final = final))
 }
 
+chkvpnames <- function(vpnames, var, term, G.param) #any order
+{ 
+  termlist <- names(G.param[[term]][[var]]$initial)
+  kindx <- sapply(vpnames, findterm, termlist = termlist, rmDescription = "FALSE")
+  vpnames <- termlist[kindx]
+  return(vpnames)
+}
 
 ### Function to call a function to compute the G matrix for an asreml variance function
 "mat.Gvar" <- function(var, term, G.param, kspecial, cond.fac = "", ...)
@@ -450,6 +468,7 @@ checkSpecial <- function(var, term, G.param, specials, residual = FALSE)
   #Form correlation matrix
   G <- switch(kspecial$cortype,
               id = G.id(var = var, term = term, G.param = G.param, cond.fac = cond.fac, strterm = strterm),
+#              dev = G.id(var = var, term = term, G.param = G.param, cond.fac = cond.fac, strterm = strterm),
               ar1 = G.ar1(var = var, term = term, G.param = G.param, cond.fac = cond.fac, strterm = strterm),
               ar2 = G.ar2(var = var, term = term, G.param = G.param, cond.fac = cond.fac, strterm = strterm),
               ar3 = G.ar3(var = var, term = term, G.param = G.param, cond.fac = cond.fac, strterm = strterm),
@@ -487,6 +506,7 @@ checkSpecial <- function(var, term, G.param, specials, residual = FALSE)
     else
       vpnames <- paste(cond.fac, term,"!",var,"_", 
                        G.param[[term]][[var]]$levels, sep = "")
+    vpnames <- chkvpnames(vpnames, var, term, G.param) #any order
     D <- G.param[[term]][[var]]$initial[vpnames]
     D <- sqrt(diag(D, nrow = length(G.param[[term]][[var]]$levels))) 
     G <- D %*% G %*% D
@@ -503,6 +523,13 @@ G.id <- function(var, term, G.param, cond.fac = "", strterm = FALSE)
   return(G)
 }
 
+G.dev <- function(var, term, G.param, cond.fac = "", strterm = FALSE)
+{
+  #Generate identity matrix
+  G <- mat.I(length(G.param[[term]][[var]]$levels))
+  return(G)
+}
+
 G.ar1 <- function(var, term, G.param, cond.fac = "", strterm = FALSE)
 {
   #Get the correlation parameter and generate matrix
@@ -513,6 +540,7 @@ G.ar1 <- function(var, term, G.param, cond.fac = "", strterm = FALSE)
                      "!cor", sep = "")
   else
     vpname <- paste(cond.fac, term,"!",var,"!cor", sep = "")
+  vpname <- chkvpnames(vpname, var, term, G.param) #any order
   G <- mat.ar1(G.param[[term]][[var]]$initial[vpname], 
                length(G.param[[term]][[var]]$levels))
   return(G)
@@ -528,6 +556,7 @@ G.ar2 <- function(var, term, G.param, cond.fac = "", strterm = FALSE)
                       "!cor",c(1:2), sep = "")
   else
     vpnames <- paste(cond.fac, term,"!",var,"!cor", c(1:2), sep = "")
+  vpnames <- chkvpnames(vpnames, var, term, G.param) #any order
   G <- mat.ar2(G.param[[term]][[var]]$initial[vpnames], 
                length(G.param[[term]][[var]]$levels))
   return(G)
@@ -543,6 +572,7 @@ G.ar3 <- function(var, term, G.param, cond.fac = "", strterm = FALSE)
                       "!cor",c(1:3), sep = "")
   else
     vpnames <- paste(cond.fac, term,"!",var,"!cor", c(1:3), sep = "")
+  vpnames <- chkvpnames(vpnames, var, term, G.param) #any order
   G <- mat.ar3(G.param[[term]][[var]]$initial[vpnames], 
                length(G.param[[term]][[var]]$levels))
   return(G)
@@ -558,6 +588,7 @@ G.sar <- function(var, term, G.param, cond.fac = "", strterm = FALSE)
                      "!cor", sep = "")
   else
     vpname <- paste(cond.fac, term,"!",var,"!cor", sep = "")
+  vpname <- chkvpnames(vpname, var, term, G.param) #any order
   G <- mat.sar(G.param[[term]][[var]]$initial[vpname], 
                length(G.param[[term]][[var]]$levels))
   return(G)
@@ -573,6 +604,7 @@ G.sar2 <- function(var, term, G.param, cond.fac = "", strterm = FALSE)
                       "!cor",c(1:3), sep = "")
   else
     vpnames <- paste(cond.fac, term,"!",var,"!cor", c(1:2), sep = "")
+  vpnames <- chkvpnames(vpnames, var, term, G.param) #any order
   
   G <- mat.sar2(G.param[[term]][[var]]$initial[vpnames], 
                 length(G.param[[term]][[var]]$levels))
@@ -589,6 +621,7 @@ G.ma1 <- function(var, term, G.param, cond.fac = "", strterm = FALSE)
                      "!cor", sep = "")
   else
     vpname <- paste(cond.fac, term,"!",var,"!cor", sep = "")
+  vpname <- chkvpnames(vpname, var, term, G.param) #any order
   G <- mat.ma1(G.param[[term]][[var]]$initial[vpname], 
                length(G.param[[term]][[var]]$levels))
   return(G)
@@ -604,6 +637,7 @@ G.ma2 <- function(var, term, G.param, cond.fac = "", strterm = FALSE)
                       "!cor",c(1:2), sep = "")
   else
     vpnames <- paste(cond.fac, term,"!",var,"!cor", c(1:2), sep = "")
+  vpnames <- chkvpnames(vpnames, var, term, G.param) #any order
   G <- mat.ma2(G.param[[term]][[var]]$initial[vpnames], 
                length(G.param[[term]][[var]]$levels))
   return(G)
@@ -619,6 +653,7 @@ G.arma <- function(var, term, G.param, cond.fac = "", strterm = FALSE)
                       "!cor",c(1:2), sep = "")
   else
     vpnames <- paste(cond.fac, term,"!",var,"!cor", c(1:2), sep = "")
+  vpnames <- chkvpnames(vpnames, var, term, G.param) #any order
   G <- mat.arma(G.param[[term]][[var]]$initial[vpnames][1], 
                 G.param[[term]][[var]]$initial[vpnames][2], 
                 length(G.param[[term]][[var]]$levels))
@@ -635,6 +670,7 @@ G.exp <- function(var, term, G.param, cond.fac = "", strterm = FALSE)
                      "!pow", sep = "")
   else
     vpname <- paste(cond.fac, term,"!",var,"!pow", sep = "")
+  vpname <- chkvpnames(vpname, var, term, G.param) #any order
   G <- mat.exp(G.param[[term]][[var]]$initial[vpname], 
                as.numeric(G.param[[term]][[var]]$levels))
   return(G)
@@ -650,6 +686,7 @@ G.gau <- function(var, term, G.param, cond.fac = "", strterm = FALSE)
                      "!pow", sep = "")
   else
     vpname <- paste(cond.fac, term,"!",var,"!pow", sep = "")
+  vpname <- chkvpnames(vpname, var, term, G.param) #any order
   G <- mat.gau(G.param[[term]][[var]]$initial[vpname], 
                as.numeric(G.param[[term]][[var]]$levels))
   return(G)
@@ -665,6 +702,7 @@ G.cor <- function(var, term, G.param, cond.fac = "", strterm = FALSE)
                      "!cor", sep = "")
   else
     vpname <- paste(cond.fac, term,"!",var,"!cor", sep = "")
+  vpname <- chkvpnames(vpname, var, term, G.param) #any order
   G <- mat.cor(G.param[[term]][[var]]$initial[vpname],  length(G.param[[term]][[var]]$levels))
   return(G)
 }
@@ -684,6 +722,7 @@ G.corb <- function(var, term, G.param, cond.fac = "", strterm = FALSE)
                       "!cor",c(1:nbands), sep = "")
   else
     vpnames <- paste(cond.fac, term,"!",var,"!cor", c(1:nbands), sep = "")
+  vpnames <- chkvpnames(vpnames, var, term, G.param) #any order
   G <- mat.banded(c(1,G.param[[term]][[var]]$initial[vpnames]),
                   nrow = length(G.param[[term]][[var]]$levels),
                   ncol = length(G.param[[term]][[var]]$levels))
@@ -707,6 +746,7 @@ G.corg <- function(var, term, G.param, cond.fac = "", strterm = FALSE)
                      ".cor", sep = "")
   else
     vpname <- paste(cond.fac, term,"!",var,"!",row,":!",var,"!",col,".cor", sep = "")
+  vpname <- chkvpnames(vpname, var, term, G.param) #any order
   corg <- mat.corg(G.param[[term]][[var]]$initial[vpname], nlev)
   return(corg)
 }
@@ -756,7 +796,7 @@ G.rr <- function(var, term, G.param, cond.fac = "", strterm = FALSE)
 G.spl <- function(var, term, G.param, cond.fac = "", strterm = FALSE)
 {
   #Assuming that the parameterization in ASReml gives independent effects
-  G <- mat.I(length(G.param[[term]][[var]]$levels))
+  G <- dae::mat.I(length(G.param[[term]][[var]]$levels))
   return(G)
 }
 

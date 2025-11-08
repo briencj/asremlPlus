@@ -480,7 +480,8 @@ convTerm2VparFacs <- function(term, asreml.obj = NULL, asr4.2 = FALSE)
   {
     term.parts <- strsplit(term, sep)[[1]]
     term.source <- term.parts[1]
-    term.end <- gsub(term.source, "", term)
+    #need fixed to allow for reserved characters in term.source
+    term.end <- gsub(term.source, "", term, fixed = TRUE) 
     
   } else #not a compound term
   { 
