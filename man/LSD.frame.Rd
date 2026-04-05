@@ -47,11 +47,14 @@
              If \code{factor.combinations} was specified for 
              \code{LSDtype} when the LSDs were being calculated, then the \code{\link{LSD.frame}} 
              contains a row for each combination of the values of the \code{\link{factor}s} and 
-             \code{\link{numeric}s} specified by \code{LSDby}. The values in a row  are calculated 
-             from the LSD values for the pairwise differences for each combination of the 
-             \code{\link{factor}s} and \code{\link{numeric}s} values, unless there is only one 
-             prediction for a combination, when notional LSDs are calculated that are based on the 
-             standard error of the prediction multiplied by the square root of two. 
+             \code{\link{numeric}s} specified by \code{LSDby}. The values in a row  are 
+             calculated from the LSD values for the pairwise differences for each combination 
+             of the \code{\link{factor}s} and \code{\link{numeric}s} values, unless there is 
+             only one prediction for a combination, when notional LSDs are calculated that are 
+             based on the standard error of the prediction multiplied by the square root of two. 
+             Notional LSDs indicate the LSD that would apply to the difference between the 
+             prediction and, if it existed, another prediction with the same standard error.
+             
              
              For \code{per.prediction}, the minimum, mean and maximum LSD, based, for each prediction, 
              on the LSD values for all pairwise differences involving that prediction are computed.

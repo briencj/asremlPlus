@@ -4,7 +4,7 @@
 \title{Forms the predictions for a term, their pairwise differences and 
        associated statistics. A factor having parallel values may occur in 
        the model and a linear transformation of the predictions can be specified.
-       It results in an object of class alldifffs. }
+       It results in an object of class alldifffs.}
 \description{This function forms the predictions for \code{term} using 
              \code{classify} and the supplied \code{asreml} object and stores 
              them in an \code{\link{alldiffs.object}}. If \code{x.num} is 

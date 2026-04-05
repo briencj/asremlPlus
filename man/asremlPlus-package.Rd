@@ -177,13 +177,14 @@ Note that many of the function below are S3 methods so that the suffix can be om
 \code{\link{plotPvalues.data.frame}}
        \tab Plots the p-values in data.frame as a heat map.\cr
 \code{\link{predictPlus.asreml}}
-       \tab Forms the predictions and associated statistics for \cr
-       \tab a term, using an asreml object and a wald.tab and \cr
-       \tab taking into account that a numeric vector \cr
-       \tab and a factor having parallel values may occur in the \cr
-       \tab model. It stores the results in an object of class \cr
-       \tab 'alldifffs' and may print the results. It can be \cr
-       \tab when there are not parallel values.  \cr
+       \tab Forms the predictions, their pairwise differences and \cr
+       \tab associated statistics for a term. A factor having \cr
+       \tab parallel values may occur in the model and a linear \cr
+       \tab transformation of the predictions can be specified. \cr
+Forms the predictions for a term, their pairwise differences and 
+       associated statistics. A factor having parallel values may occur in 
+       the model and a linear transformation of the predictions can be specified.
+       It results in an object of class alldifffs.
 \code{\link{predictPresent.asreml}}
        \tab Forms the predictions for each of one or more terms \cr
        \tab and presents them in tables and/or graphs. \cr
@@ -207,7 +208,7 @@ Note that many of the function below are S3 methods so that the suffix can be om
        \tab to the supplied condition. \cr
 \code{\link{sort.predictions.frame}}
        \tab Sorts a \code{\link{predictions.frame}} according to the \cr
-       \tab predicted values. associated with a factor.\cr
+       \tab predicted values associated with a factor.\cr
 \tab\cr
 (vi) Response transformation \tab\cr\tab\cr
 

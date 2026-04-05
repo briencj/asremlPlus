@@ -2,7 +2,8 @@
 #The prime alldiffs functions are allDifferences.data.frame, redoErrorIntervals, renewClassify and addBackTransforms;
 #They are basic to building an alldiffs object; most other functions are utility functions.
 #
-#     redoErrorIntervals Passes LSD arguments to recalcLSD; calculates intervals; sets LSD attributes for predictions; 
+#     redoErrorIntervals Passes LSD arguments to recalcLSD; calculates intervals; 
+#                        sets LSD attributes for predictions; 
 #             |          calls addBacktransforms that sets backtransforms attributes
 #             |          (should not be called without transform arguments; calls)
 #             |
@@ -272,9 +273,8 @@ setOldClass("predictions.frame")
       stop("Backtransforms do not contain the same number of rows as the predictions")
   }
   #ensure diag of sed is NA_real_
-  if (!is.null(sed))
+    if (!is.null(sed))
     diag(sed) <- NA_real_
-
   p <- list(predictions = predictions, vcov = vcov, 
             differences = differences, p.differences = p.differences, sed = sed, 
             LSD = LSD, backtransforms = backtransforms)
@@ -658,18 +658,27 @@ setOldClass("alldiffs")
   if ("all" %in% opt || "differences" %in% opt)
   { 
     cat("\n\nAll pairwise differences between predicted values \n\n")
-    print(x$differences, digits=4, na.print = "")
+    if (is.null(x$differences))
+      print(x$differences)
+    else
+      print(x$differences, digits=4, na.print = "")
   }
   if ("all" %in% opt || "p.differences" %in% opt)
   { 
     cat("\n\np values for all pairwise differences between predicted values \n\n")
 #    print(formatC(x$p.differences, digits=3, format="f"), quote=FALSE)
-    print(round(x$p.differences, digits = 3), na.print = "")
+    if (is.null(x$p.differences))
+      print(x$p.differences)
+    else
+      print(round(x$p.differences, digits = 3), na.print = "")
   }
   if ("all" %in% opt || "sed" %in% opt)
   { 
     cat("\n\nStandard errors of differences between predicted values \n\n")
-    print(zapsmall(x$sed, 4), na.print = "")
+    if (is.null(x$sed))
+      print(x$sed)
+    else
+      print(zapsmall(x$sed, 4), na.print = "")
   }
   if (("all" %in% opt & !is.null(x$backtransforms)) || "backtransforms" %in% opt)
   { 
@@ -1535,10 +1544,7 @@ exploreLSDs.alldiffs <- function(alldiffs.obj,  LSDtype = "overall", LSDby = NUL
   
   if (!all(LSDby %in% names(alldiffs.obj$predictions)))
     stop("At least one element of LSDby is not in the predictions component of the alldiffs object\n")
-  # classify <- attr(alldiffs.obj, which = "classify")
-  # if (!all(unlist(lapply(LSDby, grepl, x = classify, fixed = TRUE))))
-  #   stop("One of the elements of LSDby is not in the classify")
-  
+
   denom.df <- attr(alldiffs.obj, which = "tdf")
   if (is.null(denom.df))
     stop(paste("The degrees of freedom of the t-distribtion are not available in alldiffs.obj\n",
@@ -1549,6 +1555,7 @@ exploreLSDs.alldiffs <- function(alldiffs.obj,  LSDtype = "overall", LSDby = NUL
   #Prepare for frequencies
   LSD.dat <- as.data.frame(getUpperTri(LSDs))
   names(LSD.dat) <- "LSD"
+  
   freq <- hist(LSD.dat$LSD, plot = FALSE, include.lowest = TRUE)
   breaks <- freq$breaks
   
@@ -1564,27 +1571,87 @@ exploreLSDs.alldiffs <- function(alldiffs.obj,  LSDtype = "overall", LSDby = NUL
     kLSDs.vec <- rm.list$ksed
     kdifs.vec <- rm.list$kdif
     
-    #Get statistics
-    allstats <- LSDallstats(kLSDs.vec, kdifs.vec, t.value = 1, LSDaccuracy = LSDacc, 
-                            retain.zeroLSDs = retain.zeroLSDs, zero.tolerance = zero.tolerance)
-    
-    #Get per.pred.accuracy
-    predacc <- do.call(cbind, lapply(LSDstat.hdr, 
-                                     function(LSDstatistic, LSDs, allstats, LSDaccuracy, t.value, 
-                                              retain.zeroLSDs, zero.tolerance)
-                                     { 
-                                       acc <- LSDpred.acc(LSDs, 
-                                                          assignedLSD = allstats$statistics[[LSDstatistic]], 
-                                                          LSDaccuracy = LSDaccuracy, t.value = t.value, 
-                                                          retain.zeroLSDs = retain.zeroLSDs, 
-                                                          zero.tolerance = zero.tolerance)
-                                       acc <- as.data.frame(acc)
-                                       names(acc) <- LSDstatistic
-                                       return(acc)
-                                     }, 
-                                     LSDs = LSDs, allstats = allstats, LSDaccuracy = LSDacc, t.value = 1, 
-                                     retain.zeroLSDs = retain.zeroLSDs, zero.tolerance = zero.tolerance))
-    rownames(predacc) <- rownames(LSDs)
+    #Is there only one value for the sed and this is zero and all preds are equal?
+    if (length(unique(kLSDs.vec)) == 1 && all(kLSDs.vec == 0) && 
+        length(unique(kdifs.vec)) == 1  && 
+        diff(range(alldiffs.obj$predictions$standard.error)) < zero.tolerance)
+    {
+      lsd1 <- t.value * sqrt(2) * alldiffs.obj$predictions$standard.error[1]
+      LSDs <- putUpperTri(LSDs, lsd1)
+      LSDs <- putLowerTri(LSDs, lsd1)
+      
+      #Prepare for frequencies
+      LSD.dat <- as.data.frame(getUpperTri(LSDs))
+      names(LSD.dat) <- "LSD"
+      freq <- hist(LSD.dat$LSD, plot = FALSE, include.lowest = TRUE)
+      breaks <- freq$breaks
+      
+      #Get distinct  values
+      distinct <- sort(unique(signif(na.omit(LSD.dat$LSD), digits = digits)))
+      
+      #Remove NAs and zero values
+      rm.list <- rm.nazero(LSD.dat$LSD, getUpperTri(alldiffs.obj$differences), 
+                           retain.zeroLSDs = retain.zeroLSDs, 
+                           zero.tolerance = zero.tolerance)
+      kLSDs.vec <- rm.list$ksed
+      kdifs.vec <- rm.list$kdif
+      allstats <- LSDallstats(kLSDs.vec, kdifs.vec, t.value = 1, LSDaccuracy = LSDacc, 
+                              retain.zeroLSDs = retain.zeroLSDs, zero.tolerance = zero.tolerance)
+      allstats$statistics$c <- 0
+      allstats <- c(allstats[1], 
+                    lapply(allstats[-1], 
+                           function(stat) 
+                           {
+                             stat <- c(0, rep(NA_real_, length(stat)-1))
+                             names(stat) <- c("c", LSDstat.hdr)
+                             return(stat)
+                           }))
+      
+      #Get per.pred.accuracy
+      predacc <- do.call(cbind, lapply(LSDstat.hdr, 
+                                       function(LSDstatistic, LSDs, allstats, LSDaccuracy, 
+                                                t.value, retain.zeroLSDs, zero.tolerance)
+                                       { 
+                                         acc <- LSDpred.acc(LSDs, 
+                                                            assignedLSD = allstats$statistics[[LSDstatistic]], 
+                                                            LSDaccuracy = LSDaccuracy, 
+                                                            t.value = t.value, 
+                                                            retain.zeroLSDs = retain.zeroLSDs, 
+                                                            zero.tolerance = zero.tolerance)
+                                         acc <- as.data.frame(acc)
+                                         names(acc) <- LSDstatistic
+                                         return(acc)
+                                       }, 
+                                       LSDs = LSDs, allstats = allstats, LSDaccuracy = LSDacc, t.value = 1, 
+                                       retain.zeroLSDs = retain.zeroLSDs, zero.tolerance = zero.tolerance))
+      rownames(predacc) <- rownames(LSDs)
+      predacc <- as.data.frame(lapply(predacc, function(x) x <- rep(NA_real_, length(x))), 
+                               row.names = rownames(predacc))
+    } else #multiple values
+    { 
+      #Get statistics
+      allstats <- LSDallstats(kLSDs.vec, kdifs.vec, t.value = 1, LSDaccuracy = LSDacc, 
+                              retain.zeroLSDs = retain.zeroLSDs, zero.tolerance = zero.tolerance)
+      
+      #Get per.pred.accuracy
+      predacc <- do.call(cbind, lapply(LSDstat.hdr, 
+                                       function(LSDstatistic, LSDs, allstats, LSDaccuracy, 
+                                                t.value, retain.zeroLSDs, zero.tolerance)
+                                       { 
+                                         acc <- LSDpred.acc(LSDs, 
+                                                            assignedLSD = allstats$statistics[[LSDstatistic]], 
+                                                            LSDaccuracy = LSDaccuracy, 
+                                                            t.value = t.value, 
+                                                            retain.zeroLSDs = retain.zeroLSDs, 
+                                                            zero.tolerance = zero.tolerance)
+                                         acc <- as.data.frame(acc)
+                                         names(acc) <- LSDstatistic
+                                         return(acc)
+                                       }, 
+                                       LSDs = LSDs, allstats = allstats, LSDaccuracy = LSDacc, t.value = 1, 
+                                       retain.zeroLSDs = retain.zeroLSDs, zero.tolerance = zero.tolerance))
+      rownames(predacc) <- rownames(LSDs)
+    }
     counts <- freq$counts
     names(counts) <- as.character(freq$mids)
     LSD.list <- list(frequencies = counts, distinct.vals = distinct, 
@@ -2217,22 +2284,22 @@ makeSED <- function(alldiffs.obj)
     alldiffs.obj$backtransforms <- alldiffs.obj$backtransforms[ord,]
   if (!is.null(alldiffs.obj$differences))
   {
-    alldiffs.obj$differences <- alldiffs.obj$differences[ord,ord]
+    alldiffs.obj$differences <- as.matrix(alldiffs.obj$differences[ord,ord])
     colnames(alldiffs.obj$differences) <- rownames(alldiffs.obj$differences) <- pred.lev
   }
   if (!is.null(alldiffs.obj$p.differences))
   {
-    alldiffs.obj$p.differences <- alldiffs.obj$p.differences[ord,ord]
+    alldiffs.obj$p.differences <- as.matrix(alldiffs.obj$p.differences[ord,ord])
     colnames(alldiffs.obj$p.differences) <- rownames(alldiffs.obj$p.differences) <- pred.lev
   }
   if (!is.null(alldiffs.obj$vcov))
   {
-    alldiffs.obj$vcov <- alldiffs.obj$vcov[ord,ord]
+    alldiffs.obj$vcov <- as.matrix(alldiffs.obj$vcov[ord,ord])
     colnames(alldiffs.obj$vcov) <- rownames(alldiffs.obj$vcov) <- pred.lev
   }
-  if (!is.null(alldiffs.obj$sed) && length(pred.lev) > 1)
+  if (!is.null(alldiffs.obj$sed)) # && length(pred.lev) > 1)
   {
-    alldiffs.obj$sed <- alldiffs.obj$sed[ord,ord]
+    alldiffs.obj$sed <- as.matrix(alldiffs.obj$sed[ord,ord])
     colnames(alldiffs.obj$sed) <- rownames(alldiffs.obj$sed) <- pred.lev
   }
   
@@ -2290,7 +2357,8 @@ makeSED <- function(alldiffs.obj)
     
     #Set LSD component
     {
-      if (pairwise && (nrow(alldiffs.obj$predictions) != 1))
+      comp.singular <- FALSE
+      if (pairwise) #&& (nrow(alldiffs.obj$predictions) != 1))
       { 
         #calculate LSDs, if not present - it seems that they are never present as set to NULL in makeAlldiffs call
         if (is.null(alldiffs.obj$LSD))
@@ -2306,18 +2374,23 @@ makeSED <- function(alldiffs.obj)
                                  zero.tolerance = zero.tolerance)
             ksed <- rm.list$ksed
             kdif <- rm.list$kdif
-            #Is there only one value for the sed and this is zero?
-            if (length(ksed) == 1 && length(kdif) == 1  && ksed == 0 && 
+            #Is there only one value for the sed and this is zero and all preds are equal?
+            if (length(unique(ksed)) == 1 && length(unique(kdif)) == 1  && ksed == 0 && 
                 diff(range(alldiffs.obj$predictions$standard.error)) < zero.tolerance)
+            {  
               ksed <- sqrt(2) * alldiffs.obj$predictions$standard.error[1]
-            LSDs<- LSDstats(ksed, kdif, t.value, LSDstatistic = LSDstat, LSDaccuracy = LSDacc)
+              comp.singular <- TRUE
+            }
+            LSDs<- LSDstats(ksed, kdif, t.value, comparisons.singular = comp.singular, 
+                            LSDstatistic = LSDstat, LSDaccuracy = LSDacc)
             rownames(LSDs) <- "overall"
           } 
           if (avLSD == "factor.combinations" || (avLSD == "supplied" && !is.null(LSDby))) #factor.combinations
           {
             if (is.null(LSDby))
               stop("Need to specify factors using LSDby for LSDtype = factor.combinations")
-            LSDs <- sliceLSDs(alldiffs.obj, by = LSDby, LSDstatistic = LSDstat, LSDaccuracy = LSDacc, 
+            LSDs <- sliceLSDs(alldiffs.obj, by = LSDby, LSDstatistic = LSDstat, 
+                              LSDaccuracy = LSDacc, 
                               t.value = t.value, alpha = alpha,
                               retain.zeroLSDs = retain.zeroLSDs, zero.tolerance = zero.tolerance)
           } 
@@ -2344,16 +2417,32 @@ makeSED <- function(alldiffs.obj)
                                    zero.tolerance = zero.tolerance)
               ksed <- rm.list$ksed
               kdif <- rm.list$kdif
-              alldiffs.obj$LSD$accuracyLSD <- LSDaccmeas(ksed = ksed, 
-                                                         assignedLSD = alldiffs.obj$LSD$assignedLSD, 
-                                                         t.value = t.value, LSDaccuracy = LSDacc)
-              #Recalculate the false significances
-              falsesig <- falseSignif(ksed = ksed, kdif = kdif, assignedLSD = alldiffs.obj$LSD$assignedLSD, 
-                                      t.value = t.value)
-              alldiffs.obj$LSD$falsePos <- falsesig["false.pos"]
-              alldiffs.obj$LSD$falseNeg <- falsesig["false.neg"]
-            }
-            else
+              #Is there only one value for the sed and this is zero and all preds are equal?
+              if (length(unique(ksed)) == 1 && all(ksed == 0) && 
+                  length(unique(kdif)) == 1  && 
+                  diff(range(alldiffs.obj$predictions$standard.error)) < zero.tolerance)
+              {  
+                lsd <- as.data.frame(matrix(NA_real_, nrow = 1, ncol = 8))
+                rownames(lsd) <- "overall"
+                colnames(lsd) <- c("c", "minLSD", "meanLSD", "maxLSD", "assignedLSD", 
+                                   "accuracyLSD", "falsePos", "falseNeg")
+                lsd$c <- 0
+                lsd[c("minLSD", "meanLSD", "maxLSD", "assignedLSD")] <- 
+                  t.value * sqrt(2) * alldiffs.obj$predictions$standard.error[1]
+                alldiffs.obj$LSD <- lsd
+              } else
+              { 
+                alldiffs.obj$LSD$accuracyLSD <- LSDaccmeas(ksed = ksed, 
+                                                           assignedLSD = alldiffs.obj$LSD$assignedLSD, 
+                                                           t.value = t.value, LSDaccuracy = LSDacc)
+                #Recalculate the false significances
+                falsesig <- falseSignif(ksed = ksed, kdif = kdif, 
+                                        assignedLSD = alldiffs.obj$LSD$assignedLSD, 
+                                        t.value = t.value)
+                alldiffs.obj$LSD$falsePos <- falsesig["false.pos"]
+                alldiffs.obj$LSD$falseNeg <- falsesig["false.neg"]
+              }
+            } else
             {
               slLSD <- sliceLSDs(alldiffs.obj, by = LSDby, t.value = t.value, 
                                                         LSDstatistic = LSDstat, LSDaccuracy = LSDacc, 
@@ -2366,7 +2455,6 @@ makeSED <- function(alldiffs.obj)
                 slLSD[c("accuracyLSD", "falsePos", "falseNeg")]
             }
           }
-
           attr(alldiffs.obj, which = "LSDtype") <- avLSD
           attr(alldiffs.obj, which = "LSDby") <- LSDby
           attr(alldiffs.obj, which = "LSDstatistic") <- LSDstat
@@ -2946,19 +3034,31 @@ makeSED <- function(alldiffs.obj)
         lintrans.vcov <- setToZero(lintrans.vcov, zero.tolerance = zero.tolerance)
         lintrans$standard.error <- as.vector(sqrt(diag(lintrans.vcov)))
         n <- nrow(lintrans.vcov)
-        lintrans.sed <- matrix(rep(diag(lintrans.vcov), each = n), nrow = n) + 
-          matrix(rep(diag(lintrans.vcov), times = n), nrow = n) - 2 * lintrans.vcov
-        lintrans.sed <- setToZero(lintrans.sed, zero.tolerance = zero.tolerance)
-        lintrans.sed <- sqrt(lintrans.sed)  
+        n <- nrow(lintrans)
+        if (n == 1)
+        {
+          lintrans.sed <- as.matrix(lintrans$standard.error*sqrt(2))
+          colnames(lintrans.sed) <- 
+            rownames(lintrans.sed) <- as.character(lintrans$Combination)
+        } else 
+          if (n > 1)
+          {       
+            lintrans.sed <- matrix(rep(diag(lintrans.vcov), each = n), nrow = n) + 
+              matrix(rep(diag(lintrans.vcov), times = n), nrow = n) - 2 * lintrans.vcov
+            lintrans.sed <- setToZero(lintrans.sed, zero.tolerance = zero.tolerance)
+            lintrans.sed <- sqrt(lintrans.sed)  
+          } else
+            lintrans.sed <- NULL
       } else
       {
         lintrans$standard.error <- NA_real_
-        lintrans.sed <- NULL  
+        lintrans.sed <- NULL
       }
       
       #Form alldiffs object for linear transformation
       if (!Vmatrix)
         lintrans.vcov <- NULL
+
       preds.attr$heading <- c(paste0("The original predictions, obtained as described below, have",
                                     "\nbeen linearly transformed.", 
                                     ifelse(EGLS.linTransform, 
@@ -2981,7 +3081,7 @@ makeSED <- function(alldiffs.obj)
                               inestimable.rm = inestimable.rm, 
                               alpha = alpha)
     }
-    
+
     #Add lower and upper uncertainty limits
     diffs <- redoErrorIntervals.alldiffs(diffs, error.intervals = error.intervals, alpha = alpha, 
                                          avsed.tolerance = avsed.tolerance, 

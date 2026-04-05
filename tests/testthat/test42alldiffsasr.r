@@ -290,15 +290,40 @@ test_that("LSD_asreml42", {
   testthat::expect_true(all(attr(Var.diffs, which = "LSDtype") == "overall"))
   testthat::expect_true(all(attr(Var.diffs, which = "LSDstatistic") == "mean"))
   
+  #Test intercept-only prediction
+  Int.pred <- predict(m1.asr, classify="Intercept", vcov=TRUE)
+  Int.diffs <- allDifferences(predictions = Int.pred$pvals,
+                              classify = "Intercept", 
+                              vcov = Int.pred$vcov, tdf = den.df)
+  testthat::expect_true(all("LSDtype" %in% names(attributes(Int.diffs))))
+  testthat::expect_true(all(attr(Int.diffs, which = "LSDtype") == "overall"))
+  testthat::expect_true(all(attr(Int.diffs, which = "LSDstatistic") == "mean"))
+
   #Test intercept-only linear.transform
   Int.diffs <- linTransform(Var.diffs, linear.transformation = ~ 1,
-                            tables = "none")
+                            error.intervals = "half", 
+                            LSDtype = "overall", tables = "none")
   testthat::expect_equal(names(Int.diffs$predictions), 
                          c("Nitrogen", "Variety", "predicted.value", "standard.error", 
-                           "upper.Confidence.limit", "lower.Confidence.limit", "est.status"))
+                           "upper.halfLeastSignificant.limit", 
+                           "lower.halfLeastSignificant.limit", "est.status"))
   testthat::expect_true(all(abs(Int.diffs$predictions$predicted.value - mean(Oats.dat$Yield)) < 1e-04))
-  testthat::expect_true(all(abs(Int.diffs$predictions$upper.Confidence.limit - 118.7685) < 1e-04))
+  testthat::expect_true(all(abs(Int.diffs$predictions$upper.halfLeastSignificant.limit - 114.4348) < 1e-04))
   
+  testthat::expect_true(all(abs(c(0, 20.92506, 20.92506, 20.92506, 20.92506) - 
+                                  Int.diffs$LSD[1:5]) < 1e-05))
+  testthat::expect_true(all(is.na(Int.diffs$LSD[6:8])))
+  
+  #This shows that exploreLSD gives correct values when a single prediction and LSDtype is overall
+  lsd1 <- exploreLSDs(Int.diffs)
+  testthat::expect_true(all(abs(c(0, rep(20.92506, 8)) - 
+                                  lsd1$statistics) < 1e-05))
+  testthat::expect_true(all(sapply(lsd1[c("accuracy","false.pos","false.neg")], 
+                                   function(x) all(is.na(x[-1])) & x[1] == 0)))
+  testthat::expect_true(all(sapply(lsd1$per.pred.accuracy, function(x) all(is.na(x)))))
+  testthat::expect_true(all(abs(lsd1$LSD[upper.tri(lsd1$LSD)] - 20.92506 < 1e-05)))
+  
+  #Test exploreLSDs when LSDtype = "factor"
   Int.diffs <- linTransform(Var.diffs, linear.transformation = ~ 1,
                             error.intervals = "half", 
                             LSDtype = "factor", LSDby = "Nitrogen", 
@@ -308,7 +333,19 @@ test_that("LSD_asreml42", {
                            "upper.halfLeastSignificant.limit", 
                            "lower.halfLeastSignificant.limit", "est.status"))
   testthat::expect_true(all(abs(Int.diffs$predictions$predicted.value - mean(Oats.dat$Yield)) < 1e-04))
-  testthat::expect_true(all(is.na(Int.diffs$predictions$upper.Confidence.limit)))
+  testthat::expect_true(all(abs(114.4348 - 
+                                  Int.diffs$predictions$upper.halfLeastSignificant.limit) < 1e-04))
+  testthat::expect_true(all(abs(0 - Int.diffs$LSD[,1]) < 1e-05))
+  testthat::expect_true(all(abs(20.92506 - Int.diffs$LSD[,2:5]) < 1e-05))
+  testthat::expect_true(all(is.na(Int.diffs$LSD[,6:8])))
+  
+  lsd1 <- exploreLSDs(Int.diffs, LSDtype = "factor", LSDby = "Nitrogen")
+  testthat::expect_true(all(abs(0 - lsd1$statistics[,1]) < 1e-05))
+  testthat::expect_true(all(abs(20.92506 - lsd1$statistics[,-1]) < 1e-05))
+  testthat::expect_true(all(sapply(lsd1[c("accuracy","false.pos","false.neg")], 
+                                   function(x) all(is.na(x[-1])) & x[1] == 0)))
+  testthat::expect_true(all(sapply(lsd1$per.pred.accuracy, function(x) all(is.na(x)))))
+  testthat::expect_true(all(abs(lsd1$LSD[upper.tri(lsd1$LSD)] - 20.92506 < 1e-05)))
   
   #Test single factor linear.transform
   Var.diffs.one <- linTransform(Var.diffs, linear.transformation = ~Nitrogen,
@@ -382,10 +419,12 @@ test_that("LSD_asreml42", {
   diffs.chos <- linTransform(diffs, linear.transformation = ~ Variety/NGoldenRain,
                              error.intervals = "half", LSDtype = "factor", LSDby = "Variety", 
                              Vmatrix = TRUE, tables = "none")
-  testthat::expect_true(all(diffs.chos$predictions$fac.comb == c(1,17,33,49,65,69,73,77,129,130,131,132)))
-  testthat::expect_equal(sum(is.na(diffs.chos$predictions$upper.halfLeastSignificant.limit)), 8)
-  testthat::expect_true(all(abs(na.omit(diffs.chos$predictions$upper.halfLeastSignificant.limit) - 
-                                  c(87.6841,106.1841,122.3508,132.5174)) < 1e-03))
+#  testthat::expect_true(all(diffs.chos$predictions$fac.comb == c(1,17,33,49,65,69,73,77,129,130,131,132)))
+  testthat::expect_equal(sum(is.na(diffs.chos$predictions$upper.halfLeastSignificant.limit)), 0)
+  testthat::expect_true(all(abs(diffs.chos$predictions$upper.halfLeastSignificant.limit - 
+                                  c(rep(108.6540,4),
+                                    87.6841,106.1841,122.3508,132.5174,
+                                    rep(120.8207,4))) < 1e-03))
   
   #Test for predictPlus with numeric in classify
   mx.asr <- asreml(Yield ~ xNitrogen*Variety, 
@@ -415,8 +454,10 @@ test_that("LSD_asreml42", {
   Var.diffs.fac <- linTransform(Var.diffs, linear.transformation = ~Nitrogen,
                                 LSDtype = "factor", LSDby = "Nitrogen", 
                                 error.intervals = "half", tables = "none")
-  testthat::expect_true(all(Var.diffs.fac$LSD$assignedLSD == 0))
-  testthat::expect_true(all(is.na(Var.diffs.fac$predictions$upper.halfLeastSignificant.limit)))
+  testthat::expect_true(all(abs(Var.diffs.fac$LSD$assignedLSD - 22.60797) < 1e-05))
+  testthat::expect_true(all(abs(Var.diffs.fac$predictions$upper.halfLeastSignificant.limit -
+                                  rep(c(90.69288, 110.19288, 125.52621, 134.69288), each = 3)) 
+                            < 1e-05))
   
 })
 
@@ -632,7 +673,8 @@ test_that("sort.alldiffs4", {
   #test supplying a median LSD value
   diffs <- predictPlus(m1.asr, classify = "Nitrogen:Variety", 
                        wald.tab = current.asrt$wald.tab, 
-                       error.intervals = "half", tables = "none")
+                       error.intervals = "half", 
+                       tables = "none", Vmatrix = TRUE)
   testthat::expect_true(validAlldiffs(diffs))
   testthat::expect_true(all(abs(c(66, 15.47426, 18.54066, 19.56707, 18.54066, 0.1653879, 2, 4) - 
                                   diffs$LSD) < 1e-05))
@@ -685,7 +727,66 @@ test_that("sort.alldiffs4", {
                                    diffs.med.reLSD$predictions$lower.halfLeastSignificant.limit) 
                                 - diffs.med.reLSD$LSD$assignedLSD) < 1e-05))
   
-  })
+  diffs.int <- linTransform(diffs, 
+                          linear.transformation = ~ 1, # use the Intercept model
+                          wald.tab = current.asrt$wald.tab, 
+                          error.intervals="half",
+                          LSDtype = "overall",
+                          avsed.tolerance = NA,
+                          tables = "none", Vmatrix = TRUE)
+  testthat::expect_true(all(abs(c(0, 18.91499, 18.91499, 18.91499, 18.91499) - 
+                                  diffs.int$LSD[1:5]) < 1e-05))
+  testthat::expect_true(all(is.na(diffs.int$LSD[6:8])))
+  minLSDs <- findLSDminerrors(diffs.int)
+  
+  #This shows that exploreLSD gives correct values when a single prediction and LSDtype is overall
+  exploreLSDs(diffs.int)
+  
+  diffs.int.supp <- redoErrorIntervals(diffs.int, error.intervals = "half", 
+                                        LSDtype = "supplied", LSDsupplied = minLSDs[1])
+  testthat::expect_true(all(abs(c(0, 18.91499, 18.91499, 18.91499, 18.91499) - 
+                                  diffs.int.supp$LSD[1:5]) < 1e-05))
+  testthat::expect_true(all(is.na(diffs.int.supp$LSD[6:8])))
+})
+
+
+
+cat("#### Test for single-prediction LSDs in 821 Barley with asreml42\n")
+test_that("LSDBarley", {
+  skip_if_not_installed("asreml")
+  skip_on_cran()
+  library(asreml)
+  library(asremlPlus)
+  library(dae)
+  data(diffs821DAP35.diff)
+  
+  testthat::expect_true(all(abs(c(0, 67.97175, 67.97175, 67.97175, 67.97175) - 
+                                  alldiffs.obj$LSD[1:5]) < 1e-05))
+  testthat::expect_true(all(is.na(alldiffs.obj$LSD[6:8])))
+  
+  #'### Search for LSI values for chosen-model predictions that minimize the number of false results
+  minLSDs.sPSA.35 <- findLSDminerrors(alldiffs.obj, false.pos.wt = 2)
+  testthat::expect_true(all(abs(67.97175 - minLSDs.sPSA.35["LSD"]) < 1e-05))
+
+  new.alldiffs.obj <- redoErrorIntervals(alldiffs.obj, error.intervals = "half",
+                                         LSDtype = "supplied",
+                                         LSDsupplied = minLSDs.sPSA.35["LSD"],
+                                         avsed.tolerance = NA)
+  new.alldiffs.obj$LSD
+  testthat::expect_true(all(abs(c(0, 67.97175, 67.97175, 67.97175, 67.97175) - 
+                                  new.alldiffs.obj$LSD[1:5]) < 1e-05))
+  testthat::expect_true(all(is.na(new.alldiffs.obj$LSD[6:8])))
+  
+  #This shows that exploreLSD gives incorrect values when a single prediction and LSDtype is overall
+  lsd1 <- exploreLSDs(new.alldiffs.obj)
+  testthat::expect_true(all(abs(c(0, rep(67.97175, 8)) - 
+                                  lsd1$statistics) < 1e-05))
+  testthat::expect_true(all(sapply(lsd1[c("accuracy","false.pos","false.neg")], 
+                                   function(x) all(is.na(x[-1])) & x[1] == 0)))
+  testthat::expect_true(all(sapply(lsd1$per.pred.accuracy, function(x) all(is.na(x)))))
+  testthat::expect_true(all(abs(lsd1$LSD[upper.tri(lsd1$LSD)] - 67.97175 < 1e-05)))
+})
+
 
 cat("#### Test for LSD on WaterRunoff with asreml42\n")
 test_that("LSDWater4", {
@@ -833,6 +934,8 @@ test_that("LSDWater4", {
   tmp <- merge(diffs.reLSD$predictions, medianLSDfacs.dat)
   testthat::expect_true(all(abs((tmp$upper.halfLeastSignificant.limit - tmp$lower.halfLeastSignificant.limit) 
                                 - tmp$assignedLSD) < 1e-05))
+  
+  exploreLSDs(diffs.reLSD.q90, LSDtype = "factor", LSDby = c("Type", "Species"))
   
   #supplied is a data.frame with factors and LSDsupplied
   diffs.reLSD <- redoErrorIntervals(diffs.full.LSD, error.intervals = "half", 

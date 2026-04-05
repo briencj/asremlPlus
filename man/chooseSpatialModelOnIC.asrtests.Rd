@@ -202,7 +202,8 @@
               half the number of segments in that 
               dimension, etc. The number of segments in each direction must be a 
               multiple of the order of nesting.}
- \item{usRandLinCoeffs}{A \code{\link{logical}} which, if \code{TRUE}, will attempt to  
+ \item{usRandLinCoeffs}{A \code{\link{logical}} which, if \code{TRUE} and a 
+               P-spline (TPPS) is being fittted, will attempt to  
                fit an unstructured variance model to the constant and linear terms in 
                the interactions for constant and linear terms in one grid dimension 
                interacting with smoooth terms in the second grid dimension. The 
@@ -310,9 +311,9 @@
                    to be included in the \code{test.summary} of an 
                    \code{\link{asrtests.object}} or to be used in choosing the best model.}
  \item{return.asrts}{A \code{character} string specifying whether the \code{\link{asrtests.object}} 
-               for the \code{best} fitting model (smallest AIC or BIC), including the 
+               for the \code{"best"} fitting model (smallest AIC or BIC), including the 
                supplied nonspatial model, is returned or the \code{\link{asrtests.object}}s 
-               resulting from the attempted fits of \code{all} of the models specified 
+               resulting from the attempted fits of \code{"all"} of the models specified 
                using \code{trySpatial} are returned.}
 \item{\dots}{Further arguments passed to \code{\link{changeModelOnIC.asrtests}}, \code{asreml} and 
            \code{tpsmmb}.}

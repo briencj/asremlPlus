@@ -1166,16 +1166,20 @@ setGRparam.call <- function(call, set.terms = NULL, ignore.suffices = TRUE,
         eval(call, sys.parent()),
         error = function(e) {print("Analysis continued"); NULL}, 
         include.full.call.stack = FALSE, include.compact.call.stack = FALSE)
-      new.asreml.obj$call <- call
-      new.boundinfo <-  findboundary.asreml(new.asreml.obj, asr4 = asr4, asr4.2 = asr4.2)
-      new.allvcomp <- new.boundinfo$allvcomp
-      new.bound.terms <- new.boundinfo$bound.terms
-      new.nbound <- sum(new.bound.terms)
-      if (new.nbound == 0 || 
-          (all(new.allvcomp[new.bound.terms, "bound"] %in% allvcomp[bound.terms, "bound"]) && 
-           new.nbound < nbound)) 
-        asreml.new.obj <- new.asreml.obj
-#      if (all(allvcomp[!bound.terms, "bound"] %in% new.allvcomp[!new.bound.terms, "bound"]))
+      if (is.null(new.asreml.obj))
+        stop("Error trying to fit new model")
+      else
+      {  
+        new.asreml.obj$call <- call
+        new.boundinfo <-  findboundary.asreml(new.asreml.obj, asr4 = asr4, asr4.2 = asr4.2)
+        new.allvcomp <- new.boundinfo$allvcomp
+        new.bound.terms <- new.boundinfo$bound.terms
+        new.nbound <- sum(new.bound.terms)
+        if (new.nbound == 0 || 
+            (all(new.allvcomp[new.bound.terms, "bound"] %in% allvcomp[bound.terms, "bound"]) && 
+             new.nbound < nbound)) 
+          asreml.new.obj <- new.asreml.obj
+      }
     }    
   }
   
@@ -1448,14 +1452,17 @@ findboundary.asreml <- function(asreml.obj, asr4, asr4.2)
       #Classify terms as involving random or not because it involves a covariate
       vcomp.vars <- lapply(rownames(vcomp)[1:nbound], getTermVars)
       vcomp.codes <- lapply(vcomp.vars, getVarsCodes, asreml.obj = asreml.obj)
-      vcomp <- within(vcomp, {
-        terms.random <- unlist(lapply(vcomp.codes, function(term){all(term == 5)}))
-        varnos <- unlist(lapply(vcomp.codes, length))
-      })
+      vcomp <- within(vcomp, 
+                      {
+                        terms.random <- unlist(lapply(vcomp.codes, 
+                                                      function(term){all(term == 5)}))
+                        varnos <- unlist(lapply(vcomp.codes, length))
+                      })
       #Identify terms of the same type that are next to be removed
       max.no.factor <- TRUE
       #Check for terms that involve the dev function
-      this.type <- unlist(lapply(vcomp.codes, function(term){any(term == 4 | term == 9)}))
+      this.type <- unlist(lapply(vcomp.codes, function(term){any(term == 4 | 
+                                                                   term == 9)}))
       if (any(this.type))
       { 
         vcomp <- subset(vcomp, this.type)

@@ -1,5 +1,11 @@
 \name{news}
 \title{News for Package asremlPlus}
+\section{asremlPlus Version 4.4.56 (2028-04-05)}{
+  \itemize{
+  \item Fix bugs in calculating \code{accuracyLSD}, \code{falsePos} and \code{falseNeg} in the \code{LSD} component of an \code{alldiffs.object} using allDifferences.data.frame recalcLSD.alldiffs, redoErrorIntervals.alldiffs and exploreLSDs.alldiffs when all the predicted values to be compared are constrained to be the same so that there is no comparison amongst them. Also, ensured that a notional LSD is returned rather than zero for this case of a single value for the predictions.
+  \item Fix bugs in allDifferences.data.frame when the \code{classify} is the \code{Intercept}. 
+  \item Trap error when asreml fails.
+}}
 \section{asremlPlus Version 4.4.55 (2025-11-08)}{
   \itemize{
   \item Fix bug in the function estimateV that arises from reordering of term names in \code{G.param} by \code{ASReml-R}.

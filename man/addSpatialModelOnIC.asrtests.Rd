@@ -196,7 +196,8 @@
  \item{difforder}{A \code{\link{numeric}} of length 2. The order of differencing for 
               column and row dimensions, respectively, in fitting a P-spline 
               (\code{TPPS}).}
- \item{usRandLinCoeffs}{A \code{\link{logical}} which, if \code{TRUE}, will attempt to  
+ \item{usRandLinCoeffs}{A \code{\link{logical}} which, if \code{TRUE} and a 
+               P-spline (TPPS) is being fittted, will attempt to  
                fit an unstructured variance model to the constant and linear terms in 
                the interactions for constant and linear terms in one grid dimension 
                interacting with smooth terms in the second grid dimension. The 
