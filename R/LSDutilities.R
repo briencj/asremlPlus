@@ -173,10 +173,13 @@ checkLSD <- function(alldiffs.obj)
 #Function to find nonzero values in a vector using zero.tolerance to determine if zero
 findNonzero <- function(x, zero.tolerance = .Machine$double.eps ^ 0.5)
 {
-  max.x <- max(x)
+  if (all(is.na(x)))
+    max.x <- NA
+  else
+    max.x <- max(x)
   which.nonzero <- NULL
   #Retain only nonzero variances
-  if (max.x > zero.tolerance && sum(x/max.x > zero.tolerance) > 0)
+  if (!is.na(max.x) && max.x > zero.tolerance && sum(x/max.x > zero.tolerance) > 0)
     which.nonzero <- x/max.x > zero.tolerance
   return(which.nonzero)
 }

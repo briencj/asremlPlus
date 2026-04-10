@@ -13,6 +13,12 @@
 #      allDifferences    Calculates LSDs using LSDstats and sliceLSDs; sets object LSD attributes; 
 #                        sets predictions attribute, but not predictions LSD attr; 
 #                        calls addBacktransforms that sets backtransforms attributes
+#
+# The setting of LSDs and false errors for predictions all of which are constrained to be 
+#    equal, i.e. single-valued predictions, is done in allDifferences.data.frame 
+#    sliceAll, linTransform.alldiffs and exploreLSDs.alldiffs.
+#    - search for range(alldiffs.obj$predictions$standard.error.
+#
 
 "is.LSD.frame" <- function(object)
 {
@@ -2375,7 +2381,7 @@ makeSED <- function(alldiffs.obj)
             ksed <- rm.list$ksed
             kdif <- rm.list$kdif
             #Is there only one value for the sed and this is zero and all preds are equal?
-            if (length(unique(ksed)) == 1 && length(unique(kdif)) == 1  && ksed == 0 && 
+            if (length(unique(ksed)) == 1 && length(unique(kdif)) == 1  && all(ksed == 0) && 
                 diff(range(alldiffs.obj$predictions$standard.error)) < zero.tolerance)
             {  
               ksed <- sqrt(2) * alldiffs.obj$predictions$standard.error[1]

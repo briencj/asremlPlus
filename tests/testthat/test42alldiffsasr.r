@@ -299,6 +299,11 @@ test_that("LSD_asreml42", {
   testthat::expect_true(all(attr(Int.diffs, which = "LSDtype") == "overall"))
   testthat::expect_true(all(attr(Int.diffs, which = "LSDstatistic") == "mean"))
 
+  
+  minLSDs <- findLSDminerrors(Int.diffs)
+  testthat::expect_true(all(abs(20.92506 - minLSDs$LSD) < 1e-05))
+  testthat::expect_true(all(is.na(minLSDs[2:4])))
+  
   #Test intercept-only linear.transform
   Int.diffs <- linTransform(Var.diffs, linear.transformation = ~ 1,
                             error.intervals = "half", 
@@ -347,6 +352,12 @@ test_that("LSD_asreml42", {
   testthat::expect_true(all(sapply(lsd1$per.pred.accuracy, function(x) all(is.na(x)))))
   testthat::expect_true(all(abs(lsd1$LSD[upper.tri(lsd1$LSD)] - 20.92506 < 1e-05)))
   
+  #Test findLSDminerrors when LSDtype = "factor"
+  minLSDs <- findLSDminerrors(Int.diffs, LSDtype = "factor", LSDby = "Nitrogen")
+  testthat::expect_equal(nrow(minLSDs), 4)
+  testthat::expect_true(all(abs(20.92506 - minLSDs$LSD) < 1e-05))
+  testthat::expect_true(all(is.na(minLSDs[2:4])))
+
   #Test single factor linear.transform
   Var.diffs.one <- linTransform(Var.diffs, linear.transformation = ~Nitrogen,
                                 error.intervals = "half", tables = "none")

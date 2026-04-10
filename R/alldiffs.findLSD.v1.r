@@ -61,63 +61,67 @@ findLSDminerrors.alldiffs <- function(alldiffs.obj,
   #Search for minimum LSD
   stepsize <- 1/nvalues
   optLSDs <- mapply(function(kLSDs, kpos.wt)
-                    {
-                      #Search for optimal LSD
-                      minlsd <- min(kLSDs$lsd)
-                      maxlsd <- max(kLSDs$lsd)
-                      if (trace) {cat("\n\n#### New set\n"); print(c(minlsd,maxlsd))}
-                      range <- maxlsd - minlsd
-                      if (range > 0)
-                      { 
-                        #Do a grid search for the minLSD
-                        testLSDs <- lapply(seq(0, 1, stepsize),
-                                           function(step, range, kLSDs, kpos.wt)
-                                           {
-                                             testlsd <- minlsd + step * range
-                                             false.vals <- c(testlsd, 
-                                                             falseErrorNums(testlsd, kLSDs, 
-                                                                            kpos.wt))
-                                             names(false.vals)[1] <- "LSD"
-                                             return(false.vals)
-                                           }, range, kLSDs, kpos.wt)
-                        if (trace) {cat("\n#### Initial grid search\n") ; print(testLSDs)}
-                        testLSDs <- as.data.frame(do.call(rbind, testLSDs))
-                        rownames(testLSDs) <- NULL
-                        min.criterion <- min(testLSDs["false.criterion"], na.rm = TRUE)
-                        which.min <- testLSDs["false.criterion"] == min.criterion
-                        testLSDs <- testLSDs[which.min,]
-                        #select those with the minimum false positives
-                        minpos <- min(testLSDs["false.pos"], na.rm = TRUE)
-                        testLSDs <- testLSDs[testLSDs["false.pos"] == minpos, ]
-                        optLSD <- testLSDs[1,]
-                        #Check in the neighbourhood below the minlsd for a smaller lsd
-                        if (optLSD$LSD > minlsd)
-                        { 
-                          testlsd <- optLSD$LSD
-                          substepsize <- 0.1
-                          subminlsd <- testlsd - stepsize
-                          stepval <- substepsize*stepsize
-                          if (trace) cat("\n#### Finer grid search\n")
-                          for (step in seq(1-substepsize, 0, -substepsize))
-                          {
-                            testlsd <-testlsd - stepval 
-                            false.nums <- falseErrorNums(testlsd, kLSDs, kpos.wt)
-                            if (trace) print(c(testlsd, false.nums))
-                            if (optLSD["false.criterion"] != false.nums["false.criterion"] || 
-                                optLSD["false.pos"] != false.nums["false.pos"]) break
-                          }
-                          optlsd <- testlsd + stepval
-                          optLSD <- c(optlsd, falseErrorNums(optlsd, kLSDs, kpos.wt))
-                        }
-                      } else
-                      {
-                        optLSD <- c(minlsd, falseErrorNums(minlsd, kLSDs, kpos.wt))
-                      }
-                      names(optLSD)[1] <- "LSD"
-                      return(optLSD)
-                    }, LSD.list, false.pos.wt, SIMPLIFY = FALSE)
+  {
+    #Search for optimal LSD
+    # minlsd <- min(kLSDs$lsd)
+    # maxlsd <- max(kLSDs$lsd)
+    LSDrange <- range(kLSDs$lsd)
+    if (trace) {cat("\n\n#### New set\n"); print(LSDrange)}
+    # range <- maxlsd - minlsd
+    if (diff(LSDrange) > zero.tolerance)
+    { 
+      #Do a grid search for the minLSD
+      testLSDs <- lapply(seq(0, 1, stepsize),
+                         function(step, LSDrange, kLSDs, kpos.wt)
+                         {
+                           testlsd <- LSDrange[1] + step * diff(LSDrange)
+                           false.vals <- c(testlsd, 
+                                           falseErrorNums(testlsd, kLSDs, 
+                                                          kpos.wt))
+                           names(false.vals)[1] <- "LSD"
+                           return(false.vals)
+                         }, LSDrange, kLSDs, kpos.wt)
+      if (trace) {cat("\n#### Initial grid search\n") ; print(testLSDs)}
+      testLSDs <- as.data.frame(do.call(rbind, testLSDs))
+      rownames(testLSDs) <- NULL
+      min.criterion <- min(testLSDs["false.criterion"], na.rm = TRUE)
+      which.min <- testLSDs["false.criterion"] == min.criterion
+      testLSDs <- testLSDs[which.min,]
+      #select those with the minimum false positives
+      minpos <- min(testLSDs["false.pos"], na.rm = TRUE)
+      testLSDs <- testLSDs[testLSDs["false.pos"] == minpos, ]
+      optLSD <- testLSDs[1,]
+      #Check in the neighbourhood below the minlsd for a smaller lsd
+      if (optLSD$LSD > LSDrange[1])
+      { 
+        testlsd <- optLSD$LSD
+        substepsize <- 0.1
+        subminlsd <- testlsd - stepsize
+        stepval <- substepsize*stepsize
+        if (trace) cat("\n#### Finer grid search\n")
+        for (step in seq(1-substepsize, 0, -substepsize))
+        {
+          testlsd <-testlsd - stepval 
+          false.nums <- falseErrorNums(testlsd, kLSDs, kpos.wt)
+          if (trace) print(c(testlsd, false.nums))
+          if (optLSD["false.criterion"] != false.nums["false.criterion"] || 
+              optLSD["false.pos"] != false.nums["false.pos"]) break
+        }
+        optlsd <- testlsd + stepval
+        optLSD <- c(optlsd, falseErrorNums(optlsd, kLSDs, kpos.wt))
+      }
+    } else
+    {
+      falsesig <- rep(NA, 3)
+      names(falsesig) <- c("false.pos", "false.neg", "false.criterion")
+      optLSD <- c(LSDrange[1], falsesig)
+      # optLSD <- c(minlsd, falseErrorNums(minlsd, kLSDs, kpos.wt))
+    }
+    names(optLSD)[1] <- "LSD"
+    return(optLSD)
+  }, LSD.list, false.pos.wt, SIMPLIFY = FALSE)
   optLSDs <- as.data.frame(do.call(rbind, optLSDs))
-
+  
   #Set attributes on the LSD.list
   attr(optLSDs, which = "LSDtype") <- avLSD
   attr(optLSDs, which = "LSDby") <- LSDby
@@ -198,10 +202,10 @@ sliceLSDmat <- function(alldiffs.obj, type, by,
                        if (all(abs(klsd) < zero.tolerance) && 
                            diff(range(alldiffs.obj$predictions$standard.error[krows])) < zero.tolerance)
                        {
-                         # rm.list <- list (lsd = t.value * sqrt(2) * 
-                         #                    alldiffs.obj$predictions$standard.error[krows][1],
-                         #                  dif = 0)
-                         rm.list <- list (lsd = 0, dif = 0)
+                         rm.list <- list (lsd = t.value * sqrt(2) *
+                                            alldiffs.obj$predictions$standard.error[krows][1],
+                                          dif = 0)
+#                         rm.list <- list (lsd = 0, dif = 0)
                        } else
                        {
                          #remove NA and zero values
