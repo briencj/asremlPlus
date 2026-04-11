@@ -1,6 +1,6 @@
 \name{news}
 \title{News for Package asremlPlus}
-\section{asremlPlus Version 4.4.57 (2028-04-10)}{
+\section{asremlPlus Version 4.4.57 (2028-04-11)}{
   \itemize{
   \item Fix a bug in calculating the \code{LSD} component of an \code{alldiffs.object} using allDifferences.data.frame when all the predicted values to be compared are constrained to be the same so that there is no comparison amongst them.
   \item Fix bug in calculating \code{accuracyLSD}, \code{falsePos} and \code{falseNeg} of the return LSD(s) in using findLSDminerrors.alldiffs.

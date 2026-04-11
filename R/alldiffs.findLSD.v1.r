@@ -63,11 +63,8 @@ findLSDminerrors.alldiffs <- function(alldiffs.obj,
   optLSDs <- mapply(function(kLSDs, kpos.wt)
   {
     #Search for optimal LSD
-    # minlsd <- min(kLSDs$lsd)
-    # maxlsd <- max(kLSDs$lsd)
     LSDrange <- range(kLSDs$lsd)
     if (trace) {cat("\n\n#### New set\n"); print(LSDrange)}
-    # range <- maxlsd - minlsd
     if (diff(LSDrange) > zero.tolerance)
     { 
       #Do a grid search for the minLSD
@@ -115,7 +112,6 @@ findLSDminerrors.alldiffs <- function(alldiffs.obj,
       falsesig <- rep(NA, 3)
       names(falsesig) <- c("false.pos", "false.neg", "false.criterion")
       optLSD <- c(LSDrange[1], falsesig)
-      # optLSD <- c(minlsd, falseErrorNums(minlsd, kLSDs, kpos.wt))
     }
     names(optLSD)[1] <- "LSD"
     return(optLSD)

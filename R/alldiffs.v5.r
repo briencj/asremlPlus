@@ -16,7 +16,7 @@
 #
 # The setting of LSDs and false errors for predictions all of which are constrained to be 
 #    equal, i.e. single-valued predictions, is done in allDifferences.data.frame 
-#    sliceAll, linTransform.alldiffs and exploreLSDs.alldiffs.
+#    sliceAll, linTransform.alldiffs, exploreLSDs.alldiffs and findLSDminerrors.
 #    - search for range(alldiffs.obj$predictions$standard.error.
 #
 
