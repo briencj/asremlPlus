@@ -2543,9 +2543,23 @@ makeSED <- function(alldiffs.obj)
     err.int <- TRUE
     if (is.na(kpl) || is.na(kpu))
       err.int <- FALSE
-    #Backtransform predictions and intervals for power transformation or transformation function
+    
+    #Backtransform predictions and intervals for transformation or transformation function
+    #and, for a power transformation, the approx. se of the backtransformed predictions.
+    #
+    #The approx. se for a back-transformed prediction (y) calculated for the transformed 
+    #prediction (z), the transform being for power p, offset off and scale, is computed 
+    #as follow. The method is based on the delta method (see the asreml manual p.143) with 
+    #var(y) = (dy/dz)^2 * var(z) oe se(y) = abs[(dy/dz)] * se(z).
+    # 
+    #for the log transform (zero power), y = (exp(z) - off)/scale so that 
+    #                                     se(y) = exp(z) * se(z);
+    #for nonzero power, y = (z^(1/p) - off) / scale so that 
+    #                   se(y) = [z^(1/p) / (p * z* scale)] * se(z).
+    #
     if (transform.power == 0 || transfunc == "log")
     { 
+      #Backtransform predictions and intervals for log transformation or transformation function
       backtransforms$backtransformed.predictions <- 
         exp(backtransforms$backtransformed.predictions)
       if (err.int)
@@ -2557,6 +2571,7 @@ makeSED <- function(alldiffs.obj)
     { 
       if (transform.power != 1 || transfunc %in% c("inverse", "sqrt"))
       { 
+        #Backtransform predictions and intervals for power transformation or transformation function
         tpower <- transform.power
         if (transfunc == "inverse")
           tpower <- -1
@@ -2622,19 +2637,9 @@ makeSED <- function(alldiffs.obj)
         }
       }
     }
-    #Backtransform for offset and scale
-    if (offset !=0 || scale != 1)
-    { 
-      backtransforms$backtransformed.predictions <- 
-        (backtransforms$backtransformed.predictions - offset)/scale
-      if (err.int)
-      {
-        backtransforms[[kpl]] <- (backtransforms[[kpl]] - offset)/scale
-        backtransforms[[kpu]] <- (backtransforms[[kpu]] - offset)/scale
-      }
-    }
-    #Set standard.error to missing if a power transformation or transform.function other than identity has been used
-    if (transfunc != "identity")
+    
+    #Set standard.error to missing if a transform.function other than identity has been used
+    if (transfunc != "identity") #has been a transformation function
     {
       #deal with backtransformed columns inserted by asreml
       if ("transformed.value" %in% names(alldiffs.obj$predictions))  
@@ -2673,12 +2678,21 @@ makeSED <- function(alldiffs.obj)
       }
     } else
     {
-      if (trans) #there has been a transformation
+      if (trans) #there has been a power transformation or an offset or a scale 
       { 
         if (transform.power != 1)
         {
+          #Calculate approximate standard error (asreml does this for transformation functions)
+          #This code does not need to be before the calculation of error intervals
+          #because back transformed error intervals are OK. This is just adding an 
+          #approximate se.
           ks <- match("standard.error", names(backtransforms))
-          backtransforms[[ks]] <- NA_real_
+          backtransforms[[ks]] <- backtransforms$backtransformed.predictions * 
+            backtransforms[[ks]]
+          if (transform.power != 0) #not a log transformation
+            backtransforms[[ks]] <- backtransforms[[ks]]/ 
+                                    (scale*transform.power*
+                                       alldiffs.obj$predictions$predicted.value)
         }
         if (scale != 1)
         {
@@ -2687,6 +2701,21 @@ makeSED <- function(alldiffs.obj)
         }
       }
     }
+
+    #Backtransform for offset and scale 
+    # - this needs to be done after the standard errors are finalized so that approx. se 
+    #   can be computed after predictions adjusted for transformation power. 
+    if (offset !=0 || scale != 1)
+    { 
+      backtransforms$backtransformed.predictions <- 
+        (backtransforms$backtransformed.predictions - offset)/scale
+      if (err.int)
+      {
+        backtransforms[[kpl]] <- (backtransforms[[kpl]] - offset)/scale
+        backtransforms[[kpu]] <- (backtransforms[[kpu]] - offset)/scale
+      }
+    }
+    
     #Set attributes of backtransform component
     attr(backtransforms, which = "LSDtype") <- attr(alldiffs.obj$predictions, which = "LSDtype")
     attr(backtransforms, which = "LSDby") <- attr(alldiffs.obj$predictions, which = "LSDby")

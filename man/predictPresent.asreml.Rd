@@ -297,9 +297,12 @@
               \code{\link{alldiffs.object}}. The \code{plots} and \code{tables} arguments 
               control the plotting and output of the \code{predictions} and 
               \code{backtransforms}. 
-              The back-transformation raises the predictions to the power equal 
-              to the reciprocal of \code{transform.power}, unless it equals 0 in 
-              which case the exponential of the predictions is taken.} 
+               The back-transformation raises the predictions to the power equal 
+               to the reciprocal of \code{transform.power}, unless it equals 0 in 
+               which case the exponential of the predictions is taken. Confidence limits 
+               and Least Signifianct limits will be similarly backtransformed. 
+               Approxmate standard errors of the backtransformed predictions will also 
+               be calculated.} 
 \item{offset}{A number that has been added to each value of the response after any scaling 
                and before applying any power transformation. Unless it is equal to 0, the 
                default, back-transforms of the predictions will be obtained and stored in 

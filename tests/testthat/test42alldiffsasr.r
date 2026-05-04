@@ -95,6 +95,24 @@ test_that("allDifferences_asreml42", {
   
  })
 
+cat("#### Test for findLSDminerrors with LSDby and singular predictions\n")
+test_that("findLSDminerrors with LSDby", {
+  skip_if_not_installed("asreml")
+  skip_on_cran()
+  library(asremlPlus)
+  data(diffs.834.13)
+  minLSDs <- findLSDminerrors(diffs, LSDtype = "factor", 
+                              LSDby = c("Genotype", "Control"))
+  
+  testthat::expect_true(all(abs(c(77.37601, 62.49004, 77.36743, 63.24903, 77.53130, 
+                                  62.74746, 77.36743, 62.42491, 77.53360, 62.18423) - 
+                                  minLSDs$LSD) < 1e-05))
+  testthat::expect_true(all(minLSDs[seq(1,10,2), 2:4] == 0))
+  testthat::expect_true(all(is.na(minLSDs[seq(2,10,2), 2:4])))
+  testthat::expect_true(all(rownames(minLSDs) == 
+                              as.vector(t(outer(paste0("G",1:5), c("treated", "untreated"), 
+                                                FUN = "paste", sep = ",")))))
+})
 
 cat("#### Test for LSDs and halfLSIs on system data with asreml42\n")
 test_that("LSD_LSI_SystemData_asreml42", {
@@ -1855,7 +1873,7 @@ test_that("facCombine.alldiffs4", {
   
 })
 
-cat("#### Test for facRecast.alldiffs on Ladybird with asreml42\n")
+cat("#### Test for facRecast.alldiffs and approx.se on Ladybird with asreml42\n")
 test_that("facRecast.alldiffs4", {
   skip_if_not_installed("asreml")
   skip_on_cran()
@@ -1865,7 +1883,11 @@ test_that("facRecast.alldiffs4", {
   data("Ladybird.dat")
   
   #Mixed model analysis of logs 
-  Ladybird.dat$log.P <- log(Ladybird.dat$Prop*100 + 1)
+  Ladybird.dat <- within(Ladybird.dat, 
+                         {
+                           log.P <- log(Prop*100 + 1)
+                           sqrt.P <- sqrt(Prop*100)
+                         })
   m1.asr <- do.call(asreml, 
                     args = list(fixed = log.P ~ Host*Cadavers*Ladybird, 
                                 random = ~ Run,
@@ -1876,7 +1898,6 @@ test_that("facRecast.alldiffs4", {
   
   HCL.diffs <- predictPlus(m1.asr, classify = "Host:Cadavers:Ladybird", tables = "none", 
                            wald.tab = current.asrt$wald.tab, transform.power = 0, offset = 1)
-  
   ## Recast Ladybird
   HCL.recast.diffs <- facRecast(HCL.diffs, factor = "Ladybird", newlabels = c("none", "present"))
   testthat::expect_true(validAlldiffs(HCL.recast.diffs))
@@ -1884,7 +1905,11 @@ test_that("facRecast.alldiffs4", {
   testthat::expect_true(all(levels(HCL.recast.diffs$backtransforms$Ladybird) == c("none", "present")))
   testthat::expect_true(all(abs((exp(HCL.recast.diffs$predictions$predicted.value) - 1) -
                                   HCL.recast.diffs$backtransforms$backtransformed.predictions) < 1e-05))
+  testthat::expect_true(all(abs((exp(HCL.recast.diffs$predictions$predicted.value) * 
+                                   HCL.recast.diffs$predictions$standard.error) -
+                                  HCL.recast.diffs$backtransforms$standard.error) < 1e-05))
   testthat::expect_true(all(rownames(HCL.recast.diffs$differences)[1:2] == c("bean,5,none", "bean,5,present")))
+  
   HCL.recast.diffs <- facRecast.alldiffs(HCL.recast.diffs, factor = "Host", 
                                          levels.order = c("trefoil", "bean"))
   testthat::expect_true(validAlldiffs(HCL.recast.diffs))
@@ -1893,6 +1918,7 @@ test_that("facRecast.alldiffs4", {
   testthat::expect_true(all(rownames(HCL.recast.diffs$differences)[1:2] == c("trefoil,5,none", "trefoil,5,present")))
   testthat::expect_true(all(abs((exp(HCL.recast.diffs$predictions$predicted.value) - 1) -
                                   HCL.recast.diffs$backtransforms$backtransformed.predictions) < 1e-05))
+  
   HCL.recast.diffs <- facRecast(HCL.recast.diffs, factor = "Ladybird", 
                                 levels.order = c("present", "none"), 
                                 newlabels = c("yes","no"))
@@ -1903,6 +1929,23 @@ test_that("facRecast.alldiffs4", {
   testthat::expect_true(all(abs((exp(HCL.recast.diffs$predictions$predicted.value) - 1) -
                                   HCL.recast.diffs$backtransforms$backtransformed.predictions) < 1e-05))
   
+  m2.asr <- do.call(asreml, 
+                    args = list(fixed = sqrt.P ~ Host*Cadavers*Ladybird, 
+                                random = ~ Run,
+                                data = Ladybird.dat))
+  testthat::expect_equal(length(m2.asr$vparameters),2)
+  current.asrt <- as.asrtests(m2.asr)
+  testthat::expect_true(validAsrtests(current.asrt))
+  
+  HCL.sqrt.diffs <- predictPlus(m2.asr, classify = "Host:Cadavers:Ladybird", tables = "none", 
+                                wald.tab = current.asrt$wald.tab, 
+                                transform.power = 0.5)
+  testthat::expect_true(all(abs(HCL.sqrt.diffs$predictions$predicted.value^2 -
+                                  HCL.sqrt.diffs$backtransforms$backtransformed.predictions) < 1e-05))
+  testthat::expect_true(all(abs((HCL.sqrt.diffs$predictions$predicted.value^2 / 
+                                   (0.5 * HCL.sqrt.diffs$predictions$predicted.value) * 
+                                   HCL.sqrt.diffs$predictions$standard.error) -
+                                  HCL.sqrt.diffs$backtransforms$standard.error) < 1e-05))
 })
 
 cat("#### Test for linear.transformation on Oats with asreml42\n")
@@ -2226,7 +2269,7 @@ test_that("linear.transform_WaterRunoff_asreml42", {
                          "Barke")
   testthat::expect_true(all(abs(save$lRGR_sm_32_42$predictions[1, 2:5] - 
                                   c(-0.4020173, 0.04745505, -0.3075751, -0.4964595)) < 1e-03))
-  testthat::expect_true(all(is.na(save$lRGR_sm_32_42$backtransforms[, "standard.error"])))
+  testthat::expect_true(all(!is.na(save$lRGR_sm_32_42$backtransforms[, "standard.error"])))
   testthat::expect_true(all(abs(exp(save$lRGR_sm_32_42$predictions[1, c(2,4:5)]) - 
                                   save$lRGR_sm_32_42$backtransforms[1, c(2,4:5)]) < 1e-04))
 })

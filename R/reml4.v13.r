@@ -416,7 +416,7 @@ findsetterms <- function(setvparameters, termlist)
          paste0(bounds[!(bounds %in% c("B", "F", "P", "C", "U", "?"))], collapse = ", "), 
          " is/are not used by asreml")
   
-  #add start.values to call so can get vparamaeters in the current call
+  #add start.values to call so can get vparameters in the current call
   start.call <- call
   languageEl(start.call, which = "start.values") <- TRUE
   gamma.start <- eval(start.call, sys.parent())

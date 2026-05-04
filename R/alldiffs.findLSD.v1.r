@@ -182,26 +182,26 @@ sliceLSDmat <- function(alldiffs.obj, type, by,
                    function(lev, lsd, dif, t.value, alldiffs.obj)
                    {
                      krows <- lev == fac.comb
-                     if (length(fac.comb[krows]) == 1) #have a single prediction
+                     if (!any(krows) || length(fac.comb[krows]) == 1) 
                      {
-                       rm.list <- list (klsd = t.value * sqrt(2) * 
-                                          alldiffs.obj$predictions$standard.error[krows],
-                                        kdif = 0)
+                       #have a single prediction
+                       rm.list <- list(lsd = t.value * sqrt(2) * 
+                                         alldiffs.obj$predictions$standard.error[krows],
+                                       dif = 0,
+                                       sig.actual = NA)
                      } else  #have several predictions
                      {
                        klsd <- getUpperTri(lsd[krows, krows])
                        kdif <- getUpperTri(dif[krows, krows])
                        rm.list <- rm.nazero(klsd, kdif, retain.zeroLSDs = retain.zeroLSDs,
                                             zero.tolerance = zero.tolerance)
-                       
                        #Is there only one value for the sed and this is zero?
                        if (all(abs(klsd) < zero.tolerance) && 
                            diff(range(alldiffs.obj$predictions$standard.error[krows])) < zero.tolerance)
                        {
-                         rm.list <- list (lsd = t.value * sqrt(2) *
-                                            alldiffs.obj$predictions$standard.error[krows][1],
-                                          dif = 0)
-#                         rm.list <- list (lsd = 0, dif = 0)
+                         rm.list <- list(lsd = t.value * sqrt(2) *
+                                           alldiffs.obj$predictions$standard.error[krows][1],
+                                         dif = 0)
                        } else
                        {
                          #remove NA and zero values
@@ -209,8 +209,8 @@ sliceLSDmat <- function(alldiffs.obj, type, by,
                                               zero.tolerance = zero.tolerance)
                          names(rm.list) <- c("lsd", "dif")
                        }
+                       rm.list$sig.actual <- abs(rm.list$dif) >= rm.list$lsd
                      }
-                     rm.list$sig.actual <- abs(rm.list$dif) >= rm.list$lsd
                      return(rm.list)
                    }, lsd = lsd, dif = dif, t.value = t.value, alldiffs.obj = alldiffs.obj)
     names(LSDs) <- levs

@@ -197,10 +197,14 @@
 \item{transform.power}{A \code{\link{numeric}} specifying the power of a transformation, if 
               one has been applied to the response variable. Unless it is equal 
               to 1, the default, back-transforms of the predictions will be 
-              obtained and presented in tables or graphs as appropriate. 
-              The back-transformation raises the predictions to the power equal 
-              to the reciprocal of \code{transform.power}, unless it equals 0 in 
-              which case the exponential of the predictions is taken.} 
+              obtained and stored in the \code{backtransforms} component of the 
+              \code{\link{alldiffs.object}}. 
+               The back-transformation raises the predictions to the power equal 
+               to the reciprocal of \code{transform.power}, unless it equals 0 in 
+               which case the exponential of the predictions is taken. Confidence limits 
+               and Least Signifianct limits will be similarly backtransformed. 
+               Approxmate standard errors of the backtransformed predictions will also 
+               be calculated.} 
 \item{offset}{A \code{\link{numeric}} that has been added to each value of the 
                response after any scaling and before applying any power transformation.}
 \item{scale}{A \code{\link{numeric}} by which each value of the response has been multiplied 

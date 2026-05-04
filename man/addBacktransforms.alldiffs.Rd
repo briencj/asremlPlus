@@ -13,12 +13,15 @@
 \arguments{
 \item{alldiffs.obj}{An \code{\link{alldiffs.object}}.}
  \item{transform.power}{A \code{\link{numeric}} specifying the power of a transformation, if 
-              one has been applied to the response variable. Unless it is equal 
-              to 1, the default, back-transforms of the predictions will be 
-              obtained and presented in tables or graphs as appropriate. 
-              The back-transformation raises the predictions to the power equal 
-              to the reciprocal of \code{transform.power}, unless it equals 0 in 
-              which case the exponential of the predictions is taken.} 
+               one has been applied to the response variable. Unless it is equal 
+               to 1, the default, back-transforms of the predictions will be 
+               obtained and presented in tables or graphs as appropriate. 
+               The back-transformation raises the predictions to the power equal 
+               to the reciprocal of \code{transform.power}, unless it equals 0 in 
+               which case the exponential of the predictions is taken. Confidence limits 
+               and Least Signifianct limits will be similarly backtransformed. 
+               Approxmate standard errors of the backtransformed predictions will also 
+               be calculated.} 
  \item{offset}{A \code{\link{numeric}} that has been added to each value of the 
               response after any scaling and before applying any power transformation.}
  \item{scale}{A \code{\link{numeric}} by which each value of the response has been multiplied 
@@ -48,6 +51,16 @@
               calculating \code{error.intervals}.}
  \item{\dots}{Provision for passing arguments to functions called internally - 
             not used at present.}
+}
+\details{
+  The backtransformed prediction (\code{y}) is computed from the prediction (\code{z}) from 
+  the transformed data as follows: (i) for \code{transform.power} equal to 0 
+  \eqn{y = (\exp(z) - \code{offset}) / \code{scale}}{(exp(z) - \code{offset}) / \code{scale}}, and  
+  (ii) for \code{transform.power} \code{p} not equal to 0 or 1, 
+  \eqn{y = (z^{1/p} - \code{offset}) / \code{scale})}{y = (z^{1/p} - \code{offset}) / \code{scale})}. 
+  The approximate standard error of \code{y} is calculated using the delta method as follows: 
+  (i) \eqn{se(y) = \exp(z) / \code{scale} *se(z)}{se(y) = \exp(z) / \code{scale} *se(z)}, and  
+  (ii) \eqn{se(y) = z^{1/p} / (p * z * \code{scale}) *se(z)}{se(y) = z^{1/p} / (p * z * \code{scale}) *se(z)}.
 }
 \value{An \code{\link{alldiffs.object}} with components 
        \code{predictions}, \code{vcov}, \code{differences}, \code{p.differences}, 

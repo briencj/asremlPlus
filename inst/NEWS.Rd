@@ -1,5 +1,14 @@
 \name{news}
 \title{News for Package asremlPlus}
+\section{asremlPlus Version 4.4.59 (2028-05-04)}{
+  \itemize{
+  \item Add approximate standard errors to the \code{backtransforms} component of an \code{alldiffs.obj} when the predictions have been calculated for a response that was transformed for analysis. 
+  \item Fix a bug in calculating the \code{LSD}, \code{falsePos}, \code{falseNeg} and \code{false.criterion} in using findLSDminerrors.alldiffs when all the predicted values to be compared are constrained to be the same so that there is no comparison amongst them.
+}}
+\section{asremlPlus Version 4.4.58 (2028-04-11)}{
+  \itemize{
+  \item Update URLs in the vignettes so that they are in canonical form
+}}
 \section{asremlPlus Version 4.4.57 (2028-04-11)}{
   \itemize{
   \item Fix a bug in calculating the \code{LSD} component of an \code{alldiffs.object} using allDifferences.data.frame when all the predicted values to be compared are constrained to be the same so that there is no comparison amongst them.
