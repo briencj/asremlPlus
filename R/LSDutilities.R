@@ -347,7 +347,7 @@ sliceLSDs <- function(alldiffs.obj, by, t.value, LSDstatistic = "mean", LSDaccur
     names(LSDstatistic) <- levs
     #loop over LSDby combinations
     LSDs <- lapply(levs, 
-                   function(lev, sed, dif, t.value)
+                   function(lev, sed, dif, t.value, fac.comb)
                    {
                      krows <- lev == fac.comb
                      if (length(fac.comb[krows]) == 1) #have a single prediction
@@ -359,7 +359,7 @@ sliceLSDs <- function(alldiffs.obj, by, t.value, LSDstatistic = "mean", LSDaccur
                        if (which.stats == "all")
                        { 
                          stats <- c(0, rep(t.value * sqrt(2) * 
-                                             alldiffs.obj$predictions$standard.error[krows], 
+                                             alldiffs.obj$predictions$standard.error[krows][1], 
                                            times = 4), 
                                     NA_real_, NA_real_, NA_real_)
                          names(stats) <- c("c", "minLSD", "meanLSD", "maxLSD", "assignedLSD", 
@@ -387,8 +387,9 @@ sliceLSDs <- function(alldiffs.obj, by, t.value, LSDstatistic = "mean", LSDaccur
                          if (which.stats == "all")
                          {
                            #stats <- c(0, rep(0, times = 4), stats)
+                           print(alldiffs.obj$predictions$standard.error[krows][1])
                            stats <- c(0, rep(t.value * sqrt(2) * 
-                                               alldiffs.obj$predictions$standard.error[1], 
+                                               alldiffs.obj$predictions$standard.error[krows][1], 
                                     times = 4), stats)
                            names(stats) <- c("c", "minLSD", "meanLSD", "maxLSD", "assignedLSD", 
                                              "accuracyLSD", "falsePos", "falseNeg")
@@ -422,7 +423,7 @@ sliceLSDs <- function(alldiffs.obj, by, t.value, LSDstatistic = "mean", LSDaccur
                        }
                      }
                      return(stats)
-                   }, sed = sed, dif = dif, t.value = t.value)
+                   }, sed = sed, dif = dif, t.value = t.value, fac.comb = fac.comb)
     if (!is.null(LSDs))
     {
       LSDs <- as.data.frame(do.call(rbind, LSDs))
@@ -619,7 +620,7 @@ sliceAll <- function(alldiffs.obj, by, t.value, LSDaccuracy = "maxAbsDeviation",
       warning(paste("LSD calculated for a single prediction",
                     "- applies to two independent predictions with the same standard error"))
       slice.singular <- TRUE
-      stats <- c(0, rep(t.value * sqrt(2) * alldiffs.obj$predictions$standard.error[1], 
+      stats <- c(0, rep(t.value * sqrt(2) * alldiffs.obj$predictions$standard.error[krows][1], 
                         times = length(LSDstat.labs)))
       names(stats) <- c("c", LSDstat.labs)
       stats <- as.data.frame(as.list(stats))

@@ -1090,6 +1090,9 @@ test_that("LSDWater4", {
   testthat::expect_true(all(names(diffs.full.comb.Acc$LSD) == LSD.hdr))
   testthat::expect_true(all(is.na(diffs.full.comb.Acc$LSD$accuracyLSD) | diffs.full.comb.Acc$LSD$accuracyLSD) < 0.015)
   testthat::expect_true(all(diffs.full.comb.Acc$LSD$meanLSD == diffs.full.comb.Acc$LSD$assignedLSD))
+  testthat::expect_true(all(abs(diffs.full.comb.Acc$LSD$assignedLSD[15:20] - 
+        qt(0.975, attr(diffs.full.comb.Acc, which = "tdf")) * sqrt(2) * 
+          diffs.full.comb.Acc$predictions$standard.error[diffs.full.comb.Acc$predictions$Type == "Control"]) < 1e-05))
   testthat::expect_true(sum(diffs.full.comb.Acc$predictions$LSDwarning, na.rm = TRUE) == 0)
   assRL <-  unlist(lapply(1:3, function(k, diffs, t.value) 
     max(abs(t.value * diffs$sed[k,1:3] - diffs$LSD$assignedLSD[1]), na.rm = TRUE)/diffs$LSD$assignedLSD[1],

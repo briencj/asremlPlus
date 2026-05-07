@@ -1,5 +1,10 @@
 \name{news}
 \title{News for Package asremlPlus}
+\section{asremlPlus Version 4.4.60
+(2028-05-07)}{
+  \itemize{
+  \item Fix a bug in calculating the the notional LSD in using allDifferences.data.frame, recalcLSD.alldiffs, redoErrorIntervals.alldiffs and exploreLSDs.alldiffs when all the predicted values to be compared are constrained to be the same so that there is no comparison amongst them.
+}}
 \section{asremlPlus Version 4.4.59 (2028-05-04)}{
   \itemize{
   \item Add approximate standard errors to the \code{backtransforms} component of an \code{alldiffs.obj} when the predictions have been calculated for a response that was transformed for analysis. 
