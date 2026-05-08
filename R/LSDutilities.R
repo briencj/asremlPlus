@@ -387,7 +387,6 @@ sliceLSDs <- function(alldiffs.obj, by, t.value, LSDstatistic = "mean", LSDaccur
                          if (which.stats == "all")
                          {
                            #stats <- c(0, rep(0, times = 4), stats)
-                           print(alldiffs.obj$predictions$standard.error[krows][1])
                            stats <- c(0, rep(t.value * sqrt(2) * 
                                                alldiffs.obj$predictions$standard.error[krows][1], 
                                     times = 4), stats)

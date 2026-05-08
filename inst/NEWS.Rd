@@ -1,5 +1,10 @@
 \name{news}
 \title{News for Package asremlPlus}
+\section{asremlPlus Version 4.4.61
+(2028-05-08)}{
+  \itemize{
+  \item Remove a stray print command that affected allDifferences.data.frame, recalcLSD.alldiffs, redoErrorIntervals.alldiffs and exploreLSDs.alldiffs.
+}}
 \section{asremlPlus Version 4.4.60
 (2028-05-07)}{
   \itemize{
