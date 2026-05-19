@@ -29,7 +29,8 @@
              and is achieved using \code{\link{sort.alldiffs}}.
 }
 \usage{
-\method{pairdiffsTransform}{alldiffs}(alldiffs.obj, pairs.factor, first.levels, second.levels, 
+\method{pairdiffsTransform}{alldiffs}(alldiffs.obj, pairs.factor, 
+                   first.levels, second.levels, sep.levs.combine = ",",
                    Vmatrix = FALSE, error.intervals = "Confidence", 
                    avsed.tolerance = 0.25, accuracy.threshold = NA, 
                    LSDtype = "overall", LSDsupplied = NULL, LSDby = NULL, 
@@ -45,6 +46,10 @@
                whose predictions are those subtracted from.}
  \item{second.levels}{A \code{\link{character}} string containing the levels of the \code{pairs.factor}
                whose predictions are those that are subtracted.}
+ \item{sep.levs.combine}{A \code{\link{character}} string specifying the separator to use 
+               internally  when combining the levels of the \code{\link{factor}}(s) in 
+               the \code{classify} of the \code{alldiffs.obj}. It should not occur in the 
+               levels of the \code{classify} \code{\link{factor}}(s).}
  \item{Vmatrix}{A \code{\link{logical}} indicating whether the variance matrix of the 
              \code{predictions} will be stored as a component of the \code{\link{alldiffs.object}} 
              that is returned.}

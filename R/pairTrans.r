@@ -13,7 +13,8 @@ FiellerRatioCI <- function(a, b, V, t)
   return(list(pred.ratio=theta, upper.Confidence.limit = UCL, lower.Confidence.limit = LCL))
 }
 
-makeContrastMatrix <- function(preds, indx, pairs.factor, first.level, second.level)
+makeContrastMatrix <- function(preds, indx, pairs.factor, first.level, second.level, 
+                               sep.levs.combine = ",")
 {
   X <- model.matrix(~ Combinations-1, data = preds)
   ## Form the contrast matrix
@@ -78,13 +79,14 @@ makeContrastMatrix <- function(preds, indx, pairs.factor, first.level, second.le
 
   rownames(L) <- gsub(paste0("Combinations"), "", rownames(L), fixed = TRUE)
   lev <- levels(preds[[pairs.factor]])[1]
-  rownames(L) <- gsub(paste0(",",lev), "", rownames(L), fixed = TRUE)
-  rownames(L) <- gsub(paste0(lev,","), "", rownames(L), fixed = TRUE)
+  rownames(L) <- gsub(paste0(sep.levs.combine,lev), "", rownames(L), fixed = TRUE)
+  rownames(L) <- gsub(paste0(lev,sep.levs.combine), "", rownames(L), fixed = TRUE)
   return(L)
 }
 
 ratioTransform.alldiffs <- function(alldiffs.obj, ratio.factor, 
                                     numerator.levels, denominator.levels, 
+                                    sep.levs.combine = ",",
                                     method = "Fieller", alpha = 0.05, 
                                     response = NULL, response.title = NULL, 
                                     tables = "predictions", 
@@ -123,7 +125,15 @@ ratioTransform.alldiffs <- function(alldiffs.obj, ratio.factor,
   facs <- fac.getinTerm(classify, rmfunction = TRUE)
   alldiffs.obj <- renewClassify(alldiffs.obj, newclassify = classify) #make sure in standard order
   tmp <- alldiffs.obj$predictions
-  tmp$Combinations <- dae::fac.combine(as.list(tmp[facs]), combine.levels = TRUE, sep = ",")
+  #Check that sep.levs.combine not in the levels of the classify factors
+  check4sep.levs.combine <-sapply(as.list(tmp[facs]), function(fac, sep)
+  {
+    anysep <-any(grepl(sep, levels(fac), fixed = TRUE))
+  }, sep = sep.levs.combine)
+  if (any(check4sep.levs.combine))
+    stop("Some levels of the classify factors include the sep.levs.combine character")
+  tmp$Combinations <- dae::fac.combine(as.list(tmp[facs]), combine.levels = TRUE, 
+                                       sep = sep.levs.combine)
   if (length(ratio.factor) != 1 | !(ratio.factor %in% facs))
     stop("ratio factor must specify a single factor that is in the classify attribute of the alldiffs object")
   if (!all(c(numerator.levels, denominator.levels) %in% levels(tmp[[ratio.factor]])))
@@ -137,7 +147,7 @@ ratioTransform.alldiffs <- function(alldiffs.obj, ratio.factor,
   #   ratios.dat <- as.data.frame(ratios.dat, row.names = NULL)
   #   names(ratios.dat)[1] <- indx
   # }
-  tmp <- split(tmp, tmp[indx], sep = ",", lex.order = TRUE)
+  tmp <- split(tmp, tmp[indx], sep = sep.levs.combine, lex.order = TRUE)
   Ratios <- lapply(denominator.levels, function(denom.lev,tmp, t) 
   {
     lapply(numerator.levels, function(num.lev, denom.lev, tmp, t) 
@@ -198,7 +208,7 @@ ratioTransform.alldiffs <- function(alldiffs.obj, ratio.factor,
     }, tmp = tmp, denom.lev = denom.lev, t = t)
   }, tmp = tmp, t = t)
   Ratios <- unlist(Ratios, recursive = FALSE)
-  nams <- outer(numerator.levels, denominator.levels, paste, sep = ",")
+  nams <- outer(numerator.levels, denominator.levels, paste, sep = sep.levs.combine)
   names(Ratios) <- nams
   
   
@@ -211,7 +221,7 @@ ratioTransform.alldiffs <- function(alldiffs.obj, ratio.factor,
 }
   
 pairdiffsTransform.alldiffs <- function(alldiffs.obj, pairs.factor, first.levels, second.levels, 
-                                        Vmatrix = FALSE, 
+                                        sep.levs.combine = ",", Vmatrix = FALSE, 
                                         error.intervals = "Confidence", 
                                         avsed.tolerance = 0.25, accuracy.threshold = NA, 
                                         LSDtype = "overall", LSDsupplied = NULL, LSDby = NULL, 
@@ -267,7 +277,15 @@ pairdiffsTransform.alldiffs <- function(alldiffs.obj, pairs.factor, first.levels
   facs <- fac.getinTerm(classify, rmfunction = TRUE)
   alldiffs.obj <- renewClassify(alldiffs.obj, newclassify = classify) #make sure in standard order
   tmp <- alldiffs.obj$predictions
-  tmp$Combinations <- dae::fac.combine(as.list(tmp[facs]), combine.levels = TRUE, sep = ",")
+  #Check that sep.levs.combine not in the levels of the classify factors
+  check4sep.levs.combine <-sapply(as.list(tmp[facs]), function(fac, sep)
+  {
+    anysep <-any(grepl(sep, levels(fac), fixed = TRUE))
+  }, sep = sep.levs.combine)
+  if (any(check4sep.levs.combine))
+    stop("Some levels of the classify factors include the sep.levs.combine character")
+  tmp$Combinations <- dae::fac.combine(as.list(tmp[facs]), combine.levels = TRUE, 
+                                       sep = sep.levs.combine)
   if (length(pairs.factor) != 1 | !(pairs.factor %in% facs))
     stop("pairs factor must specify a single factor that is in the classify attribute of the alldiffs object")
   if (!all(c(first.levels, second.levels) %in% levels(tmp[[pairs.factor]])))
@@ -285,7 +303,9 @@ pairdiffsTransform.alldiffs <- function(alldiffs.obj, pairs.factor, first.levels
         diffs <-NULL
       else
       {
-        L <- makeContrastMatrix(tmp, indx = indx, pairs.factor = pairs.factor, first.lev, second.lev)
+        L <- makeContrastMatrix(tmp, indx = indx, pairs.factor = pairs.factor, 
+                                first.lev, second.lev, 
+                                sep.levs.combine = sep.levs.combine)
 
         #form the factors indexing the pair-difference predictions
         new.facs <- lapply(indx, function(fac, data)
@@ -300,7 +320,8 @@ pairdiffsTransform.alldiffs <- function(alldiffs.obj, pairs.factor, first.levels
           pairs.dat[indx] <- factor(pairs.dat[[indx]], levels = rownames(L))
         }
         else
-          pairs.dat <- dae::fac.uncombine(rownames(L), new.factors = new.facs, sep = ",")
+          pairs.dat <- dae::fac.uncombine(rownames(L), new.factors = new.facs, 
+                                          sep = sep.levs.combine)
         
   
         #Calculate the differences for the current pair
@@ -318,21 +339,7 @@ pairdiffsTransform.alldiffs <- function(alldiffs.obj, pairs.factor, first.levels
                                     avsed.tolerance = avsed.tolerance, accuracy.threshold = accuracy.threshold, 
                                     LSDtype = LSDtype, LSDby = LSDby, LSDsupplied = LSDsupplied, 
                                     LSDstatistic = LSDstatistic, LSDaccuracy = LSDaccuracy)
-        # if (!is.null(diffs$backtransforms))
-        # {
-        #   diffs$backtransforms <- cbind(pairs.dat, diffs$backtransforms)
-        #   diffs$backtransforms <- diffs$backtransforms[, -match("Combination", names(diffs$backtransforms))]
-        #   #Find missing attributes in new alldiffs.obj and add them back in 
-        #   newattr <- attributes(diffs$backtransforms)
-        #   back.attr <- attributes(alldiffs.obj$backtransforms)
-        #   back.attr <- back.attr[names(back.attr)[!(names(back.attr) %in% names(newattr))]]
-        #   if (length(back.attr) > 0)
-        #   {
-        #     newattr <- c(newattr,back.attr)
-        #     attributes(diffs$backtransforms) <- newattr
-        #   }
-        # }
-        
+
         #sort the alldiffs if it was previously sorted
         if (!is.null(sortFactor))
         {
@@ -348,7 +355,7 @@ pairdiffsTransform.alldiffs <- function(alldiffs.obj, pairs.factor, first.levels
     }, tmp = tmp, second.lev = second.lev)
   }, tmp = tmp)
   Diffs <- unlist(Diffs, recursive = FALSE)
-  nams <- outer(first.levels, second.levels, paste, sep = ",")
+  nams <- outer(first.levels, second.levels, paste, sep = sep.levs.combine)
   names(Diffs) <- nams
   invisible(Diffs)                      
 }

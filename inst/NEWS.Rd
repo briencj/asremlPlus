@@ -1,5 +1,10 @@
 \name{news}
 \title{News for Package asremlPlus}
+\section{asremlPlus Version 4.4.62
+(2028-05-19)}{
+  \itemize{
+  \item Add argument \code{sep.levs.combine} to pairdiffsTransform.alldiffs and ratioTransform.alldiffs.
+}}
 \section{asremlPlus Version 4.4.61
 (2028-05-08)}{
   \itemize{

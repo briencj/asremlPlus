@@ -2323,8 +2323,8 @@ test_that("addBacktransforms_WaterRunoff_asreml42", {
 })
 
 
-cat("#### Test for ratioTansforms on system data with asreml42\n")
-test_that("ratioTransforms_SystemData_asreml42", {
+cat("#### Test for pairs_ratioTansforms on system data with asreml42\n")
+test_that("pairs_ratioTransforms_SystemData_asreml42", {
   skip_if_not_installed("asreml")
   skip_on_cran()
   library(asremlPlus)
@@ -2342,6 +2342,36 @@ test_that("ratioTransforms_SystemData_asreml42", {
   testthat::expect_true(all(names(Preds.ratio.RGR$`Salt,Control`)[5:6] == c("upper.Confidence.limit",
                                                                             "lower.Confidence.limit")))
 
+  #Combine two factors and test 
+  diffs.RGR$predictions <- within(diffs.RGR$predictions, 
+                                  Temp_Geno <- fac.combine(diffs.RGR$predictions[c("Temperature",
+                                                                                   "Genotype")],
+                                                         combine.levels = TRUE))
+  testthat::expect_all_true(c("Cool,1","Cool,2","Cool,3","Cool,4","Cool,5",  
+                              "Cool,6","Cool,7","Cool,8","Cool,9","Cool,10",
+                              "Hot,1","Hot,2","Hot,3","Hot,4","Hot,5",
+                              "Hot,6","Hot,7","Hot,8","Hot,9","Hot,10") == 
+                              levels(diffs.RGR$predictions$Temp_Geno))
+  diffs.RGR <- renewClassify(diffs.RGR, newclassify = c("Temp_Geno:Salinity"))
+  testthat::expect_error(Preds.ratio.ClUp <- 
+                           ratioTransform(diffs.RGR, 
+                                          ratio.factor = "Salinity", 
+                                          numerator.levels = "Salt",
+                                          denominator.levels = "Control"),
+                         regexp = "Some levels of the classify factors include the sep.levs.combine character")
+  
+  Preds.ratio.RGR <- ratioTransform.alldiffs(alldiffs.obj = diffs.RGR,
+                                             ratio.factor = "Salinity", 
+                                             numerator.levels = "Salt",
+                                             denominator.levels = "Control",
+                                             sep.levs.combine = "_")
+  testthat::expect_true(all(abs(Preds.ratio.RGR$`Salt,Control`$predicted.value[1:3] - 
+                                  c(0.7330241,0.9098487,0.9513331)) < 1e-05))
+  testthat::expect_true(all(Preds.ratio.RGR$`Salt_Control`$Temperature[1:3] == "Cool"))
+  testthat::expect_true(all(Preds.ratio.RGR$`Salt_Control`$Genotype[1:3] == as.character(1:3)))
+  testthat::expect_true(all(names(Preds.ratio.RGR$`Salt_Control`)[4:5] == c("upper.Confidence.limit",
+                                                                            "lower.Confidence.limit")))
+  
   #Because diffs.ClUp was built using asremplus v4.2-xx, it needs to be renewed for the new attributes
   #For testing see 
   diffs.new <- redoErrorIntervals(diffs.ClUp, error.intervals = "half", 
@@ -2395,6 +2425,49 @@ test_that("ratioTransforms_SystemData_asreml42", {
                               names(attributes(Preds.ratio.ClUp$`Hot,Cool`$backtransforms))))
   testthat::expect_true(is.null(attr(Preds.ratio.ClUp$`Hot,Cool`$backtransforms, which = "LSDvalues")))
   
+  #Combine two factors and test 
+  diffs.new$predictions <- within(diffs.new$predictions, 
+                                  Na_Geno <- fac.combine(diffs.new$predictions[c("Salinity", 
+                                                                                 "Genotype")],
+                                                         combine.levels = TRUE))
+  testthat::expect_all_true(c("Control,1","Control,2","Control,3","Control,4","Control,5",
+                              "Control,6","Control,7","Control,8","Control,9","Control,10", 
+                              "Salt,1","Salt,2","Salt,3","Salt,4","Salt,5","Salt,6","Salt,7",
+                              "Salt,8","Salt,9","Salt,10") == 
+                              levels(diffs.new$predictions$Na_Geno))
+  diffs.new <- renewClassify(diffs.new, newclassify = c("Na_Geno:Temperature"))
+  testthat::expect_error(Preds.ratio.ClUp <- 
+                           pairdiffsTransform(diffs.new, 
+                                              pairs.factor = "Temperature", 
+                                              first.levels = "Hot",
+                                              second.levels = "Cool",
+                                              error.intervals = "halfLeast",
+                                              LSDtype = "factor", LSDby = "Genotype",
+                                              tables = "backtrans"),
+                         regexp = "Some levels of the classify factors include the sep.levs.combine character")
+  Preds.ratio.ClUp <- pairdiffsTransform(diffs.new, 
+                                         pairs.factor = "Temperature", 
+                                         first.levels = "Hot",
+                                         second.levels = "Cool",
+                                         sep.levs.combine = "_",
+                                         error.intervals = "halfLeast",
+                                        # LSDtype = "factor", LSDby = "Genotype",
+                                         tables = "backtrans")
+  testthat::expect_true(all(abs(Preds.ratio.ClUp$`Hot,Cool`$predictions$predicted.value[1:3] - 
+                                  c(-0.05752483,0.12987766,0.06916038)) < 1e-05))
+  testthat::expect_true(all(Preds.ratio.ClUp$`Hot,Cool`$predictions$Salinity == rep(c("Control","Salt"), each = 10)))
+  testthat::expect_true(all(Preds.ratio.ClUp$`Hot,Cool`$predictions$Genotype == rep(as.character(1:10, times = 2))))
+  testthat::expect_true(all(names(Preds.ratio.ClUp$`Hot,Cool`$predictions)[5:6] == 
+                              c("upper.halfLeastSignificant.limit", "lower.halfLeastSignificant.limit")))
+  testthat::expect_true(all(c("tdf", "alpha", "LSDtype", "LSDstatistic") %in% 
+                              names(attributes(Preds.ratio.ClUp$`Hot_Cool`))))
+  testthat::expect_true(all(attr(Preds.ratio.ClUp$`Hot_Cool`, which = "LSDtype") == "overall"))
+  testthat::expect_true(all(attr(Preds.ratio.ClUp$`Hot,Cool`, which = "LSDstatistic") == "mean"))
+  testthat::expect_true(all(c("LSDtype", "LSDstatistic", "LSDvalues") %in% 
+                              names(attributes(Preds.ratio.ClUp$`Hot_Cool`$predictions))))
+  testthat::expect_true(all(c("LSDtype", "LSDstatistic") %in% 
+                              names(attributes(Preds.ratio.ClUp$`Hot_Cool`$backtransforms))))
+  testthat::expect_true(is.null(attr(Preds.ratio.ClUp$`Hot_Cool`$backtransforms, which = "LSDvalues")))
 })
 
 cat("#### Test for ratioTansforms on the Oats data with asreml42\n")

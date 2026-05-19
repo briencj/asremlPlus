@@ -15,6 +15,7 @@
 \usage{
 \method{ratioTransform}{alldiffs}(alldiffs.obj, ratio.factor, 
                numerator.levels, denominator.levels, 
+               sep.levs.combine = ",",
                method = "Fieller", alpha = 0.05,  
                response = NULL, response.title = NULL, 
                tables = "predictions", ...)
@@ -27,6 +28,10 @@
                of \code{ratio.factor} to be used as numerators of the ratio.}
  \item{denominator.levels}{A \code{\link{character}} string containing the levels 
                of \code{ratio.factor} to be used as denominators of the ratio.}
+ \item{sep.levs.combine}{A \code{\link{character}} string specifying the separator to use 
+               internally  when combining the levels of the \code{\link{factor}}(s) in 
+               the \code{classify} of the \code{alldiffs.obj}. It should not occur in the 
+               levels of the \code{classify} \code{\link{factor}}(s).}
  \item{method}{A \code{\link{character}} string specifying the method to use in calculating 
                the ratios and their \code{error.intervals}. At present only \code{Fieller} 
                is available. For the \code{Fieller} \code{method}, ratios of predictions 
