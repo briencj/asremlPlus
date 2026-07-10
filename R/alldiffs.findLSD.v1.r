@@ -1,4 +1,4 @@
-#Function to explore the LSD values
+#Function to find LSD values with the minimum errors
 findLSDminerrors.alldiffs <- function(alldiffs.obj, 
                                       LSDtype = "overall", LSDby = NULL, 
                                       alpha = 0.05, 

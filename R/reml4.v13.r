@@ -1114,10 +1114,12 @@ setGRparam.call <- function(call, set.terms = NULL, ignore.suffices = TRUE,
   asreml.new.obj <- tryCatchLog(
     eval(call, sys.parent()),
     error = function(e) {print("Analysis continued"); NULL}, 
-    include.full.call.stack = FALSE, include.compact.call.stack = FALSE,
+    include.full.call.stack = FALSE, include.compact.call.stack = trace,
     finally = within(asreml.obj, converge <- FALSE))
-  asreml.new.obj$call <- call
   class(asreml.obj) <- "asreml" #return to single class
+  # if (!all(is.null(asreml.obj)))
+  #   asreml.new.obj <- asreml.obj
+  asreml.new.obj$call <- call
   
   #Check if updating and all Residual variance parameters are either F, B or S, 
   # and not equal to 1 (as in spatial models with no nugget variance)
@@ -1522,8 +1524,8 @@ findboundary.asreml <- function(asreml.obj, asr4, asr4.2)
                                      action = "Boundary")
     mod.ran <- as.formula(paste("~ . - ", term, sep=""))
     # mod.ran <- atLevelsMatch(as.formula(paste("~ . - ", term)), as.formula(languageEl(call, which = "random")), call)
-    asreml.obj <- newfit.asreml(asreml.obj, random. = mod.ran, trace = trace, 
-                                update = update, set.terms = set.terms, 
+    asreml.obj <- newfit.asreml(asreml.obj, random. = mod.ran, 
+                                update = update, trace = trace, set.terms = set.terms, 
                                 ignore.suffices = ignore.suffices, 
                                 bounds = bounds, 
                                 initial.values = initial.values, ...)
@@ -1551,7 +1553,7 @@ findboundary.asreml <- function(asreml.obj, asr4, asr4.2)
     {  
       fix.terms <- rownames(allvcomp)[grepl("^F", allvcomp$bound)]
       #See if newfit removes any fixed terms
-      new.asreml.obj <- newfit(asreml.obj, update = FALSE)
+      new.asreml.obj <- newfit(asreml.obj, update = FALSE, trace = trace)
       new.boundinfo <-  findboundary.asreml(new.asreml.obj, asr4 = asr4, asr4.2 = asr4.2)
       new.allvcomp <- new.boundinfo$allvcomp
       

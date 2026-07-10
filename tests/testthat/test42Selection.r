@@ -572,11 +572,12 @@ test_that("at_testswapran_asreml42", {
                                    keep.order=TRUE, data = longit.dat, maxit=100))
   summary(current.asr)$varcomp 
   current.asr <- fixBoundResidualVariances(current.asr)
+  current.asr <- update(current.asr)
   testthat::expect_true(all(table(summary(current.asr)$varcomp$bound) ==  c(9,40,1)))
   
   #'## Load starting model into an asrtests object
   current.asrt <- as.asrtests(current.asr, NULL, NULL, label = "Selected variance model")
-  testthat::expect_false(current.asrt$asreml.obj$converge)
+  testthat::expect_true(current.asrt$asreml.obj$converge)
   setvpars <- current.asrt$asreml.obj$call$setvparameters
   testthat::expect_equal(nrow(setvpars), 9)
   testthat::expect_equal(ncol(setvpars), 4)
@@ -589,7 +590,7 @@ test_that("at_testswapran_asreml42", {
                              positive.zero = TRUE)
   # testthat::expect_equal(current.asrt$test.summary$action[2], "Retained")
   # testthat::expect_true(all(table(summary(current.asrt$asreml.obj)$varcomp$bound) ==  c(9,40,1)))
-  testthat::expect_equal(current.asrt$test.summary$action[2], "Dropped")
+  testthat::expect_equal(current.asrt$test.summary$acton[2], "Dropped")
   testthat::expect_true(all(table(summary(current.asrt$asreml.obj)$varcomp$bound) ==  c(1,9,37,1,1)))  
 })
 

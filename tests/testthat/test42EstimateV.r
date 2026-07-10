@@ -473,3 +473,134 @@ test_that("corr_random_barley_asreml42", {
   testthat::expect_true(all.equal(V.g, G, check.attributes = FALSE))
 })
 
+cat("#### Test estimateV rr functions for str term with asreml42\n")
+test_that("estimateV_str_asreml42", {
+  skip_if_not_installed("asreml")
+  skip_on_cran()
+  library(dae)
+  library(asreml)
+  library(asremlPlus)
+  
+  #Function too replace design matrix colnames when computing G
+  replaceColnames <- function(des)
+  { 
+    colnam <- colnames(des)
+    colnam <- strsplit(colnam, split = ":")
+    colnam <- lapply(colnam, strsplit, split = "_")
+    colnam <- lapply(colnam, 
+                     function(nam) 
+                       paste(sapply(nam, function(fac) fac[1]), collapse = ":"))
+    colnames(des) <- colnam
+    return(des)
+  }
+  
+  set.seed(123)
+  
+  ## Simulate data
+  n_group   <- 80
+  n_year    <- 4
+  n_country <- 5
+  n_rep     <- 3
+  
+  dat <- expand.grid(
+    group   = factor(seq_len(n_group)),
+    Year    = factor(seq_len(n_year)),
+    Country = factor(seq_len(n_country)),
+    rep     = seq_len(n_rep)
+  )
+  
+  n <- nrow(dat)
+  
+  dat$A  <- rnorm(n)
+  dat$B  <- rnorm(n)
+  dat$x0 <- 0
+  dat$wt <- runif(n, 0.5, 2)
+  
+  ## Random effects used to generate y
+  u_group   <- rnorm(n_group,   sd = 0.7)
+  u_year    <- rnorm(n_year,    sd = 0.4)
+  u_country <- rnorm(n_country, sd = 0.5)
+  u_yc      <- matrix(rnorm(n_year * n_country, sd = 0.3),
+                      nrow = n_year, ncol = n_country)
+  
+  ## Group-specific random intercept/slope effects with rank-1-ish structure
+  lambda <- c(0.8, -0.5, 0.6)  # for A:group, B:group, group
+  score  <- rnorm(n_group)
+  E      <- matrix(rnorm(n_group * 3, sd = 0.15), ncol = 3)
+  
+  coef_mat <- outer(score, lambda) + E
+  colnames(coef_mat) <- c("A", "B", "int")
+  
+  g <- as.integer(dat$group)
+  yr <- as.integer(dat$Year)
+  ct <- as.integer(dat$Country)
+  
+  eta <- 2 +
+    coef_mat[g, "int"] +
+    coef_mat[g, "A"] * dat$A +
+    coef_mat[g, "B"] * dat$B +
+    u_year[yr] +
+    u_country[ct] +
+    u_yc[cbind(yr, ct)]
+  
+  dat$y <- eta + rnorm(n, sd = 1 / sqrt(dat$wt))
+  
+  dat$rep <- NULL
+  str(dat)
+  
+  
+  library(asreml)
+  library(asremlPlus)
+  
+  asreml.options(design = TRUE)
+  
+  # model with specification "k=1"
+  asreml.obj <- do.call(asreml, 
+                        list(
+                          data   = dat,
+                          fixed  = y ~ 1,
+                          random = ~ str(~A:group + B:group + group + x0:group,
+                                         ~ rr(3, k=1):id(group)) +
+                            Year + Country + Year:Country,
+                          weights = "wt",
+                          wald = list(denDF = "algebraic"),
+                          family = asr_gaussian(dispersion = 1),
+                          na.action = na.method(x = "include", y = "include")
+                        ))
+  
+  #Test rr
+  V <- estimateV(asreml.obj, which.matrix = "V")
+  G <- estimateV(asreml.obj, which.matrix = "G")
+  summary(asreml.obj)$varcomp
+  ranterms <- names(asreml.obj$G.param)
+  V.g <- matrix(0, nrow = n, ncol = n)
+  design <- asreml.obj$design
+  design <- replaceColnames(design)
+  for (term in ranterms[2:4])
+  {
+    cols <- colnames(design) == term
+    V.g <- V.g + asreml.obj$vparameters[term] * (design[, cols] %*% t(as.matrix(design[, cols])))
+  }
+  term <- ranterms[1]
+  str.terms <- strsplit(term, split = "+", fixed = TRUE)[[1]]
+  Z <- NULL
+  for (str.term in str.terms[1:3])
+  {  
+    cols <- colnames(design) == str.term
+    z <- design[, cols]
+    if (!all(is.null(z)))
+      Z <- cbind(Z, z)
+  }
+  Z <- as.matrix(Z)
+  vp <- asreml.obj$vparameters[names(asreml.obj$vparameters)[
+    grep(term, names(asreml.obj$vparameters), fixed = TRUE)]]
+  loads <- matrix(vp[grepl("!fa", names(vp), fixed = TRUE)], ncol = 3)
+  Gfa <- t(loads) %*% loads
+  V.g <- V.g + (Z %*% kronecker(Gfa, dae::mat.I(80)) %*% t(Z))
+  V.g <- asreml.obj$sigma2 * as.matrix(V.g)
+  testthat::expect_true(all(abs(G - V.g) < 1e-06))
+  V.y <- V.g + asreml.obj$sigma2 * mat.I(n)
+  testthat::expect_true(all(abs(V - V.y) < 1e-06))
+  
+  asreml.options(design = FALSE) 
+})

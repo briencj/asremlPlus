@@ -76,7 +76,7 @@ test_that("Wheat_asreml42", {
   #Produce variogram and variogram faces plot (Stefanaova et al, 2009)
   if (requireNamespace("lattice"))
   {
-    plot.varioGram(varioGram.asreml(current.asr))
+    plot(varioGram(current.asr))
   }
   V <- estimateV(current.asr)
   faces <- variofaces(current.asr, V=V, maxit=50, units="addtores",

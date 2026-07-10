@@ -1,5 +1,11 @@
 \name{news}
 \title{News for Package asremlPlus}
+\section{asremlPlus Version 4.4.63
+(2028-07-10)}{
+  \itemize{
+  \item Modify the function estimateV to deal with a term involving \code{str} whose \code{vmodel} argument is either a \code{fa} or \code{rr} model.
+  Add the function pairwiseSignificance.alldiffs that adds letters to the predictions frame that indicate the differences between all pairs of predictions. 
+}}
 \section{asremlPlus Version 4.4.62
 (2028-05-19)}{
   \itemize{

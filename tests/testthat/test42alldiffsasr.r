@@ -814,6 +814,10 @@ test_that("LSDBarley", {
                                    function(x) all(is.na(x[-1])) & x[1] == 0)))
   testthat::expect_true(all(sapply(lsd1$per.pred.accuracy, function(x) all(is.na(x)))))
   testthat::expect_true(all(abs(lsd1$LSD[upper.tri(lsd1$LSD)] - 67.97175 < 1e-05)))
+  
+  #Four predictions that are all equal gives a for all letters  
+  new.alldiffs.obj <- addPairwiseLetters(new.alldiffs.obj)
+  testthat::expect_all_true(new.alldiffs.obj$predictions$pairwiseSignif == "a")
 })
 
 
@@ -1115,6 +1119,12 @@ test_that("LSDWater4", {
   testthat::expect_true(all(grepl("Control", rownames(lsd$accuracy[15:20,]), fixed = TRUE)))
   testthat::expect_true(all(lsd$falsepos[15:20,"c"] == 0))
   testthat::expect_true(all(is.na(lsd$falseneg[15:20,-1])))
+  
+  #Test for when there is only one prediction for a within combination
+  diffs.full.comb.Acc <- addPairwiseLetters(diffs.full.comb.Acc, within = c("Type", "Sources"))
+  testthat::expect_all_true(is.na(diffs.full.comb.Acc$predictions[
+    diffs.full.comb.Acc$predictions$Type == "Control", "pairwiseSignif"]))
+  
   
   #Test of supplied and accuracy.threshold, when there are some single prediction combinations
   LSDsupp <- rep(0.3, 20)
@@ -1433,7 +1443,45 @@ test_that("exploreLSDOatsr4", {
   testthat::expect_equal(length(LSDs$plots),1)
   testthat::expect_true(all(abs(na.omit(LSDs$LSDs$LSDs) - 21.64642) < 1e-05 | 
                               abs(na.omit(LSDs$LSDs$LSDs) - 17.11869) < 1e-05))
-})  
+}) 
+
+cat("#### Test for addPairwiseLetters on WaterRunoff with asreml42\n")
+test_that("pairwiseLettersWater4", {
+  skip_if_not_installed("asreml")
+  skip_on_cran()
+  library(asreml)
+  library(asremlPlus)
+  library(dae)
+  data(WaterRunoff.dat)
+  
+  #Analyse pH  
+  m1.asr <- asreml(fixed = pH ~ Benches + (Sources * (Type + Species)), 
+                   random = ~ Benches:MainPlots,
+                   keep.order=TRUE, data= WaterRunoff.dat)
+  current.asrt <- as.asrtests(m1.asr, NULL, NULL)
+  testthat::expect_equal(length(m1.asr$vparameters),2)
+  current.asrt <- as.asrtests(m1.asr)
+  current.asrt <- rmboundary(current.asrt)
+  current.asr <- current.asrt$asreml.obj
+  
+  TS.diffs <- predictPlus(classify = "Sources:Type", 
+                          asreml.obj = current.asr, 
+                          wald.tab = current.asrt$wald.tab, 
+                          present = c("Sources", "Type", "Species"),
+                          error.intervals = "StandardError",
+                          tables = "none")
+  TS.diffs <- addPairwiseLetters(TS.diffs)
+  testthat::expect_all_true(TS.diffs$predictions$pairwiseSignif == 
+                              c("bcd","efghi","a","cdefg","ghij","bcdefgh","bcde",
+                                "ghij","ab","cdefgh","fghij","bcdef","defgh","fghij",
+                                "ij","abcdefgh","bcde","hij","j","abc"))
+
+  #Test within
+  TS.diffs <- renewClassify(TS.diffs, newclassify = c("Type:Sources"))
+  TS.diffs <- addPairwiseLetters(TS.diffs, within = "Type")
+  testthat::expect_all_true(TS.diffs$predictions$pairwiseSignif == 
+                              c(rep("a", 15), c("b","ab","b","ab","ab")))
+})
 
 cat("#### Test for sort.alldiffs on WaterRunoff with asreml42\n")
 test_that("sort.alldiffsWater4", {

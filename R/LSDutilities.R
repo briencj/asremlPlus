@@ -58,6 +58,26 @@ fac.LSDcombs.alldiffs <- function(alldiffs.obj, by)
   return(fac.comb)
 }
 
+#Function to make a combined factor of the LSDby factor
+#Convert any non-factors and form levels combination for which a LSDs are required
+fac.Predscombs.predictions.frame <- function(preds, by)
+{
+  if (!is.character(by))
+    stop("by is not a character")
+  fac.list <- as.list(preds[by])
+  fac.list <- lapply(fac.list, 
+                     function(x) 
+                     {
+                       if (!inherits(x, "factor"))
+                         x <- factor(x)
+                       return(x)
+                     })
+  fac.comb <- fac.combine(fac.list, combine.levels = TRUE)
+  if (length(fac.comb) != nrow(preds))
+    stop("Variable(s) in by argument are not the same length as the number of rows in the predcictions.frame")
+  return(fac.comb)
+}
+
 #Check LSDsupplied and make sure in format for inclusion as an LSD component
 addLSDsupplied <- function(alldiffs.obj, LSDsupplied, LSDby, denom.df, alpha)
 {

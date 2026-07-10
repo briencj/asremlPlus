@@ -135,6 +135,10 @@ Note that many of the function below are S3 methods so that the suffix can be om
 \code{\link{addBacktransforms.alldiffs}}
        \tab Adds or recalculates the backtransforms component of an \cr 
        \tab \code{\link{alldiffs.object}}. \cr
+\code{\link{addPairwiseLetters.alldiffs}}
+       \tab Adds a column of letters to a predictions.frame,  \cr
+       \tab there being a unique letter for each set of       \cr
+       \tab predictions that are not significantly different. \cr
 \code{\link{allDifferences.data.frame}}
        \tab Using supplied predictions and standard errors of pairwise \cr
        \tab differences or the variance matrix of predictions, forms \cr

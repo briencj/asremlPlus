@@ -33,6 +33,7 @@ setmbfenv <- function(asreml.obj, ...) UseMethod("setmbfenv")
 variofaces <- function(asreml.obj, ...) UseMethod("variofaces")
 
 addBacktransforms <- function(alldiffs.obj, ...) UseMethod("addBacktransforms")
+addPairwiseLetters <- function(alldiffs.obj, ...) UseMethod("addPairwiseLetters")
 exploreLSDs <- function(alldiffs.obj, ...) UseMethod("exploreLSDs")
 findLSDminerrors <- function(alldiffs.obj, ...) UseMethod("findLSDminerrors")
 linTransform <- function(alldiffs.obj, ...) UseMethod("linTransform")

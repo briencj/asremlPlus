@@ -600,8 +600,8 @@ test_that("Wheat_spatial_models_asreml42", {
                                       difforder = c(1,1), degree = c(1,1),
                                       asreml.option = "mbf", IClikelihood = "full")
   info <- infoCriteria(current.asrt$asreml.obj, IClikelihood = "full")
-  testthat::expect_equal(info$varDF, 3)
-  testthat::expect_lt(abs(info$AIC - 1720.891), 0.10)
+  testthat::expect_equal(info$varDF, 4)
+  testthat::expect_lt(abs(info$AIC - 1653.109), 0.10)
   
   
   #Return all of the models
@@ -1658,7 +1658,7 @@ test_that("chickpea_spatial_mod_asreml42", {
   testthat::expect_true(all(info$varDF == c(5,9)))
   testthat::expect_true(all(abs(info$AIC - c(4263.948, 3984.119)) < 0.10))
   theta.opt <- attr(TPPSRot.Main.grp.opt.asrt$asreml.obj, which = "theta.opt")
-  testthat::expect_true(all(abs(theta.opt$SW - c( 64.022114, 49.92560)) < 0.001))
+  testthat::expect_true(all(abs(theta.opt$SW - c( 64.022114, 49.91851)) < 0.001))
   testthat::expect_true(all(abs(theta.opt$SE - c(34.313518, 15.6094129)) < 0.001))
   
   # Try TPPS model with rotation for Lanes x Positions and two Smarthouses

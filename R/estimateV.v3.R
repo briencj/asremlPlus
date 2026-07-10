@@ -38,7 +38,9 @@
   call <- asreml.obj$call
   if (!("data" %in% names(call)))
     stop("estimateV.asreml assumes that data has been set in call to asreml")
-  dat <- eval(call$data)
+  dat <- call$data
+  if (is.symbol(dat))
+    dat <- eval(asreml.obj$call$data)
   n <- nrow(dat)
   V <- matrix(0, nrow = n, ncol = n)
   incomplete <- NULL
@@ -97,11 +99,11 @@
       {
         vpc <- getVpars(asreml.obj, asr4.2 = asr4.2)$vpc
         if (!is.null(bound.exclusions) && term %in% sapply(names(vpc), rmTermDescription))
-            {
-              vpc.term <- vpc[sapply(names(vpc), rmTermDescription) == term]
-              bound <- (all(vpc.term %in% bound.exclusions))
-              if (bound)
-                warning(paste(term, "not included in V because it is bound"))
+        {
+          vpc.term <- vpc[sapply(names(vpc), rmTermDescription) == term]
+          bound <- (all(vpc.term %in% bound.exclusions))
+          if (bound)
+            warning(paste(term, "not included in V because it is bound"))
         }
       } else
       {
@@ -112,13 +114,13 @@
       {
         #Is current term units or special free (idv for variance and id for all other components)?
         if (term == "units" || !grepl("at\\(", term) && 
-                               (G.param[[term]]$variance$model == "idv" && 
-                                (all(unlist(lapply(G.param[[term]][2:length(G.param[[term]])], 
-                                                   function(x)
-                                                   {
-                                                     is.id <- (x$model == "id" )
-                                                     return(is.id)
-                                                   }))))))
+            (G.param[[term]]$variance$model == "idv" && 
+             (all(unlist(lapply(G.param[[term]][2:length(G.param[[term]])], 
+                                function(x)
+                                {
+                                  is.id <- (x$model == "id" )
+                                  return(is.id)
+                                }))))))
         {
           if (term == "units")
           {
@@ -135,9 +137,12 @@
           cond.fac <- ""
           #Get G matrix
           if (G.param[[term]]$variance$model == "idv")
+          { 
             G <- G.param[[term]]$variance$initial
-          else
+          } else
+          { 
             G <- 1
+          }
           #Does this term include fa or rr
           has.fa <- ((any(unlist(lapply(G.param[[term]][2:length(G.param[[term]])], 
                                         function(x)
@@ -166,9 +171,10 @@
               var.levs <- G.param[[term]][[var]]$levels
               if (any(!is.na(G.param[[term]][[var]]$initial)))
               {
-                vp.levs <- as.data.frame(do.call(rbind,strsplit(names(G.param[[term]][[var]]$initial), 
-                                                                split = "!", 
-                                                                fixed = TRUE)), 
+                vp.levs <- as.data.frame(do.call(rbind, 
+                                                 strsplit(names(G.param[[term]][[var]]$initial), 
+                                                          split = "!", 
+                                                          fixed = TRUE)), 
                                          stringsAsFactors = FALSE)
                 vp.levs <- vp.levs[vp.levs$V3 == "var", 2]
               } else
@@ -205,12 +211,12 @@
           #                          return(need.design)
           #                        })))))
           # {
-            #Check whether have the design matrix
-            if (is.null(asreml.obj$design))
-            {
-              asreml::asreml.options(design = TRUE)
-              asreml.obj <- asreml::update.asreml(asreml.obj)
-            }
+          #Check whether have the design matrix
+          if (is.null(asreml.obj$design))
+          {
+            asreml::asreml.options(design = TRUE)
+            asreml.obj <- asreml::update.asreml(asreml.obj)
+          }
           if (has.fa)
           {
             #Get Z for fa, removing columns for Comp effects
@@ -222,7 +228,33 @@
               cols <- c(1:length(full.levs))[match(req.levs, full.levs)]
               cols <- paste(term, cols, sep = "")
             }
-            Z <- asreml.obj$design[,match(cols, colnames(asreml.obj$design))]
+            if (grepl("+", term, fixed = TRUE)) #involves an str term?
+            {
+              str.terms <- strsplit(term, split = "+", fixed = TRUE)[[1]]
+              if (asr4.2)
+              {
+                Z <- NULL
+                str.terms1 <- NULL
+                for (str.term in str.terms)
+                {  
+                  z <- getTermDesignMatrix(str.term, asreml.obj)
+                  if (!all(is.null(z)))
+                  { 
+                    Z <- cbind(Z, z)
+                    str.terms1 <- c(str.term, str.terms1)
+                  } 
+                }
+                str.terms <- str.terms1
+              } else
+              {
+                cols <- NULL
+                for (str.term in str.terms)
+                  cols <- c(cols, paste(str.term, 1:asreml.obj$noeff[str.term], sep = ""))
+                cols <- match(cols, colnames(asreml.obj$design))
+                Z <- asreml.obj$design[,cols]
+              }
+            } else #not a problem term
+              Z <- asreml.obj$design[,match(cols, colnames(asreml.obj$design))]
           } else # not fa
           {
             if (grepl("+", term, fixed = TRUE)) #involves an str term?
@@ -231,12 +263,17 @@
               if (asr4.2)
               {
                 Z <- NULL
+                str.terms1 <- NULL
                 for (str.term in str.terms)
                 {  
                   z <- getTermDesignMatrix(str.term, asreml.obj)
                   if (!all(is.null(z)))
+                  { 
                     Z <- cbind(Z, z)
+                    str.terms1 <- c(str.term, str.terms1)
+                  } 
                 }
+                str.terms <- str.terms1
               } else
               {
                 cols <- NULL
@@ -265,32 +302,6 @@
             if (!all(is.null(Z)))
               V <- V + Z %*% G %*% t(Z)
           }
-          # } else #not a special needing the design matrix
-          # {
-          #   if (grepl("+", term, fixed = TRUE)) #involves an str term?
-          #   {
-          #     str.terms <- strsplit(term, split = "+", fixed = TRUE)[[1]]
-          #     if (asr4.2)
-          #     {
-          #       Z <- NULL
-          #       for (str.term in str.terms)
-          #         Z <- cbind(Z, getTermDesignMatrix(str.term, asreml.obj))
-          #     } else
-          #     {
-          #       cols <- NULL
-          #       for (str.term in str.terms)
-          #         cols <- c(cols, paste(str.term, 1:asreml.obj$noeff[str.term], sep = ""))
-          #       cols <- match(cols, colnames(asreml.obj$design))
-          #       Z <- asreml.obj$design[,cols]
-          #     }
-          #     print(G)
-          #     V <- V + Z %*% G %*% t(as.matrix(Z))
-          #   } else #not a problem term
-          #   {
-          #     Z <- model.matrix(as.formula(paste("~ -1 +", term)), data = dat)
-          #     V <- V + Z %*% G %*% t(Z)
-          #   }
-          # }
         } 
       }
     }
@@ -422,8 +433,8 @@ checkSpecial <- function(var, term, G.param, specials, residual = FALSE)
   if (kspecial == "diag")
     kspecial <- "idh"
   if (kspecial == "dev" | kspecial == "grp")
-#  if (kspecial == "grp")
-      kspecial <- "idv"
+    #  if (kspecial == "grp")
+    kspecial <- "idv"
   nfinal <- nchar(kspecial)
   final <- substr(kspecial, start = nfinal, stop = nfinal)
   # if (final == "v" & kspecial == "dev")
@@ -433,10 +444,10 @@ checkSpecial <- function(var, term, G.param, specials, residual = FALSE)
   # }
   # else
   # {  
-    if ((final == "v" | final == "h") & kspecial != "sph" & kspecial != "dev")
-      cortype <- substr(kspecial, start = 1, stop = nfinal-1)
-    else
-      cortype <- kspecial
+  if ((final == "v" | final == "h") & kspecial != "sph" & kspecial != "dev")
+    cortype <- substr(kspecial, start = 1, stop = nfinal-1)
+  else
+    cortype <- kspecial
   # }
   if (!(cortype %in% specials))
   {
@@ -447,8 +458,8 @@ checkSpecial <- function(var, term, G.param, specials, residual = FALSE)
                " in the ",formula, " formula.", sep = ""))
     
   }
- 
-   return(list(cortype = cortype, final = final))
+  
+  return(list(cortype = cortype, final = final))
 }
 
 chkvpnames <- function(vpnames, var, term, G.param) #any order
@@ -468,7 +479,7 @@ chkvpnames <- function(vpnames, var, term, G.param) #any order
   #Form correlation matrix
   G <- switch(kspecial$cortype,
               id = G.id(var = var, term = term, G.param = G.param, cond.fac = cond.fac, strterm = strterm),
-#              dev = G.id(var = var, term = term, G.param = G.param, cond.fac = cond.fac, strterm = strterm),
+              #              dev = G.id(var = var, term = term, G.param = G.param, cond.fac = cond.fac, strterm = strterm),
               ar1 = G.ar1(var = var, term = term, G.param = G.param, cond.fac = cond.fac, strterm = strterm),
               ar2 = G.ar2(var = var, term = term, G.param = G.param, cond.fac = cond.fac, strterm = strterm),
               ar3 = G.ar3(var = var, term = term, G.param = G.param, cond.fac = cond.fac, strterm = strterm),
@@ -788,7 +799,7 @@ G.rr <- function(var, term, G.param, cond.fac = "", strterm = FALSE)
   if (nlevs*(k+1) != length(est))
     stop(paste("Number of levels of ",var,
                " and the number of variance parameters do not agree", sep = ""))
-  loadings <- matrix(est[grepl("!fa", names(est))], ncol = 2)
+  loadings <- matrix(est[grepl("!fa", names(est))], ncol = k)
   G <- loadings %*% t(loadings)
   return(G)
 }

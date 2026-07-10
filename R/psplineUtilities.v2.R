@@ -324,7 +324,7 @@ getRotationThetas <- function(init.asrt, data, mat, sections,
                               rotateX, ngridangles, which.rotacriterion, nrotacores, 
                               asreml.opt, maxit, 
                               allow.unconverged, allow.fixedcorrelation,
-                              checkboundaryonly, update, 
+                              checkboundaryonly, update, trace = FALSE, 
                               IClikelihood, which.IC)
 {
   if (!rotateX) 
@@ -398,7 +398,7 @@ getRotationThetas <- function(init.asrt, data, mat, sections,
                                       allow.unconverged = TRUE, 
                                       allow.fixedcorrelation = TRUE,
                                       checkboundaryonly = TRUE, 
-                                      update = update, 
+                                      update = update, trace = trace, 
                                       maxit = maxit, 
                                       IClikelihood = IClikelihood, 
                                       which.IC = which.IC))
@@ -439,7 +439,7 @@ getRotationThetas <- function(init.asrt, data, mat, sections,
                                       allow.unconverged = TRUE, 
                                       allow.fixedcorrelation = TRUE,
                                       checkboundaryonly = TRUE, 
-                                      update = update, 
+                                      update = update, trace = trace, 
                                       maxit = maxit, 
                                       IClikelihood = IClikelihood, 
                                       which.IC = which.IC))

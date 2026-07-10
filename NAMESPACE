@@ -1,5 +1,7 @@
 export(addBacktransforms,
        addBacktransforms.alldiffs,
+       addPairwiseLetters,
+       addPairwiseLetters.alldiffs,
        addSpatialModel.asrtests, 
        addSpatialModel, 
        addSpatialModelOnIC.asrtests, 
@@ -186,6 +188,7 @@ importFrom("foreach", "foreach", "%do%", "%dopar%")
 importFrom("parallel", "makeCluster", "stopCluster", "detectCores", "nextRNGStream")
 importFrom("doParallel", "registerDoParallel")
 S3method(addBacktransforms, alldiffs)
+S3method(addPairwiseLetters, alldiffs)
 S3method(addSpatialModel, asrtests)
 S3method(addSpatialModelOnIC, asrtests)
 S3method(allDifferences, data.frame)

@@ -16,7 +16,8 @@
              and then call \code{renewClassify}.}
 \usage{\method{renewClassify}{alldiffs}(alldiffs.obj, newclassify, 
               sortFactor = NULL, sortParallelToCombo = NULL, 
-              sortNestingFactor = NULL, sortOrder = NULL, decreasing = FALSE, ...)}
+              sortNestingFactor = NULL, sortOrder = NULL, decreasing = FALSE, 
+              ...)}
 \arguments{
 \item{alldiffs.obj}{An \code{\link{alldiffs.object}}.}
 \item{newclassify}{A \code{\link{character}} string giving the variables that 
