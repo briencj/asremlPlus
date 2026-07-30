@@ -1869,6 +1869,9 @@ makeSED <- function(alldiffs.obj)
 
   #Check that differences are consistent with predictions
   pred.diff <- outer(predictions$predicted.value, predictions$predicted.value, "-")
+  pred.diff[pred.diff < .Machine$double.eps ^ 0.5] <- 0
+  if (!is.null(alldiffs.obj$differences))
+    alldiffs.obj$differences[alldiffs.obj$differences < .Machine$double.eps ^ 0.5] <- 0
   if (any(na.omit(abs(pred.diff-alldiffs.obj$differences)) > .Machine$double.eps ^ 0.5))
     stop("The differnces in the differences component of the alldiffs object ",
          "are inconsistent with the predictions in the predictions component")
@@ -1936,6 +1939,9 @@ makeSED <- function(alldiffs.obj)
   if (is.null(alldiffs.obj$differences) & pairwise)
   { 
     pred.diff <- outer(predictions$predicted.value, predictions$predicted.value, "-")
+    pred.diff[pred.diff < .Machine$double.eps ^ 0.5] <- 0
+    if (!is.null(alldiffs.obj$differences))
+      alldiffs.obj$differences[alldiffs.obj$differences < .Machine$double.eps ^ 0.5] <- 0
     if (nrow(alldiffs.obj$sed) != nrow(pred.diff) | 
         ncol(alldiffs.obj$sed) != ncol(pred.diff))
       stop("The matrix of pairwise differences and sed are not conformable")

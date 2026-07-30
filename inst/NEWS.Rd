@@ -1,41 +1,41 @@
 \name{news}
 \title{News for Package asremlPlus}
-\section{asremlPlus Version 4.4.63
-(2028-07-10)}{
+\section{asremlPlus Version 4.4.64 (2026-07-30)}{
+  \itemize{
+  \item Fix a problem with numerical accuracy of the values close to zero in the \code{differences} component of an \code{alldiffs.object} that affected the function addPairwiseLetters.alldiffs. 
+}}
+\section{asremlPlus Version 4.4.63 (2026-07-10)}{
   \itemize{
   \item Modify the function estimateV to deal with a term involving \code{str} whose \code{vmodel} argument is either a \code{fa} or \code{rr} model.
   Add the function pairwiseSignificance.alldiffs that adds letters to the predictions frame that indicate the differences between all pairs of predictions. 
 }}
-\section{asremlPlus Version 4.4.62
-(2028-05-19)}{
+\section{asremlPlus Version 4.4.62 (2026-05-19)}{
   \itemize{
   \item Add argument \code{sep.levs.combine} to pairdiffsTransform.alldiffs and ratioTransform.alldiffs.
 }}
-\section{asremlPlus Version 4.4.61
-(2028-05-08)}{
+\section{asremlPlus Version 4.4.61 (2026-05-08)}{
   \itemize{
   \item Remove a stray print command that affected allDifferences.data.frame, recalcLSD.alldiffs, redoErrorIntervals.alldiffs and exploreLSDs.alldiffs.
 }}
-\section{asremlPlus Version 4.4.60
-(2028-05-07)}{
+\section{asremlPlus Version 4.4.60 (2026-05-07)}{
   \itemize{
   \item Fix a bug in calculating the the notional LSD in using allDifferences.data.frame, recalcLSD.alldiffs, redoErrorIntervals.alldiffs and exploreLSDs.alldiffs when all the predicted values to be compared are constrained to be the same so that there is no comparison amongst them.
 }}
-\section{asremlPlus Version 4.4.59 (2028-05-04)}{
+\section{asremlPlus Version 4.4.59 (2026-05-04)}{
   \itemize{
   \item Add approximate standard errors to the \code{backtransforms} component of an \code{alldiffs.obj} when the predictions have been calculated for a response that was transformed for analysis. 
   \item Fix a bug in calculating the \code{LSD}, \code{falsePos}, \code{falseNeg} and \code{false.criterion} in using findLSDminerrors.alldiffs when all the predicted values to be compared are constrained to be the same so that there is no comparison amongst them.
 }}
-\section{asremlPlus Version 4.4.58 (2028-04-11)}{
+\section{asremlPlus Version 4.4.58 (2026-04-11)}{
   \itemize{
   \item Update URLs in the vignettes so that they are in canonical form
 }}
-\section{asremlPlus Version 4.4.57 (2028-04-11)}{
+\section{asremlPlus Version 4.4.57 (2026-04-11)}{
   \itemize{
   \item Fix a bug in calculating the \code{LSD} component of an \code{alldiffs.object} using allDifferences.data.frame when all the predicted values to be compared are constrained to be the same so that there is no comparison amongst them.
   \item Fix bug in calculating \code{accuracyLSD}, \code{falsePos} and \code{falseNeg} of the return LSD(s) in using findLSDminerrors.alldiffs.
 }}
-\section{asremlPlus Version 4.4.56 (2028-04-05)}{
+\section{asremlPlus Version 4.4.56 (2026-04-05)}{
   \itemize{
   \item Fix bugs in calculating \code{accuracyLSD}, \code{falsePos} and \code{falseNeg} in the \code{LSD} component of an \code{alldiffs.object} using allDifferences.data.frame, recalcLSD.alldiffs, redoErrorIntervals.alldiffs and exploreLSDs.alldiffs when all the predicted values to be compared are constrained to be the same so that there is no comparison amongst them. Also, ensured that a notional LSD is returned rather than zero for this case of a single value for the predictions.
   \item Fix bugs in allDifferences.data.frame when the \code{classify} is the \code{Intercept}. 

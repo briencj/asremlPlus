@@ -63,7 +63,7 @@ test_that("PredictionsFrame_lme4", {
                                      sed = Var.sed, vcov = Var.vcov, tdf = den.df,
                                      sortFactor = "Variety", decreasing = TRUE)
     testthat::expect_true(all(abs(Var.LSD.diffs$LSD -  
-                                    c(66,15.47425, 18.54065, 19.56706, 18.54065, 0.1653881,2,4)) < 1e-05))
+                                    c(66,15.47425, 18.54065, 19.56706, 18.54065, 0.1653881,2,0)) < 1e-05))
     testthat::expect_true(setequal(names(Var.LSD.diffs$LSD), c("c", "minLSD", "meanLSD", "maxLSD", 
                                                               "assignedLSD", "accuracyLSD", 
                                                               "falsePos", "falseNeg")))
