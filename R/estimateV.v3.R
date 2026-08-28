@@ -34,13 +34,12 @@
     stop("At least one bound.type is not one of those allowed with ASReml-R version 3")
   
   #check and get info about data in supplied call
-  asreml.obj <- asreml.obj
   call <- asreml.obj$call
   if (!("data" %in% names(call)))
     stop("estimateV.asreml assumes that data has been set in call to asreml")
   dat <- call$data
   if (is.symbol(dat))
-    dat <- eval(asreml.obj$call$data)
+    dat <- eval(asreml.obj$call$data, parent.frame(2))
   n <- nrow(dat)
   V <- matrix(0, nrow = n, ncol = n)
   incomplete <- NULL
