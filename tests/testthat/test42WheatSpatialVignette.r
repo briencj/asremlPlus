@@ -142,7 +142,7 @@ test_that("Wheat_spatial_asreml42", {
   
   variofaces(current.asr, V=NULL, units="addtores", 
              maxit=50, update = FALSE,
-             ncores = parallel::detectCores())
+             ncores = min(20,parallel::detectCores()))
 
   ### Plot normal quantile plot
   

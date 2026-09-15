@@ -1,5 +1,9 @@
 \name{news}
 \title{News for Package asremlPlus}
+\section{asremlPlus Version 4.4.65 (2026-09-15)}{
+  \itemize{
+  \item Fix bug in determining the value of the argument \code{k} in the \code{fa} and \code{rr} functions used in the function estimateV.  
+}}
 \section{asremlPlus Version 4.4.64 (2026-07-30)}{
   \itemize{
   \item Fix a problem with numerical accuracy of the values close to zero in the \code{differences} component of an \code{alldiffs.object} that affected the function addPairwiseLetters.alldiffs. 

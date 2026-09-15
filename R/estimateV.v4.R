@@ -773,34 +773,46 @@ G.us <- function(var, term, G.param, cond.fac = "", strterm = FALSE)
   return(G)
 }
 
-G.fa <- function(var, term, G.param, cond.fac = "", strterm = FALSE)
+#Function using in G.fa and g.ra to get the loadings and specific variances
+getLoadings <- function(var, term, G.param, var.func = "fa")
 {
+  #Get k and nlevs
+  #Dummy function getk to use in extracting k from a fa or rr term
+  getk <- function(obj, k = 1, init = NA, data){k}
+  facnam <- G.param[[term]][[var]]$facnam
+  getk.facnam <- gsub(var.func,"getk", var)
+  k <- eval(str2lang(getk.facnam))
+  nlevs <- length(G.param[[term]][[var]]$levels) - k
+
   #Get loadings and specific variances
   est <- G.param[[term]][[var]]$initial
-  k <- strsplit(G.param[[term]][[var]]$facnam, split = "k = ", fixed = TRUE)[[1]][2]
-  k <- as.numeric(substr(k, start = 1, stop = nchar(k)-1))
-  nlevs <- length(G.param[[term]][[var]]$levels) - k
   if (nlevs*(k+1) != length(est))
     stop(paste("Number of levels of ",var,
                " and the number of variance parameters do not agree", sep = ""))
-  specvar <- diag(est[grepl("!var", names(est))])
-  loadings <- matrix(est[grepl("!fa", names(est))], ncol = 2)
-  G <- loadings %*% t(loadings) + specvar
+  if (var.func == "fa")
+    specvar <- diag(est[grepl("!var", names(est))])
+  else
+    specvar <- NULL
+  loadings <- matrix(est[grepl("!fa", names(est))], ncol = k)
+  
+  return(list(loadings = loadings, specvar = specvar))
+}
+
+G.fa <- function(var, term, G.param, cond.fac = "", strterm = FALSE)
+{
+  var.func <- "fa"
+  #Get loadings and specific variances
+  loads <- getLoadings(var, term, G.param, var.func)
+  G <- with(loads, loadings %*% t(loadings) + specvar)
   return(G)
 }
 
+
 G.rr <- function(var, term, G.param, cond.fac = "", strterm = FALSE)
 {
-  #Get loadings and specific variances
-  est <- G.param[[term]][[var]]$initial
-  k <- strsplit(G.param[[term]][[var]]$facnam, split = "k = ", fixed = TRUE)[[1]][2]
-  k <- as.numeric(substr(k, start = 1, stop = nchar(k)-1))
-  nlevs <- length(G.param[[term]][[var]]$levels) - k
-  if (nlevs*(k+1) != length(est))
-    stop(paste("Number of levels of ",var,
-               " and the number of variance parameters do not agree", sep = ""))
-  loadings <- matrix(est[grepl("!fa", names(est))], ncol = k)
-  G <- loadings %*% t(loadings)
+  var.func <- "rr"
+  loads <- getLoadings(var, term, G.param, var.func)
+  G <- with(loads, loadings %*% t(loadings))
   return(G)
 }
 

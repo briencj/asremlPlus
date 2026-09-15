@@ -219,6 +219,51 @@ test_that("MET_estimateV_asreml42", {
   Vfa <- estimateV(asreml.obj)
   testthat::expect_true(all(abs(Vfa - V.g) < 1e-06))
 
+  #Test fa without k = 
+  asreml.obj <-asreml(fixed = GY.tha ~  + at(expt, c(1:5)):rep + at(expt, c(1)):vrow + 
+                        at(expt, c(2,3,6,7)):colblocks + 
+                        at(expt, c(1:5,7)):vcol + Condition*expt,
+                      random = ~  fa(exptCond, 2):Genotype + 
+                        at(expt, c(1)):dev(vrow) + at(expt, c(2)):spl(vcol) +  
+                        at(expt, c(3,5,7)):dev(vcol) + at(expt, c(7)):units,
+                      data=comb.dat, maxit = 100, workspace = "1Gb")
+  Vfa2 <- estimateV(asreml.obj)
+  testthat::expect_true(all(abs(Vfa2 - as.matrix(V.g)) < 1e-06))
+  
+  
+  #Test fa1
+  asreml1.obj <-asreml(fixed = GY.tha ~  + at(expt, c(1:5)):rep + at(expt, c(1)):vrow + 
+                         at(expt, c(2,3,6,7)):colblocks + 
+                         at(expt, c(1:5,7)):vcol + Condition*expt,
+                       random = ~  fa(exptCond, k = 1):Genotype + 
+                         at(expt, c(1)):dev(vrow) + at(expt, c(2)):spl(vcol) +  
+                         at(expt, c(3,5,7)):dev(vcol) + at(expt, c(7)):units,
+                       data=comb.dat, maxit = 100, workspace = "1Gb")
+  
+  summary(asreml1.obj)$varcomp
+  ranterms <- names(asreml1.obj$G.param)
+  n <- nrow(comb.dat)
+  V.g <- matrix(0, nrow = n, ncol = n)
+  design <- asreml1.obj$design
+  design <- replaceColnames(design)
+  for (term in ranterms[2:7])
+  {
+    cols <- grep(term, colnames(design), fixed = TRUE)
+    V.g <- V.g + asreml1.obj$vparameters[term] * (design[, cols] %*% t(as.matrix(design[, cols])))
+  }
+  term <- ranterms[1]
+  cols <- grep(term, colnames(design), fixed = TRUE)[1:1364]
+  vp1 <- asreml1.obj$vparameters[names(asreml1.obj$vparameters)[grep(term, 
+                                                                  names(asreml1.obj$vparameters), fixed = TRUE)]]
+  spec.var <- diag(vp1[grepl("!var", names(vp1), fixed = TRUE)])
+  loads <- matrix(vp1[grepl("!fa", names(vp1), fixed = TRUE)], ncol = 1)
+  Gfa <- loads %*% t(loads) + spec.var
+  V.g <- V.g + (design[, cols] %*% kronecker(Gfa, mat.I(62)) %*%
+                  t(as.matrix(design[, cols])))
+  V.g <- asreml1.obj$sigma2 * (V.g + mat.I(n))
+  Vfa1 <- estimateV(asreml1.obj)
+  testthat::expect_true(all(abs(Vfa1 - V.g) < 1e-06))
+  
   #Test rr
   asreml.obj <-asreml(fixed = GY.tha ~  + at(expt, c(1:5)):rep + at(expt, c(1)):vrow + 
                         at(expt, c(2,3,6,7)):colblocks + 
@@ -250,6 +295,61 @@ test_that("MET_estimateV_asreml42", {
   V.g <- asreml.obj$sigma2 * (V.g + mat.I(n))
   Vrr <- estimateV(asreml.obj)
   testthat::expect_true(all(abs(Vrr - V.g) < 1e-06))
+  
+
+  #Test rr with k = omitted
+  asreml.obj <-asreml(fixed = GY.tha ~  + at(expt, c(1:5)):rep + at(expt, c(1)):vrow + 
+                        at(expt, c(2,3,6,7)):colblocks + 
+                        at(expt, c(1:5,7)):vcol + Condition*expt,
+                      random = ~  rr(exptCond, 2):Genotype + 
+                        at(expt, c(1)):dev(vrow) + at(expt, c(2)):spl(vcol) +  
+                        at(expt, c(3,5,7)):dev(vcol) + at(expt, c(7)):units,
+                      data=comb.dat, maxit = 100, workspace = "1Gb")
+  Vrr2 <- estimateV(asreml.obj)
+  testthat::expect_true(all(abs(Vrr2 - V.g) < 1e-06))
+  
+  #Test rr for k = 1
+  asreml.obj <-asreml(fixed = GY.tha ~  + at(expt, c(1:5)):rep + at(expt, c(1)):vrow + 
+                        at(expt, c(2,3,6,7)):colblocks + 
+                        at(expt, c(1:5,7)):vcol + Condition*expt,
+                      random = ~  rr(exptCond, k = 1):Genotype + 
+                        at(expt, c(1)):dev(vrow) + at(expt, c(2)):spl(vcol) +  
+                        at(expt, c(3,5,7)):dev(vcol) + at(expt, c(7)):units,
+                      data=comb.dat, maxit = 100, workspace = "1Gb")
+  
+  summary(asreml.obj)$varcomp
+  ranterms <- names(asreml.obj$G.param)
+  n <- nrow(comb.dat)
+  V.g <- matrix(0, nrow = n, ncol = n)
+  design <- asreml.obj$design
+  design <- replaceColnames(design)
+  for (term in ranterms[2:7])
+  {
+    cols <- grep(term, colnames(design), fixed = TRUE)
+    V.g <- V.g + asreml.obj$vparameters[term] * (design[, cols] %*% t(as.matrix(design[, cols])))
+  }
+  term <- ranterms[1]
+  cols <- grep(term, colnames(design), fixed = TRUE)[1:1364]
+  vp <- asreml.obj$vparameters[names(asreml.obj$vparameters)[grep(term, 
+                                                                  names(asreml.obj$vparameters), fixed = TRUE)]]
+  loads <- matrix(vp[grepl("!fa", names(vp), fixed = TRUE)], ncol = 1)
+  Gfa <- loads %*% t(loads)
+  V.g <- V.g + (design[, cols] %*% kronecker(Gfa, mat.I(62)) %*%
+                  t(as.matrix(design[, cols])))
+  V.g <- asreml.obj$sigma2 * (V.g + mat.I(n))
+  Vrr1 <- estimateV(asreml.obj)
+  testthat::expect_true(all(abs(Vrr1 - V.g) < 1e-06))
+  
+  #Test rr with default k
+  asreml.obj <-asreml(fixed = GY.tha ~  + at(expt, c(1:5)):rep + at(expt, c(1)):vrow + 
+                        at(expt, c(2,3,6,7)):colblocks + 
+                        at(expt, c(1:5,7)):vcol + Condition*expt,
+                      random = ~  rr(exptCond):Genotype + 
+                        at(expt, c(1)):dev(vrow) + at(expt, c(2)):spl(vcol) +  
+                        at(expt, c(3,5,7)):dev(vcol) + at(expt, c(7)):units,
+                      data=comb.dat, maxit = 100, workspace = "1Gb")
+  Vrr1 <- estimateV(asreml.obj)
+  testthat::expect_true(all(abs(Vrr1 - V.g) < 1e-06))
   
   asreml.options(design = FALSE) 
 

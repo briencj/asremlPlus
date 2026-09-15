@@ -1,0 +1,257 @@
+---
+title: "Using `asremlPlus`, in conjunction with `asreml`, to do the analysis of a wheat experiment that includes choosing a local spatial variation model using AICs"
+author: "Chris Brien"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output: 
+  pdf_document: default
+---
+
+This vignette shows how to use `asremlPlus` (Brien, 2026), in conjunction with `asreml` (Butler et al., 2023), to select the terms to be included in a mixed model for an experiment that involves spatial variation by comparing of information criteria . It also illustrates diagnostic checking and prediction production and presentation for this experiment. Here, `asremlPlus` and `asreml` are packages for the `R` Statistical Computing environment (R Core Team, 2026).
+
+It is divided into the following main sections:
+
+1. Set up the initial model for this experiment
+2. Compare a series of information criteria to select a linear mixed model for the data
+3. Diagnostic checking using residual plots and variofaces
+4. Prediction production and presentation
+
+# 1. Set up the initial model for this experiment
+
+```{r setup, include=TRUE}
+library(asreml, quietly=TRUE)
+packageVersion("asreml")
+library(asremlPlus)
+packageVersion("asremlPlus")
+library(parallel)
+library(doParallel)
+library(foreach)
+suppressMessages(library(qqplotr, quietly=TRUE))
+options(width = 100)
+```
+
+## Get data available in asremlPlus
+
+The data are from a 1976 spring wheat experiment and are taken from Gilmour et al. (1995). An analysis is presented in the `asreml` manual by Butler et al. (2023, Section 7.6), although they suggest that it is a barley experiment.
+
+```{r data, include = TRUE}
+data(Wheat.dat)
+```
+
+## Add row and column covariates for the spatial modelling
+
+```{r datamod, include = TRUE}
+tmp.dat <- within(Wheat.dat, 
+                  {
+                    cColumn <- dae::as.numfac(Column, center = TRUE)
+                    cRow <- dae::as.numfac(Row, center = TRUE)
+                  })
+```
+
+## Fit an initial model - Row and column random
+
+
+In the following, an initial model is fitted that has the terms that would be included for a balanced lattice. In addition, a term WithinColPairs has been included to allow for extraneous variation arising between pairs of adjacent lanes.  
+
+```{r first, include = TRUE}
+current.asr <- do.call(asreml, 
+                         list(yield ~ Rep + WithinColPairs + Variety, 
+                              random = ~ Row + Column,
+                              residual = ~ Row:Column,
+                              data = tmp.dat))
+```
+
+## Intialize a model sequence by loading the current fit into an asrtests object
+
+In creating the `asrtests` object,  `IClikelihood` is set to `full` so that the full Restricted Maximum Likelihood (full REML) of Verbyla, 2019 is incorporated into the `tests.summary` of the `asrtests` object.
+
+```{r initial, include = TRUE}
+current.asrt <- as.asrtests(current.asr, NULL, NULL, IClikelihood = "full", 
+                           label = "Initial model")
+```
+
+## Check for and remove any boundary terms and print a summary of the fit in the asrtests object 
+
+```{r check}
+current.asrt <- rmboundary(current.asrt)
+print(current.asrt)
+```
+
+
+The `test.summary` output shows that no changes have been made to the model loaded using `as.asrtests`. The pseudo-anova table shows that Varieties are highly significant ($p < 0.001$)
+
+# 2. Compare a series of information criteria to select a linear mixed model for the data
+
+In this section, models are compared using Akaike Information Criterion (AICs) based on the full REML.
+
+## Check the need for the term for within Column pairs (a post hoc factor)
+
+```{r covariate}
+current.asrt <- changeModelOnIC(current.asrt, dropFixed = "WithinColPairs", 
+                                label = "Try dropping withinColPairs", IClikelihood = "full")
+print(current.asrt)
+```
+
+It is clear in the call to `changeModelOnIC` that the model is being changed by dropping the `withinColPairs` term, which could also be achieved using `update.asreml`. However, an `asremlPlus` model-changing function  operates on an  `asrtests` object, that includes an `asreml` object, and, except for `changeTerms.asrtests`, results in an `asrtests` object that may contain the changed model or the supplied model depending on the results of hypothesis tests or comparisons of information  criteria. In addition, the result of the test or comparison will be added to a `test.summary` data.frame stored in the new `asrtests` object and, if the model was changed, the `wald.tab` in the new `asrtests` object will have been updated for the new model.
+
+In this case, as can be seen from the summary of `current.asrt` after the call, the model without `withinColPairs` had a smaller AIC and so now the model stored in `current.asrt` does not include `withinColPAirs`. The `wald.tab` has been updated for the new model.
+
+## Choose a model for local spatial variation from several potential models
+
+This example has been analyzed using a model for the local spatial variation based on a separable autocorrelation process of order one (Butler et al., 2023). The need for this model can be assessed using the function `addSpatialModelOnIC` from `asremlPlus` that uses a forward selection strategy for fitting a correlation model (see output below). Note that the spatial terms are fitted using terms in the `random` model, rather than the `residual` model as advocated by Butler et al. (2023); for further information, see the help or manual entries for the spatial functions addSpatialModel, addSpatialModelOnIC and chooseSpatialModelOnIC. To use one of these functions for fitting a local spatial model, the type of spatial model to be fitted, the centred covariates for the two dimensions of the grid, and the factors corresponding to the covariates must be specified. In the example, `IClikelihood` is set to `full` so that the likelihood will be based on the full REML. Because the model that incorporates the spatial model has a smaller AIC, it is the model returned in `spatial.ar1.asrt`.
+
+The `print` of `spatial.ar1.asrt` shows that an `ar1` model for `Row` was tried first and was found to reduce the AIC by 11.898 and so became the current model. Next a model that incorporates an `ar1` function for `Column` was similarly tried and became the current model. This model includes a nugget variance, unless either the variance for Row:Column term or the Residual is bound or fixed. The Residual is the nugget term and represents non-spatial variance, such as measurement error. An appraisal of the need for a nugget term was made by comparing the fits with the residual variance unfixed and fixed at one. The model with the unfixed residual variance was chosen and is the model to be returned. That is, this model includes a term for nugget variance. 
+
+```{r corr}
+spatial.ar1.asrt <- addSpatialModelOnIC(current.asrt, spatial.model = "corr", 
+                                        row.covar = "cRow", col.covar = "cColumn", 
+                                        row.factor = "Row", col.factor = "Column", 
+                                        IClikelihood = "full")
+spatial.ar1.asrt <- rmboundary(spatial.ar1.asrt)
+infoCriteria(list(nonspatial = current.asrt$asreml.obj, 
+                  ar1 = spatial.ar1.asrt$asreml.obj))
+print(spatial.ar1.asrt)
+```
+
+However, the spatial models that are available in `asremlPlus` also include those based on two-dimensional tensor-product natural cubic smoothing splines (TPNCSS), as described by Verbyla et al. (2018), and on two-dimensional tensor-product P-splines (TPPS),  as described by Rodriguez-Alvarez et al. (2018) and Piepho, Boer and Williams (2022). The P-splines have been implemented using functions from the `R` package `TPSbits` authored by Sue Welham (2022)
+
+The `asremlPlus` function `chooseSpatialModelOnIC` allows one to select the best model from amongst these spatial correlation models using the AIC or the BIC, the AIC being the default. The four models from which it selects are (i) a separable autocorrelation model on both row and column dimensions (`corr`), (ii) a two-dimensional tensor-product natural cubic smoothing spline (`TPNCSS`), (ii) a two-dimensional tensor-product cubic P-spline with second-difference penalties (`TPPSC2`), and (iii) a tensor-product two-dimensional linear P-spline with first-difference penalties (`TPPSL1`). By default all four are fitted and compared, but the `trySpatial` argument can be used to specify a subset of them. 
+
+The call to `chooseSpatialModelOnIC`, in addition to the arguments specifying covariates and factors, has further arguments: (i) `dropFixed` and `dropRandom` that are relevant to fitting P-splines and are used here to remove the random, overall Row and Column terms that were included in the original model so that the fitted P-spline model will be compared to a model including them and because the code for fitting P-splines also automatically includes these terms so that they would be included twice in the model to be fitted resulting in model singularities, (ii) `rotateX` and `ngridangles` so that angles over the range 0 to 90$^\circ$ in both row and column directions for  rotating the null eigenvectors of the penalty matrix for the linear component of the P-splines is optimized (setting `ngridangles` to `NULL` causes the R function `nloptr::bobyqa` to be invoked for finding the optimal angles), (iii)  an `asreml.option` argument to specify that the `grp` method  be used in fitting the P-spline terms, this being safer because the data.frame needed for any post-fitting computation is available in the `asreml` object, and (iv) `return.asrts` to specify which `asrtests` objects are to be returned. Here we specify `all` so that `asrtests` objects for the best fits between the model supplied in the `current.asrt` and each of the spatial models is returned for all four spatial models. In this case, neither the `checkboundaryonly` nor the `IClikelihood` arguments were set because their defaults for `chooseSpatialModelOnIC` are appropriate.
+
+```{r spatial}
+suppressWarnings(
+  spatial.asrts <- chooseSpatialModelOnIC(current.asrt, 
+                                          row.covar = "cRow", col.covar = "cColumn",
+                                          row.factor = "Row", col.factor = "Column",
+                                          dropRandom = "Row + Column",
+                                          rotateX = TRUE, ngridangles = NULL, 
+                                          asreml.option = "grp", return.asrts = "all"))
+```
+
+## Output the results
+
+```{r results}
+print(spatial.asrts$spatial.IC)
+print(R2adj(spatial.asrts$asrts$TPNCSS$asreml.obj, include.which.random = ~ .))
+print(spatial.asrts$best.spatial.mod)
+print(spatial.asrts$asrts$TPNCSS)
+printFormulae(spatial.asrts$asrts$TPNCSS$asreml.obj)
+```
+
+The output shows that the TPNCSS model has the lowest AIC and so is selected as the best model. The adjusted $R^2$ value shows that the fixed and random terms in the fitted model account for 93\% of the total variation in the yield. The model fitted for the TPNCSS model has been printed using `printFormulae.asreml`. The fitted model includes the term `dev(cRow)` that is equivalent to a random `Row` term and measures the deviations of the Row trend from a linear trend, the `spl(cRow)` term having been dropped because it was estimated to be zero. The Wald $F$-statistic for `Variety` is now 10.15 with 86.5 denominator degrees of freedom, as compared to 10.56 and 74.3 for the correlation model and 4.71 and 105.3 for the initial nonspatial model. 
+
+# 3. Diagnostic checking using residual plots and variofaces
+
+## Get current fitted asreml object and update to include standardized residuals
+
+```{r update}
+current.asr <- spatial.asrts$asrts$TPNCSS$asreml.obj
+current.asr <- update(current.asr, aom=TRUE)
+Wheat.dat$res <- residuals(current.asr, type = "stdCond")
+Wheat.dat$fit <- fitted(current.asr)
+```
+
+## Do diagnostic checking
+
+### Do residuals-versus-fitted values plot
+
+```{r resfit}
+with(Wheat.dat, plot(fit, res))
+```
+
+### Plot variofaces
+
+```{r VarioF}
+variofaces(current.asr, V=NULL, units="addtores", 
+           maxiter=50, update = FALSE, 
+           ncores = min(20,parallel::detectCores()))
+```
+
+The variofaces are the lag 1 plots of the sample semivariogram with simulated confidence envelopes (Stefanova et al., 2009). 
+
+### Plot normal quantile plot
+
+The plot is obtained using the `ggplot` function with extensions available from the `qqplotr` package (Almeida et al., 2023).
+
+```{r Nplot}
+ggplot(data = Wheat.dat, mapping = aes(sample = res)) +
+  stat_qq_band(bandType = "ts") + stat_qq_line() + stat_qq_point() +
+  labs(x = "Theoretical Quantiles", y = "Sample Quantiles",
+       title = "Normal probability plot") +
+  theme(plot.title = element_text(size = 12, face = "bold")) + theme_bw()
+```
+
+# 4. Prediction production and presentation
+
+## Get Variety predictions and all pairwise prediction differences and p-values
+
+```{r WheatPreds}
+Var.diffs <- predictPlus(classify = "Variety", 
+                         asreml.obj=current.asr, 
+                         error.intervals="halfLeast",
+                         wald.tab=current.asrt$wald.tab, 
+                         sortFactor = "Variety",
+                         tables = "predictions")
+```
+
+We have set `error.intervals` to `halfLeast` so that the limits for each $\textsf{prediction} \pm (0.5\textsf{ LSD})$ are calculated. When these are plotted overlapping error bars indicate predictions that are not significant, while those that do not overlap are significantly different (Snee, 1981).
+
+Also set was `sortFactor`, so that the results would be ordered for the values of the predictions for Variety.
+
+The function `predictPlus` returns an `alldiffs` object, a list consisting of the following components:
+
+* `predictions`: the predictions, their standard errors and error intervals;
+
+* `vcov`: the variance matrix of the predictions;
+
+* `differences`: all pairwise differences between the predictions, 
+
+* `p.differences`: p-values for all pairwise differences between the predictions;
+
+* `sed`: the standard errors of all pairwise differences between the predictions; 
+
+* `LSD`: the mean, minimum and maximum of the LSDs.
+
+
+## Plot the Variety predictions, with halfLSD intervals, and the p-values
+
+```{r plotPreds}
+plotPredictions(Var.diffs$predictions, 
+                classify = "Variety", y = "predicted.value", 
+                error.intervals = "half")
+plotPvalues(Var.diffs)
+```
+
+# References
+
+Almeida, A., Loy, A. and Heike Hofmann, H. (2023) `qqplotr`: *Quantile-Quantile plot extensions for 'ggplot2'*, Version 0.0.6. <https://cran.r-project.org/package=qqplotr/> or <https://github.com/aloy/qqplotr>.
+
+Brien, C. J. (2026) `asremlPlus`: *Augments ASReml-R in fitting mixed models and packages generally in exploring prediction differences*. Version 4.4.65. <https://cran.r-project.org/package=asremlPlus/> or <http://chris.brien.name/rpackages/>.
+
+Butler, D. G., Cullis, B. R., Gilmour, A. R., Gogel, B. J. and Thompson, R. (2023). *ASReml-R Reference Manual Version 4.2.* VSN International Ltd, <https://asreml.kb.vsni.co.uk/>.
+
+Gilmour, A. R., Thompson, R., & Cullis, B. R. (1995). Average Information REML: 
+            An Efficient Algorithm for Variance Parameter Estimation in Linear 
+            Mixed Models. *Biometrics*, **51**, 1440--1450. 
+
+Kenward, M. G., & Roger, J. H. (1997). Small sample inference for fixed effects from restricted maximum likelihood. *Biometrics*, **53**, 983-997.
+            
+R Core Team (2026) \emph{R: A language and environment for statistical
+computing.} Vienna, Austria: R Foundation for Statistical Computing.
+<https://www.r-project.org>.
+
+Snee, R. D. (1981). Graphical Display and Assessment of Means. *Biometrics*, **37**, 835--836. 
+
+Piepho, H.-P., Boer, M. P., & Williams, E. R. (2022). Two-dimensional P-spline smoothing for spatial analysis of plant breeding trials. *Biometrical Journal*, **64**, 835-857.
+
+Rodriguez-Alvarez, M. X., Boer, M. P., van Eeuwijk, F. A., & Eilers, P. H. C. (2018). Correcting for spatial heterogeneity in plant breeding experiments with P-splines. *Spatial Statistics*, **23**, 52-71. 
+
+Stefanova, K. T., Smith, A. B. & Cullis, B. R. (2009) Enhanced diagnostics for the 
+            spatial analysis of field trials. *Journal of Agricultural, Biological, 
+            and Environmental Statistics*, **14**, 392--410.
+
+Verbyla, A. P., De Faveri, J., Wilkie, J. D., & Lewis, T. (2018). Tensor Cubic Smoothing Splines in Designed Experiments Requiring Residual Modelling. *Journal of Agricultural, Biological and Environmental Statistics*, **23**, 478-508.
+
+Verbyla, A. P. (2019). A note on model selection using information criteria for general linear models estimated using REML. *Australian & New Zealand Journal of Statistics*, **61**, 39-50.
+
+Welham, S. J. (2022) `TPSbits`: \emph{Creates Structures to Enable Fitting and Examination of 2D Tensor-Product Splines using ASReml-R.} Version 1.0.0} 
