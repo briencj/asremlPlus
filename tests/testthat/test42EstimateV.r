@@ -604,3 +604,36 @@ test_that("estimateV_str_asreml42", {
   
   asreml.options(design = FALSE) 
 })
+
+cat("#### Test estimateV for getting data from call when is a symbol\n")
+test_that("call_data_asreml42", {
+  skip_if_not_installed("asreml")
+  skip_on_cran()
+  library(dae)
+  library(asreml)
+  library(asremlPlus)
+
+  data(eV.dat)
+#  dat <- data.frame(y = rnorm(100), g = factor(rep(letters[1:10], each = 10)))
+  fit <- asreml(y ~ 1, random=~ g, data = dat)
+  testthat::expect_true(is.symbol(fit$call$data))
+  testthat::expect_true(fit$call$data == "dat")
+  testthat::expect_silent(V <- asremlPlus::estimateV(fit, which = "V"))
+  testthat::expect_true(all(dim(V) == 100))
+
+  fit0 <- asreml(y ~ 1, data = dat)
+  testthat::expect_true(is.symbol(fit$call$data))
+  #bootREML calls estimateV 
+  result <- bootREMLRT(fit0, fit)
+  testthat::expect_true(all(names(result) == c("REMLRT", "p", "DF", 
+                                               "totalunconverged", 
+                                               "REMLRT.sim", "nunconverged")))
+  
+  xxxx_eV.dat <- dat #same name as in estimateV code
+  fit <- asreml(y ~ 1, random=~ g, data = xxxx_eV.dat)
+  testthat::expect_true(is.symbol(fit$call$data))
+  testthat::expect_true(fit$call$data == "xxxx_eV.dat")
+  testthat::expect_silent(V <- asremlPlus::estimateV(fit, which = "V"))
+  testthat::expect_true(all(dim(V) == 100))
+  
+})

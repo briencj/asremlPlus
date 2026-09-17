@@ -38,10 +38,10 @@
   call <- asreml.obj$call
   if (!("data" %in% names(call)))
     stop("estimateV.asreml assumes that data has been set in call to asreml")
-  dat <- call$data
-  if (is.symbol(dat))
-    dat <- eval(asreml.obj$call$data)
-  n <- nrow(dat)
+  xxxx_eV.dat <- call$data
+  if (is.symbol(xxxx_eV.dat))
+    xxxx_eV.dat <- eval(asreml.obj$call$data, parent.frame(2)) #stops search of estimateV env 
+  n <- nrow(xxxx_eV.dat)
   V <- matrix(0, nrow = n, ncol = n)
   incomplete <- NULL
   
@@ -127,7 +127,7 @@
             V <- V + diag(G.param$units$variance$initial, nrow = n)
           } else
           {
-            Z <- model.matrix(as.formula(paste("~ - 1 + ",term)), data = dat)
+            Z <- model.matrix(as.formula(paste("~ - 1 + ",term)), data = xxxx_eV.dat)
             V <- V + G.param[[term]]$variance$initial * Z %*% t(Z)
           }
         } else #Has a special

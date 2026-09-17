@@ -1,5 +1,9 @@
 \name{news}
 \title{News for Package asremlPlus}
+\section{asremlPlus Version 4.4.66 (2026-09-17)}{
+  \itemize{
+  \item Fixed a clash between an internal object in the function estimateV with the same name as the name of a data.frame supplied as a symbol using the data argument of an asreml call. Have included tests for this problem.
+}}
 \section{asremlPlus Version 4.4.65 (2026-09-15)}{
   \itemize{
   \item Fix bug in determining the value of the argument \code{k} in the \code{fa} and \code{rr} functions used in the function estimateV.  
